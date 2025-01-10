@@ -1,11 +1,12 @@
-import { Dialog as ChakraDialog, Portal } from "@chakra-ui/react"
-import { CloseButton } from "./close-button"
 import * as React from "react"
+import { Portal, Dialog as ChakraDialog } from "@chakra-ui/react"
+
+import { CloseButton } from "./close-button"
 
 interface DialogContentProps extends ChakraDialog.ContentProps {
+  backdrop?: boolean
   portalled?: boolean
   portalRef?: React.RefObject<HTMLElement>
-  backdrop?: boolean
 }
 
 export const DialogContent = React.forwardRef<
@@ -38,9 +39,9 @@ export const DialogCloseTrigger = React.forwardRef<
 >(function DialogCloseTrigger(props, ref) {
   return (
     <ChakraDialog.CloseTrigger
-      position="absolute"
       top="2"
       insetEnd="2"
+      position="absolute"
       {...props}
       asChild
     >

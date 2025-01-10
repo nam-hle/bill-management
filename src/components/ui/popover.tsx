@@ -1,6 +1,7 @@
-import { Popover as ChakraPopover, Portal } from "@chakra-ui/react"
-import { CloseButton } from "./close-button"
 import * as React from "react"
+import { Portal, Popover as ChakraPopover } from "@chakra-ui/react"
+
+import { CloseButton } from "./close-button"
 
 interface PopoverContentProps extends ChakraPopover.ContentProps {
   portalled?: boolean
@@ -38,9 +39,9 @@ export const PopoverCloseTrigger = React.forwardRef<
 >(function PopoverCloseTrigger(props, ref) {
   return (
     <ChakraPopover.CloseTrigger
-      position="absolute"
       top="1"
       insetEnd="1"
+      position="absolute"
       {...props}
       asChild
       ref={ref}

@@ -1,13 +1,13 @@
-import { Tooltip as ChakraTooltip, Portal } from "@chakra-ui/react"
 import * as React from "react"
+import { Portal, Tooltip as ChakraTooltip } from "@chakra-ui/react"
 
 export interface TooltipProps extends ChakraTooltip.RootProps {
+  disabled?: boolean
   showArrow?: boolean
   portalled?: boolean
-  portalRef?: React.RefObject<HTMLElement>
   content: React.ReactNode
+  portalRef?: React.RefObject<HTMLElement>
   contentProps?: ChakraTooltip.ContentProps
-  disabled?: boolean
 }
 
 export const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(

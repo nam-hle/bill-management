@@ -1,5 +1,5 @@
+import { Table } from "@chakra-ui/react";
 import { createClient } from "@/supabase/server";
-import { Heading, Stack, Table } from "@chakra-ui/react";
 
 export default async function UsersPage() {
   const supabase = await createClient();
@@ -7,7 +7,7 @@ export default async function UsersPage() {
   const { data: users } = await supabase.from("users").select();
 
   return (
-    <Table.Root size={"md"}>
+    <Table.Root size="md">
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeader>ID</Table.ColumnHeader>

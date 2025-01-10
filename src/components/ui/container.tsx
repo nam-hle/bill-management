@@ -1,32 +1,32 @@
 import React from "react";
-import { Container } from "@/types";
-import { Box, Stack } from "@chakra-ui/react";
+import { type Container } from "@/types";
 import { Link } from "@/components/ui/link";
+import { Box, Stack } from "@chakra-ui/react";
 
 export const RootContainer: React.FC<Container> = (props) => {
   return (
     <>
       <Box
-        as={"header"}
-        paddingInline={"{spacing.8}"}
-        maxWidth={"{sizes.8xl}"}
-        marginInline={"auto"}
+        as="header"
+        marginInline="auto"
+        maxWidth="{sizes.8xl}"
+        paddingInline="{spacing.8}"
       >
         <Stack
-          minHeight={"48px"}
-          direction={"row"}
-          alignItems={"center"}
-          gap={"{spacing.8}"}
+          direction="row"
+          minHeight="48px"
+          gap="{spacing.8}"
+          alignItems="center"
         >
-          <Link href={"/users"}>Users</Link>
-          <Link href={"/bills"}>Bills</Link>
+          <Link href="/users">Users</Link>
+          <Link href="/bills">Bills</Link>
         </Stack>
       </Box>
       <Box
-        as={"main"}
-        paddingInline={"{spacing.8}"}
-        maxWidth={"{sizes.8xl}"}
-        marginInline={"auto"}
+        as="main"
+        marginInline="auto"
+        maxWidth="{sizes.8xl}"
+        paddingInline="{spacing.8}"
       >
         {props.children}
       </Box>

@@ -1,5 +1,5 @@
-import { createClient } from "@/supabase/server";
 import { Table } from "@chakra-ui/react";
+import { createClient } from "@/supabase/server";
 
 export default async function BillsPage() {
   const supabase = await createClient();
@@ -13,7 +13,7 @@ export default async function BillsPage() {
   `);
 
   return (
-    <Table.Root size={"md"}>
+    <Table.Root size="md">
       <Table.Header>
         <Table.Row>
           <Table.ColumnHeader>ID</Table.ColumnHeader>
