@@ -24,11 +24,7 @@ export const BillForm: React.FC<{ users: ClientUser[] }> = (props) => {
   const [formState, setFormState] = React.useState<BillFormState>(() => {
     return {
       description: "",
-      // creditor: { userId: users[0].id, amount: 110 },
-      debtors: [
-        // { userId: users[1].id, amount: 50 },
-        // { userId: users[2].id, amount: 60 },
-      ],
+      debtors: [],
     };
   });
 

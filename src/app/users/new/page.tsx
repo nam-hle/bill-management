@@ -1,7 +1,7 @@
 import React from "react";
 
-import { UserForm } from "@/components/app/user-form";
+import { NewUserForm } from "@/components/app/new-user-form";
 
 export default async function NewUserPage() {
-  return <UserForm />;
+  return <NewUserForm />;
 }

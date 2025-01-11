@@ -20,7 +20,7 @@ export async function POST(request: Request) {
       throw new Error(`Error inserting user: ${userError.message}`);
     }
 
-    console.log("Bill and members successfully inserted:", userData);
+    console.log("User successfully inserted:", userData);
 
     return new Response(JSON.stringify({ success: true, data: { userData } }), {
       status: 201,

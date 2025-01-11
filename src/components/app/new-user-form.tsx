@@ -9,7 +9,7 @@ import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { toaster } from "@/components/ui/toaster";
 
-export const UserForm = () => {
+export const NewUserForm = () => {
   const [formState, setFormState] = React.useState<UserFormState>({
     username: "",
   });
