@@ -3,7 +3,6 @@
 import React from "react";
 import { createListCollection } from "@chakra-ui/react";
 
-import { noop } from "@/utils";
 import {
   SelectItem,
   SelectRoot,
@@ -15,7 +14,8 @@ import {
 
 export const Select: React.FC<{
   label: string;
-  value?: string;
+  value: string | undefined;
+  onValueChange: (value: string) => void;
   items: { value: string; label: string }[];
 }> = (props) => {
   const collection = createListCollection(props);
@@ -23,13 +23,18 @@ export const Select: React.FC<{
   return (
     <SelectRoot
       size="md"
-      onChange={noop}
       collection={collection}
       value={props.value ? [props.value] : []}
+      onValueChange={(e) => {
+        if (e.value.length !== 1) {
+          throw new Error("Expected exactly one value");
+        }
+        props.onValueChange(e.value[0]);
+      }}
     >
       <SelectLabel>{props.label}</SelectLabel>
       <SelectTrigger>
-        <SelectValueText placeholder="Select movie" />
+        <SelectValueText placeholder="Select one" />
       </SelectTrigger>
       <SelectContent>
         {collection.items.map(({ value, label }) => (

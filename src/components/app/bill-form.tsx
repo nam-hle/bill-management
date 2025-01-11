@@ -10,7 +10,6 @@ import {
   SimpleGrid,
 } from "@chakra-ui/react";
 
-import { noop } from "@/utils";
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/app/select";
@@ -24,11 +23,11 @@ export const BillForm: React.FC<{ users: ClientUser[] }> = (props) => {
   const { users } = props;
   const [formState, setFormState] = React.useState<BillFormState>(() => {
     return {
-      description: "Team building",
-      creditor: { userId: users[0].id, amount: 110 },
+      description: "",
+      // creditor: { userId: users[0].id, amount: 110 },
       debtors: [
-        { userId: users[1].id, amount: 50 },
-        { userId: users[2].id, amount: 60 },
+        // { userId: users[1].id, amount: 50 },
+        // { userId: users[2].id, amount: 60 },
       ],
     };
   });
@@ -50,9 +49,14 @@ export const BillForm: React.FC<{ users: ClientUser[] }> = (props) => {
         <GridItem colSpan={{ base: 2 }}>
           <Field required label="Description">
             <Input
-              onChange={noop}
               value={formState.description}
               placeholder="Enter bill description"
+              onChange={(e) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
             />
           </Field>
         </GridItem>
@@ -92,7 +96,16 @@ export const BillForm: React.FC<{ users: ClientUser[] }> = (props) => {
       </SimpleGrid>
 
       <HStack justifyContent="space-between">
-        <Button>Add debtor</Button>
+        <Button
+          onClick={() => {
+            setFormState((prev) => ({
+              ...prev,
+              debtors: [...prev.debtors, {}],
+            }));
+          }}
+        >
+          Add debtor
+        </Button>
         <Button variant="solid" onClick={onSave}>
           Save
         </Button>
@@ -105,16 +118,18 @@ export const MemberInputs: React.FC<{
   memberKind: "creditor" | "debtor";
   memberIndex: number;
   users: ClientUser[];
-  value: { userId: string; amount: number };
-  onValueChange: (value: { userId: string; amount: number }) => void;
+  value: { userId?: string; amount?: number } | undefined;
+  onValueChange: (value: { userId?: string; amount?: number }) => void;
 }> = ({ users, memberIndex, memberKind, value, onValueChange }) => {
   const label =
     memberKind === "creditor" ? "Creditor" : `Debtor ${memberIndex + 1}`;
+
   return (
     <>
       <Select
         label={label}
-        value={value.userId}
+        value={value?.userId}
+        onValueChange={(userId) => onValueChange({ ...value, userId })}
         items={users.map((user) => ({ label: user.username, value: user.id }))}
       />
 
@@ -125,7 +140,7 @@ export const MemberInputs: React.FC<{
         <NumberInputRoot
           min={0}
           width="100%"
-          value={String(value.amount) ?? ""}
+          value={String(value?.amount ?? "")}
           onValueChange={(e) =>
             onValueChange({ ...value, amount: parseInt(e.value, 10) })
           }

@@ -6,6 +6,9 @@ export async function POST(request: Request) {
     const body = await request.json();
     const payload = body as BillFormState;
     const supabase = await createClient();
+    if (!payload.creditor || !payload.creditor.amount) {
+      throw new Error("Creditor is required");
+    }
 
     const { data: billData, error: billError } = await supabase
       .from("bills")
@@ -16,7 +19,6 @@ export async function POST(request: Request) {
       })
       .select("id")
       .single();
-    console.log(billError);
 
     if (billError) {
       throw new Error(`Error inserting bill: ${billError.message}`);
@@ -25,11 +27,16 @@ export async function POST(request: Request) {
     const billId = billData.id;
 
     // Step 2: Insert bill members
-    const billMembers = payload.debtors.map((debtor) => ({
-      bill_id: billId,
-      user_id: debtor.userId,
-      amount: debtor.amount,
-    }));
+    const billMembers = payload.debtors.map((debtor) => {
+      if (!debtor.userId || !debtor.amount) {
+        throw new Error("Debtor is missing userId or amount");
+      }
+      return {
+        bill_id: billId,
+        user_id: debtor.userId,
+        amount: debtor.amount,
+      };
+    });
 
     const { data: membersData, error: membersError } = await supabase
       .from("bill_members")
@@ -43,21 +50,6 @@ export async function POST(request: Request) {
       bill: billData,
       members: membersData,
     });
-
-    // // Validate the input
-    // if (!description || !amount || !dueDate) {
-    //   return new Response(
-    //     JSON.stringify({ error: "All fields are required" }),
-    //     {
-    //       status: 400,
-    //     },
-    //   );
-    // }
-    //
-    // // Create the bill record
-    // const newBill = await prisma.bill.create({
-    //   data: { description, amount, dueDate },
-    // });
 
     return new Response(
       JSON.stringify({ success: true, data: { billData, billMembers } }),
