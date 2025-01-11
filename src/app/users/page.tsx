@@ -1,4 +1,5 @@
 import { Table } from "@chakra-ui/react";
+
 import { createClient } from "@/supabase/server";
 
 export default async function UsersPage() {

@@ -1,7 +1,8 @@
 import React from "react";
 import NextLink from "next/link";
-import { type Container } from "@/types";
 import { type LinkProps, Link as ChakraLink } from "@chakra-ui/react";
+
+import { type Container } from "@/types";
 
 const MyButton: React.ForwardRefRenderFunction<HTMLAnchorElement, LinkProps> = (
   props,

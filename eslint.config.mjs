@@ -19,6 +19,7 @@ const eslintConfig = [
   {
     plugins: { perfectionist, "unused-imports": unusedImports },
     rules: {
+      "@typescript-eslint/ no-empty-object-type": "off",
       "max-params": "error",
       "unused-imports/no-unused-imports": "error",
       "react/jsx-boolean-value": "error",
@@ -51,12 +52,12 @@ const eslintConfig = [
             "side-effect",
             "builtin",
             "external",
-            "a12",
+            "project",
             ["parent", "sibling", "index"],
           ],
           customGroups: {
             value: {
-              a12: ["@com.mgmtp.a12*/**"],
+              project: ["@/**"],
             },
           },
         },

@@ -1,7 +1,8 @@
 import React from "react";
+import { Box, Stack } from "@chakra-ui/react";
+
 import { type Container } from "@/types";
 import { Link } from "@/components/ui/link";
-import { Box, Stack } from "@chakra-ui/react";
 
 export const RootContainer: React.FC<Container> = (props) => {
   return (
@@ -26,7 +27,9 @@ export const RootContainer: React.FC<Container> = (props) => {
         as="main"
         marginInline="auto"
         maxWidth="{sizes.8xl}"
+        paddingTop="{spacing.4}"
         paddingInline="{spacing.8}"
+        minHeight="calc(100vh - 48px)"
       >
         {props.children}
       </Box>
