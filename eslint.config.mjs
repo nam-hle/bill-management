@@ -2,6 +2,7 @@ import { dirname } from "path";
 import { fileURLToPath } from "url";
 
 import { FlatCompat } from "@eslint/eslintrc";
+import reactPlugin from "eslint-plugin-react";
 import perfectionist from "eslint-plugin-perfectionist";
 import unusedImports from "eslint-plugin-unused-imports";
 
@@ -17,8 +18,21 @@ const compat = new FlatCompat({
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
-    plugins: { perfectionist, "unused-imports": unusedImports },
+    settings: {
+      react: {
+        version: "detect",
+      },
+    },
+    plugins: {
+      perfectionist,
+      "unused-imports": unusedImports,
+      ...reactPlugin.configs.flat.recommended.plugins,
+      // "react-hooks": reactHooksPlugin,
+    },
     rules: {
+      ...reactPlugin.configs.flat.recommended.rules,
+      // ...reactHooksPlugin.configs.recommended.rules,
+      "react-hooks/exhaustive-deps": "error",
       "@typescript-eslint/no-empty-object-type": "off",
       "@typescript-eslint/no-explicit-any": "warn",
       "max-params": "error",

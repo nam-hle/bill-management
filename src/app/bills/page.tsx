@@ -1,3 +1,4 @@
+import React from "react";
 import Link from "next/link";
 import { Table, VStack } from "@chakra-ui/react";
 

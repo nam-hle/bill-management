@@ -2,8 +2,9 @@ import React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
-import { Provider } from "@/components/ui/provider";
+import { Toaster } from "@/components/ui/toaster";
 import { RootContainer } from "@/components/ui/root-container";
+import { Provider as ChakraProvider } from "@/components/ui/provider";
 const interSans = Inter({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -22,9 +23,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${interSans.variable}`}>
-        <Provider>
+        <ChakraProvider>
+          <Toaster />
           <RootContainer>{children}</RootContainer>
-        </Provider>
+        </ChakraProvider>
       </body>
     </html>
   );

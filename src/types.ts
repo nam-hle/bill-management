@@ -22,3 +22,7 @@ export interface BillFormState {
     amount?: number;
   }>;
 }
+
+export interface UserFormState {
+  username?: string;
+}
