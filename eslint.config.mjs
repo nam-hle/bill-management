@@ -20,7 +20,7 @@ const eslintConfig = [
     plugins: { perfectionist, "unused-imports": unusedImports },
     rules: {
       "@typescript-eslint/no-empty-object-type": "off",
-      "@typescript-eslint/ no-explicit-any": "warn",
+      "@typescript-eslint/no-explicit-any": "warn",
       "max-params": "error",
       "unused-imports/no-unused-imports": "error",
       "react/jsx-boolean-value": "error",

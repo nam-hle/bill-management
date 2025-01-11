@@ -8,15 +8,15 @@ const MyButton: React.ForwardRefRenderFunction<HTMLAnchorElement, LinkProps> = (
   props,
   ref,
 ) => {
+  const { children, ...rest } = props;
   return (
     <ChakraLink
+      {...rest}
       ref={ref}
-      color="{colors.fg}"
       fontSize="{fontSizes.md}"
-      borderColor="{colors.fg}"
       fontWeight="{fontWeights.medium}"
     >
-      {props.children}
+      {children}
     </ChakraLink>
   );
 };
