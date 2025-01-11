@@ -12,6 +12,9 @@ export default async function BillsPage() {
     id,
     description,
     total_amount,
+    creditor:creator_id (
+      username
+    ),
     bill_members (id, user_id, amount)
   `);
 
@@ -23,6 +26,7 @@ export default async function BillsPage() {
           <Table.Row>
             <Table.ColumnHeader>ID</Table.ColumnHeader>
             <Table.ColumnHeader>Description</Table.ColumnHeader>
+            <Table.ColumnHeader>Creditor</Table.ColumnHeader>
             <Table.ColumnHeader>Amount</Table.ColumnHeader>
             <Table.ColumnHeader>Members</Table.ColumnHeader>
           </Table.Row>
@@ -32,6 +36,7 @@ export default async function BillsPage() {
             <Table.Row key={item.id}>
               <Table.Cell>{item.id.slice(0, 6)}</Table.Cell>
               <Table.Cell>{item.description}</Table.Cell>
+              <Table.Cell>{item.creditor.username}</Table.Cell>
               <Table.Cell>{item.total_amount}</Table.Cell>
               <Table.Cell>
                 {item.bill_members
