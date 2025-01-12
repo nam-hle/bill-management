@@ -38,6 +38,18 @@ export default async function UserPage({ params }: Props) {
     throw "Error fetching bills:" + error;
   }
 
+  const total = (userBillsData ?? []).reduce(
+    (acc, item) => {
+      const balances = calculateMoney(item.bill_members);
+      acc.net += balances.net;
+      acc.paid += balances.paid ?? 0;
+      acc.owed += balances.owed ?? 0;
+
+      return acc;
+    },
+    { net: 0, paid: 0, owed: 0 },
+  );
+
   return (
     <VStack gap="{spacing.4}" alignItems="flex-start">
       <Heading>User Bills Info</Heading>
@@ -69,6 +81,15 @@ export default async function UserPage({ params }: Props) {
               );
             })}
         </Table.Body>
+        <Table.Footer>
+          <Table.Row>
+            <Table.Cell></Table.Cell>
+            <Table.Cell>Total:</Table.Cell>
+            <Table.Cell>{total.paid}</Table.Cell>
+            <Table.Cell>{total.owed}</Table.Cell>
+            <Table.Cell>{total.net}</Table.Cell>
+          </Table.Row>
+        </Table.Footer>
       </Table.Root>
     </VStack>
   );
