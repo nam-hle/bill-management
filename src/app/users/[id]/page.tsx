@@ -25,16 +25,16 @@ export default async function UserPage({ params }: Props) {
       `
       id,
       description,
-      created_at,
+      createdAt,
       bill_members (
-        user_id,
+        userId,
         amount,
         role
       )
     `,
     )
-    .eq(`bill_members.user_id`, userId)
-    .order("created_at", { ascending: false });
+    .eq(`bill_members.userId`, userId)
+    .order("createdAt", { ascending: false });
 
   if (error) {
     throw "Error fetching bills:" + error;

@@ -20,7 +20,7 @@ export async function POST(request: Request) {
       .insert({
         description: payload.description,
         // TODO: Creator should be the currently logged in user
-        creator_id: payload.creditor.userId,
+        creatorId: payload.creditor.userId,
       })
       .select("id")
       .single();
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
       return {
         bill_id: billId,
-        user_id: debtor.userId,
+        userId: debtor.userId,
         amount: debtor.amount,
         role: "Debtor" as BillMemberRole,
       };
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
 
     billMembers.push({
       bill_id: billId,
-      user_id: payload.creditor.userId,
+      userId: payload.creditor.userId,
       amount: payload.creditor.amount,
       role: "Creditor" as BillMemberRole,
     });

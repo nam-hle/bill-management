@@ -119,8 +119,6 @@ export const MemberInputs: React.FC<{
 }> = ({ users, memberIndex, memberKind, value, onValueChange }) => {
   const label =
     memberKind === "creditor" ? "Creditor" : `Debtor ${memberIndex + 1}`;
-  label === "Creditor" &&
-    console.log({ memberKind, value, users, xx: value?.userId });
 
   return (
     <>

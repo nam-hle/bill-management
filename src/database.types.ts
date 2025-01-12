@@ -12,42 +12,42 @@ export type Database = {
       bill_members: {
         Row: {
           amount: number
-          bill_id: string
-          created_at: string
+          billId: string
+          createdAt: string
           id: string
           role: Database["public"]["Enums"]["BillMemberRole"]
-          updated_at: string | null
-          user_id: string
+          updatedAt: string | null
+          userId: string
         }
         Insert: {
           amount: number
-          bill_id?: string
-          created_at?: string
+          billId?: string
+          createdAt?: string
           id?: string
           role?: Database["public"]["Enums"]["BillMemberRole"]
-          updated_at?: string | null
-          user_id?: string
+          updatedAt?: string | null
+          userId?: string
         }
         Update: {
           amount?: number
-          bill_id?: string
-          created_at?: string
+          billId?: string
+          createdAt?: string
           id?: string
           role?: Database["public"]["Enums"]["BillMemberRole"]
-          updated_at?: string | null
-          user_id?: string
+          updatedAt?: string | null
+          userId?: string
         }
         Relationships: [
           {
             foreignKeyName: "bill_members_bill_id_fkey"
-            columns: ["bill_id"]
+            columns: ["billId"]
             isOneToOne: false
             referencedRelation: "bills"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "bill_members_user_id_fkey"
-            columns: ["user_id"]
+            columns: ["userId"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
@@ -56,30 +56,30 @@ export type Database = {
       }
       bills: {
         Row: {
-          created_at: string
-          creator_id: string
+          createdAt: string
+          creatorId: string
           description: string
           id: string
-          issues_at: string
+          issuesAt: string
         }
         Insert: {
-          created_at?: string
-          creator_id?: string
+          createdAt?: string
+          creatorId?: string
           description: string
           id?: string
-          issues_at?: string
+          issuesAt?: string
         }
         Update: {
-          created_at?: string
-          creator_id?: string
+          createdAt?: string
+          creatorId?: string
           description?: string
           id?: string
-          issues_at?: string
+          issuesAt?: string
         }
         Relationships: [
           {
             foreignKeyName: "bills_creator_id_fkey"
-            columns: ["creator_id"]
+            columns: ["creatorId"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
@@ -89,33 +89,33 @@ export type Database = {
       transactions: {
         Row: {
           id: string
-          receiver_id: string
-          sender_id: string
+          receiverId: string
+          senderId: string
           status: Database["public"]["Enums"]["TransactionStatus"]
         }
         Insert: {
           id?: string
-          receiver_id?: string
-          sender_id?: string
+          receiverId?: string
+          senderId?: string
           status?: Database["public"]["Enums"]["TransactionStatus"]
         }
         Update: {
           id?: string
-          receiver_id?: string
-          sender_id?: string
+          receiverId?: string
+          senderId?: string
           status?: Database["public"]["Enums"]["TransactionStatus"]
         }
         Relationships: [
           {
             foreignKeyName: "transactions_receiver_id_fkey"
-            columns: ["receiver_id"]
+            columns: ["receiverId"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "transactions_sender_id_fkey"
-            columns: ["sender_id"]
+            columns: ["senderId"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
@@ -124,17 +124,17 @@ export type Database = {
       }
       users: {
         Row: {
-          created_at: string | null
+          createdAt: string | null
           id: string
           username: string
         }
         Insert: {
-          created_at?: string | null
+          createdAt?: string | null
           id?: string
           username: string
         }
         Update: {
-          created_at?: string | null
+          createdAt?: string | null
           id?: string
           username?: string
         }
@@ -145,7 +145,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_balances: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          user_id: string
+          balance: number
+        }[]
+      }
     }
     Enums: {
       BillMemberRole: "Creditor" | "Debtor"

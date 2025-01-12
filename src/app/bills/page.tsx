@@ -21,7 +21,7 @@ export default async function BillsPage(props: Props) {
 
   const { data: membersData, error: membersError } = await supabase
     .from("bill_members")
-    .select("user_id, role, amount, users (username)");
+    .select("userId, role, amount, users (username)");
 
   if (membersError) {
     throw new Error(`Error fetching bill members`);
@@ -61,10 +61,10 @@ async function getBillsByUserId(
   const { data: bills } = await supabase.from("bills").select(`
     id,
     description,
-    creator:creator_id (
+    creator:creatorId (
       username
     ),
-    bill_members (id, user_id, amount, role)
+    bill_members (id, userId, amount, role)
   `);
 
   return bills ?? [];
@@ -76,8 +76,8 @@ async function getBillsByBillMember(
   const supabase = await createClient();
   const { data: targetBillIds } = await supabase
     .from("bill_members")
-    .select("bill_id")
-    .eq("user_id", billMemberUserId);
+    .select("billId")
+    .eq("userId", billMemberUserId);
 
   if (!targetBillIds?.length) {
     return [];
@@ -89,15 +89,15 @@ async function getBillsByBillMember(
       `
     id,
     description,
-    creator:creator_id (
+    creator:creatorId (
       username
     ),
-    bill_members (id, user_id, amount, role)
+    bill_members (id, userId, amount, role)
   `,
     )
     .in(
       "id",
-      targetBillIds.map((e) => e.bill_id),
+      targetBillIds.map((e) => e.billId),
     );
 
   if (error) {

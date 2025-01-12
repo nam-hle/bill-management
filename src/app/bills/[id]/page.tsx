@@ -18,10 +18,10 @@ export default async function BillDetailsPage(props: Props) {
       `
     id,
     description,
-    creator:creator_id (
+    creator:creatorId (
       username
     ),
-    bill_members (id, user_id, amount, role)
+    bill_members (id, userId, amount, role)
     
   `,
     )
@@ -45,16 +45,6 @@ export default async function BillDetailsPage(props: Props) {
   );
 
   return (
-    <BillForm
-      users={users ?? []}
-      formState={{
-        ...bill,
-        creditor: { ...creditor, userId: creditor.user_id },
-        debtors: debtors.map((debtor) => ({
-          ...debtor,
-          userId: debtor.user_id,
-        })),
-      }}
-    />
+    <BillForm users={users ?? []} formState={{ ...bill, creditor, debtors }} />
   );
 }

@@ -92,7 +92,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
                   .flatMap((billMember) => {
                     if (billMember.role === "Creditor") {
                       const user = users?.find(
-                        (user) => user.id === billMember.user_id,
+                        (user) => user.id === billMember.userId,
                       );
 
                       return `${user?.username} (${billMember.amount})`;
@@ -110,7 +110,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
                     }
 
                     const user = users?.find(
-                      (user) => user.id === billMember.user_id,
+                      (user) => user.id === billMember.userId,
                     );
 
                     return `${user?.username} (${billMember.amount})`;

@@ -33,7 +33,7 @@ export interface ClientBill {
   readonly creator: { username: string };
   readonly bill_members: {
     id: string;
-    user_id: string;
+    userId: string;
     amount: number;
     role: BillMemberRole;
   }[];

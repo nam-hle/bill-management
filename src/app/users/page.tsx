@@ -1,6 +1,6 @@
 import React from "react";
-import { IoMdAdd } from "react-icons/io";
 import { Table, VStack } from "@chakra-ui/react";
+import { IoMdAdd, IoIosArrowRoundForward } from "react-icons/io";
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 
 import { createClient } from "@/supabase/server";
@@ -31,15 +31,15 @@ export default async function UsersPage() {
               <Table.Cell>{item.id.slice(0, 6)}</Table.Cell>
               <Table.Cell>{item.username}</Table.Cell>
               <Table.Cell>
-                {item.created_at
-                  ? formatDistanceToNow(new Date(item.created_at), {
+                {item.createdAt
+                  ? formatDistanceToNow(new Date(item.createdAt), {
                       addSuffix: true,
                     })
                   : ""}
               </Table.Cell>
               <Table.Cell display="flex" justifyContent="flex-end">
                 <LinkButton variant="outline" href={`/users/${item.id}`}>
-                  Profile
+                  Profile <IoIosArrowRoundForward />
                 </LinkButton>
               </Table.Cell>
             </Table.Row>
