@@ -10,7 +10,7 @@ import { LinkButton } from "@/components/ui/link-button";
 
 export const RootContainer: React.FC<Container> = (props) => {
   const pathname = usePathname();
-  const pageName = pathname.split("/").pop();
+  const pageName = pathname.split("/")[1];
 
   return (
     <>

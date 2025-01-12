@@ -13,9 +13,9 @@ const StyledButton: React.ForwardRefRenderFunction<
   return (
     <Button
       ref={ref}
-      {...rest}
       size={size}
       variant={active ? "outline" : "ghost"}
+      {...rest}
     >
       {children}
     </Button>

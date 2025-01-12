@@ -1,9 +1,10 @@
 import React from "react";
-import Link from "next/link";
+import { IoIosArrowRoundForward } from "react-icons/io";
 import { Table, VStack, Heading } from "@chakra-ui/react";
 
 import { type BillMemberRole } from "@/types";
 import { createClient } from "@/supabase/server";
+import { LinkButton } from "@/components/ui/link-button";
 
 type Props = {
   params: { id: string };
@@ -79,8 +80,10 @@ export default async function UserPage({ params }: Props) {
                   <Table.Cell>{balances.paid}</Table.Cell>
                   <Table.Cell>{balances.owed}</Table.Cell>
                   <Table.Cell>{balances.net}</Table.Cell>
-                  <Table.Cell>
-                    <Link href={`/bills/${item.id}`}>Go</Link>
+                  <Table.Cell display="flex" justifyContent="flex-end">
+                    <LinkButton variant="outline" href={`/bills/${item.id}`}>
+                      Go <IoIosArrowRoundForward />
+                    </LinkButton>
                   </Table.Cell>
                 </Table.Row>
               );
@@ -113,6 +116,10 @@ function calculateMoney(
     role: BillMemberRole;
   }[],
 ): BillBalance {
+  if (members.length === 0) {
+    return { net: 0 };
+  }
+
   if (members.length === 1) {
     if (members[0].role === "Creditor") {
       return { net: members[0].amount, paid: members[0].amount };
@@ -140,5 +147,5 @@ function calculateMoney(
     };
   }
 
-  throw new Error("Invalid number of members");
+  throw new Error(`Invalid number of members. Got: ${members.length}`);
 }
