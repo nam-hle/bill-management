@@ -5,13 +5,10 @@ import { IconButton as ChakraIconButton } from "@chakra-ui/react";
 
 export type CloseButtonProps = ButtonProps;
 
-export const CloseButton = React.forwardRef<
-  HTMLButtonElement,
-  CloseButtonProps
->(function CloseButton(props, ref) {
-  return (
-    <ChakraIconButton ref={ref} variant="ghost" aria-label="Close" {...props}>
-      {props.children ?? <LuX />}
-    </ChakraIconButton>
-  );
+export const CloseButton = React.forwardRef<HTMLButtonElement, CloseButtonProps>(function CloseButton(props, ref) {
+	return (
+		<ChakraIconButton ref={ref} variant="ghost" aria-label="Close" {...props}>
+			{props.children ?? <LuX />}
+		</ChakraIconButton>
+	);
 });

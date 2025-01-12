@@ -1,85 +1,57 @@
 import { createClient } from "@/supabase/server";
 import { type BillFormState, type BillMemberRole } from "@/types";
+import { BillsControllers } from "@/controllers/bills.controllers";
+import { BillMembersControllers } from "@/controllers/bill-members.controllers";
 
 export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const payload = body as BillFormState;
-    const supabase = await createClient();
+	try {
+		const body = await request.json();
+		const payload = body as BillFormState;
+		const supabase = await createClient();
 
-    if (
-      !payload.creditor ||
-      !payload.creditor.amount ||
-      !payload.creditor.userId
-    ) {
-      throw new Error("Creditor is required");
-    }
+		if (!payload.creditor || !payload.creditor.amount || !payload.creditor.userId) {
+			throw new Error("Creditor is required");
+		}
 
-    const { data: billData, error: billError } = await supabase
-      .from("bills")
-      .insert({
-        description: payload.description,
-        // TODO: Creator should be the currently logged in user
-        creatorId: payload.creditor.userId,
-      })
-      .select("id")
-      .single();
+		const bill = await BillsControllers.createBill(supabase, { description: payload.description, creatorId: payload.creditor.userId });
 
-    if (billError) {
-      throw new Error(`Error inserting bill: ${billError.message}`);
-    }
+		// Step 2: Insert bill members
+		const billMembers = payload.debtors.map((debtor) => {
+			if (!debtor.userId || !debtor.amount) {
+				throw new Error("Debtor is missing userId or amount");
+			}
 
-    const billId = billData.id;
+			return {
+				billId: bill.id,
+				userId: debtor.userId,
+				amount: debtor.amount,
+				role: "Debtor" as BillMemberRole
+			};
+		});
 
-    // Step 2: Insert bill members
-    const billMembers = payload.debtors.map((debtor) => {
-      if (!debtor.userId || !debtor.amount) {
-        throw new Error("Debtor is missing userId or amount");
-      }
+		billMembers.push({
+			billId: bill.id,
+			userId: payload.creditor.userId,
+			amount: payload.creditor.amount,
+			role: "Creditor" as BillMemberRole
+		});
 
-      return {
-        bill_id: billId,
-        userId: debtor.userId,
-        amount: debtor.amount,
-        role: "Debtor" as BillMemberRole,
-      };
-    });
+		const members = await BillMembersControllers.createMany(supabase, billMembers);
 
-    billMembers.push({
-      bill_id: billId,
-      userId: payload.creditor.userId,
-      amount: payload.creditor.amount,
-      role: "Creditor" as BillMemberRole,
-    });
+		console.log("Bill and members successfully inserted:", { bill, members });
 
-    const { data: membersData, error: membersError } = await supabase
-      .from("bill_members")
-      .insert(billMembers);
+		return new Response(JSON.stringify({ success: true, data: { billData: bill, billMembers } }), {
+			status: 201
+		});
+	} catch (error) {
+		console.error("Error creating bill:", error);
 
-    if (membersError) {
-      throw new Error(`Error inserting bill: ${membersError.message}`);
-    }
-
-    console.log("Bill and members successfully inserted:", {
-      bill: billData,
-      members: membersData,
-    });
-
-    return new Response(
-      JSON.stringify({ success: true, data: { billData, billMembers } }),
-      {
-        status: 201,
-      },
-    );
-  } catch (error) {
-    console.error("Error creating bill:", error);
-
-    return new Response(
-      JSON.stringify({
-        error: "Internal Server Error",
-        details: (error as any).message,
-      }),
-      { status: 500 },
-    );
-  }
+		return new Response(
+			JSON.stringify({
+				error: "Internal Server Error",
+				details: (error as any).message
+			}),
+			{ status: 500 }
+		);
+	}
 }

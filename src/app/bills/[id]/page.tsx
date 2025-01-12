@@ -2,49 +2,26 @@ import React from "react";
 
 import { createClient } from "@/supabase/server";
 import { BillForm } from "@/components/app/bill-form";
+import { UsersControllers } from "@/controllers/users.controllers";
+import { BillsControllers } from "@/controllers/bills.controllers";
 
 type Props = {
-  params: Promise<{ id: string }>;
+	params: Promise<{ id: string }>;
 };
 
 export default async function BillDetailsPage(props: Props) {
-  const billId = (await props.params).id;
-  const supabase = await createClient();
-  const { data: users } = await supabase.from("users").select();
+	const billId = (await props.params).id;
+	const supabase = await createClient();
+	const users = await UsersControllers.getUsers(supabase);
+	const bill = await BillsControllers.getBillById(supabase, billId);
 
-  const { data: bills } = await supabase
-    .from("bills")
-    .select(
-      `
-    id,
-    description,
-    creator:creatorId (
-      username
-    ),
-    bill_members (id, userId, amount, role)
-    
-  `,
-    )
-    .eq("id", billId);
+	const creditor = bill.bill_members.find((member) => member.role === "Creditor");
 
-  if (bills?.length !== 1) {
-    throw "Bill not found";
-  }
+	if (!creditor) {
+		throw "Creditor not found";
+	}
 
-  const bill = bills[0];
-  const creditor = bill.bill_members.find(
-    (member) => member.role === "Creditor",
-  );
+	const debtors = bill.bill_members.filter((member) => member.role === "Debtor");
 
-  if (!creditor) {
-    throw "Creditor not found";
-  }
-
-  const debtors = bill.bill_members.filter(
-    (member) => member.role === "Debtor",
-  );
-
-  return (
-    <BillForm users={users ?? []} formState={{ ...bill, creditor, debtors }} />
-  );
+	return <BillForm users={users} formState={{ ...bill, creditor, debtors }} />;
 }
