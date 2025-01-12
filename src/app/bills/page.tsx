@@ -27,7 +27,6 @@ export default async function BillsPage(props: Props) {
     throw new Error(`Error fetching bill members`);
   }
 
-  // Calculate balances
   const balances = membersData.reduce(
     (acc, member) => {
       const balanceChange =

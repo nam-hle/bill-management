@@ -1,5 +1,5 @@
-import { type BillFormState } from "@/types";
 import { createClient } from "@/supabase/server";
+import { type BillFormState, type BillMemberRole } from "@/types";
 
 export async function POST(request: Request) {
   try {
@@ -7,7 +7,11 @@ export async function POST(request: Request) {
     const payload = body as BillFormState;
     const supabase = await createClient();
 
-    if (!payload.creditor || !payload.creditor.amount) {
+    if (
+      !payload.creditor ||
+      !payload.creditor.amount ||
+      !payload.creditor.userId
+    ) {
       throw new Error("Creditor is required");
     }
 
@@ -15,6 +19,7 @@ export async function POST(request: Request) {
       .from("bills")
       .insert({
         description: payload.description,
+        // TODO: Creator should be the currently logged in user
         creator_id: payload.creditor.userId,
       })
       .select("id")
@@ -36,7 +41,15 @@ export async function POST(request: Request) {
         bill_id: billId,
         user_id: debtor.userId,
         amount: debtor.amount,
+        role: "Debtor" as BillMemberRole,
       };
+    });
+
+    billMembers.push({
+      bill_id: billId,
+      user_id: payload.creditor.userId,
+      amount: payload.creditor.amount,
+      role: "Creditor" as BillMemberRole,
     });
 
     const { data: membersData, error: membersError } = await supabase

@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Table, HStack, VStack } from "@chakra-ui/react";
+import { Table, HStack, VStack, Heading } from "@chakra-ui/react";
 
 import { Select } from "@/components/app/select";
 import { type ClientUser, type ClientBill } from "@/types";
@@ -32,7 +32,7 @@ export const BillsTable: React.FC<{
   );
 
   return (
-    <VStack gap="{spacing.4}" alignItems="flex-end">
+    <VStack gap="{spacing.4}" alignItems="flex-start">
       <HStack width="100%" justifyContent="space-between">
         <Select
           width="30%"
@@ -45,6 +45,24 @@ export const BillsTable: React.FC<{
         />
         <Link href="/bills/new">New</Link>
       </HStack>
+      <Heading>Balances</Heading>
+      <Table.Root size="md">
+        <Table.Header>
+          <Table.Row>
+            {Object.keys(balances).map((username) => (
+              <Table.ColumnHeader key={username}>{username}</Table.ColumnHeader>
+            ))}
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          <Table.Row>
+            {Object.entries(balances).map(([id, balance]) => (
+              <Table.Cell key={id}>{balance}</Table.Cell>
+            ))}
+          </Table.Row>
+        </Table.Body>
+      </Table.Root>
+      <Heading>Bills</Heading>
       <Table.Root size="md">
         <Table.Header>
           <Table.Row>
@@ -93,22 +111,6 @@ export const BillsTable: React.FC<{
               </Table.Cell>
             </Table.Row>
           ))}
-        </Table.Body>
-      </Table.Root>
-      <Table.Root size="md">
-        <Table.Header>
-          <Table.Row>
-            {Object.keys(balances).map((username) => (
-              <Table.ColumnHeader key={username}>{username}</Table.ColumnHeader>
-            ))}
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          <Table.Row>
-            {Object.entries(balances).map(([id, balance]) => (
-              <Table.Cell key={id}>{balance}</Table.Cell>
-            ))}
-          </Table.Row>
         </Table.Body>
       </Table.Root>
     </VStack>

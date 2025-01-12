@@ -35,6 +35,8 @@ export interface ClientBill {
     id: string;
     user_id: string;
     amount: number;
-    role: Database["public"]["Tables"]["bill_members"]["Row"]["role"];
+    role: BillMemberRole;
   }[];
 }
+
+export type BillMemberRole = Database["public"]["Enums"]["BillMemberRole"];
