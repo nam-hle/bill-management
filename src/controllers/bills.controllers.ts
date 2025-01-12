@@ -5,6 +5,7 @@ export namespace BillsControllers {
 	const BILLS_SELECT = `
     id,
     description,
+    createdAt,
     creator:creatorId (username),
     bill_members (id, userId, amount, role)
   `;

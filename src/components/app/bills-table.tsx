@@ -2,8 +2,8 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { IoIosAddCircle } from "react-icons/io";
 import { Table, HStack, VStack, Heading } from "@chakra-ui/react";
+import { IoIosAddCircle, IoIosArrowRoundForward } from "react-icons/io";
 
 import { Select } from "@/components/app/select";
 import { LinkButton } from "@/components/ui/link-button";
@@ -79,6 +79,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 						<Table.ColumnHeader>Creator</Table.ColumnHeader>
 						<Table.ColumnHeader>Creditor</Table.ColumnHeader>
 						<Table.ColumnHeader>Debtors</Table.ColumnHeader>
+						<Table.ColumnHeader></Table.ColumnHeader>
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
@@ -112,6 +113,11 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 										return `${user?.username} (${billMember.amount})`;
 									})
 									.join(", ")}
+							</Table.Cell>
+							<Table.Cell display="flex" justifyContent="flex-end">
+								<LinkButton variant="outline" href={`/bills/${item.id}`}>
+									<IoIosArrowRoundForward />
+								</LinkButton>
 							</Table.Cell>
 						</Table.Row>
 					))}

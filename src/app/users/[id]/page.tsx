@@ -61,7 +61,7 @@ export default async function UserPage({ params }: Props) {
 									<Table.Cell>{balances.net}</Table.Cell>
 									<Table.Cell display="flex" justifyContent="flex-end">
 										<LinkButton variant="outline" href={`/bills/${item.id}`}>
-											Go <IoIosArrowRoundForward />
+											<IoIosArrowRoundForward />
 										</LinkButton>
 									</Table.Cell>
 								</Table.Row>

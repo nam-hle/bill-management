@@ -9,6 +9,7 @@ export interface Container {
 export type ClientUser = Pick<Database["public"]["Tables"]["users"]["Row"], "id" | "username" | "createdAt">;
 
 export interface BillFormState {
+	createdAt?: string;
 	description: string;
 	creditor?: {
 		userId?: string;

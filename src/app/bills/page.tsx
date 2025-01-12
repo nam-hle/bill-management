@@ -4,6 +4,7 @@ import { createClient } from "@/supabase/server";
 import { BillsTable } from "@/components/app/bills-table";
 import { UsersControllers } from "@/controllers/users.controllers";
 import { BillsControllers } from "@/controllers/bills.controllers";
+import { BillMembersControllers } from "@/controllers/bill-members.controllers";
 
 interface Props {
 	searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -20,11 +21,7 @@ export default async function BillsPage(props: Props) {
 	const users = await UsersControllers.getUsers(supabase);
 	const bills = await BillsControllers.getBillsByMemberId(supabase, userId);
 
-	const { data: membersData, error: membersError } = await supabase.from("bill_members").select("userId, role, amount, users (username)");
-
-	if (membersError) {
-		throw new Error(`Error fetching bill members`);
-	}
+	const membersData = await BillMembersControllers.getAll(supabase);
 
 	const balances = membersData.reduce(
 		(acc, member) => {

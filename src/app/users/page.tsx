@@ -40,7 +40,7 @@ export default async function UsersPage() {
 							</Table.Cell>
 							<Table.Cell display="flex" justifyContent="flex-end">
 								<LinkButton variant="outline" href={`/users/${item.id}`}>
-									Profile <IoIosArrowRoundForward />
+									<IoIosArrowRoundForward />
 								</LinkButton>
 							</Table.Cell>
 						</Table.Row>

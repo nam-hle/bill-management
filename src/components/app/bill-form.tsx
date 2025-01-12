@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chakra-ui/react";
+import { format } from "date-fns";
+import { Text, Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chakra-ui/react";
 
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,7 @@ export const BillForm: React.FC<{
 		<Stack gap="{spacing.4}">
 			<Heading>{props.formState ? "Bill Details" : "New Bill"}</Heading>
 			<SimpleGrid columns={2} gap="{spacing.4}">
-				<GridItem colSpan={{ base: 2 }}>
+				<GridItem>
 					<Field required label="Description">
 						<Input
 							value={formState.description}
@@ -42,6 +43,11 @@ export const BillForm: React.FC<{
 								}))
 							}
 						/>
+					</Field>
+				</GridItem>
+				<GridItem>
+					<Field readOnly label="Created at">
+						<Text>{props.formState?.createdAt ? format(new Date(props.formState.createdAt), "PPpp") : ""}</Text>
 					</Field>
 				</GridItem>
 
