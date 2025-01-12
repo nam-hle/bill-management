@@ -15,7 +15,6 @@ export async function POST(request: Request) {
       .insert({
         description: payload.description,
         creator_id: payload.creditor.userId,
-        total_amount: payload.creditor.amount,
       })
       .select("id")
       .single();

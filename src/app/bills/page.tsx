@@ -31,21 +31,17 @@ async function getBillsByUserId(
   userId: string | undefined,
 ): Promise<ClientBill[]> {
   if (userId) {
-    const billsByCreditors = await getBillsByCreditor(userId);
-    const billsByBillMembers = await getBillsByBillMember(userId);
-
-    return [...billsByCreditors, ...billsByBillMembers];
+    return getBillsByBillMember(userId);
   }
   const supabase = await createClient();
 
   const { data: bills } = await supabase.from("bills").select(`
     id,
     description,
-    total_amount,
-    creditor:creator_id (
+    creator:creator_id (
       username
     ),
-    bill_members (id, user_id, amount)
+    bill_members (id, user_id, amount, role)
   `);
 
   return bills ?? [];
@@ -70,14 +66,12 @@ async function getBillsByBillMember(
       `
     id,
     description,
-    total_amount,
-    creditor:creator_id (
+    creator:creator_id (
       username
     ),
-    bill_members (id, user_id, amount)
+    bill_members (id, user_id, amount, role)
   `,
     )
-    .neq("creator_id", billMemberUserId)
     .in(
       "id",
       targetBillIds.map((e) => e.bill_id),
@@ -86,28 +80,6 @@ async function getBillsByBillMember(
   if (error) {
     throw error;
   }
-  return data ?? [];
-}
 
-async function getBillsByCreditor(creditorId: string): Promise<ClientBill[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("bills")
-    .select(
-      `
-    id,
-    description,
-    total_amount,
-    creditor:creator_id (
-      username
-    ),
-    bill_members (id, user_id, amount)
-  `,
-    )
-    .eq("creator_id", creditorId);
-
-  if (error) {
-    throw error;
-  }
   return data ?? [];
 }

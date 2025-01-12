@@ -30,7 +30,11 @@ export interface UserFormState {
 export interface ClientBill {
   readonly id: string;
   readonly description: string;
-  readonly total_amount: number;
-  readonly creditor: { username: string };
-  readonly bill_members: { id: string; user_id: string; amount: number }[];
+  readonly creator: { username: string };
+  readonly bill_members: {
+    id: string;
+    user_id: string;
+    amount: number;
+    role: Database["public"]["Tables"]["bill_members"]["Row"]["role"];
+  }[];
 }

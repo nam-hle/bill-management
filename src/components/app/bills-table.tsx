@@ -47,8 +47,8 @@ export const BillsTable: React.FC<{
           <Table.Row>
             <Table.ColumnHeader>ID</Table.ColumnHeader>
             <Table.ColumnHeader>Description</Table.ColumnHeader>
+            <Table.ColumnHeader>Creator</Table.ColumnHeader>
             <Table.ColumnHeader>Creditor</Table.ColumnHeader>
-            <Table.ColumnHeader>Amount</Table.ColumnHeader>
             <Table.ColumnHeader>Debtors</Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
@@ -57,11 +57,27 @@ export const BillsTable: React.FC<{
             <Table.Row key={item.id}>
               <Table.Cell>{item.id.slice(0, 6)}</Table.Cell>
               <Table.Cell>{item.description}</Table.Cell>
-              <Table.Cell>{item.creditor.username}</Table.Cell>
-              <Table.Cell>{item.total_amount}</Table.Cell>
+              <Table.Cell>{item.creator.username}</Table.Cell>
               <Table.Cell>
                 {item.bill_members
-                  .map((billMember) => {
+                  .flatMap((billMember) => {
+                    if (billMember.role === "Creditor") {
+                      const user = users?.find(
+                        (user) => user.id === billMember.user_id,
+                      );
+                      return `${user?.username} (${billMember.amount})`;
+                    }
+
+                    return [];
+                  })
+                  .join(", ")}
+              </Table.Cell>
+              <Table.Cell>
+                {item.bill_members
+                  .flatMap((billMember) => {
+                    if (billMember.role === "Creditor") {
+                      return [];
+                    }
                     const user = users?.find(
                       (user) => user.id === billMember.user_id,
                     );
