@@ -19,14 +19,14 @@ import {
   NumberInputField,
 } from "@/components/ui/number-input";
 
-export const BillForm: React.FC<{ users: ClientUser[] }> = (props) => {
+export const BillForm: React.FC<{
+  users: ClientUser[];
+  formState?: BillFormState;
+}> = (props) => {
   const { users } = props;
-  const [formState, setFormState] = React.useState<BillFormState>(() => {
-    return {
-      description: "",
-      debtors: [],
-    };
-  });
+  const [formState, setFormState] = React.useState<BillFormState>(
+    () => props.formState ?? { description: "", debtors: [] },
+  );
 
   const onSave = React.useCallback(async () => {
     await fetch("/api/bills", {
@@ -40,7 +40,7 @@ export const BillForm: React.FC<{ users: ClientUser[] }> = (props) => {
 
   return (
     <Stack gap="{spacing.4}">
-      <Heading>New Bill</Heading>
+      <Heading>{props.formState ? "Bill Details" : "New Bill"}</Heading>
       <SimpleGrid columns={2} gap="{spacing.4}">
         <GridItem colSpan={{ base: 2 }}>
           <Field required label="Description">
@@ -119,6 +119,8 @@ export const MemberInputs: React.FC<{
 }> = ({ users, memberIndex, memberKind, value, onValueChange }) => {
   const label =
     memberKind === "creditor" ? "Creditor" : `Debtor ${memberIndex + 1}`;
+  label === "Creditor" &&
+    console.log({ memberKind, value, users, xx: value?.userId });
 
   return (
     <>

@@ -1,5 +1,5 @@
 import React from "react";
-import { IoIosAddCircle } from "react-icons/io";
+import { IoMdAdd } from "react-icons/io";
 import { Table, VStack } from "@chakra-ui/react";
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 
@@ -13,8 +13,8 @@ export default async function UsersPage() {
 
   return (
     <VStack gap="{spacing.4}" alignItems="flex-end">
-      <LinkButton href="/users/new">
-        <IoIosAddCircle /> New
+      <LinkButton variant="solid" href="/users/new">
+        <IoMdAdd /> New
       </LinkButton>
       <Table.Root size="md">
         <Table.Header>

@@ -7,7 +7,7 @@ import { createClient } from "@/supabase/server";
 import { LinkButton } from "@/components/ui/link-button";
 
 type Props = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 export default async function UserPage({ params }: Props) {
