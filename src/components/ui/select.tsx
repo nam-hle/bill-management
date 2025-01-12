@@ -15,6 +15,7 @@ export const SelectTrigger = React.forwardRef<
   SelectTriggerProps
 >(function SelectTrigger(props, ref) {
   const { children, clearable, ...rest } = props;
+
   return (
     <ChakraSelect.Control {...rest}>
       <ChakraSelect.Trigger ref={ref}>{children}</ChakraSelect.Trigger>
@@ -53,6 +54,7 @@ export const SelectContent = React.forwardRef<
   SelectContentProps
 >(function SelectContent(props, ref) {
   const { portalled = true, portalRef, ...rest } = props;
+
   return (
     <Portal disabled={!portalled} container={portalRef}>
       <ChakraSelect.Positioner>
@@ -67,6 +69,7 @@ export const SelectItem = React.forwardRef<
   ChakraSelect.ItemProps
 >(function SelectItem(props, ref) {
   const { item, children, ...rest } = props;
+
   return (
     <ChakraSelect.Item item={item} key={item.value} {...rest} ref={ref}>
       {children}
@@ -85,15 +88,20 @@ export const SelectValueText = React.forwardRef<
   SelectValueTextProps
 >(function SelectValueText(props, ref) {
   const { children, ...rest } = props;
+
   return (
     <ChakraSelect.ValueText {...rest} ref={ref}>
       <ChakraSelect.Context>
         {(select) => {
           const items = select.selectedItems;
+
           if (items.length === 0) return props.placeholder;
+
           if (children) return children(items);
+
           if (items.length === 1)
             return select.collection.stringifyItem(items[0]);
+
           return `${items.length} selected`;
         }}
       </ChakraSelect.Context>
@@ -132,6 +140,7 @@ export const SelectItemGroup = React.forwardRef<
   SelectItemGroupProps
 >(function SelectItemGroup(props, ref) {
   const { children, label, ...rest } = props;
+
   return (
     <ChakraSelect.ItemGroup {...rest} ref={ref}>
       <ChakraSelect.ItemGroupLabel>{label}</ChakraSelect.ItemGroupLabel>

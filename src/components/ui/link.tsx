@@ -9,6 +9,7 @@ const MyButton: React.ForwardRefRenderFunction<HTMLAnchorElement, LinkProps> = (
   ref,
 ) => {
   const { children, ...rest } = props;
+
   return (
     <ChakraLink
       {...rest}

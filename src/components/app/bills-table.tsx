@@ -18,16 +18,18 @@ export const BillsTable: React.FC<{
   const onValueChange = React.useCallback(
     (userId: string | null) => {
       const params = new URLSearchParams(window.location.search);
+
       if (userId) {
         params.set("userId", userId);
       } else {
         params.delete("filter");
       }
+
       router.push(`?${params.toString()}`);
     },
     [router],
   );
-  console.log(selectedUserId);
+
   return (
     <VStack gap="{spacing.4}" alignItems="flex-end">
       <HStack width="100%" justifyContent="space-between">
@@ -65,6 +67,7 @@ export const BillsTable: React.FC<{
                       const user = users?.find(
                         (user) => user.id === billMember.user_id,
                       );
+
                       return `${user?.username} (${billMember.amount})`;
                     }
 
@@ -78,9 +81,11 @@ export const BillsTable: React.FC<{
                     if (billMember.role === "Creditor") {
                       return [];
                     }
+
                     const user = users?.find(
                       (user) => user.id === billMember.user_id,
                     );
+
                     return `${user?.username} (${billMember.amount})`;
                   })
                   .join(", ")}

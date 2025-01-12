@@ -8,6 +8,7 @@ export const NumberInputRoot = React.forwardRef<
   NumberInputProps
 >(function NumberInput(props, ref) {
   const { children, ...rest } = props;
+
   return (
     <ChakraNumberInput.Root ref={ref} variant="outline" {...rest}>
       {children}

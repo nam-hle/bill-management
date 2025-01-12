@@ -6,6 +6,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const payload = body as UserFormState;
     const supabase = await createClient();
+
     if (!payload.username) {
       throw new Error("username is required");
     }
@@ -27,6 +28,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Error creating bill:", error);
+
     return new Response(
       JSON.stringify({
         error: "Internal Server Error",

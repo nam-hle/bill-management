@@ -14,6 +14,7 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
 
     const marks = marksProp?.map((mark) => {
       if (typeof mark === "number") return { value: mark, label: undefined };
+
       return mark;
     });
 
@@ -44,6 +45,7 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
 
 function SliderThumbs(props: { value?: number[] }) {
   const { value } = props;
+
   return (
     <For each={value}>
       {(_, index) => (
@@ -62,6 +64,7 @@ interface SliderMarksProps {
 const SliderMarks = React.forwardRef<HTMLDivElement, SliderMarksProps>(
   function SliderMarks(props, ref) {
     const { marks } = props;
+
     if (!marks?.length) return null;
 
     return (
@@ -69,6 +72,7 @@ const SliderMarks = React.forwardRef<HTMLDivElement, SliderMarksProps>(
         {marks.map((mark, index) => {
           const value = typeof mark === "number" ? mark : mark.value;
           const label = typeof mark === "number" ? undefined : mark.label;
+
           return (
             <ChakraSlider.Marker key={index} value={value}>
               <ChakraSlider.MarkerIndicator />

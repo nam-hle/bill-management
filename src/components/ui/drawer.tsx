@@ -14,6 +14,7 @@ export const DrawerContent = React.forwardRef<
   DrawerContentProps
 >(function DrawerContent(props, ref) {
   const { children, portalled = true, portalRef, offset, ...rest } = props;
+
   return (
     <Portal disabled={!portalled} container={portalRef}>
       <ChakraDrawer.Positioner padding={offset}>

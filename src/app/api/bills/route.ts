@@ -6,6 +6,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const payload = body as BillFormState;
     const supabase = await createClient();
+
     if (!payload.creditor || !payload.creditor.amount) {
       throw new Error("Creditor is required");
     }
@@ -30,6 +31,7 @@ export async function POST(request: Request) {
       if (!debtor.userId || !debtor.amount) {
         throw new Error("Debtor is missing userId or amount");
       }
+
       return {
         bill_id: billId,
         user_id: debtor.userId,
@@ -58,6 +60,7 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error("Error creating bill:", error);
+
     return new Response(
       JSON.stringify({
         error: "Internal Server Error",

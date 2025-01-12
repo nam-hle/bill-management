@@ -10,6 +10,7 @@ interface Props {
 
 export default async function BillsPage(props: Props) {
   const userId = (await props.searchParams).userId;
+
   if (Array.isArray(userId)) {
     throw new Error("Expected a single userId");
   }
@@ -33,6 +34,7 @@ async function getBillsByUserId(
   if (userId) {
     return getBillsByBillMember(userId);
   }
+
   const supabase = await createClient();
 
   const { data: bills } = await supabase.from("bills").select(`

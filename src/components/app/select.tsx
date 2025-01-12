@@ -31,6 +31,7 @@ export const Select: React.FC<{
         if (e.value.length !== 1) {
           throw new Error("Expected exactly one value");
         }
+
         props.onValueChange(e.value[0]);
       }}
     >

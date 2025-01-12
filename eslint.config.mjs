@@ -3,6 +3,7 @@ import { fileURLToPath } from "url";
 
 import { FlatCompat } from "@eslint/eslintrc";
 import reactPlugin from "eslint-plugin-react";
+import stylistic from "@stylistic/eslint-plugin-ts";
 import perfectionist from "eslint-plugin-perfectionist";
 import unusedImports from "eslint-plugin-unused-imports";
 
@@ -24,6 +25,7 @@ const eslintConfig = [
       },
     },
     plugins: {
+      stylistic,
       perfectionist,
       "unused-imports": unusedImports,
       ...reactPlugin.configs.flat.recommended.plugins,
@@ -79,6 +81,15 @@ const eslintConfig = [
       ],
       "perfectionist/sort-jsx-props": ["error", { type: "line-length" }],
       "perfectionist/sort-named-imports": ["error", { type: "line-length" }],
+      "stylistic/padding-line-between-statements": [
+        "error",
+        {
+          blankLine: "always",
+          prev: "*",
+          next: ["if", "while", "for", "switch", "try", "do", "return"],
+        },
+        { blankLine: "always", prev: "block-like", next: "*" },
+      ],
     },
   },
 ];

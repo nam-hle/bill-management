@@ -12,12 +12,6 @@ export default async function UserPage({ params }: Props) {
   console.log({ userId });
   const supabase = await createClient();
 
-  const { data: userData, error: userError } = await supabase
-    .from("users")
-    .select(`username`)
-    .eq("id", userId)
-    .single();
-
   const { data = [], error } = await supabase
     .from("bills")
     .select(
@@ -39,9 +33,6 @@ export default async function UserPage({ params }: Props) {
     .order("created_at", { ascending: false });
 
   if (error) {
-    throw "Error fetching bills:" + error;
-  }
-  if (userError) {
     throw "Error fetching bills:" + error;
   }
 
