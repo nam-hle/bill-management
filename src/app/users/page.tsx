@@ -19,6 +19,7 @@ export default async function UsersPage() {
             <Table.ColumnHeader>ID</Table.ColumnHeader>
             <Table.ColumnHeader>Username</Table.ColumnHeader>
             <Table.ColumnHeader>Created At</Table.ColumnHeader>
+            <Table.ColumnHeader></Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -32,6 +33,9 @@ export default async function UsersPage() {
                       addSuffix: true,
                     })
                   : ""}
+              </Table.Cell>
+              <Table.Cell>
+                <Link href={`/users/${item.id}`}>Profile</Link>
               </Table.Cell>
             </Table.Row>
           ))}

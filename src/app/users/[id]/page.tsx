@@ -1,6 +1,7 @@
 import React from "react";
 import { Table, VStack, Heading } from "@chakra-ui/react";
 
+import { type BillMemberRole } from "@/types";
 import { createClient } from "@/supabase/server";
 
 type Props = {
@@ -9,23 +10,24 @@ type Props = {
 
 export default async function UserPage({ params }: Props) {
   const userId = (await params).id;
-  console.log({ userId });
   const supabase = await createClient();
 
-  const { data = [], error } = await supabase
+  const { data: userInfo } = await supabase
+    .from("users")
+    .select()
+    .eq("id", userId);
+
+  const { data: userBillsData = [], error } = await supabase
     .from("bills")
     .select(
       `
       id,
       description,
       created_at,
-      creator_id,
       bill_members (
         user_id,
         amount,
-        member:user_id (
-          username
-        )
+        role
       )
     `,
     )
@@ -39,27 +41,77 @@ export default async function UserPage({ params }: Props) {
   return (
     <VStack gap="{spacing.4}" alignItems="flex-start">
       <Heading>User Bills Info</Heading>
+      <Heading size="sm">{userInfo?.[0].username}</Heading>
       <Table.Root size="md">
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeader>ID</Table.ColumnHeader>
             <Table.ColumnHeader>Description</Table.ColumnHeader>
-            <Table.ColumnHeader>Amount</Table.ColumnHeader>
+            <Table.ColumnHeader>Paid</Table.ColumnHeader>
+            <Table.ColumnHeader>Owe</Table.ColumnHeader>
+            <Table.ColumnHeader>Net Balance</Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {data
+          {userBillsData
             ?.filter((e) => e.bill_members.length > 0)
-            .map((item) => (
-              <Table.Row key={item.id}>
-                <Table.Cell>{item.id.slice(0, 6)}</Table.Cell>
-                <Table.Cell>{item.description}</Table.Cell>
-                <Table.Cell>{item.bill_members[0]?.amount}</Table.Cell>
-                <Table.Cell></Table.Cell>
-              </Table.Row>
-            ))}
+            .map((item) => {
+              const balances = calculateMoney(item.bill_members);
+
+              return (
+                <Table.Row key={item.id}>
+                  <Table.Cell>{item.id.slice(0, 6)}</Table.Cell>
+                  <Table.Cell>{item.description}</Table.Cell>
+                  <Table.Cell>{balances.paid}</Table.Cell>
+                  <Table.Cell>{balances.owed}</Table.Cell>
+                  <Table.Cell>{balances.net}</Table.Cell>
+                </Table.Row>
+              );
+            })}
         </Table.Body>
       </Table.Root>
     </VStack>
   );
+}
+
+interface BillBalance {
+  readonly net: number;
+  readonly paid?: number;
+  readonly owed?: number;
+}
+
+function calculateMoney(
+  members: {
+    amount: number;
+    role: BillMemberRole;
+  }[],
+): BillBalance {
+  if (members.length === 1) {
+    if (members[0].role === "Creditor") {
+      return { net: members[0].amount, paid: members[0].amount };
+    }
+
+    if (members[0].role === "Debtor") {
+      return { net: -members[0].amount, owed: members[0].amount };
+    }
+
+    throw new Error("Invalid role");
+  }
+
+  if (members.length === 2) {
+    const creditor = members.find((m) => m.role === "Creditor");
+    const debtor = members.find((m) => m.role === "Debtor");
+
+    if (!creditor || !debtor) {
+      throw new Error("Invalid roles");
+    }
+
+    return {
+      net: creditor.amount - debtor.amount,
+      paid: creditor.amount,
+      owed: debtor.amount,
+    };
+  }
+
+  throw new Error("Invalid number of members");
 }

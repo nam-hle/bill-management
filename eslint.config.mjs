@@ -6,6 +6,7 @@ import reactPlugin from "eslint-plugin-react";
 import stylistic from "@stylistic/eslint-plugin-ts";
 import perfectionist from "eslint-plugin-perfectionist";
 import unusedImports from "eslint-plugin-unused-imports";
+import reactHooksPlugin from "eslint-plugin-react-hooks";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -29,12 +30,14 @@ const eslintConfig = [
       perfectionist,
       "unused-imports": unusedImports,
       ...reactPlugin.configs.flat.recommended.plugins,
-      // "react-hooks": reactHooksPlugin,
+      "react-hooks": reactHooksPlugin,
     },
     rules: {
       ...reactPlugin.configs.flat.recommended.rules,
-      // ...reactHooksPlugin.configs.recommended.rules,
+      ...reactHooksPlugin.configs.recommended.rules,
       "react-hooks/exhaustive-deps": "error",
+
+      "@typescript-eslint/no-namespace": "off",
       "@typescript-eslint/no-empty-object-type": "off",
       "@typescript-eslint/no-explicit-any": "warn",
       "max-params": "error",

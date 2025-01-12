@@ -8,12 +8,18 @@ import { Table, HStack, VStack, Heading } from "@chakra-ui/react";
 import { Select } from "@/components/app/select";
 import { type ClientUser, type ClientBill } from "@/types";
 
-export const BillsTable: React.FC<{
-  selectedUserId?: string;
-  balances: Record<string, number>;
-  bills: ClientBill[];
-  users: ClientUser[];
-}> = ({ bills, users, selectedUserId, balances }) => {
+// eslint-disable-next-line @typescript-eslint/no-namespace
+namespace BillsTable {
+  export interface Props {
+    readonly bills: ClientBill[];
+    readonly users: ClientUser[];
+    readonly selectedUserId?: string;
+    readonly balances: Record<string, number>;
+  }
+}
+
+export const BillsTable: React.FC<BillsTable.Props> = (props) => {
+  const { bills, users, selectedUserId, balances } = props;
   const router = useRouter();
 
   const onValueChange = React.useCallback(
