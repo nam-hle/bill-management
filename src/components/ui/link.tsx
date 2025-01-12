@@ -4,31 +4,29 @@ import { type LinkProps, Link as ChakraLink } from "@chakra-ui/react";
 
 import { type Container } from "@/types";
 
-const MyButton: React.ForwardRefRenderFunction<HTMLAnchorElement, LinkProps> = (
-  props,
-  ref,
-) => {
-  const { children, ...rest } = props;
+const StyledLink: React.ForwardRefRenderFunction<
+  HTMLAnchorElement,
+  LinkProps & { active?: boolean }
+> = (props, ref) => {
+  const { children, active, ...rest } = props;
 
   return (
     <ChakraLink
       {...rest}
       ref={ref}
-      fontSize="{fontSizes.md}"
-      fontWeight="{fontWeights.medium}"
+      fontWeight={active ? "{fontWeights.medium}" : undefined}
     >
       {children}
     </ChakraLink>
   );
 };
 
-const ForwardedMyButton = React.forwardRef(MyButton);
+const ForwardedStyledLink = React.forwardRef(StyledLink);
 
-export const Link: React.FC<{ href: string } & LinkProps & Container> = ({
-  href,
-  ...props
-}) => (
+export const Link: React.FC<
+  { href: string; active?: boolean } & LinkProps & Container
+> = ({ href, ...props }) => (
   <NextLink passHref prefetch href={href} legacyBehavior>
-    <ForwardedMyButton {...props} />
+    <ForwardedStyledLink {...props} />
   </NextLink>
 );

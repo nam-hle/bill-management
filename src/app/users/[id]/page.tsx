@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { Table, VStack, Heading } from "@chakra-ui/react";
 
 import { type BillMemberRole } from "@/types";
@@ -62,6 +63,7 @@ export default async function UserPage({ params }: Props) {
             <Table.ColumnHeader>Paid</Table.ColumnHeader>
             <Table.ColumnHeader>Owe</Table.ColumnHeader>
             <Table.ColumnHeader>Net Balance</Table.ColumnHeader>
+            <Table.ColumnHeader></Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -77,6 +79,9 @@ export default async function UserPage({ params }: Props) {
                   <Table.Cell>{balances.paid}</Table.Cell>
                   <Table.Cell>{balances.owed}</Table.Cell>
                   <Table.Cell>{balances.net}</Table.Cell>
+                  <Table.Cell>
+                    <Link href={`/bills/${item.id}`}>Go</Link>
+                  </Table.Cell>
                 </Table.Row>
               );
             })}
@@ -88,6 +93,7 @@ export default async function UserPage({ params }: Props) {
             <Table.Cell>{total.paid}</Table.Cell>
             <Table.Cell>{total.owed}</Table.Cell>
             <Table.Cell>{total.net}</Table.Cell>
+            <Table.Cell></Table.Cell>
           </Table.Row>
         </Table.Footer>
       </Table.Root>

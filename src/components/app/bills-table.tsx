@@ -1,14 +1,14 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { IoIosAddCircle } from "react-icons/io";
 import { Table, HStack, VStack, Heading } from "@chakra-ui/react";
 
 import { Select } from "@/components/app/select";
+import { LinkButton } from "@/components/ui/link-button";
 import { type ClientUser, type ClientBill } from "@/types";
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
 namespace BillsTable {
   export interface Props {
     readonly bills: ClientBill[];
@@ -49,7 +49,9 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
             value: user.id,
           }))}
         />
-        <Link href="/bills/new">New</Link>
+        <LinkButton href="/bills/new">
+          <IoIosAddCircle /> New
+        </LinkButton>
       </HStack>
       <Heading>Balances</Heading>
       <Table.Root size="md">

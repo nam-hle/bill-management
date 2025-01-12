@@ -1,10 +1,17 @@
+"use client";
+
 import React from "react";
+import { usePathname } from "next/navigation";
 import { Box, Stack, HStack } from "@chakra-ui/react";
 
 import { type Container } from "@/types";
 import { Link } from "@/components/ui/link";
+import { LinkButton } from "@/components/ui/link-button";
 
 export const RootContainer: React.FC<Container> = (props) => {
+  const pathname = usePathname();
+  const pageName = pathname.split("/").pop();
+
   return (
     <>
       <HStack
@@ -17,11 +24,15 @@ export const RootContainer: React.FC<Container> = (props) => {
         <Stack
           direction="row"
           minHeight="48px"
-          gap="{spacing.8}"
+          gap="{spacing.4}"
           alignItems="center"
         >
-          <Link href="/users">Users</Link>
-          <Link href="/bills">Bills</Link>
+          <LinkButton href="/users" active={pageName === "users"}>
+            Users
+          </LinkButton>
+          <LinkButton href="/bills" active={pageName === "bills"}>
+            Bills
+          </LinkButton>
         </Stack>
         <Stack
           direction="row"

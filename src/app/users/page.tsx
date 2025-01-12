@@ -1,9 +1,10 @@
 import React from "react";
-import Link from "next/link";
+import { IoIosAddCircle } from "react-icons/io";
 import { Table, VStack } from "@chakra-ui/react";
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 
 import { createClient } from "@/supabase/server";
+import { LinkButton } from "@/components/ui/link-button";
 
 export default async function UsersPage() {
   const supabase = await createClient();
@@ -12,7 +13,9 @@ export default async function UsersPage() {
 
   return (
     <VStack gap="{spacing.4}" alignItems="flex-end">
-      <Link href="/users/new">New</Link>
+      <LinkButton href="/users/new">
+        <IoIosAddCircle /> New
+      </LinkButton>
       <Table.Root size="md">
         <Table.Header>
           <Table.Row>
@@ -34,8 +37,10 @@ export default async function UsersPage() {
                     })
                   : ""}
               </Table.Cell>
-              <Table.Cell>
-                <Link href={`/users/${item.id}`}>Profile</Link>
+              <Table.Cell display="flex" justifyContent="flex-end">
+                <LinkButton variant="outline" href={`/users/${item.id}`}>
+                  Profile
+                </LinkButton>
               </Table.Cell>
             </Table.Row>
           ))}
