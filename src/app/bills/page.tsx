@@ -19,8 +19,30 @@ export default async function BillsPage(props: Props) {
   const { data: users } = await supabase.from("users").select();
   const bills = await getBillsByUserId(userId);
 
+  const { data: membersData, error: membersError } = await supabase
+    .from("bill_members")
+    .select("user_id, role, amount, users (username)");
+
+  if (membersError) {
+    throw new Error(`Error fetching bill members`);
+  }
+
+  // Calculate balances
+  const balances = membersData.reduce(
+    (acc, member) => {
+      const balanceChange =
+        member.role === "Creditor" ? member.amount : -member.amount;
+      acc[member.users.username] =
+        (acc[member.users.username] || 0) + balanceChange;
+
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+
   return (
     <BillsTable
+      balances={balances}
       bills={bills ?? []}
       users={users ?? []}
       selectedUserId={userId}

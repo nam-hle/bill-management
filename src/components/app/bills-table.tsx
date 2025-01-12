@@ -10,9 +10,10 @@ import { type ClientUser, type ClientBill } from "@/types";
 
 export const BillsTable: React.FC<{
   selectedUserId?: string;
+  balances: Record<string, number>;
   bills: ClientBill[];
   users: ClientUser[];
-}> = ({ bills, users, selectedUserId }) => {
+}> = ({ bills, users, selectedUserId, balances }) => {
   const router = useRouter();
 
   const onValueChange = React.useCallback(
@@ -92,6 +93,22 @@ export const BillsTable: React.FC<{
               </Table.Cell>
             </Table.Row>
           ))}
+        </Table.Body>
+      </Table.Root>
+      <Table.Root size="md">
+        <Table.Header>
+          <Table.Row>
+            {Object.keys(balances).map((username) => (
+              <Table.ColumnHeader key={username}>{username}</Table.ColumnHeader>
+            ))}
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          <Table.Row>
+            {Object.entries(balances).map(([id, balance]) => (
+              <Table.Cell key={id}>{balance}</Table.Cell>
+            ))}
+          </Table.Row>
         </Table.Body>
       </Table.Root>
     </VStack>
