@@ -4,7 +4,7 @@ import { Inter } from "next/font/google";
 
 import { Toaster } from "@/components/ui/toaster";
 import { RootContainer } from "@/components/ui/root-container";
-import { Provider as ChakraProvider } from "@/components/ui/provider";
+import { LayoutProvider } from "@/components/ui/layout-provider";
 const interSans = Inter({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -22,11 +22,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${interSans.variable}`}>
-        <ChakraProvider>
+      <body className={interSans.variable}>
+        <LayoutProvider>
           <Toaster />
           <RootContainer>{children}</RootContainer>
-        </ChakraProvider>
+        </LayoutProvider>
       </body>
     </html>
   );
