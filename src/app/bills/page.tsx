@@ -1,12 +1,42 @@
 import React from "react";
-import Link from "next/link";
-import { Table, VStack } from "@chakra-ui/react";
 
+import { type ClientBill } from "@/types";
 import { createClient } from "@/supabase/server";
+import { BillsTable } from "@/components/app/bills-table";
 
-export default async function BillsPage() {
+interface Props {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function BillsPage(props: Props) {
+  const userId = (await props.searchParams).userId;
+  if (Array.isArray(userId)) {
+    throw new Error("Expected a single userId");
+  }
+
   const supabase = await createClient();
   const { data: users } = await supabase.from("users").select();
+  const bills = await getBillsByUserId(userId);
+
+  return (
+    <BillsTable
+      bills={bills ?? []}
+      users={users ?? []}
+      selectedUserId={userId}
+    />
+  );
+}
+
+async function getBillsByUserId(
+  userId: string | undefined,
+): Promise<ClientBill[]> {
+  if (userId) {
+    const billsByCreditors = await getBillsByCreditor(userId);
+    const billsByBillMembers = await getBillsByBillMember(userId);
+
+    return [...billsByCreditors, ...billsByBillMembers];
+  }
+  const supabase = await createClient();
 
   const { data: bills } = await supabase.from("bills").select(`
     id,
@@ -18,40 +48,66 @@ export default async function BillsPage() {
     bill_members (id, user_id, amount)
   `);
 
-  return (
-    <VStack gap="{spacing.4}" alignItems="flex-end">
-      <Link href="/bills/new">New</Link>
-      <Table.Root size="md">
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeader>ID</Table.ColumnHeader>
-            <Table.ColumnHeader>Description</Table.ColumnHeader>
-            <Table.ColumnHeader>Creditor</Table.ColumnHeader>
-            <Table.ColumnHeader>Amount</Table.ColumnHeader>
-            <Table.ColumnHeader>Members</Table.ColumnHeader>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {bills?.map((item) => (
-            <Table.Row key={item.id}>
-              <Table.Cell>{item.id.slice(0, 6)}</Table.Cell>
-              <Table.Cell>{item.description}</Table.Cell>
-              <Table.Cell>{item.creditor.username}</Table.Cell>
-              <Table.Cell>{item.total_amount}</Table.Cell>
-              <Table.Cell>
-                {item.bill_members
-                  .map((billMember) => {
-                    const user = users?.find(
-                      (user) => user.id === billMember.user_id,
-                    );
-                    return `${user?.username} (${billMember.amount})`;
-                  })
-                  .join(", ")}
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
-    </VStack>
-  );
+  return bills ?? [];
+}
+
+async function getBillsByBillMember(
+  billMemberUserId: string,
+): Promise<ClientBill[]> {
+  const supabase = await createClient();
+  const { data: targetBillIds } = await supabase
+    .from("bill_members")
+    .select("bill_id")
+    .eq("user_id", billMemberUserId);
+
+  if (!targetBillIds?.length) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("bills")
+    .select(
+      `
+    id,
+    description,
+    total_amount,
+    creditor:creator_id (
+      username
+    ),
+    bill_members (id, user_id, amount)
+  `,
+    )
+    .neq("creator_id", billMemberUserId)
+    .in(
+      "id",
+      targetBillIds.map((e) => e.bill_id),
+    );
+
+  if (error) {
+    throw error;
+  }
+  return data ?? [];
+}
+
+async function getBillsByCreditor(creditorId: string): Promise<ClientBill[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("bills")
+    .select(
+      `
+    id,
+    description,
+    total_amount,
+    creditor:creator_id (
+      username
+    ),
+    bill_members (id, user_id, amount)
+  `,
+    )
+    .eq("creator_id", creditorId);
+
+  if (error) {
+    throw error;
+  }
+  return data ?? [];
 }

@@ -13,8 +13,9 @@ import {
 } from "@/components/ui/select";
 
 export const Select: React.FC<{
-  label: string;
+  label?: string;
   value: string | undefined;
+  width?: string;
   onValueChange: (value: string) => void;
   items: { value: string; label: string }[];
 }> = (props) => {
@@ -23,6 +24,7 @@ export const Select: React.FC<{
   return (
     <SelectRoot
       size="md"
+      width={props.width}
       collection={collection}
       value={props.value ? [props.value] : []}
       onValueChange={(e) => {
@@ -32,7 +34,7 @@ export const Select: React.FC<{
         props.onValueChange(e.value[0]);
       }}
     >
-      <SelectLabel>{props.label}</SelectLabel>
+      {props.label && <SelectLabel>{props.label}</SelectLabel>}
       <SelectTrigger>
         <SelectValueText placeholder="Select one" />
       </SelectTrigger>

@@ -26,3 +26,11 @@ export interface BillFormState {
 export interface UserFormState {
   username?: string;
 }
+
+export interface ClientBill {
+  readonly id: string;
+  readonly description: string;
+  readonly total_amount: number;
+  readonly creditor: { username: string };
+  readonly bill_members: { id: string; user_id: string; amount: number }[];
+}

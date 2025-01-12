@@ -45,8 +45,6 @@ export default async function UserPage({ params }: Props) {
     throw "Error fetching bills:" + error;
   }
 
-  // return <pre>{JSON.stringify(data, null, 2)}</pre>;
-
   return (
     <VStack gap="{spacing.4}" alignItems="flex-start">
       <Heading>User Bills Info</Heading>
