@@ -74,6 +74,10 @@ export const BillForm: React.FC<{
 					memberKind="creditor"
 					value={formState.creditor}
 					onValueChange={(newValue) => {
+						if (newValue === null) {
+							throw new Error("Creditor is required");
+						}
+
 						setFormState((prev) => ({ ...prev, creditor: newValue }));
 					}}
 				/>
@@ -88,9 +92,13 @@ export const BillForm: React.FC<{
 							onValueChange={(newValue) => {
 								setFormState((prev) => ({
 									...prev,
-									debtors: prev.debtors.map((d, i) => {
+									debtors: prev.debtors.flatMap((d, i) => {
 										if (i !== index) {
 											return d;
+										}
+
+										if (newValue === null) {
+											return [];
 										}
 
 										return { ...d, ...newValue };
@@ -125,7 +133,7 @@ export const MemberInputs: React.FC<{
 	memberIndex: number;
 	users: ClientUser[];
 	value: { userId?: string; amount?: number } | undefined;
-	onValueChange: (value: { userId?: string; amount?: number }) => void;
+	onValueChange: (value: { userId?: string; amount?: number } | null) => void;
 }> = ({ users, memberIndex, memberKind, value, onValueChange }) => {
 	const label = memberKind === "creditor" ? "Creditor" : `Debtor ${memberIndex + 1}`;
 
@@ -153,7 +161,7 @@ export const MemberInputs: React.FC<{
 			</GridItem>
 
 			<GridItem alignSelf="flex-end" justifySelf="flex-end">
-				<Button variant="subtle" colorPalette="red">
+				<Button variant="subtle" colorPalette="red" onClick={() => onValueChange(null)}>
 					Delete
 				</Button>
 			</GridItem>
