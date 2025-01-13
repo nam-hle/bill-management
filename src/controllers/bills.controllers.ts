@@ -55,4 +55,18 @@ export namespace BillsControllers {
 
 		return data;
 	}
+
+	export async function updateById(supabase: SupabaseInstance, id: string, payload: { description: string }) {
+		const { data, error } = await supabase.from("bills").update(payload).eq("id", id).select();
+
+		if (error) {
+			throw error;
+		}
+
+		if (!data) {
+			throw new Error("Error updating bill");
+		}
+
+		return data;
+	}
 }

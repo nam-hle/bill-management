@@ -9,6 +9,7 @@ export interface Container {
 export type ClientUser = Pick<Database["public"]["Tables"]["users"]["Row"], "id" | "username" | "createdAt">;
 
 export interface BillFormState {
+	id?: string;
 	createdAt?: string;
 	description: string;
 	creditor?: {
@@ -21,6 +22,11 @@ export interface BillFormState {
 	}>;
 }
 
+export enum FormKind {
+	CREATE = "create",
+	UPDATE = "update"
+}
+
 export interface UserFormState {
 	username?: string;
 }
@@ -29,12 +35,19 @@ export interface ClientBill {
 	readonly id: string;
 	readonly description: string;
 	readonly creator: { username: string };
-	readonly bill_members: {
-		id: string;
-		userId: string;
-		amount: number;
-		role: BillMemberRole;
-	}[];
+	readonly bill_members: ClientBillMember[];
+}
+
+export interface ClientBillMember {
+	id?: string;
+	userId: string;
+	amount: number;
+	role: BillMemberRole;
+}
+export namespace ClientBillMember {
+	export function isEqual(a: ClientBillMember, b: ClientBillMember) {
+		return a.userId === b.userId && a.role === b.role;
+	}
 }
 
 export type BillMemberRole = Database["public"]["Enums"]["BillMemberRole"];

@@ -7,7 +7,7 @@ import { Text, Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chak
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/app/select";
-import { type ClientUser, type BillFormState } from "@/types";
+import { FormKind, type ClientUser, type BillFormState } from "@/types";
 import { NumberInputRoot, NumberInputField } from "@/components/ui/number-input";
 
 export const BillForm: React.FC<{
@@ -16,22 +16,39 @@ export const BillForm: React.FC<{
 }> = (props) => {
 	const { users } = props;
 	const [formState, setFormState] = React.useState<BillFormState>(() => props.formState ?? { description: "", debtors: [] });
+	const kind: FormKind = props.formState ? FormKind.UPDATE : FormKind.CREATE;
 
-	const onSave = React.useCallback(async () => {
-		await fetch("/api/bills", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			},
-			body: JSON.stringify(formState)
-		}).then((res) => res.json());
-	}, [formState]);
+	const onSubmit = React.useCallback(async () => {
+		if (kind === FormKind.CREATE) {
+			await fetch("/api/bills", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify(formState)
+			}).then((res) => res.json());
+
+			return;
+		}
+
+		if (kind === FormKind.UPDATE) {
+			await fetch(`/api/bills/${formState.id}`, {
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify(formState)
+			}).then((res) => res.json());
+
+			return;
+		}
+	}, [formState, kind]);
 
 	return (
 		<Stack gap="{spacing.4}">
 			<Heading>{props.formState ? "Bill Details" : "New Bill"}</Heading>
-			<SimpleGrid columns={2} gap="{spacing.4}">
-				<GridItem>
+			<SimpleGrid columns={9} gap="{spacing.4}">
+				<GridItem colSpan={{ base: 5 }}>
 					<Field required label="Description">
 						<Input
 							value={formState.description}
@@ -45,7 +62,7 @@ export const BillForm: React.FC<{
 						/>
 					</Field>
 				</GridItem>
-				<GridItem>
+				<GridItem colSpan={{ base: 4 }}>
 					<Field readOnly label="Created at">
 						<Text>{props.formState?.createdAt ? format(new Date(props.formState.createdAt), "PPpp") : ""}</Text>
 					</Field>
@@ -95,7 +112,7 @@ export const BillForm: React.FC<{
 					}}>
 					Add debtor
 				</Button>
-				<Button variant="solid" onClick={onSave}>
+				<Button variant="solid" onClick={onSubmit}>
 					Save
 				</Button>
 			</HStack>
@@ -114,22 +131,32 @@ export const MemberInputs: React.FC<{
 
 	return (
 		<>
-			<Select
-				label={label}
-				value={value?.userId}
-				onValueChange={(userId) => onValueChange({ ...value, userId })}
-				items={users.map((user) => ({ label: user.username, value: user.id }))}
-			/>
+			<GridItem colSpan={{ base: 4 }}>
+				<Select
+					label={label}
+					value={value?.userId}
+					onValueChange={(userId) => onValueChange({ ...value, userId })}
+					items={users.map((user) => ({ label: user.username, value: user.id }))}
+				/>
+			</GridItem>
 
-			<Field required={memberKind === "creditor"} label={memberKind === "creditor" ? "Total Amount" : "Split Amount"}>
-				<NumberInputRoot
-					min={0}
-					width="100%"
-					value={String(value?.amount ?? "")}
-					onValueChange={(e) => onValueChange({ ...value, amount: parseInt(e.value, 10) })}>
-					<NumberInputField />
-				</NumberInputRoot>
-			</Field>
+			<GridItem colSpan={{ base: 4 }}>
+				<Field required={memberKind === "creditor"} label={memberKind === "creditor" ? "Total Amount" : "Split Amount"}>
+					<NumberInputRoot
+						min={0}
+						width="100%"
+						value={String(value?.amount ?? "")}
+						onValueChange={(e) => onValueChange({ ...value, amount: parseInt(e.value, 10) })}>
+						<NumberInputField />
+					</NumberInputRoot>
+				</Field>
+			</GridItem>
+
+			<GridItem alignSelf="flex-end" justifySelf="flex-end">
+				<Button variant="subtle" colorPalette="red">
+					Delete
+				</Button>
+			</GridItem>
 		</>
 	);
 };

@@ -5,11 +5,13 @@ import { BillForm } from "@/components/app/bill-form";
 import { UsersControllers } from "@/controllers/users.controllers";
 import { BillsControllers } from "@/controllers/bills.controllers";
 
-type Props = {
-	params: Promise<{ id: string }>;
-};
+namespace BillDetailsPage {
+	export interface Props {
+		params: Promise<{ id: string }>;
+	}
+}
 
-export default async function BillDetailsPage(props: Props) {
+export default async function BillDetailsPage(props: BillDetailsPage.Props) {
 	const billId = (await props.params).id;
 	const supabase = await createClient();
 	const users = await UsersControllers.getUsers(supabase);
