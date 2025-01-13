@@ -5,10 +5,10 @@ import type { Container } from "@/types";
 import { Button, type ButtonProps } from "@/components/ui/button";
 
 const StyledButton: React.ForwardRefRenderFunction<HTMLButtonElement, ButtonProps & { active?: boolean }> = (props, ref) => {
-	const { children, active, size = "xs", ...rest } = props;
+	const { children, active, size = "md", ...rest } = props;
 
 	return (
-		<Button ref={ref} size={size} variant={active ? "outline" : "ghost"} {...rest}>
+		<Button ref={ref} size={size} variant={rest.variant ?? (active ? "outline" : "ghost")} {...rest}>
 			{children}
 		</Button>
 	);
