@@ -17,7 +17,13 @@ export const RootContainer: React.FC<Container & { user: User | null }> = (props
 
 	return (
 		<>
-			<HStack as="header" marginInline="auto" maxWidth="{sizes.8xl}" paddingInline="{spacing.8}" justifyContent="space-between">
+			<HStack
+				as="header"
+				marginInline="auto"
+				maxWidth="{sizes.8xl}"
+				paddingBlock="{spacing.2}"
+				paddingInline="{spacing.8}"
+				justifyContent="space-between">
 				<Stack direction="row" minHeight="48px" gap="{spacing.4}" alignItems="center">
 					<LinkButton href="/users" active={pageName === "users"}>
 						Users
