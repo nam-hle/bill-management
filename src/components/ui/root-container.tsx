@@ -2,13 +2,15 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
 import { Box, Stack, HStack } from "@chakra-ui/react";
 
 import { type Container } from "@/types";
 import { Button } from "@/components/ui/button";
 import { LinkButton } from "@/components/ui/link-button";
+import { AvatarContainer } from "@/components/app/avatar-container";
 
-export const RootContainer: React.FC<Container & { loggedIn: boolean }> = (props) => {
+export const RootContainer: React.FC<Container & { user: User | null }> = (props) => {
 	const pathname = usePathname();
 	const pageName = pathname.split("/")[1];
 
@@ -24,7 +26,7 @@ export const RootContainer: React.FC<Container & { loggedIn: boolean }> = (props
 					</LinkButton>
 				</Stack>
 				<Stack direction="row" minHeight="48px" gap="{spacing.8}" alignItems="center">
-					{props.loggedIn ? (
+					{props.user ? (
 						<form method="post" action="/auth/signout">
 							<Button type="submit" variant="subtle">
 								Sign out
@@ -35,6 +37,7 @@ export const RootContainer: React.FC<Container & { loggedIn: boolean }> = (props
 							Login
 						</LinkButton>
 					) : null}
+					{props.user && <AvatarContainer user={props.user} />}
 				</Stack>
 			</HStack>
 			<Box as="main" marginInline="auto" maxWidth="{sizes.8xl}" paddingTop="{spacing.4}" paddingInline="{spacing.8}" minHeight="calc(100vh - 48px)">

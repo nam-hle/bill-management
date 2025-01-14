@@ -86,12 +86,7 @@ export default function AccountForm({ user }: { user: User | null }) {
 			<Field required label="Username">
 				<Input value={username || ""} placeholder="Enter your password" onChange={(e) => setUsername(e.target.value)} />
 			</Field>
-			<HStack justifyContent="space-between">
-				<form method="post" action="/auth/signout">
-					<Button type="submit" variant="subtle">
-						Sign out
-					</Button>
-				</form>
+			<HStack justifyContent="flex-end">
 				<Button loading={loading} loadingText="Updating..." onClick={() => updateProfile({ fullname, username, website, avatar_url })}>
 					Update
 				</Button>
