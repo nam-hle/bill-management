@@ -86,6 +86,41 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          createdAt: string
+          id: string
+          metadata: Json | null
+          readStatus: boolean
+          type: Database["public"]["Enums"]["NotificationType"]
+          userId: string
+        }
+        Insert: {
+          createdAt?: string
+          id?: string
+          metadata?: Json | null
+          readStatus?: boolean
+          type: Database["public"]["Enums"]["NotificationType"]
+          userId?: string
+        }
+        Update: {
+          createdAt?: string
+          id?: string
+          metadata?: Json | null
+          readStatus?: boolean
+          type?: Database["public"]["Enums"]["NotificationType"]
+          userId?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_userId_fkey"
+            columns: ["userId"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -164,6 +199,7 @@ export type Database = {
     }
     Enums: {
       BillMemberRole: "Creditor" | "Debtor"
+      NotificationType: "BillCreated"
       TransactionStatus: "pending" | "confirmed" | "rejected"
     }
     CompositeTypes: {

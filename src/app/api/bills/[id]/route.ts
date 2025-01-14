@@ -7,7 +7,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 	try {
 		const body = await request.json();
 		const billId = (await params).id;
-		console.log("billId", billId);
+
 		const payload = body as BillFormState;
 		const supabase = await createClient();
 

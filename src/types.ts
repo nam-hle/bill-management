@@ -7,6 +7,18 @@ export interface Container {
 }
 
 export type ClientUser = Pick<Database["public"]["Tables"]["profiles"]["Row"], "id" | "username" | "fullName">;
+export type ServerNotification = Database["public"]["Tables"]["notifications"]["Row"];
+
+export interface BaseClientNotification extends ServerNotification {
+	readonly type: NotificationType;
+}
+
+export interface BillCreatedNotification extends BaseClientNotification {
+	readonly bill: ClientBill;
+	readonly type: "BillCreated";
+}
+
+export type ClientNotification = BillCreatedNotification;
 
 export interface BillFormState {
 	id?: string;
@@ -51,3 +63,4 @@ export namespace ClientBillMember {
 }
 
 export type BillMemberRole = Database["public"]["Enums"]["BillMemberRole"];
+export type NotificationType = Database["public"]["Enums"]["NotificationType"];
