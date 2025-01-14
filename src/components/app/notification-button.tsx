@@ -7,6 +7,7 @@ import { Text, Stack, IconButton } from "@chakra-ui/react";
 
 import { createClient } from "@/supabase/client";
 import { type ClientNotification } from "@/types";
+import { EmptyState } from "@/components/ui/empty-state";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
 import { PopoverBody, PopoverRoot, PopoverArrow, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
@@ -39,13 +40,20 @@ export const NotificationButton: React.FC<{ user: User }> = ({ user }) => {
 			</PopoverTrigger>
 			<PopoverContent minW="25vw">
 				<PopoverArrow />
-				<PopoverBody padding="{spacing.3}">
-					<Stack gap="0">
-						{notifications.map((notification) => {
-							return <NotificationMessage key={notification.id} notification={notification} onClose={() => setOpen(false)} />;
-						})}
-					</Stack>
-				</PopoverBody>
+				{notifications.length === 0 && (
+					<PopoverBody padding={0}>
+						<EmptyState title="You have no notifications" />
+					</PopoverBody>
+				)}
+				{notifications.length > 0 && (
+					<PopoverBody padding="{spacing.3}">
+						<Stack gap="0">
+							{notifications.map((notification) => {
+								return <NotificationMessage key={notification.id} notification={notification} onClose={() => setOpen(false)} />;
+							})}
+						</Stack>
+					</PopoverBody>
+				)}
 			</PopoverContent>
 		</PopoverRoot>
 	);
