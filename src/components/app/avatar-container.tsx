@@ -23,7 +23,7 @@ export const AvatarContainer: React.FC<{ user: User }> = ({ user }) => {
 		try {
 			setLoading(true);
 
-			const { data, error, status } = await supabase.from("profiles").select(`full_name, username, website, avatar_url`).eq("id", user?.id).single();
+			const { data, error, status } = await supabase.from("profiles").select(`fullName, username, website, avatar_url`).eq("id", user?.id).single();
 
 			if (error && status !== 406) {
 				console.log(error);
@@ -31,7 +31,7 @@ export const AvatarContainer: React.FC<{ user: User }> = ({ user }) => {
 			}
 
 			if (data) {
-				setFullname(data.full_name);
+				setFullname(data.fullName);
 			}
 		} catch (error) {
 			alert("Error loading user data!");

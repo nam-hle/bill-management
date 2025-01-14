@@ -34,7 +34,7 @@ export default async function UserPage({ params }: Props) {
 	return (
 		<VStack gap="{spacing.4}" alignItems="flex-start">
 			<Heading>User Bills Info</Heading>
-			<Heading size="sm">{userInfo.username}</Heading>
+			<Heading size="sm">{userInfo.fullName}</Heading>
 			<Table.Root size="md">
 				<Table.Header>
 					<Table.Row>

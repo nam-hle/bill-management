@@ -6,7 +6,7 @@ export interface Container {
 	children: React.ReactNode;
 }
 
-export type ClientUser = Pick<Database["public"]["Tables"]["users"]["Row"], "id" | "username" | "createdAt">;
+export type ClientUser = Pick<Database["public"]["Tables"]["profiles"]["Row"], "id" | "username" | "fullName">;
 
 export interface BillFormState {
 	id?: string;
@@ -34,8 +34,8 @@ export interface UserFormState {
 export interface ClientBill {
 	readonly id: string;
 	readonly description: string;
-	readonly creator: { username: string };
 	readonly bill_members: ClientBillMember[];
+	readonly creator: { username: string | null };
 }
 
 export interface ClientBillMember {

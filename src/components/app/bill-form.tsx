@@ -144,7 +144,7 @@ export const MemberInputs: React.FC<{
 					label={label}
 					value={value?.userId}
 					onValueChange={(userId) => onValueChange({ ...value, userId })}
-					items={users.map((user) => ({ label: user.username, value: user.id }))}
+					items={users.map((user) => ({ label: user.fullName, value: user.id }))}
 				/>
 			</GridItem>
 

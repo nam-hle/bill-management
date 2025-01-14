@@ -38,7 +38,7 @@ export namespace BillMembersControllers {
 		}
 	}
 
-	const SELECT = `userId, role, amount, users (username)`;
+	const SELECT = `userId, role, amount, profiles (username)`;
 
 	export async function getAll(supabase: SupabaseInstance) {
 		const { data } = await supabase.from("bill_members").select(SELECT);

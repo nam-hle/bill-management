@@ -26,7 +26,7 @@ export default async function BillsPage(props: Props) {
 	const balances = membersData.reduce(
 		(acc, member) => {
 			const balanceChange = member.role === "Creditor" ? member.amount : -member.amount;
-			acc[member.users.username] = (acc[member.users.username] || 0) + balanceChange;
+			acc[member.userId] = (acc[member.userId] || 0) + balanceChange;
 
 			return acc;
 		},

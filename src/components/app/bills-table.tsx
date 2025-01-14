@@ -57,8 +57,8 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 			<Table.Root size="md">
 				<Table.Header>
 					<Table.Row>
-						{Object.keys(balances).map((username) => (
-							<Table.ColumnHeader key={username}>{username}</Table.ColumnHeader>
+						{Object.keys(balances).map((userId) => (
+							<Table.ColumnHeader key={userId}>{users.find((user) => user.id === userId)?.fullName}</Table.ColumnHeader>
 						))}
 					</Table.Row>
 				</Table.Header>

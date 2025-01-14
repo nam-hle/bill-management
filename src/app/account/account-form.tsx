@@ -19,7 +19,7 @@ export default function AccountForm({ user }: { user: User | null }) {
 		try {
 			setLoading(true);
 
-			const { data, error, status } = await supabase.from("profiles").select(`full_name, username, website, avatar_url`).eq("id", user?.id).single();
+			const { data, error, status } = await supabase.from("profiles").select(`fullName, username, website, avatar_url`).eq("id", user?.id).single();
 
 			if (error && status !== 406) {
 				console.log(error);
@@ -27,7 +27,7 @@ export default function AccountForm({ user }: { user: User | null }) {
 			}
 
 			if (data) {
-				setFullname(data.full_name);
+				setFullname(data.fullName);
 				setUsername(data.username);
 				setWebsite(data.website);
 				setAvatarUrl(data.avatar_url);
@@ -58,7 +58,7 @@ export default function AccountForm({ user }: { user: User | null }) {
 
 			const { error } = await supabase.from("profiles").upsert({
 				id: user?.id as string,
-				full_name: fullname,
+				fullName: fullname,
 				username,
 				website,
 				avatar_url,
