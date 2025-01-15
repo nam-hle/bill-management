@@ -40,11 +40,21 @@ const eslintConfig = [
 			"@typescript-eslint/no-namespace": "off",
 			"@typescript-eslint/no-empty-object-type": "off",
 			"@typescript-eslint/no-explicit-any": "warn",
+			"@typescript-eslint/consistent-type-imports": ["error", { prefer: "type-imports", fixStyle: "inline-type-imports" }],
+			"@typescript-eslint/no-unused-vars": [
+				"error",
+				{
+					ignoreRestSiblings: true,
+					destructuredArrayIgnorePattern: "^_",
+					caughtErrorsIgnorePattern: "^error$",
+					argsIgnorePattern: "^_"
+				}
+			],
+
 			"max-params": "error",
 			"unused-imports/no-unused-imports": "error",
 			"react/jsx-boolean-value": "error",
 			"react/jsx-curly-brace-presence": ["error", "never"],
-			"@typescript-eslint/consistent-type-imports": ["error", { prefer: "type-imports", fixStyle: "inline-type-imports" }],
 			"perfectionist/sort-interfaces": [
 				"error",
 				{

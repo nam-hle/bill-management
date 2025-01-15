@@ -3,8 +3,14 @@ import { BillsControllers } from "@/controllers/bills.controllers";
 import { type ClientNotification, type ServerNotification, type BillCreatedNotification } from "@/types";
 
 export namespace NotificationsControllers {
-	export async function getByUserId(supabase: SupabaseInstance, userId: string): Promise<ClientNotification[]> {
-		const { data: serverNotification } = await supabase.from("notifications").select().eq("userId", userId).order("createdAt", { ascending: false });
+	export async function getByUserId(supabase: SupabaseInstance, userId: string, from?: string): Promise<ClientNotification[]> {
+		let query = supabase.from("notifications").select().eq("userId", userId);
+
+		if (from !== undefined) {
+			query = query.gt("createdAt", from);
+		}
+
+		const { data: serverNotification } = await query.order("createdAt", { ascending: false });
 
 		if (!serverNotification) {
 			throw new Error("Error fetching user");

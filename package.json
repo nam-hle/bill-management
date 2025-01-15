@@ -28,6 +28,7 @@
 	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3",
+		"@stylistic/eslint-plugin-ts": "^2.12.0",
 		"@types/node": "^20",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
@@ -37,7 +38,6 @@
 		"eslint-plugin-react": "^7.37.3",
 		"eslint-plugin-react-hooks": "^5.1.0",
 		"eslint-plugin-unused-imports": "^4.1.4",
-		"@stylistic/eslint-plugin-ts": "^2.12.0",
 		"prettier": "3.4.2",
 		"supabase": "^2.2.1",
 		"typescript": "^5"

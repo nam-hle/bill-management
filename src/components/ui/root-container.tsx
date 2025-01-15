@@ -9,7 +9,7 @@ import { type Container } from "@/types";
 import { Button } from "@/components/ui/button";
 import { LinkButton } from "@/components/ui/link-button";
 import { AvatarContainer } from "@/components/app/avatar-container";
-import { NotificationButton } from "@/components/app/notification-button";
+import { NotificationContainer } from "@/components/app/notification-container";
 
 export const RootContainer: React.FC<Container & { user: User | null }> = (props) => {
 	const pathname = usePathname();
@@ -44,7 +44,7 @@ export const RootContainer: React.FC<Container & { user: User | null }> = (props
 							Login
 						</LinkButton>
 					) : null}
-					{props.user && <NotificationButton user={props.user} />}
+					{props.user && <NotificationContainer user={props.user} />}
 					{props.user && <AvatarContainer user={props.user} />}
 				</Stack>
 			</HStack>

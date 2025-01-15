@@ -1,0 +1,26 @@
+import { createClient } from "@/supabase/server";
+
+export async function GET() {
+	try {
+		const supabase = await createClient();
+
+		// Check if a user's logged in
+		const {
+			data: { user }
+		} = await supabase.auth.getUser();
+
+		return new Response(JSON.stringify({ success: true, data: { user } }), {
+			status: 200
+		});
+	} catch (error) {
+		console.error("Notification fetching:", error);
+
+		return new Response(
+			JSON.stringify({
+				error: "Internal Server Error",
+				details: (error as any).message
+			}),
+			{ status: 500 }
+		);
+	}
+}
