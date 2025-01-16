@@ -88,6 +88,7 @@ export type Database = {
       }
       notifications: {
         Row: {
+          billId: string | null
           createdAt: string
           id: string
           metadata: Json | null
@@ -96,6 +97,7 @@ export type Database = {
           userId: string
         }
         Insert: {
+          billId?: string | null
           createdAt?: string
           id?: string
           metadata?: Json | null
@@ -104,6 +106,7 @@ export type Database = {
           userId?: string
         }
         Update: {
+          billId?: string | null
           createdAt?: string
           id?: string
           metadata?: Json | null
@@ -112,6 +115,13 @@ export type Database = {
           userId?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "notifications_billId_fkey"
+            columns: ["billId"]
+            isOneToOne: false
+            referencedRelation: "bills"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "notifications_userId_fkey"
             columns: ["userId"]

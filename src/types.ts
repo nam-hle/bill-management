@@ -7,7 +7,7 @@ export interface Container {
 }
 
 export type ClientUser = Pick<Database["public"]["Tables"]["profiles"]["Row"], "id" | "username" | "fullName">;
-export type ServerNotification = Database["public"]["Tables"]["notifications"]["Row"];
+export type ServerNotification = Omit<Database["public"]["Tables"]["notifications"]["Row"], "billId" | "metadata">;
 
 export interface BaseClientNotification extends ServerNotification {
 	readonly type: NotificationType;
@@ -47,7 +47,7 @@ export interface ClientBill {
 	readonly id: string;
 	readonly description: string;
 	readonly bill_members: ClientBillMember[];
-	readonly creator: { username: string | null };
+	readonly creator: { username: string | null; fullName: string | null };
 }
 
 export interface ClientBillMember {

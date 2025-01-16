@@ -27,7 +27,7 @@ export const NotificationContainer: React.FC<{ user: User }> = ({ user }) => {
 			setNotifications((prev) => [...data, ...prev]);
 			setUnreadCount((prev) => prev + data.filter((notification) => !notification.readStatus).length);
 		} catch (error) {
-			alert("Error loading user data!");
+			console.error("Error loading user data!", error);
 		}
 	}, [notifications, supabase, user.id]);
 
@@ -104,7 +104,7 @@ const NotificationMessage = ({ notification, onClose }: { notification: ClientNo
 
 		content = (
 			<>
-				You’ve been added to the bill <strong>{bill.description}</strong> by <strong>{bill.creator.username}</strong>
+				You’ve been added to the bill <strong>{bill.description}</strong> by <strong>{bill.creator.fullName}</strong>
 			</>
 		);
 		link = `/bills/${bill.id}`;
@@ -115,7 +115,7 @@ const NotificationMessage = ({ notification, onClose }: { notification: ClientNo
 	const time = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
 
 	return (
-		<HStack cursor="pointer" padding="{spacing.2}" _hover={{ bg: "gray.100" }}>
+		<HStack cursor="pointer" padding="{spacing.2}" _hover={{ bg: "gray.200" }}>
 			<Stack gap="0">
 				<Text
 					textStyle="sm"
