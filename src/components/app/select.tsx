@@ -7,6 +7,7 @@ import { SelectItem, SelectRoot, SelectLabel, SelectContent, SelectTrigger, Sele
 
 export const Select: React.FC<{
 	label?: string;
+	disabled?: boolean;
 	value: string | undefined;
 	width?: string;
 	onValueChange: (value: string) => void;
@@ -19,6 +20,7 @@ export const Select: React.FC<{
 			size="md"
 			width={props.width}
 			collection={collection}
+			disabled={props.disabled}
 			value={props.value ? [props.value] : []}
 			onValueChange={(e) => {
 				if (e.value.length !== 1) {

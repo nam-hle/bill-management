@@ -1,5 +1,6 @@
 import React from "react";
 
+import { FormKind } from "@/types";
 import { createClient } from "@/supabase/server";
 import { BillForm } from "@/components/app/bill-form";
 import { UsersControllers } from "@/controllers/users.controllers";
@@ -25,5 +26,5 @@ export default async function BillDetailsPage(props: BillDetailsPage.Props) {
 
 	const debtors = bill.bill_members.filter((member) => member.role === "Debtor");
 
-	return <BillForm users={users} formState={{ ...bill, creditor, debtors }} />;
+	return <BillForm users={users} formState={{ ...bill, creditor, debtors, kind: FormKind.UPDATE, editing: false }} />;
 }

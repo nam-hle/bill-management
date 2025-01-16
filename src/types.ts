@@ -27,6 +27,8 @@ export type ClientNotification = BillCreatedNotification | BillUpdatedNotificati
 
 export interface BillFormState {
 	id?: string;
+	kind: FormKind;
+	editing?: boolean;
 	createdAt?: string;
 	description: string;
 	creditor?: {

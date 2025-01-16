@@ -2,8 +2,11 @@
 
 import React from "react";
 import { format } from "date-fns";
+import { IoIosAddCircle } from "react-icons/io";
+import { MdEdit, MdCheck, MdCancel } from "react-icons/md";
 import { Text, Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chakra-ui/react";
 
+import { noop } from "@/utils";
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/app/select";
@@ -12,14 +15,13 @@ import { NumberInputRoot, NumberInputField } from "@/components/ui/number-input"
 
 export const BillForm: React.FC<{
 	users: ClientUser[];
-	formState?: BillFormState;
+	formState: BillFormState;
 }> = (props) => {
 	const { users } = props;
-	const [formState, setFormState] = React.useState<BillFormState>(() => props.formState ?? { description: "", debtors: [] });
-	const kind: FormKind = props.formState ? FormKind.UPDATE : FormKind.CREATE;
+	const [formState, setFormState] = React.useState<BillFormState>(() => props.formState);
 
 	const onSubmit = React.useCallback(async () => {
-		if (kind === FormKind.CREATE) {
+		if (formState.kind === FormKind.CREATE) {
 			await fetch("/api/bills", {
 				method: "POST",
 				headers: {
@@ -31,7 +33,7 @@ export const BillForm: React.FC<{
 			return;
 		}
 
-		if (kind === FormKind.UPDATE) {
+		if (formState.kind === FormKind.UPDATE) {
 			await fetch(`/api/bills/${formState.id}`, {
 				method: "PUT",
 				headers: {
@@ -42,7 +44,7 @@ export const BillForm: React.FC<{
 
 			return;
 		}
-	}, [formState, kind]);
+	}, [formState]);
 
 	return (
 		<Stack gap="{spacing.4}">
@@ -110,19 +112,35 @@ export const BillForm: React.FC<{
 				})}
 			</SimpleGrid>
 
-			<HStack justifyContent="space-between">
-				<Button
-					onClick={() => {
-						setFormState((prev) => ({
-							...prev,
-							debtors: [...prev.debtors, {}]
-						}));
-					}}>
-					Add debtor
-				</Button>
-				<Button variant="solid" onClick={onSubmit}>
-					Save
-				</Button>
+			<HStack justifyContent={formState.editing ? "space-between" : "flex-end"}>
+				{formState.editing && (
+					<Button
+						onClick={() => {
+							setFormState((prev) => ({
+								...prev,
+								debtors: [...prev.debtors, {}]
+							}));
+						}}>
+						Add debtor
+					</Button>
+				)}
+				{formState.editing && (
+					<HStack>
+						{formState.kind === FormKind.UPDATE && (
+							<Button onClick={noop} variant="solid">
+								<MdCancel /> Cancel
+							</Button>
+						)}
+						<Button variant="solid" onClick={onSubmit}>
+							{formState.kind === FormKind.CREATE ? <IoIosAddCircle /> : <MdCheck />} {formState.kind === FormKind.CREATE ? "Create" : "Done"}
+						</Button>
+					</HStack>
+				)}
+				{!formState.editing && (
+					<Button variant="solid" onClick={() => setFormState((prev) => ({ ...prev, editing: true }))}>
+						<MdEdit /> Edit
+					</Button>
+				)}
 			</HStack>
 		</Stack>
 	);
@@ -132,9 +150,10 @@ export const MemberInputs: React.FC<{
 	memberKind: "creditor" | "debtor";
 	memberIndex: number;
 	users: ClientUser[];
+	editing?: boolean;
 	value: { userId?: string; amount?: number } | undefined;
 	onValueChange: (value: { userId?: string; amount?: number } | null) => void;
-}> = ({ users, memberIndex, memberKind, value, onValueChange }) => {
+}> = ({ users, memberIndex, memberKind, value, onValueChange, editing }) => {
 	const label = memberKind === "creditor" ? "Creditor" : `Debtor ${memberIndex + 1}`;
 
 	return (
@@ -142,6 +161,7 @@ export const MemberInputs: React.FC<{
 			<GridItem colSpan={{ base: 4 }}>
 				<Select
 					label={label}
+					disabled={!editing}
 					value={value?.userId}
 					onValueChange={(userId) => onValueChange({ ...value, userId })}
 					items={users.map((user) => ({ label: user.fullName, value: user.id }))}
@@ -153,6 +173,7 @@ export const MemberInputs: React.FC<{
 					<NumberInputRoot
 						min={0}
 						width="100%"
+						disabled={!editing}
 						value={String(value?.amount ?? "")}
 						onValueChange={(e) => onValueChange({ ...value, amount: parseInt(e.value, 10) })}>
 						<NumberInputField />
@@ -161,9 +182,11 @@ export const MemberInputs: React.FC<{
 			</GridItem>
 
 			<GridItem alignSelf="flex-end" justifySelf="flex-end">
-				<Button variant="subtle" colorPalette="red" onClick={() => onValueChange(null)}>
-					Delete
-				</Button>
+				{editing && (
+					<Button variant="subtle" colorPalette="red" onClick={() => onValueChange(null)}>
+						Delete
+					</Button>
+				)}
 			</GridItem>
 		</>
 	);
