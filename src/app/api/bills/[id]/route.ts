@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 import { createClient } from "@/supabase/server";
 import { ClientBillMember, type BillFormState } from "@/types";
 import { BillsControllers } from "@/controllers/bills.controllers";
@@ -17,6 +19,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 			await BillsControllers.updateById(supabase, billId, { description: payload.description });
 		}
 
+		// Step 2: Insert bill members
 		const payloadBillMembers: ClientBillMember[] = [];
 
 		if (!payload.creditor?.userId || !payload.creditor.amount) {
@@ -57,6 +60,31 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 			supabase,
 			comparisonResult.removeBillMembers.map((remove) => ({ billId, ...remove }))
 		);
+
+		// Step 3: Insert notifications
+		const billMemberNotifications = _.uniqBy(
+			comparisonResult.updateBillMembers.map((debtor) => {
+				if (!debtor.userId || !debtor.amount) {
+					throw new Error("Debtor is missing userId or amount");
+				}
+
+				return {
+					type: "BillUpdated" as const,
+					userId: debtor.userId,
+					billId
+				};
+			}),
+			(noti: { userId: string; billId: string }) => {
+				return `${noti.billId}.${noti.userId}`;
+			}
+		);
+
+		console.log(billMemberNotifications);
+		const { error: notificationErrors } = await supabase.from("notifications").insert(billMemberNotifications);
+
+		if (notificationErrors) {
+			throw new Error("Error inserting notifications");
+		}
 
 		return new Response(JSON.stringify({ success: true, data: { billId } }), {
 			status: 201

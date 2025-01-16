@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
 		const members = await BillMembersControllers.createMany(supabase, billMembers);
 
-		// Step 2: Insert notifications
+		// Step 3: Insert notifications
 		const billMemberNotifications = payload.debtors.map((debtor) => {
 			if (!debtor.userId || !debtor.amount) {
 				throw new Error("Debtor is missing userId or amount");
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
 			return {
 				type: "BillCreated" as const,
 				userId: debtor.userId,
-				metadata: { billId: bill.id }
+				billId: bill.id
 			};
 		});
 		const { error: notificationErrors } = await supabase.from("notifications").insert(billMemberNotifications);

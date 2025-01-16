@@ -108,6 +108,15 @@ const NotificationMessage = ({ notification, onClose }: { notification: ClientNo
 			</>
 		);
 		link = `/bills/${bill.id}`;
+	} else if (type === "BillUpdated") {
+		const { bill } = notification;
+
+		content = (
+			<>
+				Your bill <strong>{bill.description}</strong> created by <strong>{bill.creator.fullName}</strong> has been updated
+			</>
+		);
+		link = `/bills/${bill.id}`;
 	} else {
 		throw new Error("Invalid notification type");
 	}

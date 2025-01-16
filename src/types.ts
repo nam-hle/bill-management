@@ -18,7 +18,12 @@ export interface BillCreatedNotification extends BaseClientNotification {
 	readonly type: "BillCreated";
 }
 
-export type ClientNotification = BillCreatedNotification;
+export interface BillUpdatedNotification extends BaseClientNotification {
+	readonly bill: ClientBill;
+	readonly type: "BillUpdated";
+}
+
+export type ClientNotification = BillCreatedNotification | BillUpdatedNotification;
 
 export interface BillFormState {
 	id?: string;

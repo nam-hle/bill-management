@@ -209,7 +209,7 @@ export type Database = {
     }
     Enums: {
       BillMemberRole: "Creditor" | "Debtor"
-      NotificationType: "BillCreated"
+      NotificationType: "BillCreated" | "BillUpdated"
       TransactionStatus: "pending" | "confirmed" | "rejected"
     }
     CompositeTypes: {
