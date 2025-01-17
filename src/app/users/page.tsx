@@ -1,9 +1,10 @@
 import React from "react";
-import { Table, VStack } from "@chakra-ui/react";
-import { IoMdAdd, IoIosArrowRoundForward } from "react-icons/io";
+import { IoMdAdd } from "react-icons/io";
+import { Table, VStack, HStack, Heading } from "@chakra-ui/react";
 
 import { createClient } from "@/supabase/server";
 import { LinkButton } from "@/components/ui/link-button";
+import { LinkedTableRow } from "@/components/app/table-body-row";
 import { UsersControllers } from "@/controllers/users.controllers";
 
 export default async function UsersPage() {
@@ -12,37 +13,26 @@ export default async function UsersPage() {
 	const users = await UsersControllers.getUsers(supabase);
 
 	return (
-		<VStack gap="{spacing.4}" alignItems="flex-end">
-			<LinkButton variant="solid" href="/users/new">
-				<IoMdAdd /> New
-			</LinkButton>
-			<Table.Root size="md">
+		<VStack>
+			<HStack width="100%" justifyContent="space-between">
+				<Heading>Users</Heading>
+				<LinkButton variant="solid" href="/users/new">
+					<IoMdAdd /> New
+				</LinkButton>
+			</HStack>
+			<Table.Root size="md" interactive variant="outline">
 				<Table.Header>
 					<Table.Row>
 						<Table.ColumnHeader>ID</Table.ColumnHeader>
 						<Table.ColumnHeader>Username</Table.ColumnHeader>
-						{/*<Table.ColumnHeader>Created At</Table.ColumnHeader>*/}
-						<Table.ColumnHeader></Table.ColumnHeader>
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
 					{users?.map((item) => (
-						<Table.Row key={item.id}>
+						<LinkedTableRow key={item.id} href={`/users/${item.id}`}>
 							<Table.Cell>{item.id.slice(0, 6)}</Table.Cell>
 							<Table.Cell>{item.username}</Table.Cell>
-							{/*<Table.Cell>*/}
-							{/*	{item.createdAt*/}
-							{/*		? formatDistanceToNow(new Date(item.createdAt), {*/}
-							{/*				addSuffix: true*/}
-							{/*			})*/}
-							{/*		: ""}*/}
-							{/*</Table.Cell>*/}
-							<Table.Cell display="flex" justifyContent="flex-end">
-								<LinkButton variant="outline" href={`/users/${item.id}`}>
-									<IoIosArrowRoundForward />
-								</LinkButton>
-							</Table.Cell>
-						</Table.Row>
+						</LinkedTableRow>
 					))}
 				</Table.Body>
 			</Table.Root>

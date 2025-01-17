@@ -69,7 +69,7 @@ export const NotificationContainer: React.FC<{ user: User }> = ({ user }) => {
 						)}
 					</IconButton>
 				</PopoverTrigger>
-				<PopoverContent minW="35vw">
+				<PopoverContent minW="30vw">
 					<PopoverArrow />
 					{notifications.length === 0 && (
 						<PopoverBody padding={0}>
@@ -124,9 +124,10 @@ const NotificationMessage = ({ notification, onClose }: { notification: ClientNo
 	const time = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
 
 	return (
-		<HStack cursor="pointer" padding="{spacing.2}" _hover={{ bg: "gray.200" }}>
+		<HStack cursor="pointer" padding="{spacing.2}" _hover={{ bg: "gray.200" }} justifyContent="space-between">
 			<Stack gap="0">
 				<Text
+					width="100%"
 					textStyle="sm"
 					onClick={() => {
 						if (link) {
@@ -140,7 +141,7 @@ const NotificationMessage = ({ notification, onClose }: { notification: ClientNo
 					{time[0].toUpperCase() + time.slice(1)}
 				</Text>
 			</Stack>
-			<Status value="info" />
+			<Status maxW="20px" value="info" />
 		</HStack>
 	);
 };

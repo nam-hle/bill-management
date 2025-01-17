@@ -53,6 +53,7 @@ export const BillForm: React.FC<{
 				<GridItem colSpan={{ base: 5 }}>
 					<Field required label="Description">
 						<Input
+							disabled={!formState.editing}
 							value={formState.description}
 							placeholder="Enter bill description"
 							onChange={(e) =>

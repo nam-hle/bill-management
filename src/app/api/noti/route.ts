@@ -4,7 +4,6 @@ export async function GET() {
 	try {
 		const supabase = await createClient();
 
-		// Check if a user's logged in
 		const {
 			data: { user }
 		} = await supabase.auth.getUser();

@@ -1,10 +1,9 @@
 import React from "react";
-import { IoIosArrowRoundForward } from "react-icons/io";
 import { Table, VStack, Heading } from "@chakra-ui/react";
 
 import { type BillMemberRole } from "@/types";
 import { createClient } from "@/supabase/server";
-import { LinkButton } from "@/components/ui/link-button";
+import { LinkedTableRow } from "@/components/app/table-body-row";
 import { UsersControllers } from "@/controllers/users.controllers";
 import { BillsControllers } from "@/controllers/bills.controllers";
 
@@ -32,10 +31,10 @@ export default async function UserPage({ params }: Props) {
 	);
 
 	return (
-		<VStack gap="{spacing.4}" alignItems="flex-start">
-			<Heading>User Bills Info</Heading>
-			<Heading size="sm">{userInfo.fullName}</Heading>
-			<Table.Root size="md">
+		<VStack gap="{spacing.4}">
+			<Heading>{userInfo.fullName}</Heading>
+			<Heading size="md">Bills</Heading>
+			<Table.Root size="md" interactive variant="outline">
 				<Table.Header>
 					<Table.Row>
 						<Table.ColumnHeader>ID</Table.ColumnHeader>
@@ -43,7 +42,6 @@ export default async function UserPage({ params }: Props) {
 						<Table.ColumnHeader>Paid</Table.ColumnHeader>
 						<Table.ColumnHeader>Owe</Table.ColumnHeader>
 						<Table.ColumnHeader>Net Balance</Table.ColumnHeader>
-						<Table.ColumnHeader></Table.ColumnHeader>
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
@@ -53,18 +51,13 @@ export default async function UserPage({ params }: Props) {
 							const balances = calculateMoney(item.bill_members);
 
 							return (
-								<Table.Row key={item.id}>
+								<LinkedTableRow key={item.id} href={`/bills/${item.id}`}>
 									<Table.Cell>{item.id.slice(0, 6)}</Table.Cell>
 									<Table.Cell>{item.description}</Table.Cell>
 									<Table.Cell>{balances.paid}</Table.Cell>
 									<Table.Cell>{balances.owed}</Table.Cell>
 									<Table.Cell>{balances.net}</Table.Cell>
-									<Table.Cell display="flex" justifyContent="flex-end">
-										<LinkButton variant="outline" href={`/bills/${item.id}`}>
-											<IoIosArrowRoundForward />
-										</LinkButton>
-									</Table.Cell>
-								</Table.Row>
+								</LinkedTableRow>
 							);
 						})}
 				</Table.Body>
@@ -75,7 +68,6 @@ export default async function UserPage({ params }: Props) {
 						<Table.Cell>{total.paid}</Table.Cell>
 						<Table.Cell>{total.owed}</Table.Cell>
 						<Table.Cell>{total.net}</Table.Cell>
-						<Table.Cell></Table.Cell>
 					</Table.Row>
 				</Table.Footer>
 			</Table.Root>

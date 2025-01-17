@@ -33,5 +33,5 @@ export default async function BillsPage(props: Props) {
 		{} as Record<string, number>
 	);
 
-	return <BillsTable balances={balances} bills={bills ?? []} users={users ?? []} selectedUserId={userId} />;
+	return <BillsTable balances={balances} bills={bills ?? []} users={users ?? []} />;
 }
