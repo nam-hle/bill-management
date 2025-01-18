@@ -14,7 +14,7 @@ interface Props {
 
 export default async function BillsPage(props: Props) {
 	const searchParams = await props.searchParams;
-	const { creditor, debtor } = searchParams;
+	const { creditor, debtor, creator } = searchParams;
 
 	const supabase = await createClient();
 
@@ -34,11 +34,16 @@ export default async function BillsPage(props: Props) {
 		throw new Error("Expected a single userId");
 	}
 
+	if (Array.isArray(creator)) {
+		throw new Error("Expected a single userId");
+	}
+
 	const users = await UsersControllers.getUsers(supabase);
 	const bills = await BillsControllers.getBillsByMemberId(supabase, {
 		memberId: currentUser.id,
 		creditorId: creditor === "me" ? currentUser.id : creditor,
-		debtorId: debtor === "me" ? currentUser.id : debtor
+		debtorId: debtor === "me" ? currentUser.id : debtor,
+		creatorId: creator === "me" ? currentUser.id : creator
 	});
 
 	const membersData = await BillMembersControllers.getAll(supabase);

@@ -25,9 +25,9 @@ export namespace BillsControllers {
 
 	export async function getBillsByMemberId(
 		supabase: SupabaseInstance,
-		filters: { creditorId: string | undefined; memberId: string; debtorId: string | undefined }
+		filters: { creditorId: string | undefined; memberId: string; debtorId: string | undefined; creatorId: string | undefined }
 	): Promise<ClientBill[]> {
-		const { memberId, creditorId, debtorId } = filters;
+		const { memberId, creditorId, debtorId, creatorId } = filters;
 
 		let billMembersQuery = supabase.from("bill_members").select(`billId`);
 
@@ -43,13 +43,17 @@ export namespace BillsControllers {
 			}
 		}
 
-		const { data: billMembers = [] } = await billMembersQuery;
+		const billMembers = (await billMembersQuery).data ?? [];
+		let billIDs = _.uniqBy(billMembers, "billId").map(({ billId }) => billId);
 
-		if (!billMembers) {
-			return [];
+		if (creatorId !== undefined) {
+			const createdBills = (await supabase.from("bills").select(`id`).eq("creatorId", creatorId)).data ?? [];
+
+			billIDs = _.intersection(
+				billIDs,
+				createdBills.map(({ id }) => id)
+			);
 		}
-
-		const billIDs = _.uniqBy(billMembers, "billId").map(({ billId }) => billId);
 
 		const { data: bills } = await supabase.from("bills").select(BILLS_SELECT).in("id", billIDs).order("createdAt", { ascending: false });
 

@@ -16,14 +16,14 @@ export default async function UserPage({ params }: Props) {
 	const supabase = await createClient();
 
 	const userInfo = await UsersControllers.getUserById(supabase, userId);
-	const userBillsData = (await BillsControllers.getBillsByMemberId(supabase, { memberId: userId, creditorId: undefined, debtorId: undefined })).map(
-		(bill) => {
-			return {
-				...bill,
-				bill_members: bill.bill_members.filter((member) => member.user.id === userId)
-			};
-		}
-	);
+	const userBillsData = (
+		await BillsControllers.getBillsByMemberId(supabase, { memberId: userId, creditorId: undefined, debtorId: undefined, creatorId: undefined })
+	).map((bill) => {
+		return {
+			...bill,
+			bill_members: bill.bill_members.filter((member) => member.user.id === userId)
+		};
+	});
 
 	const total = (userBillsData ?? []).reduce(
 		(acc, item) => {

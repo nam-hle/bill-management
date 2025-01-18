@@ -71,21 +71,21 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 					onClick={() => {
 						onFilterChange("creator", filters.creator === undefined ? "me" : null);
 					}}>
-					Bills I Created
+					Bills I created
 				</FilterButton>
 				<FilterButton
 					active={filters.creditor === "me"}
 					onClick={() => {
 						onFilterChange("creditor", filters.creditor === undefined ? "me" : null);
 					}}>
-					Bills Owed to Me
+					Bills owed to me
 				</FilterButton>
 				<FilterButton
 					active={filters.debtor === "me"}
 					onClick={() => {
 						onFilterChange("debtor", filters.debtor === undefined ? "me" : null);
 					}}>
-					Bills I Owe
+					Bills I owe
 				</FilterButton>
 			</HStack>
 			<Table.Root size="md" interactive variant="outline">
