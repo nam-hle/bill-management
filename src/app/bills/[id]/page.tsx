@@ -1,3 +1,4 @@
+import _ from "lodash";
 import React from "react";
 
 import { FormKind } from "@/types";
@@ -24,7 +25,7 @@ export default async function BillDetailsPage(props: BillDetailsPage.Props) {
 		throw "Creditor not found";
 	}
 
-	const debtors = bill.bill_members.filter((member) => member.role === "Debtor");
+	const debtors = _.orderBy(bill.bill_members, (member) => member.userId).filter((member) => member.role === "Debtor");
 
 	return <BillForm users={users} formState={{ ...bill, creditor, debtors, kind: FormKind.UPDATE, editing: false }} />;
 }

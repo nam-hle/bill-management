@@ -61,6 +61,7 @@ export type Database = {
           description: string
           id: string
           issuesAt: string
+          updatedAt: string | null
         }
         Insert: {
           createdAt?: string
@@ -68,6 +69,7 @@ export type Database = {
           description: string
           id?: string
           issuesAt?: string
+          updatedAt?: string | null
         }
         Update: {
           createdAt?: string
@@ -75,6 +77,7 @@ export type Database = {
           description?: string
           id?: string
           issuesAt?: string
+          updatedAt?: string | null
         }
         Relationships: [
           {

@@ -1,5 +1,3 @@
-import _ from "lodash";
-
 import { createClient } from "@/supabase/server";
 import { ClientBillMember, type BillFormState } from "@/types";
 import { BillsControllers } from "@/controllers/bills.controllers";
@@ -60,29 +58,28 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 			supabase,
 			comparisonResult.removeBillMembers.map((remove) => ({ billId, ...remove }))
 		);
-
+		console.log({ updateBillMembers: comparisonResult.updateBillMembers });
 		// Step 3: Insert notifications
-		const billMemberNotifications = _.uniqBy(
-			comparisonResult.updateBillMembers.map((debtor) => {
-				if (!debtor.userId || !debtor.amount) {
-					throw new Error("Debtor is missing userId or amount");
-				}
-
-				return {
-					type: "BillUpdated" as const,
-					userId: debtor.userId,
-					billId
-				};
-			}),
-			(noti: { userId: string; billId: string }) => {
-				return `${noti.billId}.${noti.userId}`;
+		const updateAmountNotificationRequests = comparisonResult.updateBillMembers.map((debtor) => {
+			if (!debtor.userId || !debtor.amount) {
+				throw new Error("Debtor is missing userId or amount");
 			}
-		);
 
-		console.log(billMemberNotifications);
-		const { error: notificationErrors } = await supabase.from("notifications").insert(billMemberNotifications);
+			return supabase
+				.from("notifications")
+				.upsert({
+					type: "BillUpdated",
+					userId: debtor.userId,
+					billId,
+					metadata: { previous: { amount: debtor.previousAmount }, current: { amount: debtor.amount } }
+				})
+				.match({ userId: debtor.userId, billId, type: "BillUpdated" });
+		});
 
-		if (notificationErrors) {
+		const updateAmountNotificationResponses = await Promise.all(updateAmountNotificationRequests);
+		console.log(updateAmountNotificationResponses);
+
+		if (updateAmountNotificationResponses.some((response) => response.error)) {
 			throw new Error("Error inserting notifications");
 		}
 
@@ -111,8 +108,16 @@ function compareBillMembers(currentBillMembers: ClientBillMember[], payloadBillM
 		return !payloadBillMembers.some((payloadBillMember) => ClientBillMember.isEqual(currentBillMember, payloadBillMember));
 	});
 
-	const updateBillMembers = payloadBillMembers.filter((payloadBillMember) => {
-		return currentBillMembers.some((currentBillMember) => ClientBillMember.isEqual(currentBillMember, payloadBillMember));
+	const updateBillMembers = payloadBillMembers.flatMap((payloadBillMember) => {
+		const member = currentBillMembers.find(
+			(currentBillMember) => ClientBillMember.isEqual(currentBillMember, payloadBillMember) && currentBillMember.amount !== payloadBillMember.amount
+		);
+
+		if (!member) {
+			return [];
+		}
+
+		return { ...payloadBillMember, previousAmount: member.amount };
 	});
 
 	return { addBillMembers, removeBillMembers, updateBillMembers };

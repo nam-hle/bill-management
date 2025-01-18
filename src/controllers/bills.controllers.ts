@@ -6,6 +6,7 @@ export namespace BillsControllers {
     id,
     description,
     createdAt,
+    updatedAt,
     creator:creatorId (username, fullName),
     bill_members (id, userId, amount, role)
   `;

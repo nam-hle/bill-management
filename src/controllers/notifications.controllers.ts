@@ -18,6 +18,7 @@ export namespace NotificationsControllers {
 		)
 	)
 	`;
+
 	export async function getByUserId(supabase: SupabaseInstance, userId: string, from?: string): Promise<ClientNotification[]> {
 		let query = supabase.from("notifications").select(NOTIFICATIONS_SELECT).eq("userId", userId);
 
@@ -49,18 +50,6 @@ export namespace NotificationsControllers {
 		// );
 
 		return notifications.map((notification) => {
-			const { type } = notification;
-
-			// if (type === "BillCreated") {
-			// 	const bill = bills.find((bill) => bill.id === (metadata as any)?.billId);
-			//
-			// 	if (!bill) {
-			// 		throw new Error("Bill not found");
-			// 	}
-			//
-			// 	return { ...notification, bill } satisfies BillCreatedNotification;
-			// }
-
 			return notification as ClientNotification;
 		});
 	}

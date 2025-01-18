@@ -1,13 +1,12 @@
 "use client";
 
 import React from "react";
-import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { IoIosAddCircle } from "react-icons/io";
+import { format, formatDistanceToNow } from "date-fns";
 import { MdEdit, MdCheck, MdCancel } from "react-icons/md";
 import { Text, Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chakra-ui/react";
 
-import { noop } from "@/utils";
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/app/select";
@@ -52,7 +51,14 @@ export const BillForm: React.FC<{
 					"Content-Type": "application/json"
 				},
 				body: JSON.stringify(formState)
-			}).then((res) => res.json());
+			}).then(() => {
+				toaster.create({
+					title: "Bill updated",
+					description: "Bill has been updated successfully",
+					type: "success"
+				});
+				setFormState((prev) => ({ ...prev, editing: false }));
+			});
 
 			return;
 		}
@@ -77,19 +83,31 @@ export const BillForm: React.FC<{
 						/>
 					</Field>
 				</GridItem>
-				<GridItem colSpan={{ base: 4 }}>
-					<Field readOnly label="Created at">
-						<Text>{props.formState?.createdAt ? format(new Date(props.formState.createdAt), "PPpp") : ""}</Text>
-					</Field>
+				<GridItem colSpan={{ base: 2 }}>
+					{formState.kind === FormKind.UPDATE && (
+						<Field readOnly label="Created at" justifyContent="space-between">
+							<Text title={props.formState?.createdAt ? format(new Date(props.formState.createdAt), "PPpp") : ""}>
+								{props.formState.createdAt ? formatDistanceToNow(new Date(props.formState.createdAt), { addSuffix: true }) : undefined}
+							</Text>
+						</Field>
+					)}
+				</GridItem>
+				<GridItem colSpan={{ base: 2 }}>
+					{formState.kind === FormKind.UPDATE && (
+						<Field readOnly label="Updated at" justifyContent="space-between">
+							<Text title={props.formState?.updatedAt ? format(new Date(props.formState.updatedAt), "PPpp") : ""}>
+								{props.formState.updatedAt ? formatDistanceToNow(new Date(props.formState.updatedAt), { addSuffix: true }) : undefined}
+							</Text>
+						</Field>
+					)}
 				</GridItem>
 
 				<MemberInputs
 					users={users}
 					memberIndex={0}
 					memberKind="creditor"
-					formKind={formState.kind}
 					value={formState.creditor}
-					editing={formState.editing}
+					disabled={formState.kind === FormKind.UPDATE && !formState.editing}
 					onValueChange={(newValue) => {
 						if (newValue === null) {
 							throw new Error("Creditor is required");
@@ -106,7 +124,7 @@ export const BillForm: React.FC<{
 							value={debtor}
 							memberIndex={index}
 							memberKind="debtor"
-							formKind={formState.kind}
+							disabled={formState.kind === FormKind.UPDATE && !formState.editing}
 							onValueChange={(newValue) => {
 								setFormState((prev) => ({
 									...prev,
@@ -143,7 +161,11 @@ export const BillForm: React.FC<{
 				{formState.editing && (
 					<HStack>
 						{formState.kind === FormKind.UPDATE && (
-							<Button onClick={noop} variant="solid">
+							<Button
+								variant="solid"
+								onClick={() => {
+									setFormState((prev) => ({ ...prev, ...props.formState, editing: false }));
+								}}>
 								<MdCancel /> Cancel
 							</Button>
 						)}
@@ -164,42 +186,63 @@ export const BillForm: React.FC<{
 
 export const MemberInputs: React.FC<{
 	memberKind: "creditor" | "debtor";
-	formKind: FormKind;
 	memberIndex: number;
 	users: ClientUser[];
-	editing?: boolean;
+	disabled?: boolean;
 	value: { userId?: string; amount?: number } | undefined;
 	onValueChange: (value: { userId?: string; amount?: number } | null) => void;
-}> = ({ users, memberIndex, memberKind, value, formKind, onValueChange, editing }) => {
+}> = ({ users, memberIndex, memberKind, value, disabled, onValueChange }) => {
 	const label = memberKind === "creditor" ? "Creditor" : `Debtor ${memberIndex + 1}`;
+
+	const [numberInput, setNumberInput] = React.useState(() => String(value?.amount ?? 0));
+	const [errorText, setErrorText] = React.useState(() => "");
 
 	return (
 		<>
 			<GridItem colSpan={{ base: 4 }}>
 				<Select
 					label={label}
+					disabled={disabled}
 					value={value?.userId}
-					disabled={!editing && formKind === FormKind.UPDATE}
 					onValueChange={(userId) => onValueChange({ ...value, userId })}
 					items={users.map((user) => ({ label: user.fullName, value: user.id }))}
 				/>
 			</GridItem>
 
 			<GridItem colSpan={{ base: 4 }}>
-				<Field required={memberKind === "creditor"} label={memberKind === "creditor" ? "Total Amount" : "Split Amount"}>
+				<Field
+					errorText={errorText}
+					invalid={errorText !== ""}
+					required={memberKind === "creditor"}
+					label={memberKind === "creditor" ? "Total Amount" : "Split Amount"}>
 					<NumberInputRoot
 						min={0}
 						width="100%"
-						value={String(value?.amount ?? "")}
-						disabled={!editing && formKind === FormKind.UPDATE}
-						onValueChange={(e) => onValueChange({ ...value, amount: parseInt(e.value, 10) })}>
+						disabled={disabled}
+						value={numberInput}
+						onValueChange={(e) => {
+							setNumberInput(e.value);
+						}}
+						onBlur={() => {
+							const amount = parseInt(numberInput, 10);
+
+							if (isNaN(amount)) {
+								setErrorText("Amount must be a number");
+
+								return;
+							}
+
+							setNumberInput(String(amount));
+							setErrorText("");
+							onValueChange({ ...value, amount });
+						}}>
 						<NumberInputField />
 					</NumberInputRoot>
 				</Field>
 			</GridItem>
 
 			<GridItem alignSelf="flex-end" justifySelf="flex-end">
-				{editing && memberKind === "debtor" && (
+				{!disabled && memberKind === "debtor" && (
 					<Button variant="subtle" colorPalette="red" onClick={() => onValueChange(null)}>
 						Delete
 					</Button>

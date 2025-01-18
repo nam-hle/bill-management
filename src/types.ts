@@ -29,8 +29,9 @@ export interface BillFormState {
 	id?: string;
 	kind: FormKind;
 	editing?: boolean;
-	createdAt?: string;
 	description: string;
+	createdAt: string | null;
+	updatedAt: string | null;
 	creditor?: {
 		userId?: string;
 		amount?: number;
@@ -53,6 +54,8 @@ export interface UserFormState {
 export interface ClientBill {
 	readonly id: string;
 	readonly description: string;
+	readonly updatedAt: string | null;
+	readonly createdAt: string | null;
 	readonly bill_members: ClientBillMember[];
 	readonly creator: { username: string | null; fullName: string | null };
 }
