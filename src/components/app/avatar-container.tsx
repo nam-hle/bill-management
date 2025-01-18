@@ -25,7 +25,6 @@ export const AvatarContainer: React.FC<{ user: User }> = ({ user }) => {
 			const { data, error, status } = await supabase.from("profiles").select(`fullName, username, website, avatar_url`).eq("id", user?.id).single();
 
 			if (error && status !== 406) {
-				console.log(error);
 				throw error;
 			}
 

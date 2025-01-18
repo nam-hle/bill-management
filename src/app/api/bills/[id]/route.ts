@@ -13,6 +13,14 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 		const currentBill = await BillsControllers.getBillById(supabase, billId);
 
+		const {
+			data: { user: trigger }
+		} = await supabase.auth.getUser();
+
+		if (!trigger) {
+			throw new Error("User not found");
+		}
+
 		if (payload.description !== currentBill.description) {
 			await BillsControllers.updateById(supabase, billId, { description: payload.description });
 		}
@@ -58,26 +66,23 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 			supabase,
 			comparisonResult.removeBillMembers.map((remove) => ({ billId, ...remove }))
 		);
-		console.log({ updateBillMembers: comparisonResult.updateBillMembers });
+
 		// Step 3: Insert notifications
 		const updateAmountNotificationRequests = comparisonResult.updateBillMembers.map((debtor) => {
 			if (!debtor.userId || !debtor.amount) {
 				throw new Error("Debtor is missing userId or amount");
 			}
 
-			return supabase
-				.from("notifications")
-				.upsert({
-					type: "BillUpdated",
-					userId: debtor.userId,
-					billId,
-					metadata: { previous: { amount: debtor.previousAmount }, current: { amount: debtor.amount } }
-				})
-				.match({ userId: debtor.userId, billId, type: "BillUpdated" });
+			return supabase.from("notifications").insert({
+				type: "BillUpdated",
+				userId: debtor.userId,
+				billId,
+				triggerId: trigger.id,
+				metadata: { previous: { amount: debtor.previousAmount }, current: { amount: debtor.amount } }
+			});
 		});
 
 		const updateAmountNotificationResponses = await Promise.all(updateAmountNotificationRequests);
-		console.log(updateAmountNotificationResponses);
 
 		if (updateAmountNotificationResponses.some((response) => response.error)) {
 			throw new Error("Error inserting notifications");

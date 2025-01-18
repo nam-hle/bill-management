@@ -7,10 +7,11 @@ export interface Container {
 }
 
 export type ClientUser = Pick<Database["public"]["Tables"]["profiles"]["Row"], "id" | "username" | "fullName">;
-export type ServerNotification = Omit<Database["public"]["Tables"]["notifications"]["Row"], "billId" | "metadata">;
+export type ServerNotification = Omit<Database["public"]["Tables"]["notifications"]["Row"], "billId" | "metadata" | "triggerId">;
 
 export interface BaseClientNotification extends ServerNotification {
 	readonly type: NotificationType;
+	readonly trigger: { username: string | null; fullName: string | null };
 }
 
 export interface BillCreatedNotification extends BaseClientNotification {
@@ -21,6 +22,7 @@ export interface BillCreatedNotification extends BaseClientNotification {
 export interface BillUpdatedNotification extends BaseClientNotification {
 	readonly bill: ClientBill;
 	readonly type: "BillUpdated";
+	readonly metadata: Record<"previous" | "current", { amount?: number }>;
 }
 
 export type ClientNotification = BillCreatedNotification | BillUpdatedNotification;

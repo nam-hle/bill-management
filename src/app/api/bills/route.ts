@@ -13,6 +13,14 @@ export async function POST(request: Request) {
 			throw new Error("Creditor is required");
 		}
 
+		const {
+			data: { user: trigger }
+		} = await supabase.auth.getUser();
+
+		if (!trigger) {
+			throw new Error("User not found");
+		}
+
 		// Step 1: Insert bill
 		const bill = await BillsControllers.createBill(supabase, { description: payload.description, creatorId: payload.creditor.userId });
 
@@ -48,7 +56,8 @@ export async function POST(request: Request) {
 			return {
 				type: "BillCreated" as const,
 				userId: debtor.userId,
-				billId: bill.id
+				billId: bill.id,
+				triggerId: trigger.id
 			};
 		});
 		const { error: notificationErrors } = await supabase.from("notifications").insert(billMemberNotifications);

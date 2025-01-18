@@ -96,6 +96,7 @@ export type Database = {
           id: string
           metadata: Json | null
           readStatus: boolean
+          triggerId: string
           type: Database["public"]["Enums"]["NotificationType"]
           userId: string
         }
@@ -105,6 +106,7 @@ export type Database = {
           id?: string
           metadata?: Json | null
           readStatus?: boolean
+          triggerId: string
           type: Database["public"]["Enums"]["NotificationType"]
           userId?: string
         }
@@ -114,6 +116,7 @@ export type Database = {
           id?: string
           metadata?: Json | null
           readStatus?: boolean
+          triggerId?: string
           type?: Database["public"]["Enums"]["NotificationType"]
           userId?: string
         }
@@ -123,6 +126,13 @@ export type Database = {
             columns: ["billId"]
             isOneToOne: false
             referencedRelation: "bills"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_triggerId_fkey"
+            columns: ["triggerId"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {

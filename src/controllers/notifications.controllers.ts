@@ -8,6 +8,9 @@ export namespace NotificationsControllers {
 	userId,
 	createdAt,
 	readStatus,
+	metadata,
+	trigger:triggerId (username, fullName),
+
 	bill:billId (
 		id, 
 		description, 

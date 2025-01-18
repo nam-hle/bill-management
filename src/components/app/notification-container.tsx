@@ -92,31 +92,31 @@ export const NotificationContainer: React.FC<{ user: User }> = ({ user }) => {
 };
 
 const NotificationMessage = ({ notification, onClose }: { notification: ClientNotification; onClose: () => void }) => {
-	const { type, createdAt } = notification;
+	const { type, createdAt, bill } = notification;
 
 	let content: React.ReactNode;
-	let link: string | undefined;
+	const link = `/bills/${bill.id}`;
 
 	const router = useRouter();
 
 	if (type === "BillCreated") {
-		const { bill } = notification;
+		const { bill, trigger } = notification;
 
-		content = (
-			<>
-				You’ve been added to the bill <strong>{bill.description}</strong> by <strong>{bill.creator.fullName}</strong>
-			</>
-		);
-		link = `/bills/${bill.id}`;
+		content = transformMessage(`You’ve been added to the bill **${bill.description}** by **${trigger.fullName}**.`);
 	} else if (type === "BillUpdated") {
-		const { bill } = notification;
+		const { bill, metadata, trigger } = notification;
 
-		content = (
-			<>
-				Your bill <strong>{bill.description}</strong> created by <strong>{bill.creator.fullName}</strong> has been updated
-			</>
-		);
-		link = `/bills/${bill.id}`;
+		const { current, previous } = metadata;
+
+		if (current.amount && previous.amount) {
+			content = transformMessage(
+				`Your amount in bill **${bill.creator.fullName}'s ${bill.description}** has been updated from **${previous.amount}** to **${current.amount}** by **${trigger.fullName}**. Please review the changes.`
+			);
+		} else {
+			content = transformMessage(
+				`Your bill **${bill.description}** created by **${bill.creator.fullName}** has been updated. Please review the changes.`
+			);
+		}
 	} else {
 		throw new Error("Invalid notification type");
 	}
@@ -145,3 +145,15 @@ const NotificationMessage = ({ notification, onClose }: { notification: ClientNo
 		</HStack>
 	);
 };
+
+function transformMessage(text: string) {
+	const parts = text.split(/(\*\*.+?\*\*)/); // Split by '**...**'
+
+	return parts.map((part, index) => {
+		if (part.startsWith("**") && part.endsWith("**")) {
+			return <strong key={index}>{part.slice(2, -2)}</strong>; // Wrap in <strong>
+		}
+
+		return part; // Return plain text
+	});
+}
