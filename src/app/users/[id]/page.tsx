@@ -16,7 +16,14 @@ export default async function UserPage({ params }: Props) {
 	const supabase = await createClient();
 
 	const userInfo = await UsersControllers.getUserById(supabase, userId);
-	const userBillsData = await BillsControllers.getBillsByMemberId(supabase, userId);
+	const userBillsData = (await BillsControllers.getBillsByMemberId(supabase, { memberId: userId, creditorId: undefined, debtorId: undefined })).map(
+		(bill) => {
+			return {
+				...bill,
+				bill_members: bill.bill_members.filter((member) => member.user.id === userId)
+			};
+		}
+	);
 
 	const total = (userBillsData ?? []).reduce(
 		(acc, item) => {
@@ -31,7 +38,7 @@ export default async function UserPage({ params }: Props) {
 	);
 
 	return (
-		<VStack gap="{spacing.4}">
+		<VStack gap="{spacing.4}" alignItems="flex-start">
 			<Heading>{userInfo.fullName}</Heading>
 			<Heading size="md">Bills</Heading>
 			<Table.Root size="md" interactive variant="outline">

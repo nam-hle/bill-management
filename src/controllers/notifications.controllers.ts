@@ -29,10 +29,14 @@ export namespace NotificationsControllers {
 			query = query.gt("createdAt", from);
 		}
 
-		const { data: serverNotification } = await query.order("createdAt", { ascending: false });
+		const { data: serverNotification, error } = await query.order("createdAt", { ascending: false });
+
+		if (!error) {
+			throw error;
+		}
 
 		if (!serverNotification) {
-			throw new Error("Error fetching user");
+			return [];
 		}
 
 		return injectMetadata(supabase, serverNotification);

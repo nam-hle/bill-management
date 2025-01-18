@@ -33,7 +33,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 		}
 
 		payloadBillMembers.push({
-			userId: payload.creditor.userId,
+			user: { id: payload.creditor.userId, fullName: null, username: null },
 			amount: payload.creditor.amount,
 			role: "Creditor"
 		});
@@ -44,7 +44,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 			}
 
 			payloadBillMembers.push({
-				userId: debtor.userId,
+				user: { id: debtor.userId, fullName: null, username: null },
 				amount: debtor.amount,
 				role: "Debtor"
 			});
@@ -54,28 +54,28 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 		await BillMembersControllers.updateMany(
 			supabase,
-			comparisonResult.updateBillMembers.map((update) => ({ billId, ...update }))
+			comparisonResult.updateBillMembers.map((update) => ({ billId, userId: update.user.id, ...update }))
 		);
 
 		await BillMembersControllers.createMany(
 			supabase,
-			comparisonResult.addBillMembers.map((add) => ({ billId, ...add }))
+			comparisonResult.addBillMembers.map((add) => ({ billId, userId: add.user.id, ...add }))
 		);
 
 		await BillMembersControllers.deleteMany(
 			supabase,
-			comparisonResult.removeBillMembers.map((remove) => ({ billId, ...remove }))
+			comparisonResult.removeBillMembers.map((remove) => ({ billId, userId: remove.user.id, ...remove }))
 		);
 
 		// Step 3: Insert notifications
 		const updateAmountNotificationRequests = comparisonResult.updateBillMembers.map((debtor) => {
-			if (!debtor.userId || !debtor.amount) {
+			if (!debtor.user.id || !debtor.amount) {
 				throw new Error("Debtor is missing userId or amount");
 			}
 
 			return supabase.from("notifications").insert({
 				type: "BillUpdated",
-				userId: debtor.userId,
+				userId: debtor.user.id,
 				billId,
 				triggerId: trigger.id,
 				metadata: { previous: { amount: debtor.previousAmount }, current: { amount: debtor.amount } }

@@ -4,29 +4,89 @@ import _ from "lodash";
 import React from "react";
 import { IoIosAddCircle } from "react-icons/io";
 import { Table, HStack, VStack, Heading } from "@chakra-ui/react";
+import { useRouter, useSearchParams, type ReadonlyURLSearchParams } from "next/navigation";
 
+import { type ClientBill } from "@/types";
 import { LinkButton } from "@/components/ui/link-button";
-import { type ClientUser, type ClientBill } from "@/types";
+import { FilterButton } from "@/components/app/filter-button";
 import { LinkedTableRow } from "@/components/app/table-body-row";
 
 namespace BillsTable {
 	export interface Props {
 		readonly bills: ClientBill[];
-		readonly users: ClientUser[];
-		readonly balances: Record<string, number>;
 	}
 }
 
+const FILTER_KEYS = ["creditor", "creator", "debtor"] as const;
+type FilterKey = (typeof FILTER_KEYS)[number];
+type Filters = Partial<Record<FilterKey, string>>;
+
+function toFilters(searchParams: ReadonlyURLSearchParams) {
+	const params: Filters = {};
+	searchParams.forEach((value, key) => {
+		if (FILTER_KEYS.includes(key as FilterKey)) {
+			params[key as FilterKey] = value;
+		}
+	});
+
+	return params;
+}
+
 export const BillsTable: React.FC<BillsTable.Props> = (props) => {
-	const { bills, users, balances } = props;
+	const { bills } = props;
+	const searchParams = useSearchParams();
+
+	const filters = toFilters(searchParams);
+
+	const router = useRouter();
+
+	const onFilterChange = React.useCallback(
+		(filterKey: FilterKey, filterValue: string | null) => {
+			const updatedFilters = { ...filters };
+
+			if (filterValue !== null) {
+				updatedFilters[filterKey] = filterValue;
+			} else {
+				delete updatedFilters[filterKey];
+			}
+
+			const params = new URLSearchParams(updatedFilters);
+
+			router.push(`?${params.toString()}`);
+		},
+		[filters, router]
+	);
 
 	return (
-		<VStack gap="{spacing.4}" alignItems="flex-start">
+		<VStack width="100%" gap="{spacing.4}">
 			<HStack width="100%" justifyContent="space-between">
 				<Heading>Bills</Heading>
 				<LinkButton variant="solid" href="/bills/new">
 					<IoIosAddCircle /> New
 				</LinkButton>
+			</HStack>
+			<HStack width="100%">
+				<FilterButton
+					active={filters.creator === "me"}
+					onClick={() => {
+						onFilterChange("creator", filters.creator === undefined ? "me" : null);
+					}}>
+					Bills I Created
+				</FilterButton>
+				<FilterButton
+					active={filters.creditor === "me"}
+					onClick={() => {
+						onFilterChange("creditor", filters.creditor === undefined ? "me" : null);
+					}}>
+					Bills Owed to Me
+				</FilterButton>
+				<FilterButton
+					active={filters.debtor === "me"}
+					onClick={() => {
+						onFilterChange("debtor", filters.debtor === undefined ? "me" : null);
+					}}>
+					Bills I Owe
+				</FilterButton>
 			</HStack>
 			<Table.Root size="md" interactive variant="outline">
 				<Table.Header>
@@ -48,9 +108,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 								{item.bill_members
 									.flatMap((billMember) => {
 										if (billMember.role === "Creditor") {
-											const user = users?.find((user) => user.id === billMember.userId);
-
-											return `${user?.username} (${billMember.amount})`;
+											return `${billMember.user?.username} (${billMember.amount})`;
 										}
 
 										return [];
@@ -58,37 +116,18 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 									.join(", ")}
 							</Table.Cell>
 							<Table.Cell>
-								{_.sortBy(item.bill_members, [(billMember) => billMember.userId])
+								{_.sortBy(item.bill_members, [(billMember) => billMember.user?.id])
 									.flatMap((billMember) => {
 										if (billMember.role === "Creditor") {
 											return [];
 										}
 
-										const user = users?.find((user) => user.id === billMember.userId);
-
-										return `${user?.username} (${billMember.amount})`;
+										return `${billMember.user?.username} (${billMember.amount})`;
 									})
 									.join(", ")}
 							</Table.Cell>
 						</LinkedTableRow>
 					))}
-				</Table.Body>
-			</Table.Root>
-			<Heading>Balances</Heading>
-			<Table.Root size="md" variant="outline">
-				<Table.Header>
-					<Table.Row>
-						{Object.keys(balances).map((userId) => (
-							<Table.ColumnHeader key={userId}>{users.find((user) => user.id === userId)?.fullName}</Table.ColumnHeader>
-						))}
-					</Table.Row>
-				</Table.Header>
-				<Table.Body>
-					<Table.Row>
-						{Object.entries(balances).map(([id, balance]) => (
-							<Table.Cell key={id}>{balance}</Table.Cell>
-						))}
-					</Table.Row>
 				</Table.Body>
 			</Table.Root>
 		</VStack>

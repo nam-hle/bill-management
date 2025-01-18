@@ -25,7 +25,7 @@ export default async function BillDetailsPage(props: BillDetailsPage.Props) {
 		throw "Creditor not found";
 	}
 
-	const debtors = _.orderBy(bill.bill_members, (member) => member.userId).filter((member) => member.role === "Debtor");
+	const debtors = _.orderBy(bill.bill_members, (member) => member.user.id).filter((member) => member.role === "Debtor");
 
 	return <BillForm users={users} formState={{ ...bill, creditor, debtors, kind: FormKind.UPDATE, editing: false }} />;
 }

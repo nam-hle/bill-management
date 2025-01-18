@@ -1,7 +1,9 @@
 import React from "react";
+import { VStack } from "@chakra-ui/react";
 
 import { createClient } from "@/supabase/server";
 import { BillsTable } from "@/components/app/bills-table";
+import { BalancesTable } from "@/components/app/balances-table";
 import { UsersControllers } from "@/controllers/users.controllers";
 import { BillsControllers } from "@/controllers/bills.controllers";
 import { BillMembersControllers } from "@/controllers/bill-members.controllers";
@@ -11,15 +13,33 @@ interface Props {
 }
 
 export default async function BillsPage(props: Props) {
-	const userId = (await props.searchParams).userId;
+	const searchParams = await props.searchParams;
+	const { creditor, debtor } = searchParams;
 
-	if (Array.isArray(userId)) {
+	const supabase = await createClient();
+
+	const {
+		data: { user: currentUser }
+	} = await supabase.auth.getUser();
+
+	if (!currentUser) {
+		throw new Error("User not found");
+	}
+
+	if (Array.isArray(creditor)) {
 		throw new Error("Expected a single userId");
 	}
 
-	const supabase = await createClient();
+	if (Array.isArray(debtor)) {
+		throw new Error("Expected a single userId");
+	}
+
 	const users = await UsersControllers.getUsers(supabase);
-	const bills = await BillsControllers.getBillsByMemberId(supabase, userId);
+	const bills = await BillsControllers.getBillsByMemberId(supabase, {
+		memberId: currentUser.id,
+		creditorId: creditor === "me" ? currentUser.id : creditor,
+		debtorId: debtor === "me" ? currentUser.id : debtor
+	});
 
 	const membersData = await BillMembersControllers.getAll(supabase);
 
@@ -33,5 +53,10 @@ export default async function BillsPage(props: Props) {
 		{} as Record<string, number>
 	);
 
-	return <BillsTable balances={balances} bills={bills ?? []} users={users ?? []} />;
+	return (
+		<VStack gap="{spacing.4}" alignItems="flex-start">
+			<BillsTable bills={bills ?? []} />
+			<BalancesTable balances={balances} users={users ?? []} />
+		</VStack>
+	);
 }

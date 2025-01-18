@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 import type { ClientBill } from "@/types";
 import { type SupabaseInstance } from "@/supabase/server";
 
@@ -8,7 +10,7 @@ export namespace BillsControllers {
     createdAt,
     updatedAt,
     creator:creatorId (username, fullName),
-    bill_members (id, userId, amount, role)
+    bill_members (id, user:userId (id, username, fullName), amount, role)
   `;
 
 	export async function createBill(supabase: SupabaseInstance, payload: { description: string; creatorId: string }) {
@@ -21,30 +23,37 @@ export namespace BillsControllers {
 		return data;
 	}
 
-	export async function getBillsByMemberId(supabase: SupabaseInstance, memberId: string | undefined): Promise<ClientBill[]> {
-		if (!memberId) {
-			return getBills(supabase);
+	export async function getBillsByMemberId(
+		supabase: SupabaseInstance,
+		filters: { creditorId: string | undefined; memberId: string; debtorId: string | undefined }
+	): Promise<ClientBill[]> {
+		const { memberId, creditorId, debtorId } = filters;
+
+		let billMembersQuery = supabase.from("bill_members").select(`billId`);
+
+		if (Object.values(filters).filter(Boolean).length === 1) {
+			billMembersQuery = billMembersQuery.eq(`userId`, memberId);
+		} else {
+			if (creditorId !== undefined) {
+				billMembersQuery = billMembersQuery.eq("userId", creditorId).eq("role", "Creditor");
+			}
+
+			if (debtorId !== undefined) {
+				billMembersQuery = billMembersQuery.eq("userId", debtorId).eq("role", "Debtor");
+			}
 		}
 
-		const { data: targetBillIds } = await supabase
-			.from("bill_members")
-			.select("billId")
-			.eq("userId", memberId)
-			.order("createdAt", { ascending: false });
+		const { data: billMembers = [] } = await billMembersQuery;
 
-		if (!targetBillIds?.length) {
+		if (!billMembers) {
 			return [];
 		}
 
-		const { data } = await supabase.from("bills").select(BILLS_SELECT).eq(`bill_members.userId`, memberId);
+		const billIDs = _.uniqBy(billMembers, "billId").map(({ billId }) => billId);
 
-		return data ?? [];
-	}
+		const { data: bills } = await supabase.from("bills").select(BILLS_SELECT).in("id", billIDs).order("createdAt", { ascending: false });
 
-	export async function getBills(supabase: SupabaseInstance): Promise<ClientBill[]> {
-		const { data = [] } = await supabase.from("bills").select(BILLS_SELECT);
-
-		return data ?? [];
+		return bills ?? [];
 	}
 
 	export async function getBillById(supabase: SupabaseInstance, id: string): Promise<ClientBill> {
