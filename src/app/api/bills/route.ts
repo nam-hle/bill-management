@@ -9,7 +9,7 @@ export async function POST(request: Request) {
 		const payload = body as BillFormState;
 		const supabase = await createClient();
 
-		if (!payload.creditor || !payload.creditor.amount || !payload.creditor.userId) {
+		if (!payload.creditor || !payload.creditor.amount || !payload.creditor.user?.id) {
 			throw new Error("Creditor is required");
 		}
 
@@ -22,17 +22,17 @@ export async function POST(request: Request) {
 		}
 
 		// Step 1: Insert bill
-		const bill = await BillsControllers.createBill(supabase, { description: payload.description, creatorId: payload.creditor.userId });
+		const bill = await BillsControllers.createBill(supabase, { description: payload.description, creatorId: payload.creditor.user.id });
 
 		// Step 2: Insert bill members
 		const billMembers = payload.debtors.map((debtor) => {
-			if (!debtor.userId || !debtor.amount) {
+			if (!debtor.user?.id || !debtor.amount) {
 				throw new Error("Debtor is missing userId or amount");
 			}
 
 			return {
 				billId: bill.id,
-				userId: debtor.userId,
+				userId: debtor.user?.id,
 				amount: debtor.amount,
 				role: "Debtor" as BillMemberRole
 			};
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
 
 		billMembers.push({
 			billId: bill.id,
-			userId: payload.creditor.userId,
+			userId: payload.creditor.user.id,
 			amount: payload.creditor.amount,
 			role: "Creditor" as BillMemberRole
 		});
@@ -49,13 +49,13 @@ export async function POST(request: Request) {
 
 		// Step 3: Insert notifications
 		const billMemberNotifications = payload.debtors.map((debtor) => {
-			if (!debtor.userId || !debtor.amount) {
+			if (!debtor.user?.id || !debtor.amount) {
 				throw new Error("Debtor is missing userId or amount");
 			}
 
 			return {
 				type: "BillCreated" as const,
-				userId: debtor.userId,
+				userId: debtor.user?.id,
 				billId: bill.id,
 				triggerId: trigger.id
 			};

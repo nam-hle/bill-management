@@ -17,7 +17,13 @@ export default async function UserPage({ params }: Props) {
 
 	const userInfo = await UsersControllers.getUserById(supabase, userId);
 	const userBillsData = (
-		await BillsControllers.getBillsByMemberId(supabase, { memberId: userId, creditorId: undefined, debtorId: undefined, creatorId: undefined })
+		await BillsControllers.getBillsByMemberId(supabase, {
+			memberId: userId,
+			creditorId: undefined,
+			debtorId: undefined,
+			creatorId: undefined,
+			since: undefined
+		})
 	).map((bill) => {
 		return {
 			...bill,

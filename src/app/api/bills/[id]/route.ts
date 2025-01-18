@@ -28,23 +28,23 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 		// Step 2: Insert bill members
 		const payloadBillMembers: ClientBillMember[] = [];
 
-		if (!payload.creditor?.userId || !payload.creditor.amount) {
+		if (!payload.creditor?.user?.id || !payload.creditor.amount) {
 			throw new Error("Creditor is required");
 		}
 
 		payloadBillMembers.push({
-			user: { id: payload.creditor.userId, fullName: null, username: null },
+			user: { id: payload.creditor.user?.id, fullName: null, username: null },
 			amount: payload.creditor.amount,
 			role: "Creditor"
 		});
 
 		payload.debtors.forEach((debtor) => {
-			if (!debtor.userId || !debtor.amount) {
+			if (!debtor.user?.id || !debtor.amount) {
 				throw new Error("Debtor is missing userId or amount");
 			}
 
 			payloadBillMembers.push({
-				user: { id: debtor.userId, fullName: null, username: null },
+				user: { id: debtor.user?.id, fullName: null, username: null },
 				amount: debtor.amount,
 				role: "Debtor"
 			});

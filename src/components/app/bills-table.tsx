@@ -3,6 +3,7 @@
 import _ from "lodash";
 import React from "react";
 import { IoIosAddCircle } from "react-icons/io";
+import { format, formatDistanceToNow } from "date-fns";
 import { Table, HStack, VStack, Heading } from "@chakra-ui/react";
 import { useRouter, useSearchParams, type ReadonlyURLSearchParams } from "next/navigation";
 
@@ -14,18 +15,22 @@ import { LinkedTableRow } from "@/components/app/table-body-row";
 namespace BillsTable {
 	export interface Props {
 		readonly bills: ClientBill[];
+		readonly currentUserId: string;
 	}
 }
 
-const FILTER_KEYS = ["creditor", "creator", "debtor"] as const;
-type FilterKey = (typeof FILTER_KEYS)[number];
-type Filters = Partial<Record<FilterKey, string>>;
+const TIME_FILTER_KEYS = ["since"] as const;
+type TimeFilterKey = (typeof TIME_FILTER_KEYS)[number];
+
+const OWNER_FILTER_KEYS = ["creditor", "creator", "debtor"] as const;
+type OwnerFilterKey = (typeof OWNER_FILTER_KEYS)[number];
+type Filters = Partial<Record<OwnerFilterKey | TimeFilterKey, string>>;
 
 function toFilters(searchParams: ReadonlyURLSearchParams) {
 	const params: Filters = {};
 	searchParams.forEach((value, key) => {
-		if (FILTER_KEYS.includes(key as FilterKey)) {
-			params[key as FilterKey] = value;
+		if (OWNER_FILTER_KEYS.includes(key as OwnerFilterKey) || TIME_FILTER_KEYS.includes(key as TimeFilterKey)) {
+			params[key as OwnerFilterKey] = value;
 		}
 	});
 
@@ -41,7 +46,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 	const router = useRouter();
 
 	const onFilterChange = React.useCallback(
-		(filterKey: FilterKey, filterValue: string | null) => {
+		(filterKey: OwnerFilterKey | TimeFilterKey, filterValue: string | null) => {
 			const updatedFilters = { ...filters };
 
 			if (filterValue !== null) {
@@ -57,6 +62,26 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 		[filters, router]
 	);
 
+	const createOwnerFilter = React.useCallback(
+		(filterKey: OwnerFilterKey) => {
+			return {
+				active: filters[filterKey] === "me",
+				onClick: () => onFilterChange(filterKey, filters[filterKey] === undefined ? "me" : null)
+			};
+		},
+		[filters, onFilterChange]
+	);
+
+	const createTimeFilter = React.useCallback(
+		(filterKey: TimeFilterKey, duration: string) => {
+			return {
+				active: filters[filterKey] === duration,
+				onClick: () => onFilterChange(filterKey, filters[filterKey] !== duration ? duration : null)
+			};
+		},
+		[filters, onFilterChange]
+	);
+
 	return (
 		<VStack width="100%" gap="{spacing.4}">
 			<HStack width="100%" justifyContent="space-between">
@@ -66,33 +91,18 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 				</LinkButton>
 			</HStack>
 			<HStack width="100%">
-				<FilterButton
-					active={filters.creator === "me"}
-					onClick={() => {
-						onFilterChange("creator", filters.creator === undefined ? "me" : null);
-					}}>
-					Bills I created
-				</FilterButton>
-				<FilterButton
-					active={filters.creditor === "me"}
-					onClick={() => {
-						onFilterChange("creditor", filters.creditor === undefined ? "me" : null);
-					}}>
-					Bills owed to me
-				</FilterButton>
-				<FilterButton
-					active={filters.debtor === "me"}
-					onClick={() => {
-						onFilterChange("debtor", filters.debtor === undefined ? "me" : null);
-					}}>
-					Bills I owe
-				</FilterButton>
+				<FilterButton {...createOwnerFilter("creator")}>My Created Bills</FilterButton>
+				<FilterButton {...createOwnerFilter("creditor")}>My Credits</FilterButton>
+				<FilterButton {...createOwnerFilter("debtor")}>My Debts</FilterButton>
+				<FilterButton {...createTimeFilter("since", "7d")}>Last 7 days</FilterButton>
+				<FilterButton {...createTimeFilter("since", "30d")}>Last 30 days</FilterButton>
 			</HStack>
 			<Table.Root size="md" interactive variant="outline">
 				<Table.Header>
 					<Table.Row>
 						<Table.ColumnHeader>ID</Table.ColumnHeader>
 						<Table.ColumnHeader>Description</Table.ColumnHeader>
+						<Table.ColumnHeader>Created</Table.ColumnHeader>
 						<Table.ColumnHeader>Creator</Table.ColumnHeader>
 						<Table.ColumnHeader>Creditor</Table.ColumnHeader>
 						<Table.ColumnHeader>Debtors</Table.ColumnHeader>
@@ -103,6 +113,9 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 						<LinkedTableRow key={item.id} href={`/bills/${item.id}`}>
 							<Table.Cell>{item.id.slice(0, 6)}</Table.Cell>
 							<Table.Cell>{item.description}</Table.Cell>
+							<Table.Cell title={item.createdAt ? format(new Date(item.createdAt), "PPpp") : undefined}>
+								{item.createdAt ? formatDistanceToNow(new Date(item.createdAt), { addSuffix: true }) : undefined}
+							</Table.Cell>
 							<Table.Cell>{item.creator.username}</Table.Cell>
 							<Table.Cell>
 								{item.bill_members
@@ -116,7 +129,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 									.join(", ")}
 							</Table.Cell>
 							<Table.Cell>
-								{_.sortBy(item.bill_members, [(billMember) => billMember.user?.id])
+								{_.sortBy(item.bill_members, [(billMember) => billMember.user?.id !== props.currentUserId, (billMember) => billMember.user?.id])
 									.flatMap((billMember) => {
 										if (billMember.role === "Creditor") {
 											return [];

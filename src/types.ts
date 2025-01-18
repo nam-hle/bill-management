@@ -35,11 +35,11 @@ export interface BillFormState {
 	createdAt: string | null;
 	updatedAt: string | null;
 	creditor?: {
-		userId?: string;
+		user?: { id: string };
 		amount?: number;
 	};
 	debtors: Array<{
-		userId?: string;
+		user?: { id: string };
 		amount?: number;
 	}>;
 }

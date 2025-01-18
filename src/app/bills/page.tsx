@@ -14,7 +14,7 @@ interface Props {
 
 export default async function BillsPage(props: Props) {
 	const searchParams = await props.searchParams;
-	const { creditor, debtor, creator } = searchParams;
+	const { creditor, debtor, creator, since } = searchParams;
 
 	const supabase = await createClient();
 
@@ -38,12 +38,17 @@ export default async function BillsPage(props: Props) {
 		throw new Error("Expected a single userId");
 	}
 
+	if (Array.isArray(since)) {
+		throw new Error("Expected a single userId");
+	}
+
 	const users = await UsersControllers.getUsers(supabase);
 	const bills = await BillsControllers.getBillsByMemberId(supabase, {
+		since,
 		memberId: currentUser.id,
-		creditorId: creditor === "me" ? currentUser.id : creditor,
 		debtorId: debtor === "me" ? currentUser.id : debtor,
-		creatorId: creator === "me" ? currentUser.id : creator
+		creatorId: creator === "me" ? currentUser.id : creator,
+		creditorId: creditor === "me" ? currentUser.id : creditor
 	});
 
 	const membersData = await BillMembersControllers.getAll(supabase);
@@ -60,7 +65,7 @@ export default async function BillsPage(props: Props) {
 
 	return (
 		<VStack gap="{spacing.4}" alignItems="flex-start">
-			<BillsTable bills={bills ?? []} />
+			<BillsTable bills={bills ?? []} currentUserId={currentUser.id} />
 			<BalancesTable balances={balances} users={users ?? []} />
 		</VStack>
 	);

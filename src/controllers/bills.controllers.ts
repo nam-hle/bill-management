@@ -25,22 +25,24 @@ export namespace BillsControllers {
 
 	export async function getBillsByMemberId(
 		supabase: SupabaseInstance,
-		filters: { creditorId: string | undefined; memberId: string; debtorId: string | undefined; creatorId: string | undefined }
+		filters: {
+			creditorId: string | undefined;
+			memberId: string;
+			debtorId: string | undefined;
+			creatorId: string | undefined;
+			since: string | undefined;
+		}
 	): Promise<ClientBill[]> {
-		const { memberId, creditorId, debtorId, creatorId } = filters;
+		const { memberId, creditorId, debtorId, creatorId, since } = filters;
 
-		let billMembersQuery = supabase.from("bill_members").select(`billId`);
+		let billMembersQuery = supabase.from("bill_members").select(`billId`).eq(`userId`, memberId);
 
-		if (Object.values(filters).filter(Boolean).length === 1) {
-			billMembersQuery = billMembersQuery.eq(`userId`, memberId);
-		} else {
-			if (creditorId !== undefined) {
-				billMembersQuery = billMembersQuery.eq("userId", creditorId).eq("role", "Creditor");
-			}
+		if (creditorId !== undefined) {
+			billMembersQuery = billMembersQuery.eq("userId", creditorId).eq("role", "Creditor");
+		}
 
-			if (debtorId !== undefined) {
-				billMembersQuery = billMembersQuery.eq("userId", debtorId).eq("role", "Debtor");
-			}
+		if (debtorId !== undefined) {
+			billMembersQuery = billMembersQuery.eq("userId", debtorId).eq("role", "Debtor");
 		}
 
 		const billMembers = (await billMembersQuery).data ?? [];
@@ -53,6 +55,20 @@ export namespace BillsControllers {
 				billIDs,
 				createdBills.map(({ id }) => id)
 			);
+		}
+
+		if (since !== undefined && /^\w+d$/.test(since)) {
+			const days = parseInt(since.replace("d", ""), 10);
+
+			if (!isNaN(days)) {
+				const date = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+				const timeBills = (await supabase.from("bills").select(`id`).gt("createdAt", date)).data ?? [];
+
+				billIDs = _.intersection(
+					billIDs,
+					timeBills.map(({ id }) => id)
+				);
+			}
 		}
 
 		const { data: bills } = await supabase.from("bills").select(BILLS_SELECT).in("id", billIDs).order("createdAt", { ascending: false });
