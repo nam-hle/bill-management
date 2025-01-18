@@ -22,8 +22,6 @@ export const BillForm: React.FC<{
 	const [formState, setFormState] = React.useState<BillFormState>(() => props.formState);
 	const router = useRouter();
 
-	console.log(formState);
-
 	const onSubmit = React.useCallback(async () => {
 		if (formState.kind === FormKind.CREATE) {
 			await fetch("/api/bills", {
@@ -190,7 +188,7 @@ export const MemberInputs: React.FC<{
 	memberIndex: number;
 	users: ClientUser[];
 	disabled?: boolean;
-	value: { userId?: string; amount?: number } | undefined;
+	value: { userId?: string; amount?: number };
 	onValueChange: (value: { userId?: string; amount?: number } | null) => void;
 }> = ({ users, memberIndex, memberKind, value, disabled, onValueChange }) => {
 	const label = memberKind === "creditor" ? "Creditor" : `Debtor ${memberIndex + 1}`;

@@ -10,6 +10,9 @@ export default async function NewBillPage() {
 	const users = await UsersControllers.getUsers(supabase);
 
 	return (
-		<BillForm users={users} formState={{ kind: FormKind.CREATE, createdAt: null, updatedAt: null, editing: true, description: "", debtors: [] }} />
+		<BillForm
+			users={users}
+			formState={{ kind: FormKind.CREATE, createdAt: null, updatedAt: null, editing: true, creditor: {}, description: "", debtors: [] }}
+		/>
 	);
 }

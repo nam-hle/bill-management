@@ -34,7 +34,7 @@ export interface BillFormState {
 	description: string;
 	createdAt: string | null;
 	updatedAt: string | null;
-	creditor?: {
+	creditor: {
 		userId?: string;
 		amount?: number;
 	};
