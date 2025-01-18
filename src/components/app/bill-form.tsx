@@ -2,6 +2,7 @@
 
 import React from "react";
 import { format } from "date-fns";
+import { useRouter } from "next/navigation";
 import { IoIosAddCircle } from "react-icons/io";
 import { MdEdit, MdCheck, MdCancel } from "react-icons/md";
 import { Text, Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chakra-ui/react";
@@ -10,6 +11,7 @@ import { noop } from "@/utils";
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/app/select";
+import { toaster } from "@/components/ui/toaster";
 import { FormKind, type ClientUser, type BillFormState } from "@/types";
 import { NumberInputRoot, NumberInputField } from "@/components/ui/number-input";
 
@@ -20,6 +22,8 @@ export const BillForm: React.FC<{
 	const { users } = props;
 	const [formState, setFormState] = React.useState<BillFormState>(() => props.formState);
 
+	const router = useRouter();
+
 	const onSubmit = React.useCallback(async () => {
 		if (formState.kind === FormKind.CREATE) {
 			await fetch("/api/bills", {
@@ -28,7 +32,15 @@ export const BillForm: React.FC<{
 					"Content-Type": "application/json"
 				},
 				body: JSON.stringify(formState)
-			}).then((res) => res.json());
+			}).then(() => {
+				router.push("/bills");
+
+				toaster.create({
+					title: "Bill created",
+					description: "Bill has been created successfully",
+					type: "success"
+				});
+			});
 
 			return;
 		}
@@ -44,7 +56,7 @@ export const BillForm: React.FC<{
 
 			return;
 		}
-	}, [formState]);
+	}, [formState, router]);
 
 	return (
 		<Stack gap="{spacing.4}">
@@ -53,9 +65,9 @@ export const BillForm: React.FC<{
 				<GridItem colSpan={{ base: 5 }}>
 					<Field required label="Description">
 						<Input
-							disabled={!formState.editing}
 							value={formState.description}
 							placeholder="Enter bill description"
+							disabled={!formState.editing && formState.kind === FormKind.UPDATE}
 							onChange={(e) =>
 								setFormState((prev) => ({
 									...prev,
@@ -75,7 +87,9 @@ export const BillForm: React.FC<{
 					users={users}
 					memberIndex={0}
 					memberKind="creditor"
+					formKind={formState.kind}
 					value={formState.creditor}
+					editing={formState.editing}
 					onValueChange={(newValue) => {
 						if (newValue === null) {
 							throw new Error("Creditor is required");
@@ -92,6 +106,7 @@ export const BillForm: React.FC<{
 							value={debtor}
 							memberIndex={index}
 							memberKind="debtor"
+							formKind={formState.kind}
 							onValueChange={(newValue) => {
 								setFormState((prev) => ({
 									...prev,
@@ -149,12 +164,13 @@ export const BillForm: React.FC<{
 
 export const MemberInputs: React.FC<{
 	memberKind: "creditor" | "debtor";
+	formKind: FormKind;
 	memberIndex: number;
 	users: ClientUser[];
 	editing?: boolean;
 	value: { userId?: string; amount?: number } | undefined;
 	onValueChange: (value: { userId?: string; amount?: number } | null) => void;
-}> = ({ users, memberIndex, memberKind, value, onValueChange, editing }) => {
+}> = ({ users, memberIndex, memberKind, value, formKind, onValueChange, editing }) => {
 	const label = memberKind === "creditor" ? "Creditor" : `Debtor ${memberIndex + 1}`;
 
 	return (
@@ -162,8 +178,8 @@ export const MemberInputs: React.FC<{
 			<GridItem colSpan={{ base: 4 }}>
 				<Select
 					label={label}
-					disabled={!editing}
 					value={value?.userId}
+					disabled={!editing && formKind === FormKind.UPDATE}
 					onValueChange={(userId) => onValueChange({ ...value, userId })}
 					items={users.map((user) => ({ label: user.fullName, value: user.id }))}
 				/>
@@ -174,8 +190,8 @@ export const MemberInputs: React.FC<{
 					<NumberInputRoot
 						min={0}
 						width="100%"
-						disabled={!editing}
 						value={String(value?.amount ?? "")}
+						disabled={!editing && formKind === FormKind.UPDATE}
 						onValueChange={(e) => onValueChange({ ...value, amount: parseInt(e.value, 10) })}>
 						<NumberInputField />
 					</NumberInputRoot>
@@ -183,7 +199,7 @@ export const MemberInputs: React.FC<{
 			</GridItem>
 
 			<GridItem alignSelf="flex-end" justifySelf="flex-end">
-				{editing && (
+				{editing && memberKind === "debtor" && (
 					<Button variant="subtle" colorPalette="red" onClick={() => onValueChange(null)}>
 						Delete
 					</Button>

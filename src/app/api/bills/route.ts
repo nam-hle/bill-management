@@ -13,6 +13,7 @@ export async function POST(request: Request) {
 			throw new Error("Creditor is required");
 		}
 
+		// Step 1: Insert bill
 		const bill = await BillsControllers.createBill(supabase, { description: payload.description, creatorId: payload.creditor.userId });
 
 		// Step 2: Insert bill members
