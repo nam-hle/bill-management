@@ -35,11 +35,11 @@ export interface BillFormState {
 	createdAt: string | null;
 	updatedAt: string | null;
 	creditor?: {
-		user?: { id: string };
+		userId?: string;
 		amount?: number;
 	};
 	debtors: Array<{
-		user?: { id: string };
+		userId?: string;
 		amount?: number;
 	}>;
 }
@@ -64,17 +64,13 @@ export interface ClientBill {
 
 export interface ClientBillMember {
 	id?: string;
+	userId: string;
 	amount: number;
 	role: BillMemberRole;
-	user: {
-		id: string;
-		fullName: string | null;
-		username: string | null;
-	};
 }
 export namespace ClientBillMember {
 	export function isEqual(a: ClientBillMember, b: ClientBillMember) {
-		return a.user.id === b.user.id && a.role === b.role;
+		return a.userId === b.userId && a.role === b.role;
 	}
 }
 

@@ -27,7 +27,7 @@ export default async function UserPage({ params }: Props) {
 	).map((bill) => {
 		return {
 			...bill,
-			bill_members: bill.bill_members.filter((member) => member.user.id === userId)
+			bill_members: bill.bill_members.filter((member) => member.userId === userId)
 		};
 	});
 

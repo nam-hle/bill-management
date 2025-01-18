@@ -73,7 +73,14 @@ export namespace BillsControllers {
 
 		const { data: bills } = await supabase.from("bills").select(BILLS_SELECT).in("id", billIDs).order("createdAt", { ascending: false });
 
-		return bills ?? [];
+		return (
+			bills?.map((bill) => ({
+				...bill,
+				bill_members: bill.bill_members.map((bm) => {
+					return { ...bm, userId: bm.user.id };
+				})
+			})) ?? []
+		);
 	}
 
 	export async function getBillById(supabase: SupabaseInstance, id: string): Promise<ClientBill> {
@@ -83,7 +90,12 @@ export namespace BillsControllers {
 			throw `Bill with id ${id} not found`;
 		}
 
-		return data;
+		return {
+			...data,
+			bill_members: data.bill_members.map((bm) => {
+				return { ...bm, userId: bm.user.id };
+			})
+		};
 	}
 
 	export async function updateById(supabase: SupabaseInstance, id: string, payload: { description: string }) {

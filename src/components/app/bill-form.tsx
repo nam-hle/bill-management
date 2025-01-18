@@ -22,6 +22,8 @@ export const BillForm: React.FC<{
 	const [formState, setFormState] = React.useState<BillFormState>(() => props.formState);
 	const router = useRouter();
 
+	console.log(formState);
+
 	const onSubmit = React.useCallback(async () => {
 		if (formState.kind === FormKind.CREATE) {
 			await fetch("/api/bills", {
@@ -188,11 +190,11 @@ export const MemberInputs: React.FC<{
 	memberIndex: number;
 	users: ClientUser[];
 	disabled?: boolean;
-	value: { user?: { id: string }; amount?: number } | undefined;
-	onValueChange: (value: { user?: { id: string }; amount?: number } | null) => void;
+	value: { userId?: string; amount?: number } | undefined;
+	onValueChange: (value: { userId?: string; amount?: number } | null) => void;
 }> = ({ users, memberIndex, memberKind, value, disabled, onValueChange }) => {
 	const label = memberKind === "creditor" ? "Creditor" : `Debtor ${memberIndex + 1}`;
-	console.log(users);
+
 	const [numberInput, setNumberInput] = React.useState(() => String(value?.amount ?? 0));
 	const [errorText, setErrorText] = React.useState(() => "");
 
@@ -202,9 +204,9 @@ export const MemberInputs: React.FC<{
 				<Select
 					label={label}
 					disabled={disabled}
-					value={value?.user?.id}
+					value={value?.userId}
+					onValueChange={(userId) => onValueChange({ ...value, userId })}
 					items={users.map((user) => ({ label: user.fullName, value: user.id }))}
-					onValueChange={(userId) => onValueChange({ ...value, user: { id: userId } })}
 				/>
 			</GridItem>
 

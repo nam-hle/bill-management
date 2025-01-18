@@ -121,7 +121,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 								{item.bill_members
 									.flatMap((billMember) => {
 										if (billMember.role === "Creditor") {
-											return `${billMember.user?.username} (${billMember.amount})`;
+											return `${billMember.userId} (${billMember.amount})`;
 										}
 
 										return [];
@@ -129,13 +129,13 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 									.join(", ")}
 							</Table.Cell>
 							<Table.Cell>
-								{_.sortBy(item.bill_members, [(billMember) => billMember.user?.id !== props.currentUserId, (billMember) => billMember.user?.id])
+								{_.sortBy(item.bill_members, [(billMember) => billMember.userId !== props.currentUserId, (billMember) => billMember.userId])
 									.flatMap((billMember) => {
 										if (billMember.role === "Creditor") {
 											return [];
 										}
 
-										return `${billMember.user?.username} (${billMember.amount})`;
+										return `${billMember.userId} (${billMember.amount})`;
 									})
 									.join(", ")}
 							</Table.Cell>

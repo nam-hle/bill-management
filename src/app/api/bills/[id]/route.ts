@@ -1,7 +1,7 @@
 import { createClient } from "@/supabase/server";
-import { ClientBillMember, type BillFormState } from "@/types";
 import { BillsControllers } from "@/controllers/bills.controllers";
 import { BillMembersControllers } from "@/controllers/bill-members.controllers";
+import { ClientBillMember, type BillFormState, type BillMemberRole } from "@/types";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
 	try {
@@ -26,25 +26,25 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 		}
 
 		// Step 2: Insert bill members
-		const payloadBillMembers: ClientBillMember[] = [];
+		const payloadBillMembers: { userId: string; amount: number; role: BillMemberRole }[] = [];
 
-		if (!payload.creditor?.user?.id || !payload.creditor.amount) {
+		if (!payload.creditor?.userId || !payload.creditor.amount) {
 			throw new Error("Creditor is required");
 		}
 
 		payloadBillMembers.push({
-			user: { id: payload.creditor.user?.id, fullName: null, username: null },
+			userId: payload.creditor.userId,
 			amount: payload.creditor.amount,
 			role: "Creditor"
 		});
 
 		payload.debtors.forEach((debtor) => {
-			if (!debtor.user?.id || !debtor.amount) {
+			if (!debtor.userId || !debtor.amount) {
 				throw new Error("Debtor is missing userId or amount");
 			}
 
 			payloadBillMembers.push({
-				user: { id: debtor.user?.id, fullName: null, username: null },
+				userId: debtor.userId,
 				amount: debtor.amount,
 				role: "Debtor"
 			});
@@ -54,28 +54,28 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 		await BillMembersControllers.updateMany(
 			supabase,
-			comparisonResult.updateBillMembers.map((update) => ({ billId, userId: update.user.id, ...update }))
+			comparisonResult.updateBillMembers.map((update) => ({ billId, ...update }))
 		);
 
 		await BillMembersControllers.createMany(
 			supabase,
-			comparisonResult.addBillMembers.map((add) => ({ billId, userId: add.user.id, ...add }))
+			comparisonResult.addBillMembers.map((add) => ({ billId, ...add }))
 		);
 
 		await BillMembersControllers.deleteMany(
 			supabase,
-			comparisonResult.removeBillMembers.map((remove) => ({ billId, userId: remove.user.id, ...remove }))
+			comparisonResult.removeBillMembers.map((remove) => ({ billId, ...remove }))
 		);
 
 		// Step 3: Insert notifications
 		const updateAmountNotificationRequests = comparisonResult.updateBillMembers.map((debtor) => {
-			if (!debtor.user.id || !debtor.amount) {
+			if (!debtor.userId || !debtor.amount) {
 				throw new Error("Debtor is missing userId or amount");
 			}
 
 			return supabase.from("notifications").insert({
 				type: "BillUpdated",
-				userId: debtor.user.id,
+				userId: debtor.userId,
 				billId,
 				triggerId: trigger.id,
 				metadata: { previous: { amount: debtor.previousAmount }, current: { amount: debtor.amount } }
