@@ -31,7 +31,7 @@ export default async function UsersPage() {
 					{users?.map((item) => (
 						<LinkedTableRow key={item.id} href={`/users/${item.id}`}>
 							<Table.Cell>{item.id.slice(0, 6)}</Table.Cell>
-							<Table.Cell>{item.username}</Table.Cell>
+							<Table.Cell>{item.fullName}</Table.Cell>
 						</LinkedTableRow>
 					))}
 				</Table.Body>

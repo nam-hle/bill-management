@@ -39,6 +39,7 @@ function toFilters(searchParams: ReadonlyURLSearchParams) {
 
 export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 	const { bills } = props;
+	console.log(bills);
 	const searchParams = useSearchParams();
 
 	const filters = toFilters(searchParams);
@@ -116,27 +117,11 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 							<Table.Cell title={item.createdAt ? format(new Date(item.createdAt), "PPpp") : undefined}>
 								{item.createdAt ? formatDistanceToNow(new Date(item.createdAt), { addSuffix: true }) : undefined}
 							</Table.Cell>
-							<Table.Cell>{item.creator.username}</Table.Cell>
+							<Table.Cell>{item.creator.fullName}</Table.Cell>
+							<Table.Cell>{`${item.creditor.fullName} (${item.creditor.amount})`}</Table.Cell>
 							<Table.Cell>
-								{item.bill_members
-									.flatMap((billMember) => {
-										if (billMember.role === "Creditor") {
-											return `${billMember.userId} (${billMember.amount})`;
-										}
-
-										return [];
-									})
-									.join(", ")}
-							</Table.Cell>
-							<Table.Cell>
-								{_.sortBy(item.bill_members, [(billMember) => billMember.userId !== props.currentUserId, (billMember) => billMember.userId])
-									.flatMap((billMember) => {
-										if (billMember.role === "Creditor") {
-											return [];
-										}
-
-										return `${billMember.userId} (${billMember.amount})`;
-									})
+								{_.sortBy(item.debtors, [(debtor) => debtor.userId !== props.currentUserId, (billMember) => billMember.userId])
+									.map((billMember) => `${billMember.fullName} (${billMember.amount})`)
 									.join(", ")}
 							</Table.Cell>
 						</LinkedTableRow>

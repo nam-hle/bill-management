@@ -1,7 +1,7 @@
 import React from "react";
 import { Table, VStack, Heading } from "@chakra-ui/react";
 
-import { type BillMemberRole } from "@/types";
+import { type ClientBill } from "@/types";
 import { createClient } from "@/supabase/server";
 import { LinkedTableRow } from "@/components/app/table-body-row";
 import { UsersControllers } from "@/controllers/users.controllers";
@@ -16,29 +16,22 @@ export default async function UserPage({ params }: Props) {
 	const supabase = await createClient();
 
 	const userInfo = await UsersControllers.getUserById(supabase, userId);
-	const userBillsData = (
-		await BillsControllers.getBillsByMemberId(supabase, {
-			memberId: userId,
-			creditorId: undefined,
-			debtorId: undefined,
-			creatorId: undefined,
-			since: undefined
-		})
-	).map((bill) => {
-		return {
-			...bill,
-			bill_members: bill.bill_members.filter((member) => member.userId === userId)
-		};
+	const userBillsData = await BillsControllers.getBillsByMemberId(supabase, {
+		memberId: userId,
+		creditorId: undefined,
+		debtorId: undefined,
+		creatorId: undefined,
+		since: undefined
 	});
 
 	const total = (userBillsData ?? []).reduce(
-		(acc, item) => {
-			const balances = calculateMoney(item.bill_members);
-			acc.net += balances.net;
-			acc.paid += balances.paid ?? 0;
-			acc.owed += balances.owed ?? 0;
+		(result, bill) => {
+			const balances = calculateMoney(bill, userId);
+			result.net += balances.net;
+			result.paid += balances.paid ?? 0;
+			result.owed += balances.owed ?? 0;
 
-			return acc;
+			return result;
 		},
 		{ net: 0, paid: 0, owed: 0 }
 	);
@@ -58,21 +51,19 @@ export default async function UserPage({ params }: Props) {
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
-					{userBillsData
-						?.filter((e) => e.bill_members.length > 0)
-						.map((item) => {
-							const balances = calculateMoney(item.bill_members);
+					{userBillsData.map((bill) => {
+						const { paid, owed, net } = calculateMoney(bill, userId);
 
-							return (
-								<LinkedTableRow key={item.id} href={`/bills/${item.id}`}>
-									<Table.Cell>{item.id.slice(0, 6)}</Table.Cell>
-									<Table.Cell>{item.description}</Table.Cell>
-									<Table.Cell>{balances.paid}</Table.Cell>
-									<Table.Cell>{balances.owed}</Table.Cell>
-									<Table.Cell>{balances.net}</Table.Cell>
-								</LinkedTableRow>
-							);
-						})}
+						return (
+							<LinkedTableRow key={bill.id} href={`/bills/${bill.id}`}>
+								<Table.Cell>{bill.id.slice(0, 6)}</Table.Cell>
+								<Table.Cell>{bill.description}</Table.Cell>
+								<Table.Cell>{paid}</Table.Cell>
+								<Table.Cell>{owed}</Table.Cell>
+								<Table.Cell>{net}</Table.Cell>
+							</LinkedTableRow>
+						);
+					})}
 				</Table.Body>
 				<Table.Footer>
 					<Table.Row>
@@ -94,42 +85,9 @@ interface BillBalance {
 	readonly owed?: number;
 }
 
-function calculateMoney(
-	members: {
-		amount: number;
-		role: BillMemberRole;
-	}[]
-): BillBalance {
-	if (members.length === 0) {
-		return { net: 0 };
-	}
+function calculateMoney(bill: ClientBill, userId: string): BillBalance {
+	const paid = bill.creditor.userId === userId ? bill.creditor.amount : 0;
+	const owed = bill.debtors.find((debtor) => debtor.userId === userId)?.amount ?? 0;
 
-	if (members.length === 1) {
-		if (members[0].role === "Creditor") {
-			return { net: members[0].amount, paid: members[0].amount };
-		}
-
-		if (members[0].role === "Debtor") {
-			return { net: -members[0].amount, owed: members[0].amount };
-		}
-
-		throw new Error("Invalid role");
-	}
-
-	if (members.length === 2) {
-		const creditor = members.find((m) => m.role === "Creditor");
-		const debtor = members.find((m) => m.role === "Debtor");
-
-		if (!creditor || !debtor) {
-			throw new Error("Invalid roles");
-		}
-
-		return {
-			net: creditor.amount - debtor.amount,
-			paid: creditor.amount,
-			owed: debtor.amount
-		};
-	}
-
-	throw new Error(`Invalid number of members. Got: ${members.length}`);
+	return { net: paid - owed, paid, owed };
 }

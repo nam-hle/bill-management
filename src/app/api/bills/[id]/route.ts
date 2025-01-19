@@ -1,7 +1,7 @@
 import { createClient } from "@/supabase/server";
 import { BillsControllers } from "@/controllers/bills.controllers";
 import { BillMembersControllers } from "@/controllers/bill-members.controllers";
-import { ClientBillMember, type BillFormState, type BillMemberRole } from "@/types";
+import { type ClientBill, ClientBillMember, type BillFormState, type BillMemberRole } from "@/types";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
 	try {
@@ -50,7 +50,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 			});
 		});
 
-		const comparisonResult = compareBillMembers(currentBill.bill_members, payloadBillMembers);
+		const comparisonResult = compareBillMembers(flaten(currentBill), payloadBillMembers);
 
 		await BillMembersControllers.updateMany(
 			supabase,
@@ -104,7 +104,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 	}
 }
 
-function compareBillMembers(currentBillMembers: ClientBillMember[], payloadBillMembers: ClientBillMember[]) {
+function flaten(clientBill: ClientBill): Omit<ClientBillMember, "fullName">[] {
+	const { creditor, debtors } = clientBill;
+
+	return [creditor, ...debtors];
+}
+
+function compareBillMembers(currentBillMembers: Omit<ClientBillMember, "fullName">[], payloadBillMembers: Omit<ClientBillMember, "fullName">[]) {
 	const addBillMembers = payloadBillMembers.filter((payloadBillMember) => {
 		return !currentBillMembers.some((currentBillMember) => ClientBillMember.isEqual(currentBillMember, payloadBillMember));
 	});

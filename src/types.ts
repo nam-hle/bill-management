@@ -58,18 +58,19 @@ export interface ClientBill {
 	readonly description: string;
 	readonly updatedAt: string | null;
 	readonly createdAt: string | null;
-	readonly bill_members: ClientBillMember[];
-	readonly creator: { username: string | null; fullName: string | null };
+	readonly creditor: ClientBillMember;
+	readonly debtors: ClientBillMember[];
+	readonly creator: { userId: string; fullName: string | null };
 }
 
 export interface ClientBillMember {
-	id?: string;
-	userId: string;
-	amount: number;
-	role: BillMemberRole;
+	readonly userId: string;
+	readonly amount: number;
+	readonly role: BillMemberRole;
+	readonly fullName: string | null;
 }
 export namespace ClientBillMember {
-	export function isEqual(a: ClientBillMember, b: ClientBillMember) {
+	export function isEqual(a: Omit<ClientBillMember, "fullName">, b: Omit<ClientBillMember, "fullName">) {
 		return a.userId === b.userId && a.role === b.role;
 	}
 }

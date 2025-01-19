@@ -9,8 +9,8 @@ export namespace BillsControllers {
     description,
     createdAt,
     updatedAt,
-    creator:creatorId (username, fullName),
-    bill_members (id, user:userId (id, username, fullName), amount, role)
+    creator:creatorId (userId:id, fullName),
+    bill_members (user:userId (userId:id, fullName), amount, role)
   `;
 
 	export async function createBill(supabase: SupabaseInstance, payload: { description: string; creatorId: string }) {
@@ -73,15 +73,45 @@ export namespace BillsControllers {
 
 		const { data: bills } = await supabase.from("bills").select(BILLS_SELECT).in("id", billIDs).order("createdAt", { ascending: false });
 
-		return (
-			bills?.map((bill) => ({
-				...bill,
-				bill_members: bill.bill_members.map((bm) => {
-					return { ...bm, userId: bm.user.id };
-				})
-			})) ?? []
-		);
+		return bills?.map(toClientBill) ?? [];
 	}
+
+	function toClientBill(bill: BillSelectResult): ClientBill {
+		const { bill_members, ...rest } = bill;
+
+		const creditor = bill_members.find((bm) => bm.role === "Creditor");
+		const debtors = bill_members.filter((bm) => bm.role === "Debtor");
+
+		if (!creditor) {
+			throw new Error("Creator not found");
+		}
+
+		return {
+			...rest,
+			creditor: toMember(creditor),
+			debtors: debtors.map(toMember)
+		};
+
+		function toMember(billMember: BillMemberSelectResult) {
+			const { amount, role, user } = billMember;
+
+			return { amount, role, ...user };
+		}
+	}
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	async function __getBill(supabase: SupabaseInstance) {
+		const { data } = await supabase.from("bills").select(BILLS_SELECT).single();
+
+		if (!data) {
+			throw new Error("Bill not found");
+		}
+
+		return data;
+	}
+
+	type BillSelectResult = Awaited<ReturnType<typeof __getBill>>;
+	type BillMemberSelectResult = BillSelectResult["bill_members"][number];
 
 	export async function getBillById(supabase: SupabaseInstance, id: string): Promise<ClientBill> {
 		const { data } = await supabase.from("bills").select(BILLS_SELECT).eq("id", id).single();
@@ -90,12 +120,7 @@ export namespace BillsControllers {
 			throw `Bill with id ${id} not found`;
 		}
 
-		return {
-			...data,
-			bill_members: data.bill_members.map((bm) => {
-				return { ...bm, userId: bm.user.id };
-			})
-		};
+		return toClientBill(data);
 	}
 
 	export async function updateById(supabase: SupabaseInstance, id: string, payload: { description: string }) {
