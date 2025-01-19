@@ -86,7 +86,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 	return (
 		<VStack width="100%" gap="{spacing.4}">
 			<HStack width="100%" justifyContent="space-between">
-				<Heading>{props.title ?? "Bills"}</Heading>
+				<Heading as="h1">{props.title ?? "Bills"}</Heading>
 				{props.action}
 			</HStack>
 			{props.showFilters && (
@@ -105,8 +105,8 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 						<Table.ColumnHeader>Description</Table.ColumnHeader>
 						<Table.ColumnHeader>Created</Table.ColumnHeader>
 						<Table.ColumnHeader>Creator</Table.ColumnHeader>
-						<Table.ColumnHeader>Creditor</Table.ColumnHeader>
-						<Table.ColumnHeader>Debtors</Table.ColumnHeader>
+						<Table.ColumnHeader title="The one who made the payment for the bill">Creditor</Table.ColumnHeader>
+						<Table.ColumnHeader title="The ones who need to pay back the creditor">Debtors</Table.ColumnHeader>
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>

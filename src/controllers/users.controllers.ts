@@ -23,27 +23,24 @@ export namespace UsersControllers {
 	}
 
 	export async function getBalance(supabase: SupabaseInstance, userId: string): Promise<Balance> {
-		const { data } = await supabase.from("bill_members").select("amount, role").eq("userId", userId);
+		const { data: sumData } = await supabase.from("bill_members").select("amount.sum(), role").eq("userId", userId);
 
-		if (!data) {
-			throw new Error("Error fetching balance");
-		}
+		const owed = sumData?.find(({ role }) => role === "Debtor")?.sum || 0;
+		const paid = sumData?.find(({ role }) => role === "Creditor")?.sum || 0;
 
-		return data.reduce(
-			(result, billMember) => {
-				if (billMember.role === "Creditor") {
-					result.net += billMember.amount;
-					result.paid += billMember.amount;
-				} else if (billMember.role === "Debtor") {
-					result.net -= billMember.amount;
-					result.owed += billMember.amount;
-				} else {
-					throw new Error("Invalid role");
-				}
+		const { data: billMembers } = await supabase.from("bill_members").select("amount, role, billId").eq("userId", userId);
 
-				return result;
-			},
-			{ net: 0, paid: 0, owed: 0 }
-		);
+		const selfPaid =
+			billMembers
+				?.map((billMember) => {
+					if (billMember.role === "Debtor" && billMembers?.some((bm) => bm.billId === billMember.billId && bm.role === "Creditor")) {
+						return billMember.amount;
+					}
+
+					return 0;
+				})
+				.reduce((acc, val) => acc + val, 0) ?? 0;
+
+		return { owed: owed - selfPaid, paid: paid - selfPaid, net: paid - owed };
 	}
 }

@@ -1,12 +1,13 @@
 import React from "react";
 import { MdArrowRightAlt } from "react-icons/md";
-import { Box, Text, HStack, Button, Heading } from "@chakra-ui/react";
+import { Stack, HStack, Heading, Separator } from "@chakra-ui/react";
 
 import { createClient } from "@/supabase/server";
 import { LinkButton } from "@/components/ui/link-button";
 import { BillsTable } from "@/components/app/bills-table";
 import { UsersControllers } from "@/controllers/users.controllers";
 import { BillsControllers } from "@/controllers/bills.controllers";
+import { StatRoot, StatLabel, StatValueText } from "@/components/ui/stat";
 
 export default async function DashboardPage() {
 	const supabase = await createClient();
@@ -23,31 +24,27 @@ export default async function DashboardPage() {
 	const bills = await BillsControllers.getBillsByMemberId(supabase, { memberId: currentUser.id });
 
 	return (
-		<Box>
-			<Heading mb={4} as="h1">
-				Dashboard
-			</Heading>
+		<Stack gap={6}>
+			<Stack gap={2}>
+				<Heading as="h1">Balance</Heading>
 
-			<Box p={6} mb={4} shadow="md" rounded="md" bg="gray.100">
-				<Heading mb={4} as="h2" size="md">
-					Balance Summary
-				</Heading>
 				<HStack mb={2} justify="space-between">
-					<Text>Total Owed:</Text>
-					<Text fontWeight="bold">{balance.owed.toFixed(2)}</Text>
+					<StatRoot>
+						<StatLabel info="The total amount you need to pay back to others">Owed</StatLabel>
+						<StatValueText value={balance.owed} />
+					</StatRoot>
+					<StatRoot>
+						<StatLabel info="The total amount you have paid on behalf of others">Paid</StatLabel>
+						<StatValueText value={balance.paid} />
+					</StatRoot>
+					<StatRoot>
+						<StatLabel>Net Balance</StatLabel>
+						<StatValueText value={balance.net} />
+					</StatRoot>
 				</HStack>
-				<HStack mb={2} justify="space-between">
-					<Text>Total To Receive:</Text>
-					<Text fontWeight="bold">{balance.paid.toFixed(2)}</Text>
-				</HStack>
-				<HStack justify="space-between">
-					<Text>Net Balance:</Text>
-					<Text fontWeight="bold">{balance.net.toFixed(2)}</Text>
-				</HStack>
-				<Button mt={4} colorScheme="blue">
-					View Details
-				</Button>
-			</Box>
+			</Stack>
+
+			<Separator variant="solid" />
 
 			<BillsTable
 				bills={bills}
@@ -59,6 +56,12 @@ export default async function DashboardPage() {
 					</LinkButton>
 				}
 			/>
-		</Box>
+		</Stack>
 	);
 }
+
+const formatNumber = (number: number) => {
+	return new Intl.NumberFormat("de-DE", {
+		maximumFractionDigits: 0
+	}).format(number);
+};
