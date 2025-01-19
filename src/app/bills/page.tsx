@@ -1,7 +1,9 @@
 import React from "react";
 import { VStack } from "@chakra-ui/react";
+import { IoIosAddCircle } from "react-icons/io";
 
 import { createClient } from "@/supabase/server";
+import { LinkButton } from "@/components/ui/link-button";
 import { BillsTable } from "@/components/app/bills-table";
 import { BalancesTable } from "@/components/app/balances-table";
 import { UsersControllers } from "@/controllers/users.controllers";
@@ -65,7 +67,16 @@ export default async function BillsPage(props: Props) {
 
 	return (
 		<VStack gap="{spacing.4}" alignItems="flex-start">
-			<BillsTable bills={bills ?? []} currentUserId={currentUser.id} />
+			<BillsTable
+				showFilters
+				bills={bills ?? []}
+				currentUserId={currentUser.id}
+				action={
+					<LinkButton variant="solid" href="/bills/new">
+						<IoIosAddCircle /> New
+					</LinkButton>
+				}
+			/>
 			<BalancesTable balances={balances} users={users ?? []} />
 		</VStack>
 	);

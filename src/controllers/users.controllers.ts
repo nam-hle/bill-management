@@ -1,4 +1,4 @@
-import { type ClientUser } from "@/types";
+import { type Balance, type ClientUser } from "@/types";
 import { type SupabaseInstance } from "@/supabase/server";
 
 export namespace UsersControllers {
@@ -20,5 +20,30 @@ export namespace UsersControllers {
 		}
 
 		return data;
+	}
+
+	export async function getBalance(supabase: SupabaseInstance, userId: string): Promise<Balance> {
+		const { data } = await supabase.from("bill_members").select("amount, role").eq("userId", userId);
+
+		if (!data) {
+			throw new Error("Error fetching balance");
+		}
+
+		return data.reduce(
+			(result, billMember) => {
+				if (billMember.role === "Creditor") {
+					result.net += billMember.amount;
+					result.paid += billMember.amount;
+				} else if (billMember.role === "Debtor") {
+					result.net -= billMember.amount;
+					result.owed += billMember.amount;
+				} else {
+					throw new Error("Invalid role");
+				}
+
+				return result;
+			},
+			{ net: 0, paid: 0, owed: 0 }
+		);
 	}
 }

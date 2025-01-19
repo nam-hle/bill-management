@@ -25,8 +25,8 @@ export const RootContainer: React.FC<Container & { user: User | null }> = (props
 				paddingInline="{spacing.8}"
 				justifyContent="space-between">
 				<Stack direction="row" minHeight="48px" gap="{spacing.4}" alignItems="center">
-					<LinkButton href="/users" active={pageName === "users"}>
-						Users
+					<LinkButton href="/" active={pageName === ""}>
+						Dashboard
 					</LinkButton>
 					<LinkButton href="/bills" active={pageName === "bills"}>
 						Bills

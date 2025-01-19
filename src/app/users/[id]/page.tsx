@@ -1,7 +1,7 @@
 import React from "react";
 import { Table, VStack, Heading } from "@chakra-ui/react";
 
-import { type ClientBill } from "@/types";
+import { calculateMoney } from "@/utils";
 import { createClient } from "@/supabase/server";
 import { LinkedTableRow } from "@/components/app/table-body-row";
 import { UsersControllers } from "@/controllers/users.controllers";
@@ -16,13 +16,7 @@ export default async function UserPage({ params }: Props) {
 	const supabase = await createClient();
 
 	const userInfo = await UsersControllers.getUserById(supabase, userId);
-	const userBillsData = await BillsControllers.getBillsByMemberId(supabase, {
-		memberId: userId,
-		creditorId: undefined,
-		debtorId: undefined,
-		creatorId: undefined,
-		since: undefined
-	});
+	const userBillsData = await BillsControllers.getBillsByMemberId(supabase, { memberId: userId });
 
 	const total = (userBillsData ?? []).reduce(
 		(result, bill) => {
@@ -77,17 +71,4 @@ export default async function UserPage({ params }: Props) {
 			</Table.Root>
 		</VStack>
 	);
-}
-
-interface BillBalance {
-	readonly net: number;
-	readonly paid?: number;
-	readonly owed?: number;
-}
-
-function calculateMoney(bill: ClientBill, userId: string): BillBalance {
-	const paid = bill.creditor.userId === userId ? bill.creditor.amount : 0;
-	const owed = bill.debtors.find((debtor) => debtor.userId === userId)?.amount ?? 0;
-
-	return { net: paid - owed, paid, owed };
 }

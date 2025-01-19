@@ -2,20 +2,21 @@
 
 import _ from "lodash";
 import React from "react";
-import { IoIosAddCircle } from "react-icons/io";
 import { format, formatDistanceToNow } from "date-fns";
 import { Table, HStack, VStack, Heading } from "@chakra-ui/react";
 import { useRouter, useSearchParams, type ReadonlyURLSearchParams } from "next/navigation";
 
 import { type ClientBill } from "@/types";
-import { LinkButton } from "@/components/ui/link-button";
 import { FilterButton } from "@/components/app/filter-button";
 import { LinkedTableRow } from "@/components/app/table-body-row";
 
 namespace BillsTable {
 	export interface Props {
+		readonly title?: string;
 		readonly bills: ClientBill[];
+		readonly showFilters?: boolean;
 		readonly currentUserId: string;
+		readonly action?: React.ReactNode;
 	}
 }
 
@@ -39,7 +40,6 @@ function toFilters(searchParams: ReadonlyURLSearchParams) {
 
 export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 	const { bills } = props;
-	console.log(bills);
 	const searchParams = useSearchParams();
 
 	const filters = toFilters(searchParams);
@@ -86,18 +86,18 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 	return (
 		<VStack width="100%" gap="{spacing.4}">
 			<HStack width="100%" justifyContent="space-between">
-				<Heading>Bills</Heading>
-				<LinkButton variant="solid" href="/bills/new">
-					<IoIosAddCircle /> New
-				</LinkButton>
+				<Heading>{props.title ?? "Bills"}</Heading>
+				{props.action}
 			</HStack>
-			<HStack width="100%">
-				<FilterButton {...createOwnerFilter("creator")}>My Created Bills</FilterButton>
-				<FilterButton {...createOwnerFilter("creditor")}>My Credits</FilterButton>
-				<FilterButton {...createOwnerFilter("debtor")}>My Debts</FilterButton>
-				<FilterButton {...createTimeFilter("since", "7d")}>Last 7 days</FilterButton>
-				<FilterButton {...createTimeFilter("since", "30d")}>Last 30 days</FilterButton>
-			</HStack>
+			{props.showFilters && (
+				<HStack width="100%">
+					<FilterButton {...createOwnerFilter("creator")}>My Created Bills</FilterButton>
+					<FilterButton {...createOwnerFilter("creditor")}>My Credits</FilterButton>
+					<FilterButton {...createOwnerFilter("debtor")}>My Debts</FilterButton>
+					<FilterButton {...createTimeFilter("since", "7d")}>Last 7 days</FilterButton>
+					<FilterButton {...createTimeFilter("since", "30d")}>Last 30 days</FilterButton>
+				</HStack>
+			)}
 			<Table.Root size="md" interactive variant="outline">
 				<Table.Header>
 					<Table.Row>

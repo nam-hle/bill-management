@@ -53,6 +53,12 @@ export interface UserFormState {
 	username?: string;
 }
 
+export interface Balance {
+	readonly net: number;
+	readonly owed: number;
+	readonly paid: number;
+}
+
 export interface ClientBill {
 	readonly id: string;
 	readonly description: string;

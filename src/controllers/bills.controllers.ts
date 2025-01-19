@@ -26,11 +26,11 @@ export namespace BillsControllers {
 	export async function getBillsByMemberId(
 		supabase: SupabaseInstance,
 		filters: {
-			creditorId: string | undefined;
+			creditorId?: string;
 			memberId: string;
-			debtorId: string | undefined;
-			creatorId: string | undefined;
-			since: string | undefined;
+			debtorId?: string;
+			creatorId?: string;
+			since?: string;
 		}
 	): Promise<ClientBill[]> {
 		const { memberId, creditorId, debtorId, creatorId, since } = filters;
