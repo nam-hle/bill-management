@@ -7,7 +7,7 @@
 		"build": "next build",
 		"start": "next start",
 		"watch": "tsc -w",
-		"lint": "next lint && prettier --check .",
+		"lint": "next lint --silent && prettier --check .",
 		"lint:fix": "next lint --fix && prettier --write .",
 		"generate-types": "supabase gen types typescript --project-id kktfrhtzsgvnecsjoxiu > src/database.types.ts && pnpm lint:fix"
 	},
