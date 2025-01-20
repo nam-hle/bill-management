@@ -59,9 +59,3 @@ export default async function DashboardPage() {
 		</Stack>
 	);
 }
-
-const formatNumber = (number: number) => {
-	return new Intl.NumberFormat("de-DE", {
-		maximumFractionDigits: 0
-	}).format(number);
-};
