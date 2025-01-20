@@ -69,7 +69,7 @@ export const NotificationContainer: React.FC<{ user: User }> = ({ user }) => {
 						)}
 					</IconButton>
 				</PopoverTrigger>
-				<PopoverContent minW="30vw">
+				<PopoverContent width="350px">
 					<PopoverArrow />
 					{notifications.length === 0 && (
 						<PopoverBody padding={0}>

@@ -12,7 +12,10 @@ const interSans = Inter({
 });
 
 export const metadata: Metadata = {
-	title: "Bill Management | Nam Le",
+	title: {
+		template: "%s | Bill Management",
+		default: "Bill Management"
+	},
 	description: "Nam Le"
 };
 

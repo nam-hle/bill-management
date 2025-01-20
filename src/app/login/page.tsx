@@ -1,33 +1,12 @@
-"use client";
 import React from "react";
-import { Input, Stack, HStack, Heading } from "@chakra-ui/react";
+import type { Metadata } from "next";
 
-import { Field } from "@/components/ui/field";
-import { Button } from "@/components/ui/button";
-import { PasswordInput } from "@/components/ui/password-input";
+import { LoginForm } from "@/components/app/login-form";
 
-import { login, signup } from "./actions";
+export const metadata: Metadata = {
+	title: "Login"
+};
 
 export default function LoginPage() {
-	const [email, setEmail] = React.useState("");
-	const [password, setPassword] = React.useState("");
-
-	return (
-		<Stack width="30%" gap="{spacing.4}" marginInline="auto">
-			<Heading>Log in</Heading>
-
-			<Field required label="Email">
-				<Input value={email} placeholder="Enter your email" onChange={(e) => setEmail(e.target.value)} />
-			</Field>
-			<Field required label="Password">
-				<PasswordInput size="md" value={password} placeholder="Enter your password" onChange={(e) => setPassword(e.target.value)} />
-			</Field>
-			<HStack justifyContent="space-between">
-				<Button variant="subtle" onClick={() => signup({ email, password })}>
-					Sign up
-				</Button>
-				<Button onClick={() => login({ email, password })}>Log in</Button>
-			</HStack>
-		</Stack>
-	);
+	return <LoginForm />;
 }

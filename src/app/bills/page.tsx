@@ -1,4 +1,5 @@
 import React from "react";
+import { type Metadata } from "next";
 import { VStack } from "@chakra-ui/react";
 import { IoIosAddCircle } from "react-icons/io";
 
@@ -9,6 +10,10 @@ import { BalancesTable } from "@/components/app/balances-table";
 import { UsersControllers } from "@/controllers/users.controllers";
 import { BillsControllers } from "@/controllers/bills.controllers";
 import { BillMembersControllers } from "@/controllers/bill-members.controllers";
+
+export const metadata: Metadata = {
+	title: "Bills"
+};
 
 interface Props {
 	searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
