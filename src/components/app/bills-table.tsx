@@ -39,7 +39,7 @@ function toFilters(searchParams: ReadonlyURLSearchParams) {
 }
 
 export const BillsTable: React.FC<BillsTable.Props> = (props) => {
-	const { bills } = props;
+	const { bills, currentUserId } = props;
 	const searchParams = useSearchParams();
 
 	const filters = toFilters(searchParams);
@@ -117,12 +117,17 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 							<Table.Cell title={item.createdAt ? format(new Date(item.createdAt), "PPpp") : undefined}>
 								{item.createdAt ? formatDistanceToNow(new Date(item.createdAt), { addSuffix: true }) : undefined}
 							</Table.Cell>
-							<Table.Cell>{item.creator.fullName}</Table.Cell>
-							<Table.Cell>{`${item.creditor.fullName} (${item.creditor.amount})`}</Table.Cell>
+							<Table.Cell>{formatUserAmount(item.creator, currentUserId)}</Table.Cell>
+							<Table.Cell>{formatUserAmount(item.creditor, currentUserId)}</Table.Cell>
 							<Table.Cell>
-								{_.sortBy(item.debtors, [(debtor) => debtor.userId !== props.currentUserId, (billMember) => billMember.userId])
-									.map((billMember) => `${billMember.fullName} (${billMember.amount})`)
-									.join(", ")}
+								{_.sortBy(item.debtors, [(debtor) => debtor.userId !== currentUserId, (billMember) => billMember.userId]).map(
+									(billMember, billMemberIndex) => (
+										<React.Fragment key={billMember.userId}>
+											{formatUserAmount(billMember, currentUserId)}
+											{billMemberIndex !== item.debtors.length - 1 ? ", " : ""}
+										</React.Fragment>
+									)
+								)}
 							</Table.Cell>
 						</LinkedTableRow>
 					))}
@@ -131,3 +136,13 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 		</VStack>
 	);
 };
+
+function formatUserAmount(user: { fullName: string | null; amount?: number; userId: string }, currentUserId: string): React.ReactNode {
+	const content = user.amount ? `${user.fullName} (${user.amount})` : user.fullName;
+
+	if (user.userId === currentUserId) {
+		return <strong>{content}</strong>;
+	}
+
+	return <>{content}</>;
+}

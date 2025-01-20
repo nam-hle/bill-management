@@ -1,5 +1,5 @@
+import { type ClientNotification } from "@/types";
 import { type SupabaseInstance } from "@/supabase/server";
-import { type ClientNotification, type ServerNotification } from "@/types";
 
 export namespace NotificationsControllers {
 	const NOTIFICATIONS_SELECT = `
@@ -31,7 +31,7 @@ export namespace NotificationsControllers {
 
 		const { data: serverNotification, error } = await query.order("createdAt", { ascending: false });
 
-		if (!error) {
+		if (error) {
 			throw error;
 		}
 
@@ -39,25 +39,6 @@ export namespace NotificationsControllers {
 			return [];
 		}
 
-		return injectMetadata(supabase, serverNotification);
-	}
-
-	async function injectMetadata(supabase: SupabaseInstance, notifications: ServerNotification[]): Promise<ClientNotification[]> {
-		// const billCreatedNotification = notifications.filter((notification) => notification.type === "BillCreated");
-		// const bills = await Promise.all(
-		// 	billCreatedNotification.map((notification) => {
-		// 		const billId = (notification.metadata as any)?.billId;
-		//
-		// 		if (!billId) {
-		// 			throw new Error("BillId not found in metadata");
-		// 		}
-		//
-		// 		return BillsControllers.getBillById(supabase, billId);
-		// 	})
-		// );
-
-		return notifications.map((notification) => {
-			return notification as ClientNotification;
-		});
+		return serverNotification as unknown as ClientNotification[];
 	}
 }

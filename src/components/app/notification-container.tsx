@@ -27,7 +27,7 @@ export const NotificationContainer: React.FC<{ user: User }> = ({ user }) => {
 			setNotifications((prev) => [...data, ...prev]);
 			setUnreadCount((prev) => prev + data.filter((notification) => !notification.readStatus).length);
 		} catch (error) {
-			console.error("Error loading user data!", error);
+			console.error("Error notification data!", error);
 		}
 	}, [notifications, supabase, user.id]);
 
@@ -36,7 +36,7 @@ export const NotificationContainer: React.FC<{ user: User }> = ({ user }) => {
 			fetchNotifications().then(() => setInitial(false));
 		}
 
-		const intervalId = setInterval(fetchNotifications, 30_000);
+		const intervalId = setInterval(fetchNotifications, 10_000);
 
 		return () => clearInterval(intervalId);
 	}, [fetchNotifications, initial]);
