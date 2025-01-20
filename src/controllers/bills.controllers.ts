@@ -1,6 +1,6 @@
 import _ from "lodash";
 
-import type { ClientBill } from "@/types";
+import { Pagination, type ClientBill } from "@/types";
 import { type SupabaseInstance } from "@/supabase/server";
 
 export namespace BillsControllers {
@@ -31,8 +31,10 @@ export namespace BillsControllers {
 			debtorId?: string;
 			creatorId?: string;
 			since?: string;
-		}
-	): Promise<ClientBill[]> {
+			textSearch?: string;
+		},
+		pagination: Pagination
+	): Promise<{ bills: ClientBill[]; fullSize: number }> {
 		const { memberId, creditorId, debtorId, creatorId, since } = filters;
 
 		let billMembersQuery = supabase.from("bill_members").select(`billId`).eq(`userId`, memberId);
@@ -71,9 +73,15 @@ export namespace BillsControllers {
 			}
 		}
 
-		const { data: bills } = await supabase.from("bills").select(BILLS_SELECT).in("id", billIDs).order("createdAt", { ascending: false });
+		let finalQuery = supabase.from("bills").select(BILLS_SELECT, { count: "exact" }).in("id", billIDs);
 
-		return bills?.map(toClientBill) ?? [];
+		if (filters.textSearch) {
+			finalQuery = finalQuery.filter("description", "fts", `${filters.textSearch}:*`);
+		}
+
+		const { data: bills, count } = await finalQuery.order("createdAt", { ascending: false }).range(...Pagination.toRange(pagination));
+
+		return { bills: bills?.map(toClientBill) ?? [], fullSize: count ?? 0 };
 	}
 
 	function toClientBill(bill: BillSelectResult): ClientBill {

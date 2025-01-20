@@ -7,7 +7,7 @@ import { Box, Stack, HStack } from "@chakra-ui/react";
 
 import { type Container } from "@/types";
 import { Button } from "@/components/ui/button";
-import { LinkButton } from "@/components/ui/link-button";
+import { LinkButton } from "@/components/app/link-button";
 import { AvatarContainer } from "@/components/app/avatar-container";
 import { NotificationContainer } from "@/components/app/notification-container";
 

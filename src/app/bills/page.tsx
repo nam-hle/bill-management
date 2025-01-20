@@ -6,6 +6,7 @@ import { IoIosAddCircle } from "react-icons/io";
 import { createClient } from "@/supabase/server";
 import { LinkButton } from "@/components/ui/link-button";
 import { BillsTable } from "@/components/app/bills-table";
+import { PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
 import { BalancesTable } from "@/components/app/balances-table";
 import { UsersControllers } from "@/controllers/users.controllers";
 import { BillsControllers } from "@/controllers/bills.controllers";
@@ -21,7 +22,7 @@ interface Props {
 
 export default async function BillsPage(props: Props) {
 	const searchParams = await props.searchParams;
-	const { creditor, debtor, creator, since } = searchParams;
+	const { creditor, debtor, creator, since, page, search } = searchParams;
 
 	const supabase = await createClient();
 
@@ -49,14 +50,27 @@ export default async function BillsPage(props: Props) {
 		throw new Error("Expected a single userId");
 	}
 
+	if (Array.isArray(page)) {
+		throw new Error("Expected a single userId");
+	}
+
+	if (Array.isArray(search)) {
+		throw new Error("Expected a single userId");
+	}
+
 	const users = await UsersControllers.getUsers(supabase);
-	const bills = await BillsControllers.getBillsByMemberId(supabase, {
-		since,
-		memberId: currentUser.id,
-		debtorId: debtor === "me" ? currentUser.id : debtor,
-		creatorId: creator === "me" ? currentUser.id : creator,
-		creditorId: creditor === "me" ? currentUser.id : creditor
-	});
+	const { bills, fullSize } = await BillsControllers.getBillsByMemberId(
+		supabase,
+		{
+			since,
+			textSearch: search || undefined,
+			memberId: currentUser.id,
+			debtorId: debtor === "me" ? currentUser.id : debtor,
+			creatorId: creator === "me" ? currentUser.id : creator,
+			creditorId: creditor === "me" ? currentUser.id : creditor
+		},
+		{ pageSize: PAGE_SIZE, pageNumber: page ? parseInt(page, 10) : DEFAULT_PAGE_NUMBER }
+	);
 
 	const membersData = await BillMembersControllers.getAll(supabase);
 
@@ -74,6 +88,10 @@ export default async function BillsPage(props: Props) {
 		<VStack gap="{spacing.4}" alignItems="flex-start">
 			<BillsTable
 				showFilters
+				showFullSize
+				showSearchBar
+				showPagination
+				fullSize={fullSize}
 				bills={bills ?? []}
 				currentUserId={currentUser.id}
 				action={

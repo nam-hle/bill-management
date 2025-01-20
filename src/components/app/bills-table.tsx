@@ -2,20 +2,28 @@
 
 import _ from "lodash";
 import React from "react";
+import { GoSearch } from "react-icons/go";
 import { format, formatDistanceToNow } from "date-fns";
-import { Table, HStack, VStack, Heading } from "@chakra-ui/react";
+import { Table, Input, HStack, VStack, Heading } from "@chakra-ui/react";
 import { useRouter, useSearchParams, type ReadonlyURLSearchParams } from "next/navigation";
 
 import { type ClientBill } from "@/types";
+import { InputGroup } from "@/components/ui/input-group";
+import { PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
 import { FilterButton } from "@/components/app/filter-button";
 import { LinkedTableRow } from "@/components/app/table-body-row";
+import { PaginationRoot, PaginationItems, PaginationNextTrigger, PaginationPrevTrigger } from "@/components/ui/pagination";
 
 namespace BillsTable {
 	export interface Props {
 		readonly title?: string;
+		readonly fullSize: number;
 		readonly bills: ClientBill[];
 		readonly showFilters?: boolean;
 		readonly currentUserId: string;
+		readonly showFullSize?: boolean;
+		readonly showSearchBar?: boolean;
+		readonly showPagination?: boolean;
 		readonly action?: React.ReactNode;
 	}
 }
@@ -38,11 +46,27 @@ function toFilters(searchParams: ReadonlyURLSearchParams) {
 	return params;
 }
 
+function toPagination(searchParams: ReadonlyURLSearchParams) {
+	const pageSize = searchParams.get("limit");
+	const pageNumber = searchParams.get("page");
+
+	return {
+		pageSize: pageSize ? parseInt(pageSize, 10) : PAGE_SIZE,
+		pageNumber: pageNumber ? parseInt(pageNumber, 10) : DEFAULT_PAGE_NUMBER
+	};
+}
+
+function toTextSearch(searchParams: ReadonlyURLSearchParams) {
+	return searchParams.get("search") ?? "";
+}
+
 export const BillsTable: React.FC<BillsTable.Props> = (props) => {
-	const { bills, currentUserId } = props;
+	const { bills, currentUserId, fullSize, showFilters, showFullSize, title, action, showPagination, showSearchBar } = props;
 	const searchParams = useSearchParams();
+	const [textSearch, setTextSearch] = React.useState(() => toTextSearch(searchParams));
 
 	const filters = toFilters(searchParams);
+	const pagination = toPagination(searchParams);
 
 	const router = useRouter();
 
@@ -56,9 +80,26 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 				delete updatedFilters[filterKey];
 			}
 
-			const params = new URLSearchParams(updatedFilters);
+			router.push(`?${new URLSearchParams(updatedFilters).toString()}`);
+		},
+		[filters, router]
+	);
 
-			router.push(`?${params.toString()}`);
+	const onSearch = React.useCallback(() => {
+		const updatedFilters: Filters & { search?: string } = { ...filters, search: textSearch };
+
+		if (textSearch === "") {
+			delete updatedFilters.search;
+		}
+
+		router.push(`?${new URLSearchParams(updatedFilters).toString()}`);
+	}, [filters, router, textSearch]);
+
+	const onPageChange = React.useCallback(
+		(params: { page: number }) => {
+			const updatedFilters = { ...filters, page: String(params.page) };
+
+			router.push(`?${new URLSearchParams(updatedFilters).toString()}`);
 		},
 		[filters, router]
 	);
@@ -86,18 +127,29 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 	return (
 		<VStack width="100%" gap="{spacing.4}">
 			<HStack width="100%" justifyContent="space-between">
-				<Heading as="h1">{props.title ?? "Bills"}</Heading>
-				{props.action}
+				<Heading as="h1">
+					{title ?? "Bills"}
+					{showFullSize ? ` (${fullSize})` : ""}
+				</Heading>
+				{action}
 			</HStack>
-			{props.showFilters && (
-				<HStack width="100%">
-					<FilterButton {...createOwnerFilter("creator")}>My Created Bills</FilterButton>
-					<FilterButton {...createOwnerFilter("creditor")}>My Credits</FilterButton>
-					<FilterButton {...createOwnerFilter("debtor")}>My Debts</FilterButton>
-					<FilterButton {...createTimeFilter("since", "7d")}>Last 7 days</FilterButton>
-					<FilterButton {...createTimeFilter("since", "30d")}>Last 30 days</FilterButton>
-				</HStack>
-			)}
+			<HStack width="100%">
+				{showFilters && (
+					<>
+						<FilterButton {...createOwnerFilter("creator")}>My Created Bills</FilterButton>
+						<FilterButton {...createOwnerFilter("creditor")}>My Credits</FilterButton>
+						<FilterButton {...createOwnerFilter("debtor")}>My Debts</FilterButton>
+						<FilterButton {...createTimeFilter("since", "7d")}>Last 7 days</FilterButton>
+						<FilterButton {...createTimeFilter("since", "30d")}>Last 30 days</FilterButton>
+					</>
+				)}
+				{showSearchBar && (
+					<InputGroup w="200px" marginLeft="auto" startElement={<GoSearch />}>
+						<Input onBlur={onSearch} value={textSearch} placeholder="Type to search.." onChange={(e) => setTextSearch(e.target.value)} />
+					</InputGroup>
+				)}
+			</HStack>
+
 			<Table.Root size="md" interactive variant="outline">
 				<Table.Header>
 					<Table.Row>
@@ -133,6 +185,15 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 					))}
 				</Table.Body>
 			</Table.Root>
+			{showPagination && pagination.pageSize < fullSize && (
+				<HStack w="100%" justifyContent="flex-end">
+					<PaginationRoot siblingCount={1} count={fullSize} onPageChange={onPageChange} page={pagination.pageNumber} pageSize={pagination.pageSize}>
+						<PaginationPrevTrigger />
+						<PaginationItems />
+						<PaginationNextTrigger />
+					</PaginationRoot>
+				</HStack>
+			)}
 		</VStack>
 	);
 };

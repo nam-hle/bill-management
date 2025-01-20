@@ -1,23 +1,11 @@
-import React from "react";
-import NextLink from "next/link";
+"use client";
 
-import type { Container } from "@/types";
-import { Button, type ButtonProps } from "@/components/ui/button";
+import { createRecipeContext } from "@chakra-ui/react";
+import type { RecipeProps, HTMLChakraProps } from "@chakra-ui/react";
 
-const StyledButton: React.ForwardRefRenderFunction<HTMLButtonElement, ButtonProps & { active?: boolean }> = (props, ref) => {
-	const { children, active, size = "md", ...rest } = props;
+export interface LinkButtonProps extends HTMLChakraProps<"a", RecipeProps<"button">> {}
 
-	return (
-		<Button ref={ref} size={size} variant={rest.variant ?? (active ? "outline" : "ghost")} {...rest}>
-			{children}
-		</Button>
-	);
-};
+const { withContext } = createRecipeContext({ key: "button" });
 
-const ForwardedStyledButton = React.forwardRef(StyledButton);
-
-export const LinkButton: React.FC<{ href: string; active?: boolean } & ButtonProps & Container> = ({ href, ...props }) => (
-	<NextLink passHref prefetch href={href} legacyBehavior>
-		<ForwardedStyledButton {...props} />
-	</NextLink>
-);
+// Replace "a" with your framework's link component
+export const LinkButton = withContext<HTMLAnchorElement, LinkButtonProps>("a");

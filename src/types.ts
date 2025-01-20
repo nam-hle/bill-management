@@ -6,6 +6,19 @@ export interface Container {
 	children: React.ReactNode;
 }
 
+export interface Pagination {
+	readonly pageSize: number;
+	readonly pageNumber: number;
+}
+export namespace Pagination {
+	export function toRange(pagination: Pagination): [number, number] {
+		const start = (pagination.pageNumber - 1) * pagination.pageSize;
+		const end = start + pagination.pageSize - 1;
+
+		return [start, end];
+	}
+}
+
 export type ClientUser = Pick<Database["public"]["Tables"]["profiles"]["Row"], "id" | "username" | "fullName">;
 export type ServerNotification = Omit<Database["public"]["Tables"]["notifications"]["Row"], "billId" | "metadata" | "triggerId">;
 

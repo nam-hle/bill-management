@@ -21,7 +21,7 @@ export default async function DashboardPage() {
 	}
 
 	const balance = await UsersControllers.getBalance(supabase, currentUser.id);
-	const bills = await BillsControllers.getBillsByMemberId(supabase, { memberId: currentUser.id });
+	const { bills, fullSize } = await BillsControllers.getBillsByMemberId(supabase, { memberId: currentUser.id }, { pageNumber: 1, pageSize: 5 });
 
 	return (
 		<Stack gap={6}>
@@ -48,6 +48,7 @@ export default async function DashboardPage() {
 
 			<BillsTable
 				bills={bills}
+				fullSize={fullSize}
 				title="Recent bills"
 				currentUserId={currentUser.id}
 				action={
