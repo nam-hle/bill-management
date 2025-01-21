@@ -33,9 +33,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 		}
 
 		payloadBillMembers.push({
+			role: "Creditor",
 			userId: payload.creditor.userId,
-			amount: payload.creditor.amount,
-			role: "Creditor"
+			amount: payload.creditor.amount
 		});
 
 		payload.debtors.forEach((debtor) => {
@@ -44,9 +44,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 			}
 
 			payloadBillMembers.push({
+				role: "Debtor",
 				userId: debtor.userId,
-				amount: debtor.amount,
-				role: "Debtor"
+				amount: debtor.amount
 			});
 		});
 
@@ -74,11 +74,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 			}
 
 			return supabase.from("notifications").insert({
+				billId,
 				type: "BillUpdated",
 				userId: debtor.userId,
-				billId,
 				triggerId: trigger.id,
-				metadata: { previous: { amount: debtor.previousAmount }, current: { amount: debtor.amount } }
+				metadata: { current: { amount: debtor.amount }, previous: { amount: debtor.previousAmount } }
 			});
 		});
 
@@ -105,7 +105,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 }
 
 function flaten(clientBill: ClientBill): Omit<ClientBillMember, "fullName">[] {
-	const { creditor, debtors } = clientBill;
+	const { debtors, creditor } = clientBill;
 
 	return [creditor, ...debtors];
 }

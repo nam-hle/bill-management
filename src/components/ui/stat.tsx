@@ -24,7 +24,7 @@ interface StatValueTextProps extends ChakraStat.ValueTextProps {
 }
 
 export const StatValueText = React.forwardRef<HTMLDivElement, StatValueTextProps>(function StatValueText(props, ref) {
-	const { value, formatOptions, children, ...rest } = props;
+	const { value, children, formatOptions, ...rest } = props;
 
 	return (
 		<ChakraStat.ValueText {...rest} ref={ref}>

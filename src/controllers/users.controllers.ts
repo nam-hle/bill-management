@@ -41,6 +41,6 @@ export namespace UsersControllers {
 				})
 				.reduce((acc, val) => acc + val, 0) ?? 0;
 
-		return { owed: owed - selfPaid, paid: paid - selfPaid, net: paid - owed };
+		return { net: paid - owed, owed: owed - selfPaid, paid: paid - selfPaid };
 	}
 }

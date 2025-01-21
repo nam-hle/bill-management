@@ -10,7 +10,7 @@ interface MenuContentProps extends ChakraMenu.ContentProps {
 }
 
 export const MenuContent = React.forwardRef<HTMLDivElement, MenuContentProps>(function MenuContent(props, ref) {
-	const { portalled = true, portalRef, ...rest } = props;
+	const { portalRef, portalled = true, ...rest } = props;
 
 	return (
 		<Portal disabled={!portalled} container={portalRef}>
@@ -71,7 +71,7 @@ export interface MenuTriggerItemProps extends ChakraMenu.ItemProps {
 }
 
 export const MenuTriggerItem = React.forwardRef<HTMLDivElement, MenuTriggerItemProps>(function MenuTriggerItem(props, ref) {
-	const { startIcon, children, ...rest } = props;
+	const { children, startIcon, ...rest } = props;
 
 	return (
 		<ChakraMenu.TriggerItem ref={ref} {...rest}>

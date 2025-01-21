@@ -10,7 +10,7 @@ interface DrawerContentProps extends ChakraDrawer.ContentProps {
 }
 
 export const DrawerContent = React.forwardRef<HTMLDivElement, DrawerContentProps>(function DrawerContent(props, ref) {
-	const { children, portalled = true, portalRef, offset, ...rest } = props;
+	const { offset, children, portalRef, portalled = true, ...rest } = props;
 
 	return (
 		<Portal disabled={!portalled} container={portalRef}>

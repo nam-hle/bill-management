@@ -7,9 +7,9 @@ import { SelectItem, SelectRoot, SelectLabel, SelectContent, SelectTrigger, Sele
 
 export const Select: React.FC<{
 	label?: string;
-	disabled?: boolean;
-	value: string | undefined;
 	width?: string;
+	readonly?: boolean;
+	value: string | undefined;
 	onValueChange: (value: string) => void;
 	items: { value: string; label: string }[];
 }> = (props) => {
@@ -20,7 +20,7 @@ export const Select: React.FC<{
 			size="md"
 			width={props.width}
 			collection={collection}
-			disabled={props.disabled}
+			readOnly={props.readonly}
 			value={props.value ? [props.value] : []}
 			onValueChange={(e) => {
 				if (e.value.length !== 1) {

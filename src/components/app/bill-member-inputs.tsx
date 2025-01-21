@@ -21,7 +21,7 @@ namespace BillMemberInputs {
 }
 
 export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
-	const { action, users, label, memberKind, value, disabled, autoFilledAmount, onAmountChange, onUserChange } = props;
+	const { users, label, value, action, disabled, memberKind, onUserChange, onAmountChange, autoFilledAmount } = props;
 	const [numberInput, setNumberInput] = React.useState(() => String(autoFilledAmount ?? value?.amount ?? ""));
 	const [errorText, setErrorText] = React.useState(() => "");
 
@@ -30,10 +30,10 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 			<GridItem colSpan={{ base: 5 }}>
 				<Select
 					label={label}
-					disabled={disabled}
+					readonly={disabled}
 					value={value?.userId}
 					onValueChange={onUserChange}
-					items={users.map((user) => ({ label: user.fullName, value: user.id }))}
+					items={users.map((user) => ({ value: user.id, label: user.fullName }))}
 				/>
 			</GridItem>
 

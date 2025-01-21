@@ -51,6 +51,7 @@ const eslintConfig = [
 				}
 			],
 
+			"sort-keys": "off",
 			"max-params": "error",
 			"unused-imports/no-unused-imports": "error",
 			"react/jsx-boolean-value": "error",
@@ -78,11 +79,13 @@ const eslintConfig = [
 					groups: ["side-effect", "builtin", "external", "project", ["parent", "sibling", "index"]],
 					customGroups: {
 						value: {
-							project: ["@/**"]
+							project: ["@\/.*"]
 						}
 					}
 				}
 			],
+			"perfectionist/sort-object-types": ["error", { type: "line-length" }],
+			"perfectionist/sort-objects": ["error", { type: "line-length" }],
 			"perfectionist/sort-jsx-props": ["error", { type: "line-length" }],
 			"perfectionist/sort-named-imports": ["error", { type: "line-length" }],
 			"stylistic/padding-line-between-statements": [

@@ -18,15 +18,15 @@ export const NewUserForm = () => {
 	const onSave = React.useCallback(async () => {
 		await fetch("/api/users", {
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(formState)
+			body: JSON.stringify(formState),
+			headers: { "Content-Type": "application/json" }
 		}).then(() => {
 			router.push("/users");
 
 			toaster.create({
+				type: "success",
 				title: "User created",
-				description: "User has been created successfully",
-				type: "success"
+				description: "User has been created successfully"
 			});
 		});
 	}, [formState, router]);

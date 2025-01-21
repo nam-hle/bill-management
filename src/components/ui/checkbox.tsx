@@ -8,7 +8,7 @@ export interface CheckboxProps extends ChakraCheckbox.RootProps {
 }
 
 export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox(props, ref) {
-	const { icon, children, inputProps, rootRef, ...rest } = props;
+	const { icon, rootRef, children, inputProps, ...rest } = props;
 
 	return (
 		<ChakraCheckbox.Root ref={rootRef} {...rest}>

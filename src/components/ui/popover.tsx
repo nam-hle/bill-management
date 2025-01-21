@@ -9,7 +9,7 @@ interface PopoverContentProps extends ChakraPopover.ContentProps {
 }
 
 export const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentProps>(function PopoverContent(props, ref) {
-	const { portalled = true, portalRef, ...rest } = props;
+	const { portalRef, portalled = true, ...rest } = props;
 
 	return (
 		<Portal disabled={!portalled} container={portalRef}>

@@ -29,7 +29,7 @@ export namespace NotificationsControllers {
 			query = query.gt("createdAt", from);
 		}
 
-		const { data: serverNotification, error } = await query.order("createdAt", { ascending: false });
+		const { error, data: serverNotification } = await query.order("createdAt", { ascending: false });
 
 		if (error) {
 			throw error;

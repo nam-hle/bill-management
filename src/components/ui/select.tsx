@@ -38,7 +38,7 @@ interface SelectContentProps extends ChakraSelect.ContentProps {
 }
 
 export const SelectContent = React.forwardRef<HTMLDivElement, SelectContentProps>(function SelectContent(props, ref) {
-	const { portalled = true, portalRef, ...rest } = props;
+	const { portalRef, portalled = true, ...rest } = props;
 
 	return (
 		<Portal disabled={!portalled} container={portalRef}>
@@ -106,7 +106,7 @@ interface SelectItemGroupProps extends ChakraSelect.ItemGroupProps {
 }
 
 export const SelectItemGroup = React.forwardRef<HTMLDivElement, SelectItemGroupProps>(function SelectItemGroup(props, ref) {
-	const { children, label, ...rest } = props;
+	const { label, children, ...rest } = props;
 
 	return (
 		<ChakraSelect.ItemGroup {...rest} ref={ref}>

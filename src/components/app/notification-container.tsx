@@ -92,8 +92,8 @@ export const NotificationContainer: React.FC<{ user: User }> = ({ user }) => {
 	);
 };
 
-const NotificationMessage = ({ notification, onClose }: { notification: ClientNotification; onClose: () => void }) => {
-	const { type, createdAt, bill } = notification;
+const NotificationMessage = ({ onClose, notification }: { onClose: () => void; notification: ClientNotification }) => {
+	const { type, bill, createdAt } = notification;
 
 	let content: React.ReactNode;
 	const link = `/bills/${bill.id}`;
@@ -105,7 +105,7 @@ const NotificationMessage = ({ notification, onClose }: { notification: ClientNo
 
 		content = transformMessage(`You’ve been added to the bill **${bill.description}** by **${trigger.fullName}**.`);
 	} else if (type === "BillUpdated") {
-		const { bill, metadata, trigger } = notification;
+		const { bill, trigger, metadata } = notification;
 
 		const { current, previous } = metadata;
 

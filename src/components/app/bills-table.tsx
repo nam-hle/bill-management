@@ -61,7 +61,7 @@ function toTextSearch(searchParams: ReadonlyURLSearchParams) {
 }
 
 export const BillsTable: React.FC<BillsTable.Props> = (props) => {
-	const { bills, currentUserId, fullSize, showFilters, showFullSize, title, action, showPagination, showSearchBar } = props;
+	const { bills, title, action, fullSize, showFilters, showFullSize, currentUserId, showSearchBar, showPagination } = props;
 	const searchParams = useSearchParams();
 	const [textSearch, setTextSearch] = React.useState(() => toTextSearch(searchParams));
 
@@ -196,7 +196,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 	);
 };
 
-function formatUserAmount(user: { fullName: string | null; amount?: number; userId: string }, currentUserId: string): React.ReactNode {
+function formatUserAmount(user: { userId: string; amount?: number; fullName: string | null }, currentUserId: string): React.ReactNode {
 	const content = user.amount ? `${user.fullName} (${user.amount})` : user.fullName;
 
 	if (user.userId === currentUserId) {

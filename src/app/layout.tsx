@@ -7,16 +7,16 @@ import { Toaster } from "@/components/ui/toaster";
 import { RootContainer } from "@/components/ui/root-container";
 import { LayoutProvider } from "@/components/ui/layout-provider";
 const interSans = Inter({
-	variable: "--font-geist-sans",
-	subsets: ["latin"]
+	subsets: ["latin"],
+	variable: "--font-geist-sans"
 });
 
 export const metadata: Metadata = {
+	description: "Nam Le",
 	title: {
-		template: "%s | Bill Management",
-		default: "Bill Management"
-	},
-	description: "Nam Le"
+		default: "Bill Management",
+		template: "%s | Bill Management"
+	}
 };
 
 export default async function RootLayout({

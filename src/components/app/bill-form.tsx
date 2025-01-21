@@ -14,68 +14,74 @@ import { formatTime, formatDistanceTime } from "@/utils";
 import { BillMemberInputs } from "@/components/app/bill-member-inputs";
 import { FormKind, type ClientUser, type BillFormState } from "@/types";
 
-export const BillForm: React.FC<{
-	users: ClientUser[];
-	formState: BillFormState;
-}> = (props) => {
-	const { users } = props;
-	const [formState, setFormState] = React.useState<BillFormState>(() => props.formState);
-	const [editing, setEditing] = React.useState(() => formState.kind === FormKind.CREATE);
-	const router = useRouter();
+namespace BillForm {
+	export interface Props {
+		readonly kind: FormKind;
+		readonly billId?: string;
+		readonly users: ClientUser[];
+		readonly formState: BillFormState;
+	}
+}
 
+export const BillForm: React.FC<BillForm.Props> = (props) => {
+	const { kind, users, billId } = props;
+	const [formState, setFormState] = React.useState<BillFormState>(() => props.formState);
+	const [editing, setEditing] = React.useState(() => kind === FormKind.CREATE);
 	const [editedCreditorAmount, setEditedCreditorAmount] = React.useState(() => false);
+
 	const sumCreditorAmount = React.useMemo(() => {
 		return formState.debtors.reduce((acc, debtor) => acc + (debtor.amount ?? 0), 0);
 	}, [formState.debtors]);
 
+	const router = useRouter();
 	const onSubmit = React.useCallback(async () => {
-		if (formState.kind === FormKind.CREATE) {
+		if (kind === FormKind.CREATE) {
 			await fetch("/api/bills", {
 				method: "POST",
+				body: JSON.stringify(formState),
 				headers: {
 					"Content-Type": "application/json"
-				},
-				body: JSON.stringify(formState)
+				}
 			}).then(() => {
 				router.push("/bills");
 
 				toaster.create({
+					type: "success",
 					title: "Bill created",
-					description: "Bill has been created successfully",
-					type: "success"
+					description: "Bill has been created successfully"
 				});
 			});
 
 			return;
 		}
 
-		if (formState.kind === FormKind.UPDATE) {
-			await fetch(`/api/bills/${formState.id}`, {
+		if (kind === FormKind.UPDATE) {
+			await fetch(`/api/bills/${billId}`, {
 				method: "PUT",
+				body: JSON.stringify(formState),
 				headers: {
 					"Content-Type": "application/json"
-				},
-				body: JSON.stringify(formState)
+				}
 			}).then(() => {
 				toaster.create({
+					type: "success",
 					title: "Bill updated",
-					description: "Bill has been updated successfully",
-					type: "success"
+					description: "Bill has been updated successfully"
 				});
 				setFormState((prev) => ({ ...prev, editing: false }));
 			});
 
 			return;
 		}
-	}, [formState, router]);
+	}, [billId, formState, kind, router]);
 
 	return (
 		<Stack gap="{spacing.4}">
 			<Stack gap={0}>
-				<Heading>{formState.kind === FormKind.UPDATE ? "Bill Details" : "New Bill"}</Heading>
-				{formState.kind === FormKind.UPDATE && (
+				<Heading>{kind === FormKind.UPDATE ? "Bill Details" : "New Bill"}</Heading>
+				{kind === FormKind.UPDATE && (
 					<Text color="grey" textStyle="xs" fontStyle="italic">
-						Created <span title={formatTime(formState.createdAt)}>{formatDistanceTime(formState?.createdAt)}</span> by {formState.creditor.fullName}
+						Created <span title={formatTime(formState.createdAt)}>{formatDistanceTime(formState.createdAt)}</span> by {formState.creditor.fullName}
 						{formState.updatedAt && formState.updatedAt !== formState.createdAt && (
 							<>
 								{" "}
@@ -89,15 +95,10 @@ export const BillForm: React.FC<{
 				<GridItem colSpan={{ base: 5 }}>
 					<Field required label="Description">
 						<Input
+							disabled={!editing}
 							value={formState.description}
 							placeholder="Enter bill description"
-							disabled={!editing && formState.kind === FormKind.UPDATE}
-							onChange={(e) =>
-								setFormState((prev) => ({
-									...prev,
-									description: e.target.value
-								}))
-							}
+							onChange={(event) => setFormState((currentFormState) => ({ ...currentFormState, description: event.target.value }))}
 						/>
 					</Field>
 				</GridItem>
@@ -110,12 +111,10 @@ export const BillForm: React.FC<{
 					memberKind="creditor"
 					value={formState.creditor}
 					autoFilledAmount={editedCreditorAmount || !editing ? undefined : sumCreditorAmount}
-					onUserChange={(userId) => {
-						setFormState((prev) => ({ ...prev, creditor: { ...prev.creditor, userId } }));
-					}}
+					onUserChange={(userId) => setFormState((currentFormState) => ({ ...currentFormState, creditor: { ...currentFormState.creditor, userId } }))}
 					onAmountChange={(amount) => {
 						setEditedCreditorAmount(() => true);
-						setFormState((prev) => ({ ...prev, creditor: { ...prev.creditor, amount } }));
+						setFormState((currentFormState) => ({ ...currentFormState, creditor: { ...currentFormState.creditor, amount } }));
 					}}
 					action={
 						editing && editedCreditorAmount ? (
@@ -139,43 +138,43 @@ export const BillForm: React.FC<{
 							label={`Debtor ${debtorIndex + 1}`}
 							users={users.filter((user) => user.id === debtor.userId || !formState.debtors.some((d) => d.userId === user.id))}
 							onUserChange={(userId) => {
-								setFormState((prev) => ({
-									...prev,
-									debtors: prev.debtors.map((d, i) => {
+								setFormState((currentFormState) => ({
+									...currentFormState,
+									debtors: currentFormState.debtors.map((debtor, i) => {
 										if (i !== debtorIndex) {
-											return d;
+											return debtor;
 										}
 
-										return { ...d, userId };
+										return { ...debtor, userId };
 									})
 								}));
 							}}
 							onAmountChange={(amount) => {
-								setFormState((prev) => ({
-									...prev,
-									debtors: prev.debtors.map((d, i) => {
+								setFormState((currentFormState) => ({
+									...currentFormState,
+									debtors: currentFormState.debtors.map((debtor, i) => {
 										if (i !== debtorIndex) {
-											return d;
+											return debtor;
 										}
 
-										return { ...d, amount };
+										return { ...debtor, amount };
 									})
 								}));
 							}}
 							action={
-								editing ? (
+								editing && (
 									<Button
 										variant="subtle"
 										colorPalette="red"
 										onClick={() => {
-											setFormState((prev) => ({
-												...prev,
-												debtors: prev.debtors.filter((_, i) => i !== debtorIndex)
+											setFormState((currentFormState) => ({
+												...currentFormState,
+												debtors: currentFormState.debtors.filter((_, i) => i !== debtorIndex)
 											}));
 										}}>
 										<MdDeleteOutline /> Delete
 									</Button>
-								) : undefined
+								)
 							}
 						/>
 					);
@@ -185,24 +184,28 @@ export const BillForm: React.FC<{
 			<HStack justifyContent={editing ? "space-between" : "flex-end"}>
 				{editing && (
 					<Button
-						onClick={() => {
-							setFormState((prev) => ({
-								...prev,
-								debtors: [...prev.debtors, {}]
-							}));
-						}}>
+						variant="subtle"
+						onClick={() => setFormState((currentFormState) => ({ ...currentFormState, debtors: [...currentFormState.debtors, {}] }))}>
 						Add debtor
 					</Button>
 				)}
 				{editing && (
 					<HStack>
-						{formState.kind === FormKind.UPDATE && (
-							<Button variant="solid" onClick={() => setEditing(() => false)}>
+						{kind === FormKind.UPDATE && (
+							<Button variant="subtle" onClick={() => setEditing(() => false)}>
 								<MdCancel /> Cancel
 							</Button>
 						)}
 						<Button variant="solid" onClick={onSubmit}>
-							{formState.kind === FormKind.CREATE ? <IoIosAddCircle /> : <MdCheck />} {formState.kind === FormKind.CREATE ? "Create" : "Done"}
+							{kind === FormKind.CREATE ? (
+								<>
+									<IoIosAddCircle /> Create
+								</>
+							) : (
+								<>
+									<MdCheck /> Done
+								</>
+							)}
 						</Button>
 					</HStack>
 				)}

@@ -54,10 +54,10 @@ export async function POST(request: Request) {
 			}
 
 			return {
-				type: "BillCreated" as const,
-				userId: debtor.userId,
 				billId: bill.id,
-				triggerId: trigger.id
+				userId: debtor.userId,
+				triggerId: trigger.id,
+				type: "BillCreated" as const
 			};
 		});
 		const { error: notificationErrors } = await supabase.from("notifications").insert(billMemberNotifications);

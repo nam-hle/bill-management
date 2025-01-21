@@ -22,7 +22,7 @@ interface Props {
 
 export default async function BillsPage(props: Props) {
 	const searchParams = await props.searchParams;
-	const { creditor, debtor, creator, since, page, search } = searchParams;
+	const { page, since, debtor, search, creator, creditor } = searchParams;
 
 	const supabase = await createClient();
 
@@ -63,8 +63,8 @@ export default async function BillsPage(props: Props) {
 		supabase,
 		{
 			since,
-			textSearch: search || undefined,
 			memberId: currentUser.id,
+			textSearch: search || undefined,
 			debtorId: debtor === "me" ? currentUser.id : debtor,
 			creatorId: creator === "me" ? currentUser.id : creator,
 			creditorId: creditor === "me" ? currentUser.id : creditor

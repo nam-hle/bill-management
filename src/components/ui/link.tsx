@@ -5,7 +5,7 @@ import { type LinkProps, Link as ChakraLink } from "@chakra-ui/react";
 import { type Container } from "@/types";
 
 const StyledLink: React.ForwardRefRenderFunction<HTMLAnchorElement, LinkProps & { active?: boolean }> = (props, ref) => {
-	const { children, active, ...rest } = props;
+	const { active, children, ...rest } = props;
 
 	return (
 		<ChakraLink {...rest} ref={ref} fontWeight={active ? "{fontWeights.medium}" : undefined}>

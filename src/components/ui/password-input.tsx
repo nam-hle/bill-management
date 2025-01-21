@@ -19,12 +19,12 @@ export interface PasswordInputProps extends InputProps, PasswordVisibilityProps 
 }
 
 export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(function PasswordInput(props, ref) {
-	const { rootProps, defaultVisible, visible: visibleProp, onVisibleChange, visibilityIcon = { on: <LuEye />, off: <LuEyeOff /> }, ...rest } = props;
+	const { rootProps, defaultVisible, onVisibleChange, visible: visibleProp, visibilityIcon = { on: <LuEye />, off: <LuEyeOff /> }, ...rest } = props;
 
 	const [visible, setVisible] = useControllableState({
 		value: visibleProp,
-		defaultValue: defaultVisible || false,
-		onChange: onVisibleChange
+		onChange: onVisibleChange,
+		defaultValue: defaultVisible || false
 	});
 
 	const inputRef = React.useRef<HTMLInputElement>(null);
@@ -73,7 +73,7 @@ interface PasswordStrengthMeterProps extends StackProps {
 }
 
 export const PasswordStrengthMeter = React.forwardRef<HTMLDivElement, PasswordStrengthMeterProps>(function PasswordStrengthMeter(props, ref) {
-	const { max = 4, value, ...rest } = props;
+	const { value, max = 4, ...rest } = props;
 
 	const percent = (value / max) * 100;
 	const { label, colorPalette } = getColorPalette(percent);

@@ -44,24 +44,24 @@ export default function AccountForm({ user }: { user: User | null }) {
 	}, [user, getProfile]);
 
 	async function updateProfile({
-		username,
 		website,
+		username,
 		avatar_url
 	}: {
+		website: string | null;
 		username: string | null;
 		fullname: string | null;
-		website: string | null;
 		avatar_url: string | null;
 	}) {
 		try {
 			setLoading(true);
 
 			const { error } = await supabase.from("profiles").upsert({
-				id: user?.id as string,
-				fullName: fullname,
-				username,
 				website,
+				username,
 				avatar_url,
+				fullName: fullname,
+				id: user?.id as string,
 				updated_at: new Date().toISOString()
 			});
 
@@ -87,7 +87,7 @@ export default function AccountForm({ user }: { user: User | null }) {
 				<Input value={username || ""} placeholder="Enter your password" onChange={(e) => setUsername(e.target.value)} />
 			</Field>
 			<HStack justifyContent="flex-end">
-				<Button loading={loading} loadingText="Updating..." onClick={() => updateProfile({ fullname, username, website, avatar_url })}>
+				<Button loading={loading} loadingText="Updating..." onClick={() => updateProfile({ website, fullname, username, avatar_url })}>
 					Update
 				</Button>
 			</HStack>

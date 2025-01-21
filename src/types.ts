@@ -41,8 +41,6 @@ export interface BillUpdatedNotification extends BaseClientNotification {
 export type ClientNotification = BillCreatedNotification | BillUpdatedNotification;
 
 export interface BillFormState {
-	id?: string;
-	kind: FormKind;
 	description: string;
 	createdAt: string | null;
 	updatedAt: string | null;

@@ -2,207 +2,10 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 
 export type Database = {
 	public: {
-		Tables: {
-			bill_members: {
-				Row: {
-					amount: number;
-					billId: string;
-					createdAt: string;
-					id: string;
-					role: Database["public"]["Enums"]["BillMemberRole"];
-					updatedAt: string | null;
-					userId: string;
-				};
-				Insert: {
-					amount: number;
-					billId?: string;
-					createdAt?: string;
-					id?: string;
-					role?: Database["public"]["Enums"]["BillMemberRole"];
-					updatedAt?: string | null;
-					userId: string;
-				};
-				Update: {
-					amount?: number;
-					billId?: string;
-					createdAt?: string;
-					id?: string;
-					role?: Database["public"]["Enums"]["BillMemberRole"];
-					updatedAt?: string | null;
-					userId?: string;
-				};
-				Relationships: [
-					{
-						foreignKeyName: "bill_members_bill_id_fkey";
-						columns: ["billId"];
-						isOneToOne: false;
-						referencedRelation: "bills";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "bill_members_userId_fkey";
-						columns: ["userId"];
-						isOneToOne: false;
-						referencedRelation: "profiles";
-						referencedColumns: ["id"];
-					}
-				];
-			};
-			bills: {
-				Row: {
-					createdAt: string;
-					creatorId: string;
-					description: string;
-					id: string;
-					issuesAt: string;
-					updatedAt: string | null;
-				};
-				Insert: {
-					createdAt?: string;
-					creatorId: string;
-					description: string;
-					id?: string;
-					issuesAt?: string;
-					updatedAt?: string | null;
-				};
-				Update: {
-					createdAt?: string;
-					creatorId?: string;
-					description?: string;
-					id?: string;
-					issuesAt?: string;
-					updatedAt?: string | null;
-				};
-				Relationships: [
-					{
-						foreignKeyName: "bills_creatorId_fkey";
-						columns: ["creatorId"];
-						isOneToOne: false;
-						referencedRelation: "profiles";
-						referencedColumns: ["id"];
-					}
-				];
-			};
-			notifications: {
-				Row: {
-					billId: string | null;
-					createdAt: string;
-					id: string;
-					metadata: Json | null;
-					readStatus: boolean;
-					triggerId: string;
-					type: Database["public"]["Enums"]["NotificationType"];
-					userId: string;
-				};
-				Insert: {
-					billId?: string | null;
-					createdAt?: string;
-					id?: string;
-					metadata?: Json | null;
-					readStatus?: boolean;
-					triggerId: string;
-					type: Database["public"]["Enums"]["NotificationType"];
-					userId?: string;
-				};
-				Update: {
-					billId?: string | null;
-					createdAt?: string;
-					id?: string;
-					metadata?: Json | null;
-					readStatus?: boolean;
-					triggerId?: string;
-					type?: Database["public"]["Enums"]["NotificationType"];
-					userId?: string;
-				};
-				Relationships: [
-					{
-						foreignKeyName: "notifications_billId_fkey";
-						columns: ["billId"];
-						isOneToOne: false;
-						referencedRelation: "bills";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "notifications_triggerId_fkey";
-						columns: ["triggerId"];
-						isOneToOne: false;
-						referencedRelation: "profiles";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "notifications_userId_fkey";
-						columns: ["userId"];
-						isOneToOne: false;
-						referencedRelation: "profiles";
-						referencedColumns: ["id"];
-					}
-				];
-			};
-			profiles: {
-				Row: {
-					avatar_url: string | null;
-					fullName: string;
-					id: string;
-					updatedAt: string | null;
-					username: string;
-					website: string | null;
-				};
-				Insert: {
-					avatar_url?: string | null;
-					fullName?: string;
-					id: string;
-					updatedAt?: string | null;
-					username?: string;
-					website?: string | null;
-				};
-				Update: {
-					avatar_url?: string | null;
-					fullName?: string;
-					id?: string;
-					updatedAt?: string | null;
-					username?: string;
-					website?: string | null;
-				};
-				Relationships: [];
-			};
-			transactions: {
-				Row: {
-					id: string;
-					receiverId: string;
-					senderId: string;
-					status: Database["public"]["Enums"]["TransactionStatus"];
-				};
-				Insert: {
-					id?: string;
-					receiverId?: string;
-					senderId?: string;
-					status?: Database["public"]["Enums"]["TransactionStatus"];
-				};
-				Update: {
-					id?: string;
-					receiverId?: string;
-					senderId?: string;
-					status?: Database["public"]["Enums"]["TransactionStatus"];
-				};
-				Relationships: [
-					{
-						foreignKeyName: "transactions_receiverId_fkey";
-						columns: ["receiverId"];
-						isOneToOne: false;
-						referencedRelation: "profiles";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "transactions_senderId_fkey";
-						columns: ["senderId"];
-						isOneToOne: false;
-						referencedRelation: "profiles";
-						referencedColumns: ["id"];
-					}
-				];
-			};
-		};
 		Views: {
+			[_ in never]: never;
+		};
+		CompositeTypes: {
 			[_ in never]: never;
 		};
 		Functions: {
@@ -219,8 +22,205 @@ export type Database = {
 			NotificationType: "BillCreated" | "BillUpdated";
 			TransactionStatus: "pending" | "confirmed" | "rejected";
 		};
-		CompositeTypes: {
-			[_ in never]: never;
+		Tables: {
+			profiles: {
+				Relationships: [];
+				Row: {
+					id: string;
+					fullName: string;
+					username: string;
+					website: string | null;
+					updatedAt: string | null;
+					avatar_url: string | null;
+				};
+				Insert: {
+					id: string;
+					fullName?: string;
+					username?: string;
+					website?: string | null;
+					updatedAt?: string | null;
+					avatar_url?: string | null;
+				};
+				Update: {
+					id?: string;
+					fullName?: string;
+					username?: string;
+					website?: string | null;
+					updatedAt?: string | null;
+					avatar_url?: string | null;
+				};
+			};
+			bills: {
+				Row: {
+					id: string;
+					issuesAt: string;
+					createdAt: string;
+					creatorId: string;
+					description: string;
+					updatedAt: string | null;
+				};
+				Insert: {
+					id?: string;
+					creatorId: string;
+					issuesAt?: string;
+					createdAt?: string;
+					description: string;
+					updatedAt?: string | null;
+				};
+				Update: {
+					id?: string;
+					issuesAt?: string;
+					createdAt?: string;
+					creatorId?: string;
+					description?: string;
+					updatedAt?: string | null;
+				};
+				Relationships: [
+					{
+						isOneToOne: false;
+						columns: ["creatorId"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "bills_creatorId_fkey";
+					}
+				];
+			};
+			transactions: {
+				Row: {
+					id: string;
+					senderId: string;
+					receiverId: string;
+					status: Database["public"]["Enums"]["TransactionStatus"];
+				};
+				Insert: {
+					id?: string;
+					senderId?: string;
+					receiverId?: string;
+					status?: Database["public"]["Enums"]["TransactionStatus"];
+				};
+				Update: {
+					id?: string;
+					senderId?: string;
+					receiverId?: string;
+					status?: Database["public"]["Enums"]["TransactionStatus"];
+				};
+				Relationships: [
+					{
+						isOneToOne: false;
+						columns: ["receiverId"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "transactions_receiverId_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["senderId"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "transactions_senderId_fkey";
+					}
+				];
+			};
+			bill_members: {
+				Row: {
+					id: string;
+					amount: number;
+					billId: string;
+					userId: string;
+					createdAt: string;
+					updatedAt: string | null;
+					role: Database["public"]["Enums"]["BillMemberRole"];
+				};
+				Insert: {
+					id?: string;
+					amount: number;
+					userId: string;
+					billId?: string;
+					createdAt?: string;
+					updatedAt?: string | null;
+					role?: Database["public"]["Enums"]["BillMemberRole"];
+				};
+				Update: {
+					id?: string;
+					amount?: number;
+					billId?: string;
+					userId?: string;
+					createdAt?: string;
+					updatedAt?: string | null;
+					role?: Database["public"]["Enums"]["BillMemberRole"];
+				};
+				Relationships: [
+					{
+						isOneToOne: false;
+						columns: ["billId"];
+						referencedColumns: ["id"];
+						referencedRelation: "bills";
+						foreignKeyName: "bill_members_bill_id_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["userId"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "bill_members_userId_fkey";
+					}
+				];
+			};
+			notifications: {
+				Row: {
+					id: string;
+					userId: string;
+					createdAt: string;
+					triggerId: string;
+					readStatus: boolean;
+					billId: string | null;
+					metadata: Json | null;
+					type: Database["public"]["Enums"]["NotificationType"];
+				};
+				Insert: {
+					id?: string;
+					userId?: string;
+					triggerId: string;
+					createdAt?: string;
+					readStatus?: boolean;
+					billId?: string | null;
+					metadata?: Json | null;
+					type: Database["public"]["Enums"]["NotificationType"];
+				};
+				Update: {
+					id?: string;
+					userId?: string;
+					createdAt?: string;
+					triggerId?: string;
+					readStatus?: boolean;
+					billId?: string | null;
+					metadata?: Json | null;
+					type?: Database["public"]["Enums"]["NotificationType"];
+				};
+				Relationships: [
+					{
+						isOneToOne: false;
+						columns: ["billId"];
+						referencedColumns: ["id"];
+						referencedRelation: "bills";
+						foreignKeyName: "notifications_billId_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["triggerId"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "notifications_triggerId_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["userId"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "notifications_userId_fkey";
+					}
+				];
+			};
 		};
 	};
 };

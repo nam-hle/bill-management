@@ -17,11 +17,11 @@ export default async function NewBillPage() {
 	return (
 		<BillForm
 			users={users}
+			kind={FormKind.CREATE}
 			formState={{
-				kind: FormKind.CREATE,
+				creditor: {},
 				createdAt: null,
 				updatedAt: null,
-				creditor: {},
 				description: "",
 				debtors: [{ userId: undefined, amount: undefined }]
 			}}

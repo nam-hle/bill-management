@@ -13,7 +13,7 @@ export namespace BillsControllers {
     bill_members (user:userId (userId:id, fullName), amount, role)
   `;
 
-	export async function createBill(supabase: SupabaseInstance, payload: { description: string; creatorId: string }) {
+	export async function createBill(supabase: SupabaseInstance, payload: { creatorId: string; description: string }) {
 		const { data } = await supabase.from("bills").insert(payload).select("id").single();
 
 		if (!data) {
@@ -26,16 +26,16 @@ export namespace BillsControllers {
 	export async function getBillsByMemberId(
 		supabase: SupabaseInstance,
 		filters: {
-			creditorId?: string;
+			since?: string;
 			memberId: string;
 			debtorId?: string;
 			creatorId?: string;
-			since?: string;
+			creditorId?: string;
 			textSearch?: string;
 		},
 		pagination: Pagination
-	): Promise<{ bills: ClientBill[]; fullSize: number }> {
-		const { memberId, creditorId, debtorId, creatorId, since } = filters;
+	): Promise<{ fullSize: number; bills: ClientBill[] }> {
+		const { since, memberId, debtorId, creatorId, creditorId } = filters;
 
 		let billMembersQuery = supabase.from("bill_members").select(`billId`).eq(`userId`, memberId);
 
@@ -79,9 +79,9 @@ export namespace BillsControllers {
 			finalQuery = finalQuery.filter("description", "fts", `${filters.textSearch}:*`);
 		}
 
-		const { data: bills, count } = await finalQuery.order("createdAt", { ascending: false }).range(...Pagination.toRange(pagination));
+		const { count, data: bills } = await finalQuery.order("createdAt", { ascending: false }).range(...Pagination.toRange(pagination));
 
-		return { bills: bills?.map(toClientBill) ?? [], fullSize: count ?? 0 };
+		return { fullSize: count ?? 0, bills: bills?.map(toClientBill) ?? [] };
 	}
 
 	function toClientBill(bill: BillSelectResult): ClientBill {
@@ -101,9 +101,9 @@ export namespace BillsControllers {
 		};
 
 		function toMember(billMember: BillMemberSelectResult) {
-			const { amount, role, user } = billMember;
+			const { role, user, amount } = billMember;
 
-			return { amount, role, ...user };
+			return { role, amount, ...user };
 		}
 	}
 

@@ -9,10 +9,10 @@ export interface StatusProps extends ChakraStatus.RootProps {
 }
 
 const statusMap: Record<StatusValue, ColorPalette> = {
-	success: "green",
 	error: "red",
-	warning: "orange",
-	info: "blue"
+	info: "blue",
+	success: "green",
+	warning: "orange"
 };
 
 export const Status = React.forwardRef<HTMLDivElement, StatusProps>(function Status(props, ref) {
