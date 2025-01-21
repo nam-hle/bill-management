@@ -1,6 +1,18 @@
-import { format, formatDistanceToNow } from "date-fns";
+import { parse, format, isValid, formatDistanceToNow } from "date-fns";
 
 export function noop() {}
+
+export function formatDate(date?: string | null) {
+	return format(date ?? new Date(), "dd/MM/yy");
+}
+
+export function isValidDate(dateString: string | null) {
+	if (dateString === null) {
+		return false;
+	}
+
+	return isValid(parse(dateString, "dd/MM/yy", new Date()));
+}
 
 export function formatTime(time: string | undefined | null) {
 	if (time === undefined || time === null) {

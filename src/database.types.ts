@@ -53,7 +53,7 @@ export type Database = {
 			bills: {
 				Row: {
 					id: string;
-					issuesAt: string;
+					issuedAt: string;
 					createdAt: string;
 					creatorId: string;
 					description: string;
@@ -61,15 +61,15 @@ export type Database = {
 				};
 				Insert: {
 					id?: string;
+					issuedAt: string;
 					creatorId: string;
-					issuesAt?: string;
 					createdAt?: string;
 					description: string;
 					updatedAt?: string | null;
 				};
 				Update: {
 					id?: string;
-					issuesAt?: string;
+					issuedAt?: string;
 					createdAt?: string;
 					creatorId?: string;
 					description?: string;

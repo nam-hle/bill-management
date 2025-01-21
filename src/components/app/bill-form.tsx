@@ -10,7 +10,7 @@ import { Text, Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chak
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { toaster } from "@/components/ui/toaster";
-import { formatTime, formatDistanceTime } from "@/utils";
+import { formatTime, isValidDate, formatDistanceTime } from "@/utils";
 import { BillMemberInputs } from "@/components/app/bill-member-inputs";
 import { FormKind, type ClientUser, type BillFormState } from "@/types";
 
@@ -78,6 +78,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 			return;
 		}
 	}, [billId, formState, kind, router]);
+	console.log(formState.issuedAt, isValidDate(formState.issuedAt));
 
 	return (
 		<Stack gap="{spacing.4}">
@@ -106,7 +107,20 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 						/>
 					</Field>
 				</GridItem>
-				<GridItem colSpan={{ base: 5 }}></GridItem>
+				<GridItem colSpan={{ base: 3 }}>
+					<Field
+						label="Issued at"
+						invalid={!isValidDate(formState.issuedAt)}
+						errorText={!isValidDate(formState.issuedAt) ? "Invalid date format dd/mm/yy" : undefined}>
+						<Input
+							placeholder="dd/mm/yy"
+							value={formState.issuedAt ?? ""}
+							onChange={(event) => {
+								setFormState((currentFormState) => ({ ...currentFormState, issuedAt: event.target.value }));
+							}}
+						/>
+					</Field>
+				</GridItem>
 
 				<BillMemberInputs
 					users={users}

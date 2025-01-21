@@ -42,6 +42,7 @@ export type ClientNotification = BillCreatedNotification | BillUpdatedNotificati
 
 export interface BillFormState {
 	description: string;
+	issuedAt: string | null;
 	createdAt: string | null;
 	updatedAt: string | null;
 	debtors: Array<{
@@ -73,6 +74,7 @@ export interface Balance {
 export interface ClientBill {
 	readonly id: string;
 	readonly description: string;
+	readonly issuedAt: string | null;
 	readonly updatedAt: string | null;
 	readonly createdAt: string | null;
 	readonly creditor: ClientBillMember;

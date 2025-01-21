@@ -9,11 +9,12 @@ export namespace BillsControllers {
     description,
     createdAt,
     updatedAt,
+    issuedAt,
     creator:creatorId (userId:id, fullName),
     bill_members (user:userId (userId:id, fullName), amount, role)
   `;
 
-	export async function createBill(supabase: SupabaseInstance, payload: { creatorId: string; description: string }) {
+	export async function createBill(supabase: SupabaseInstance, payload: { issuedAt: string; creatorId: string; description: string }) {
 		const { data } = await supabase.from("bills").insert(payload).select("id").single();
 
 		if (!data) {

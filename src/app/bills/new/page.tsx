@@ -2,6 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 
 import { FormKind } from "@/types";
+import { formatDate } from "@/utils";
 import { createClient } from "@/supabase/server";
 import { BillForm } from "@/components/app/bill-form";
 import { UsersControllers } from "@/controllers/users.controllers";
@@ -23,6 +24,7 @@ export default async function NewBillPage() {
 				createdAt: null,
 				updatedAt: null,
 				description: "",
+				issuedAt: formatDate(),
 				debtors: [{ userId: undefined, amount: undefined }]
 			}}
 		/>
