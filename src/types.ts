@@ -47,14 +47,15 @@ export interface BillFormState {
 	description: string;
 	createdAt: string | null;
 	updatedAt: string | null;
-	creditor: {
-		userId?: string;
-		amount?: number;
-	};
 	debtors: Array<{
 		userId?: string;
 		amount?: number;
 	}>;
+	creditor: {
+		userId?: string;
+		amount?: number;
+		fullName?: string | null;
+	};
 }
 
 export enum FormKind {

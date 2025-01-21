@@ -3,7 +3,6 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { IoIosAddCircle } from "react-icons/io";
-import { format, formatDistanceToNow } from "date-fns";
 import { MdEdit, MdCheck, MdCancel } from "react-icons/md";
 import { Text, Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chakra-ui/react";
 
@@ -11,6 +10,7 @@ import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/app/select";
 import { toaster } from "@/components/ui/toaster";
+import { formatTime, formatDistanceTime } from "@/utils";
 import { FormKind, type ClientUser, type BillFormState } from "@/types";
 import { NumberInputRoot, NumberInputField } from "@/components/ui/number-input";
 
@@ -65,9 +65,23 @@ export const BillForm: React.FC<{
 
 	return (
 		<Stack gap="{spacing.4}">
-			<Heading>{props.formState ? "Bill Details" : "New Bill"}</Heading>
+			<Stack gap={0}>
+				<Heading>{props.formState ? "Bill Details" : "New Bill"}</Heading>
+				{formState.kind === FormKind.UPDATE && (
+					<Text color="grey" textStyle="xs" fontStyle="italic">
+						Created <span title={formatTime(props.formState.createdAt)}>{formatDistanceTime(props.formState?.createdAt)}</span> by{" "}
+						{props.formState.creditor.fullName}
+						{props.formState.updatedAt && props.formState.updatedAt !== props.formState.createdAt && (
+							<>
+								{" "}
+								• Last updated <span title={formatTime(props.formState.updatedAt)}>{formatDistanceTime(props.formState.updatedAt)}</span>
+							</>
+						)}
+					</Text>
+				)}
+			</Stack>
 			<SimpleGrid columns={9} gap="{spacing.4}">
-				<GridItem colSpan={{ base: 5 }}>
+				<GridItem colSpan={{ base: 4 }}>
 					<Field required label="Description">
 						<Input
 							value={formState.description}
@@ -82,24 +96,7 @@ export const BillForm: React.FC<{
 						/>
 					</Field>
 				</GridItem>
-				<GridItem colSpan={{ base: 2 }}>
-					{formState.kind === FormKind.UPDATE && (
-						<Field readOnly label="Created at" justifyContent="space-between">
-							<Text title={props.formState?.createdAt ? format(new Date(props.formState.createdAt), "PPpp") : ""}>
-								{props.formState.createdAt ? formatDistanceToNow(new Date(props.formState.createdAt), { addSuffix: true }) : undefined}
-							</Text>
-						</Field>
-					)}
-				</GridItem>
-				<GridItem colSpan={{ base: 2 }}>
-					{formState.kind === FormKind.UPDATE && (
-						<Field readOnly label="Updated at" justifyContent="space-between">
-							<Text title={props.formState?.updatedAt ? format(new Date(props.formState.updatedAt), "PPpp") : ""}>
-								{props.formState.updatedAt ? formatDistanceToNow(new Date(props.formState.updatedAt), { addSuffix: true }) : undefined}
-							</Text>
-						</Field>
-					)}
-				</GridItem>
+				<GridItem colSpan={{ base: 5 }}></GridItem>
 
 				<MemberInputs
 					users={users}
@@ -119,11 +116,11 @@ export const BillForm: React.FC<{
 					return (
 						<MemberInputs
 							key={index}
-							users={users}
 							value={debtor}
 							memberIndex={index}
 							memberKind="debtor"
 							disabled={formState.kind === FormKind.UPDATE && !formState.editing}
+							users={users.filter((user) => user.id === debtor.userId || !formState.debtors.some((d) => d.userId === user.id))}
 							onValueChange={(newValue) => {
 								setFormState((prev) => ({
 									...prev,

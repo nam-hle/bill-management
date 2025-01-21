@@ -1,10 +1,19 @@
-import type { ClientBill } from "@/types";
+import { format, formatDistanceToNow } from "date-fns";
 
 export function noop() {}
 
-export function calculateMoney(bill: ClientBill, userId: string) {
-	const paid = bill.creditor.userId === userId ? bill.creditor.amount : 0;
-	const owed = bill.debtors.find((debtor) => debtor.userId === userId)?.amount ?? 0;
+export function formatTime(time: string | undefined | null) {
+	if (time === undefined || time === null) {
+		return "";
+	}
 
-	return { net: paid - owed, paid, owed };
+	return format(new Date(time), "PPpp");
+}
+
+export function formatDistanceTime(time: string | undefined | null) {
+	if (time === undefined || time === null) {
+		return "";
+	}
+
+	return formatDistanceToNow(new Date(time), { addSuffix: true });
 }

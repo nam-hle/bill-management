@@ -45,7 +45,7 @@ export async function POST(request: Request) {
 			role: "Creditor" as BillMemberRole
 		});
 
-		const members = await BillMembersControllers.createMany(supabase, billMembers);
+		await BillMembersControllers.createMany(supabase, billMembers);
 
 		// Step 3: Insert notifications
 		const billMemberNotifications = payload.debtors.map((debtor) => {
@@ -66,9 +66,7 @@ export async function POST(request: Request) {
 			throw new Error("Error inserting notifications");
 		}
 
-		console.log("Bill and members successfully inserted:", { bill, members });
-
-		return new Response(JSON.stringify({ success: true, data: { billData: bill, billMembers } }), {
+		return new Response(JSON.stringify({ success: true, data: { bill } }), {
 			status: 201
 		});
 	} catch (error) {
