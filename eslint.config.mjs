@@ -3,6 +3,7 @@ import { fileURLToPath } from "url";
 
 import { FlatCompat } from "@eslint/eslintrc";
 import reactPlugin from "eslint-plugin-react";
+import functional from "eslint-plugin-functional";
 import stylistic from "@stylistic/eslint-plugin-ts";
 import perfectionist from "eslint-plugin-perfectionist";
 import unusedImports from "eslint-plugin-unused-imports";
@@ -27,75 +28,60 @@ const eslintConfig = [
 		},
 		plugins: {
 			stylistic,
+			functional,
 			perfectionist,
-			"unused-imports": unusedImports,
+
+			unusedImports: unusedImports,
 			...reactPlugin.configs.flat.recommended.plugins,
 			"react-hooks": reactHooksPlugin
 		},
 		rules: {
 			...reactPlugin.configs.flat.recommended.rules,
 			...reactHooksPlugin.configs.recommended.rules,
+			"react/jsx-boolean-value": "error",
 			"react-hooks/exhaustive-deps": "error",
+			"react/jsx-curly-brace-presence": ["error", "never"],
 
+			"sort-keys": "off",
+			"max-params": "error",
 			"@typescript-eslint/no-namespace": "off",
-			"@typescript-eslint/no-empty-object-type": "off",
+			"unusedImports/no-unused-imports": "error",
 			"@typescript-eslint/no-explicit-any": "warn",
+			"@typescript-eslint/no-empty-object-type": "off",
 			"@typescript-eslint/consistent-type-imports": ["error", { prefer: "type-imports", fixStyle: "inline-type-imports" }],
 			"@typescript-eslint/no-unused-vars": [
 				"error",
 				{
+					argsIgnorePattern: "^_",
 					ignoreRestSiblings: true,
 					destructuredArrayIgnorePattern: "^_",
-					caughtErrorsIgnorePattern: "^error$",
-					argsIgnorePattern: "^_"
+					caughtErrorsIgnorePattern: "^error$"
 				}
 			],
 
-			"sort-keys": "off",
-			"max-params": "error",
-			"unused-imports/no-unused-imports": "error",
-			"react/jsx-boolean-value": "error",
-			"react/jsx-curly-brace-presence": ["error", "never"],
-			"perfectionist/sort-interfaces": [
-				"error",
-				{
-					type: "line-length",
-					partitionByNewLine: true,
-					partitionByComment: false
-				}
-			],
-			"perfectionist/sort-exports": [
-				"error",
-				{
-					type: "line-length",
-					partitionByNewLine: true,
-					partitionByComment: false
-				}
-			],
+			"perfectionist/sort-jsx-props": ["error", { type: "line-length" }],
+			"perfectionist/sort-named-imports": ["error", { type: "line-length" }],
+			"perfectionist/sort-objects": ["error", { type: "line-length", partitionByNewLine: true }],
+			"perfectionist/sort-exports": ["error", { type: "line-length", partitionByNewLine: true }],
+			"perfectionist/sort-interfaces": ["error", { type: "line-length", partitionByNewLine: true }],
+			"perfectionist/sort-object-types": ["error", { type: "line-length", partitionByNewLine: true }],
 			"perfectionist/sort-imports": [
 				"error",
 				{
 					type: "line-length",
-					groups: ["side-effect", "builtin", "external", "project", ["parent", "sibling", "index"]],
-					customGroups: {
-						value: {
-							project: ["@\/.*"]
-						}
-					}
+					customGroups: { value: { project: ["@\/.*"] } },
+					groups: ["side-effect", "builtin", "external", "project", ["parent", "sibling", "index"]]
 				}
 			],
-			"perfectionist/sort-object-types": ["error", { type: "line-length" }],
-			"perfectionist/sort-objects": ["error", { type: "line-length" }],
-			"perfectionist/sort-jsx-props": ["error", { type: "line-length" }],
-			"perfectionist/sort-named-imports": ["error", { type: "line-length" }],
+
 			"stylistic/padding-line-between-statements": [
 				"error",
 				{
-					blankLine: "always",
 					prev: "*",
+					blankLine: "always",
 					next: ["if", "while", "for", "switch", "try", "do", "return"]
 				},
-				{ blankLine: "always", prev: "block-like", next: "*" }
+				{ next: "*", prev: "block-like", blankLine: "always" }
 			]
 		}
 	}

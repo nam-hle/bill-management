@@ -10,19 +10,20 @@ namespace BillMemberInputs {
 	export interface Props {
 		label: string;
 		disabled?: boolean;
+		amountLabel: string;
 		users: ClientUser[];
-		action?: React.ReactNode;
+		action: React.ReactNode;
 		autoFilledAmount?: number;
-		memberKind: "creditor" | "debtor";
-		onUserChange: (userId: string) => void;
-		onAmountChange: (amount: number) => void;
-		value: { userId?: string; amount?: number };
+		amount: number | undefined;
+		userId: string | undefined;
+		onUserChange(userId: string): void;
+		onAmountChange(amount: number): void;
 	}
 }
 
 export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
-	const { users, label, value, action, disabled, memberKind, onUserChange, onAmountChange, autoFilledAmount } = props;
-	const [numberInput, setNumberInput] = React.useState(() => String(autoFilledAmount ?? value?.amount ?? ""));
+	const { users, label, userId, amount, action, disabled, amountLabel, onUserChange, onAmountChange, autoFilledAmount } = props;
+	const [numberInput, setNumberInput] = React.useState(() => String(autoFilledAmount ?? amount ?? ""));
 	const [errorText, setErrorText] = React.useState(() => "");
 
 	return (
@@ -30,19 +31,19 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 			<GridItem colSpan={{ base: 5 }}>
 				<Select
 					label={label}
+					value={userId}
 					readonly={disabled}
-					value={value?.userId}
 					onValueChange={onUserChange}
 					items={users.map((user) => ({ value: user.id, label: user.fullName }))}
 				/>
 			</GridItem>
 
 			<GridItem colSpan={{ base: 3 }}>
-				<Field errorText={errorText} invalid={errorText !== ""} label={memberKind === "creditor" ? "Total Amount" : "Split Amount"}>
+				<Field label={amountLabel} errorText={errorText} invalid={errorText !== ""}>
 					<NumberInputRoot
 						min={0}
 						width="100%"
-						disabled={disabled}
+						readOnly={disabled}
 						color={autoFilledAmount !== undefined ? "grey" : undefined}
 						value={autoFilledAmount !== undefined ? String(autoFilledAmount) : numberInput}
 						onValueChange={(e) => {

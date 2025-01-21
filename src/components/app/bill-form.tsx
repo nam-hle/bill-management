@@ -30,8 +30,14 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 	const [editedCreditorAmount, setEditedCreditorAmount] = React.useState(() => false);
 
 	const sumCreditorAmount = React.useMemo(() => {
-		return formState.debtors.reduce((acc, debtor) => acc + (debtor.amount ?? 0), 0);
-	}, [formState.debtors]);
+		const sum = formState.debtors.reduce((acc, debtor) => acc + (debtor.amount ?? 0), 0);
+
+		if ((props.formState.creditor.amount ?? 0) !== sum) {
+			return undefined;
+		}
+
+		return sum;
+	}, [formState.debtors, props.formState.creditor.amount]);
 
 	const router = useRouter();
 	const onSubmit = React.useCallback(async () => {
@@ -59,16 +65,14 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 			await fetch(`/api/bills/${billId}`, {
 				method: "PUT",
 				body: JSON.stringify(formState),
-				headers: {
-					"Content-Type": "application/json"
-				}
+				headers: { "Content-Type": "application/json" }
 			}).then(() => {
 				toaster.create({
 					type: "success",
 					title: "Bill updated",
 					description: "Bill has been updated successfully"
 				});
-				setFormState((prev) => ({ ...prev, editing: false }));
+				setEditing(() => false);
 			});
 
 			return;
@@ -108,8 +112,9 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					users={users}
 					label="Creditor"
 					disabled={!editing}
-					memberKind="creditor"
-					value={formState.creditor}
+					amountLabel="Total Amount"
+					userId={formState.creditor.userId}
+					amount={formState.creditor.amount}
 					autoFilledAmount={editedCreditorAmount || !editing ? undefined : sumCreditorAmount}
 					onUserChange={(userId) => setFormState((currentFormState) => ({ ...currentFormState, creditor: { ...currentFormState.creditor, userId } }))}
 					onAmountChange={(amount) => {
@@ -131,10 +136,11 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 				{formState.debtors.map((debtor, debtorIndex) => {
 					return (
 						<BillMemberInputs
-							value={debtor}
 							key={debtorIndex}
-							memberKind="debtor"
 							disabled={!editing}
+							userId={debtor.userId}
+							amount={debtor.amount}
+							amountLabel="Split Amount"
 							label={`Debtor ${debtorIndex + 1}`}
 							users={users.filter((user) => user.id === debtor.userId || !formState.debtors.some((d) => d.userId === user.id))}
 							onUserChange={(userId) => {
