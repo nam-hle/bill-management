@@ -17,7 +17,15 @@ export default async function NewBillPage() {
 	return (
 		<BillForm
 			users={users}
-			formState={{ kind: FormKind.CREATE, createdAt: null, updatedAt: null, editing: true, creditor: {}, description: "", debtors: [] }}
+			formState={{
+				kind: FormKind.CREATE,
+				createdAt: null,
+				updatedAt: null,
+				editing: true,
+				creditor: {},
+				description: "",
+				debtors: [{ userId: undefined, amount: undefined }]
+			}}
 		/>
 	);
 }

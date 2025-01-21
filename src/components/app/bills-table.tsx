@@ -3,12 +3,12 @@
 import _ from "lodash";
 import React from "react";
 import { GoSearch } from "react-icons/go";
-import { format, formatDistanceToNow } from "date-fns";
 import { Table, Input, HStack, VStack, Heading } from "@chakra-ui/react";
 import { useRouter, useSearchParams, type ReadonlyURLSearchParams } from "next/navigation";
 
 import { type ClientBill } from "@/types";
 import { InputGroup } from "@/components/ui/input-group";
+import { formatTime, formatDistanceTime } from "@/utils";
 import { PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
 import { FilterButton } from "@/components/app/filter-button";
 import { LinkedTableRow } from "@/components/app/table-body-row";
@@ -166,9 +166,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 						<LinkedTableRow key={item.id} href={`/bills/${item.id}`}>
 							<Table.Cell>{item.id.slice(0, 6)}</Table.Cell>
 							<Table.Cell>{item.description}</Table.Cell>
-							<Table.Cell title={item.createdAt ? format(new Date(item.createdAt), "PPpp") : undefined}>
-								{item.createdAt ? formatDistanceToNow(new Date(item.createdAt), { addSuffix: true }) : undefined}
-							</Table.Cell>
+							<Table.Cell title={formatTime(item.createdAt)}>{formatDistanceTime(item.createdAt)}</Table.Cell>
 							<Table.Cell>{formatUserAmount(item.creator, currentUserId)}</Table.Cell>
 							<Table.Cell>{formatUserAmount(item.creditor, currentUserId)}</Table.Cell>
 							<Table.Cell>

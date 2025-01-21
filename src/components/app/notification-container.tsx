@@ -1,10 +1,11 @@
+import { capitalize } from "lodash";
 import { FaRegBell } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import { formatDistanceToNow } from "date-fns";
 import { type User } from "@supabase/supabase-js";
 import React, { useEffect, useCallback } from "react";
 import { Box, Text, Stack, HStack, IconButton } from "@chakra-ui/react";
 
+import { formatDistanceTime } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Status } from "@/components/ui/status";
 import { createClient } from "@/supabase/client";
@@ -121,8 +122,6 @@ const NotificationMessage = ({ notification, onClose }: { notification: ClientNo
 		throw new Error("Invalid notification type");
 	}
 
-	const time = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
-
 	return (
 		<HStack cursor="pointer" padding="{spacing.2}" _hover={{ bg: "gray.200" }} justifyContent="space-between">
 			<Stack gap="0">
@@ -138,7 +137,7 @@ const NotificationMessage = ({ notification, onClose }: { notification: ClientNo
 					{content}
 				</Text>
 				<Text textStyle="xs" color="gray.500">
-					{time[0].toUpperCase() + time.slice(1)}
+					{capitalize(formatDistanceTime(createdAt))}
 				</Text>
 			</Stack>
 			<Status maxW="20px" value="info" />

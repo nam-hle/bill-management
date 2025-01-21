@@ -17,3 +17,7 @@ export function formatDistanceTime(time: string | undefined | null) {
 
 	return formatDistanceToNow(new Date(time), { addSuffix: true });
 }
+
+export function capitalize(text: string) {
+	return text[0].toUpperCase() + text.slice(1);
+}

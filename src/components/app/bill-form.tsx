@@ -1,18 +1,18 @@
 "use client";
 
 import React from "react";
+import { TbSum } from "react-icons/tb";
 import { useRouter } from "next/navigation";
 import { IoIosAddCircle } from "react-icons/io";
-import { MdEdit, MdCheck, MdCancel } from "react-icons/md";
+import { MdEdit, MdCheck, MdCancel, MdDeleteOutline } from "react-icons/md";
 import { Text, Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chakra-ui/react";
 
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
-import { Select } from "@/components/app/select";
 import { toaster } from "@/components/ui/toaster";
 import { formatTime, formatDistanceTime } from "@/utils";
+import { BillMemberInputs } from "@/components/app/bill-member-inputs";
 import { FormKind, type ClientUser, type BillFormState } from "@/types";
-import { NumberInputRoot, NumberInputField } from "@/components/ui/number-input";
 
 export const BillForm: React.FC<{
 	users: ClientUser[];
@@ -21,6 +21,11 @@ export const BillForm: React.FC<{
 	const { users } = props;
 	const [formState, setFormState] = React.useState<BillFormState>(() => props.formState);
 	const router = useRouter();
+
+	const [editedCreditorAmount, setEditedCreditorAmount] = React.useState(() => false);
+	const sumCreditorAmount = React.useMemo(() => {
+		return formState.debtors.reduce((acc, debtor) => acc + (debtor.amount ?? 0), 0);
+	}, [formState.debtors]);
 
 	const onSubmit = React.useCallback(async () => {
 		if (formState.kind === FormKind.CREATE) {
@@ -66,22 +71,21 @@ export const BillForm: React.FC<{
 	return (
 		<Stack gap="{spacing.4}">
 			<Stack gap={0}>
-				<Heading>{props.formState ? "Bill Details" : "New Bill"}</Heading>
+				<Heading>{formState.kind === FormKind.UPDATE ? "Bill Details" : "New Bill"}</Heading>
 				{formState.kind === FormKind.UPDATE && (
 					<Text color="grey" textStyle="xs" fontStyle="italic">
-						Created <span title={formatTime(props.formState.createdAt)}>{formatDistanceTime(props.formState?.createdAt)}</span> by{" "}
-						{props.formState.creditor.fullName}
-						{props.formState.updatedAt && props.formState.updatedAt !== props.formState.createdAt && (
+						Created <span title={formatTime(formState.createdAt)}>{formatDistanceTime(formState?.createdAt)}</span> by {formState.creditor.fullName}
+						{formState.updatedAt && formState.updatedAt !== formState.createdAt && (
 							<>
 								{" "}
-								• Last updated <span title={formatTime(props.formState.updatedAt)}>{formatDistanceTime(props.formState.updatedAt)}</span>
+								• Last updated <span title={formatTime(formState.updatedAt)}>{formatDistanceTime(formState.updatedAt)}</span>
 							</>
 						)}
 					</Text>
 				)}
 			</Stack>
-			<SimpleGrid columns={9} gap="{spacing.4}">
-				<GridItem colSpan={{ base: 4 }}>
+			<SimpleGrid columns={10} gap="{spacing.4}">
+				<GridItem colSpan={{ base: 5 }}>
 					<Field required label="Description">
 						<Input
 							value={formState.description}
@@ -98,45 +102,80 @@ export const BillForm: React.FC<{
 				</GridItem>
 				<GridItem colSpan={{ base: 5 }}></GridItem>
 
-				<MemberInputs
+				<BillMemberInputs
 					users={users}
-					memberIndex={0}
+					label="Creditor"
 					memberKind="creditor"
 					value={formState.creditor}
 					disabled={formState.kind === FormKind.UPDATE && !formState.editing}
-					onValueChange={(newValue) => {
-						if (newValue === null) {
-							throw new Error("Creditor is required");
-						}
-
-						setFormState((prev) => ({ ...prev, creditor: newValue }));
+					autoFilledAmount={editedCreditorAmount ? undefined : sumCreditorAmount}
+					onUserChange={(userId) => {
+						setFormState((prev) => ({ ...prev, creditor: { ...prev.creditor, userId } }));
 					}}
+					onAmountChange={(amount) => {
+						setEditedCreditorAmount(() => true);
+						setFormState((prev) => ({ ...prev, creditor: { ...prev.creditor, amount } }));
+					}}
+					action={
+						!(formState.kind === FormKind.UPDATE && !formState.editing) && editedCreditorAmount ? (
+							<Button
+								variant="subtle"
+								onClick={() => {
+									setEditedCreditorAmount(() => false);
+								}}>
+								<TbSum /> Sum
+							</Button>
+						) : undefined
+					}
 				/>
-				{formState.debtors.map((debtor, index) => {
+				{formState.debtors.map((debtor, debtorIndex) => {
 					return (
-						<MemberInputs
-							key={index}
+						<BillMemberInputs
 							value={debtor}
-							memberIndex={index}
+							key={debtorIndex}
 							memberKind="debtor"
+							label={`Debtor ${debtorIndex + 1}`}
 							disabled={formState.kind === FormKind.UPDATE && !formState.editing}
 							users={users.filter((user) => user.id === debtor.userId || !formState.debtors.some((d) => d.userId === user.id))}
-							onValueChange={(newValue) => {
+							onUserChange={(userId) => {
 								setFormState((prev) => ({
 									...prev,
-									debtors: prev.debtors.flatMap((d, i) => {
-										if (i !== index) {
+									debtors: prev.debtors.map((d, i) => {
+										if (i !== debtorIndex) {
 											return d;
 										}
 
-										if (newValue === null) {
-											return [];
-										}
-
-										return { ...d, ...newValue };
+										return { ...d, userId };
 									})
 								}));
 							}}
+							onAmountChange={(amount) => {
+								setFormState((prev) => ({
+									...prev,
+									debtors: prev.debtors.map((d, i) => {
+										if (i !== debtorIndex) {
+											return d;
+										}
+
+										return { ...d, amount };
+									})
+								}));
+							}}
+							action={
+								!(formState.kind === FormKind.UPDATE && !formState.editing) ? (
+									<Button
+										variant="subtle"
+										colorPalette="red"
+										onClick={() => {
+											setFormState((prev) => ({
+												...prev,
+												debtors: prev.debtors.filter((_, i) => i !== debtorIndex)
+											}));
+										}}>
+										<MdDeleteOutline /> Delete
+									</Button>
+								) : undefined
+							}
 						/>
 					);
 				})}
@@ -177,73 +216,5 @@ export const BillForm: React.FC<{
 				)}
 			</HStack>
 		</Stack>
-	);
-};
-
-export const MemberInputs: React.FC<{
-	memberKind: "creditor" | "debtor";
-	memberIndex: number;
-	users: ClientUser[];
-	disabled?: boolean;
-	value: { userId?: string; amount?: number };
-	onValueChange: (value: { userId?: string; amount?: number } | null) => void;
-}> = ({ users, memberIndex, memberKind, value, disabled, onValueChange }) => {
-	const label = memberKind === "creditor" ? "Creditor" : `Debtor ${memberIndex + 1}`;
-
-	const [numberInput, setNumberInput] = React.useState(() => String(value?.amount ?? 0));
-	const [errorText, setErrorText] = React.useState(() => "");
-
-	return (
-		<>
-			<GridItem colSpan={{ base: 4 }}>
-				<Select
-					label={label}
-					disabled={disabled}
-					value={value?.userId}
-					onValueChange={(userId) => onValueChange({ ...value, userId })}
-					items={users.map((user) => ({ label: user.fullName, value: user.id }))}
-				/>
-			</GridItem>
-
-			<GridItem colSpan={{ base: 4 }}>
-				<Field
-					errorText={errorText}
-					invalid={errorText !== ""}
-					required={memberKind === "creditor"}
-					label={memberKind === "creditor" ? "Total Amount" : "Split Amount"}>
-					<NumberInputRoot
-						min={0}
-						width="100%"
-						disabled={disabled}
-						value={numberInput}
-						onValueChange={(e) => {
-							setNumberInput(e.value);
-						}}
-						onBlur={() => {
-							const amount = parseInt(numberInput, 10);
-
-							if (isNaN(amount)) {
-								setErrorText("Amount must be a number");
-
-								return;
-							}
-
-							setNumberInput(String(amount));
-							setErrorText("");
-							onValueChange({ ...value, amount });
-						}}>
-						<NumberInputField />
-					</NumberInputRoot>
-				</Field>
-			</GridItem>
-
-			<GridItem alignSelf="flex-end" justifySelf="flex-end">
-				{!disabled && memberKind === "debtor" && (
-					<Button variant="subtle" colorPalette="red" onClick={() => onValueChange(null)}>
-						Delete
-					</Button>
-				)}
-			</GridItem>
-		</>
 	);
 };
