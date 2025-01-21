@@ -23,5 +23,5 @@ export default async function BillDetailsPage(props: BillDetailsPage.Props) {
 	const users = await UsersControllers.getUsers(supabase);
 	const bill = await BillsControllers.getBillById(supabase, billId);
 
-	return <BillForm users={users} formState={{ ...bill, kind: FormKind.UPDATE, editing: false }} />;
+	return <BillForm users={users} formState={{ ...bill, kind: FormKind.UPDATE }} />;
 }

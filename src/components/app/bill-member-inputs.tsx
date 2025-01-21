@@ -38,17 +38,13 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 			</GridItem>
 
 			<GridItem colSpan={{ base: 3 }}>
-				<Field
-					errorText={errorText}
-					invalid={errorText !== ""}
-					required={memberKind === "creditor"}
-					label={memberKind === "creditor" ? "Total Amount" : "Split Amount"}>
+				<Field errorText={errorText} invalid={errorText !== ""} label={memberKind === "creditor" ? "Total Amount" : "Split Amount"}>
 					<NumberInputRoot
 						min={0}
 						width="100%"
 						disabled={disabled}
-						color={autoFilledAmount ? "grey" : undefined}
-						value={autoFilledAmount ? String(autoFilledAmount) : numberInput}
+						color={autoFilledAmount !== undefined ? "grey" : undefined}
+						value={autoFilledAmount !== undefined ? String(autoFilledAmount) : numberInput}
 						onValueChange={(e) => {
 							const input = e.value;
 

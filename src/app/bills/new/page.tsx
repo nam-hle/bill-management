@@ -21,7 +21,6 @@ export default async function NewBillPage() {
 				kind: FormKind.CREATE,
 				createdAt: null,
 				updatedAt: null,
-				editing: true,
 				creditor: {},
 				description: "",
 				debtors: [{ userId: undefined, amount: undefined }]

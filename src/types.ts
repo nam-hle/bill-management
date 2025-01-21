@@ -43,7 +43,6 @@ export type ClientNotification = BillCreatedNotification | BillUpdatedNotificati
 export interface BillFormState {
 	id?: string;
 	kind: FormKind;
-	editing?: boolean;
 	description: string;
 	createdAt: string | null;
 	updatedAt: string | null;

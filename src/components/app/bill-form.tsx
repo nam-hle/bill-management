@@ -20,6 +20,7 @@ export const BillForm: React.FC<{
 }> = (props) => {
 	const { users } = props;
 	const [formState, setFormState] = React.useState<BillFormState>(() => props.formState);
+	const [editing, setEditing] = React.useState(() => formState.kind === FormKind.CREATE);
 	const router = useRouter();
 
 	const [editedCreditorAmount, setEditedCreditorAmount] = React.useState(() => false);
@@ -90,7 +91,7 @@ export const BillForm: React.FC<{
 						<Input
 							value={formState.description}
 							placeholder="Enter bill description"
-							disabled={!formState.editing && formState.kind === FormKind.UPDATE}
+							disabled={!editing && formState.kind === FormKind.UPDATE}
 							onChange={(e) =>
 								setFormState((prev) => ({
 									...prev,
@@ -105,10 +106,10 @@ export const BillForm: React.FC<{
 				<BillMemberInputs
 					users={users}
 					label="Creditor"
+					disabled={!editing}
 					memberKind="creditor"
 					value={formState.creditor}
-					disabled={formState.kind === FormKind.UPDATE && !formState.editing}
-					autoFilledAmount={editedCreditorAmount ? undefined : sumCreditorAmount}
+					autoFilledAmount={editedCreditorAmount || !editing ? undefined : sumCreditorAmount}
 					onUserChange={(userId) => {
 						setFormState((prev) => ({ ...prev, creditor: { ...prev.creditor, userId } }));
 					}}
@@ -117,7 +118,7 @@ export const BillForm: React.FC<{
 						setFormState((prev) => ({ ...prev, creditor: { ...prev.creditor, amount } }));
 					}}
 					action={
-						!(formState.kind === FormKind.UPDATE && !formState.editing) && editedCreditorAmount ? (
+						editing && editedCreditorAmount ? (
 							<Button
 								variant="subtle"
 								onClick={() => {
@@ -134,8 +135,8 @@ export const BillForm: React.FC<{
 							value={debtor}
 							key={debtorIndex}
 							memberKind="debtor"
+							disabled={!editing}
 							label={`Debtor ${debtorIndex + 1}`}
-							disabled={formState.kind === FormKind.UPDATE && !formState.editing}
 							users={users.filter((user) => user.id === debtor.userId || !formState.debtors.some((d) => d.userId === user.id))}
 							onUserChange={(userId) => {
 								setFormState((prev) => ({
@@ -162,7 +163,7 @@ export const BillForm: React.FC<{
 								}));
 							}}
 							action={
-								!(formState.kind === FormKind.UPDATE && !formState.editing) ? (
+								editing ? (
 									<Button
 										variant="subtle"
 										colorPalette="red"
@@ -181,8 +182,8 @@ export const BillForm: React.FC<{
 				})}
 			</SimpleGrid>
 
-			<HStack justifyContent={formState.editing ? "space-between" : "flex-end"}>
-				{formState.editing && (
+			<HStack justifyContent={editing ? "space-between" : "flex-end"}>
+				{editing && (
 					<Button
 						onClick={() => {
 							setFormState((prev) => ({
@@ -193,14 +194,10 @@ export const BillForm: React.FC<{
 						Add debtor
 					</Button>
 				)}
-				{formState.editing && (
+				{editing && (
 					<HStack>
 						{formState.kind === FormKind.UPDATE && (
-							<Button
-								variant="solid"
-								onClick={() => {
-									setFormState((prev) => ({ ...prev, ...props.formState, editing: false }));
-								}}>
+							<Button variant="solid" onClick={() => setEditing(() => false)}>
 								<MdCancel /> Cancel
 							</Button>
 						)}
@@ -209,8 +206,8 @@ export const BillForm: React.FC<{
 						</Button>
 					</HStack>
 				)}
-				{!formState.editing && (
-					<Button variant="solid" onClick={() => setFormState((prev) => ({ ...prev, editing: true }))}>
+				{!editing && (
+					<Button variant="solid" onClick={() => setEditing(() => true)}>
 						<MdEdit /> Edit
 					</Button>
 				)}
