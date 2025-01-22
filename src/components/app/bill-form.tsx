@@ -4,6 +4,7 @@ import React from "react";
 import { TbSum } from "react-icons/tb";
 import { useRouter } from "next/navigation";
 import { IoIosAddCircle } from "react-icons/io";
+import { parse, format, isValid } from "date-fns";
 import { MdEdit, MdCheck, MdCancel, MdDeleteOutline } from "react-icons/md";
 import { Text, Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chakra-ui/react";
 
@@ -12,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { toaster } from "@/components/ui/toaster";
 import { BillMemberInputs } from "@/components/app/bill-member-inputs";
 import { FormKind, type ClientUser, type BillFormState } from "@/types";
-import { formatTime, formatDate, isValidDate, formatDistanceTime } from "@/utils";
+import { formatTime, formatDate, formatDistanceTime, SERVER_DATE_FORMAT, CLIENT_DATE_FORMAT } from "@/utils";
 
 namespace BillForm {
 	export interface Props {
@@ -28,7 +29,7 @@ interface MemberState {
 	amount: {
 		input: string;
 		error?: string;
-		value: number | undefined;
+		value?: number;
 	};
 }
 namespace MemberState {
@@ -42,38 +43,111 @@ namespace MemberState {
 	}
 }
 
-type Action =
-	| { type: "addDebtor" }
-	| { type: "reset"; payload: BillFormState }
-	| { type: "changeIssuedAt"; payload: { issuedAt: string } }
-	| { type: "deleteDebtor"; payload: { debtorIndex: number } }
-	| { type: "changeDescription"; payload: { description: string } }
-	| { type: "changeUser"; payload: MemberKind & { userId: string } }
-	| { type: "changeAmount"; payload: MemberKind & { input: string } };
-
 type MemberKind = { memberKind: "creditor" } | { debtorIndex: number; memberKind: "debtor" };
 
 interface FormState {
 	readonly description: string;
 	readonly creditor: MemberState;
 	readonly debtors: MemberState[];
-	readonly issuedAt: string | null;
+	readonly issuedAt: {
+		input: string;
+		error?: string;
+		value: string | null;
+	};
 }
+
 namespace FormState {
 	export function create(formState: BillFormState): FormState {
-		const { issuedAt, description } = formState;
+		const { description } = formState;
+		const issuedAt = formState.issuedAt ?? format(new Date(), SERVER_DATE_FORMAT);
 
 		return {
-			issuedAt,
 			description,
 			creditor: MemberState.fromBillMemberState(formState.creditor),
-			debtors: formState.debtors.map(MemberState.fromBillMemberState)
+			debtors: formState.debtors.map(MemberState.fromBillMemberState),
+			issuedAt: { value: issuedAt, input: formatDate(issuedAt).client }
 		};
 	}
 }
 
+type Action =
+	| { payload: {}; type: "addDebtor" }
+	| { type: "reset"; payload: BillFormState }
+	| { type: "changeIssuedAt"; payload: { issuedAt: string } }
+	| { payload: {}; type: "submitIssuedAt" }
+	| { type: "deleteDebtor"; payload: { debtorIndex: number } }
+	| { type: "changeDescription"; payload: { description: string } }
+	| { type: "changeUser"; payload: MemberKind & { userId: string } }
+	| { type: "changeAmount"; payload: MemberKind & { input: string } };
+
 const reducer = (state: FormState, action: Action): FormState => {
-	switch (action.type) {
+	const { type, payload } = action;
+
+	switch (type) {
+		case "reset":
+			return FormState.create(payload);
+
+		case "addDebtor":
+			return { ...state, debtors: [...state.debtors, { amount: { input: "" } }] };
+		case "deleteDebtor":
+			return { ...state, debtors: state.debtors.filter((_, index) => index !== payload.debtorIndex) };
+
+		case "changeDescription":
+			return { ...state, description: payload.description };
+		case "changeIssuedAt":
+			const parsedDate = parse(payload.issuedAt, CLIENT_DATE_FORMAT, new Date());
+			const isValidDate = isValid(parsedDate);
+
+			return {
+				...state,
+				issuedAt: {
+					input: payload.issuedAt,
+					value: isValidDate ? format(parsedDate, SERVER_DATE_FORMAT) : null,
+					error: isValidDate ? undefined : `Invalid date format ${CLIENT_DATE_FORMAT}`
+				}
+			};
+		case "submitIssuedAt":
+			if (state.issuedAt.error) {
+				return state;
+			}
+
+			return { ...state, issuedAt: { ...state.issuedAt, input: formatDate(state.issuedAt.value).client } };
+		case "changeUser":
+			if (payload.memberKind === "creditor") {
+				return { ...state, creditor: { ...state.creditor, userId: payload.userId } };
+			}
+
+			return {
+				...state,
+				debtors: state.debtors.map((debtor, index) => (index === payload.debtorIndex ? { ...debtor, userId: payload.userId } : debtor))
+			};
+		case "changeAmount":
+			const input = payload.input;
+			const currentState = payload.memberKind === "creditor" ? state.creditor : state.debtors[payload.debtorIndex];
+			const mergeState = (nextState: MemberState) => {
+				if (payload.memberKind === "creditor") {
+					return { ...state, creditor: nextState };
+				}
+
+				if (payload.memberKind === "debtor") {
+					return { ...state, debtors: state.debtors.map((debtor, index) => (index === payload.debtorIndex ? nextState : debtor)) };
+				}
+
+				// @ts-expect-error Invalid member kidn
+				throw new Error(`Unhandled member kind: ${payload.memberKind}`);
+			};
+
+			if (input === "") {
+				return mergeState({ ...currentState, amount: { input: "", value: undefined } });
+			}
+
+			const amount = parseInt(input, 10);
+
+			if (isNaN(amount)) {
+				return mergeState({ ...currentState, amount: { input, error: "Amount must be a number" } });
+			}
+
+			return mergeState({ ...currentState, amount: { input, value: amount } });
 		default:
 			throw new Error(`Unhandled action type: ${action}`);
 	}
@@ -86,17 +160,15 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 	const [editing, setEditing] = React.useState(() => kind === FormKind.CREATE);
 	const [editedCreditorAmount, setEditedCreditorAmount] = React.useState(() => false);
 
-	const formatedIssuedAt = React.useMemo(() => formatDate(formState.issuedAt), [formState.issuedAt]);
-
-	const sumCreditorAmount = React.useMemo(() => {
-		const sum = formState.debtors.reduce((acc, debtor) => acc + (debtor.amount.value ?? 0), 0);
-
-		if ((props.formState.creditor.amount ?? 0) !== sum) {
-			return undefined;
-		}
-
-		return sum;
-	}, [formState.debtors, props.formState.creditor.amount]);
+	// const sumCreditorAmount = React.useMemo(() => {
+	// 	const sum = formState.debtors.reduce((acc, debtor) => acc + (debtor.amount.value ?? 0), 0);
+	//
+	// 	if ((props.formState.creditor.amount ?? 0) !== sum) {
+	// 		return undefined;
+	// 	}
+	//
+	// 	return sum;
+	// }, [formState.debtors, props.formState.creditor.amount]);
 
 	const router = useRouter();
 	const onSubmit = React.useCallback(async () => {
@@ -137,7 +209,6 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 			return;
 		}
 	}, [billId, formState, kind, router]);
-	console.log(formState.issuedAt, isValidDate(formState.issuedAt));
 
 	return (
 		<Stack gap="{spacing.4}">
@@ -167,13 +238,11 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					</Field>
 				</GridItem>
 				<GridItem colSpan={{ base: 3 }}>
-					<Field
-						label="Issued at"
-						invalid={!isValidDate(formState.issuedAt)}
-						errorText={!isValidDate(formState.issuedAt) ? "Invalid date format dd/mm/yy" : undefined}>
+					<Field label="Issued at" invalid={!!formState.issuedAt.error} errorText={formState.issuedAt.error}>
 						<Input
 							placeholder="dd/mm/yy"
-							value={formatedIssuedAt}
+							value={formState.issuedAt.input}
+							onBlur={() => dispatch({ payload: {}, type: "submitIssuedAt" })}
 							onChange={(event) => dispatch({ type: "changeIssuedAt", payload: { issuedAt: event.target.value } })}
 						/>
 					</Field>
@@ -188,6 +257,9 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					amount={formState.creditor.amount.input}
 					// autoFilledAmount={editedCreditorAmount || !editing ? undefined : sumCreditorAmount}
 					onUserChange={(userId) => dispatch({ type: "changeUser", payload: { userId, memberKind: "creditor" } })}
+					onAmountChange={(amount) => {
+						dispatch({ type: "changeAmount", payload: { input: amount, memberKind: "creditor" } });
+					}}
 					action={
 						editing && editedCreditorAmount ? (
 							<Button
@@ -199,11 +271,6 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 							</Button>
 						) : undefined
 					}
-					onAmountChange={(amount) => {
-						// setEditedCreditorAmount(() => true);
-						dispatch({ type: "changeAmount", payload: { input: amount, memberKind: "creditor" } });
-						// setFormState((currentFormState) => ({ ...currentFormState, creditor: { ...currentFormState.creditor, amount } }));
-					}}
 				/>
 				{formState.debtors.map((debtor, debtorIndex) => {
 					return (
@@ -231,7 +298,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 
 			<HStack justifyContent={editing ? "space-between" : "flex-end"}>
 				{editing && (
-					<Button variant="subtle" onClick={() => dispatch({ type: "addDebtor" })}>
+					<Button variant="subtle" onClick={() => dispatch({ payload: {}, type: "addDebtor" })}>
 						Add debtor
 					</Button>
 				)}
@@ -266,6 +333,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					</Button>
 				)}
 			</HStack>
+			<pre style={{ fontSize: "12px" }}>{JSON.stringify(formState, null, 2)}</pre>
 		</Stack>
 	);
 };

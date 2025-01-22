@@ -2,16 +2,21 @@ import { parse, format, isValid, formatDistanceToNow } from "date-fns";
 
 export function noop() {}
 
+export const CLIENT_DATE_FORMAT = "dd/MM/yy";
+export const SERVER_DATE_FORMAT = "yyyy-MM-dd";
+
 export function formatDate(date?: string | null) {
-	return format(date ?? new Date(), "dd/MM/yy");
+	const value = date ?? new Date();
+
+	return { server: format(value, SERVER_DATE_FORMAT), client: format(value, CLIENT_DATE_FORMAT) };
 }
 
-export function isValidDate(dateString: string | null) {
+export function isValidClientDate(dateString: string | null) {
 	if (dateString === null) {
 		return false;
 	}
 
-	return isValid(parse(dateString, "dd/MM/yy", new Date()));
+	return isValid(parse(dateString, CLIENT_DATE_FORMAT, new Date()));
 }
 
 export function formatTime(time: string | undefined | null) {
