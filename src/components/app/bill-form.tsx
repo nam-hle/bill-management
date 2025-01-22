@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { sumBy } from "lodash";
 import { TbSum } from "react-icons/tb";
 import { useRouter } from "next/navigation";
 import { IoIosAddCircle } from "react-icons/io";
@@ -56,29 +57,32 @@ interface FormState {
 	};
 }
 
+type Action =
+	| { payload: {}; type: "addDebtor" }
+	| { payload: {}; type: "submitIssuedAt" }
+	| { type: "reset"; payload: BillFormState }
+	| { payload: {}; type: "syncCreditorAmount" }
+	| { type: "changeIssuedAt"; payload: { issuedAt: string } }
+	| { type: "deleteDebtor"; payload: { debtorIndex: number } }
+	| { type: "changeDescription"; payload: { description: string } }
+	| { type: "changeUser"; payload: MemberKind & { userId: string } }
+	| { type: "changeAmount"; payload: MemberKind & { input: string } };
+
 namespace FormState {
 	export function create(formState: BillFormState): FormState {
 		const { description } = formState;
 		const issuedAt = formState.issuedAt ?? format(new Date(), SERVER_DATE_FORMAT);
 
+		const debtors = formState.debtors.map(MemberState.fromBillMemberState);
+
 		return {
+			debtors,
 			description,
 			creditor: MemberState.fromBillMemberState(formState.creditor),
-			debtors: formState.debtors.map(MemberState.fromBillMemberState),
 			issuedAt: { value: issuedAt, input: formatDate(issuedAt).client }
 		};
 	}
 }
-
-type Action =
-	| { payload: {}; type: "addDebtor" }
-	| { type: "reset"; payload: BillFormState }
-	| { type: "changeIssuedAt"; payload: { issuedAt: string } }
-	| { payload: {}; type: "submitIssuedAt" }
-	| { type: "deleteDebtor"; payload: { debtorIndex: number } }
-	| { type: "changeDescription"; payload: { description: string } }
-	| { type: "changeUser"; payload: MemberKind & { userId: string } }
-	| { type: "changeAmount"; payload: MemberKind & { input: string } };
 
 const reducer = (state: FormState, action: Action): FormState => {
 	const { type, payload } = action;
@@ -130,7 +134,24 @@ const reducer = (state: FormState, action: Action): FormState => {
 				}
 
 				if (payload.memberKind === "debtor") {
-					return { ...state, debtors: state.debtors.map((debtor, index) => (index === payload.debtorIndex ? nextState : debtor)) };
+					const currentSumDebtors = sumBy(state.debtors, (debtor) => debtor.amount.value ?? 0);
+
+					const debtors = state.debtors.map((debtor, index) => (index === payload.debtorIndex ? nextState : debtor));
+					const nextSumDebtors = sumBy(debtors, (debtor) => debtor.amount.value ?? 0);
+
+					const isSync = currentSumDebtors === (state.creditor.amount.value ?? 0);
+					const creditor = !isSync
+						? state.creditor
+						: {
+								...state.creditor,
+								amount: {
+									...state.creditor.amount,
+									value: nextSumDebtors,
+									input: String(nextSumDebtors)
+								}
+							};
+
+					return { ...state, debtors, creditor };
 				}
 
 				// @ts-expect-error Invalid member kidn
@@ -148,6 +169,17 @@ const reducer = (state: FormState, action: Action): FormState => {
 			}
 
 			return mergeState({ ...currentState, amount: { input, value: amount } });
+
+		case "syncCreditorAmount":
+			const sumDebtors = sumBy(state.debtors, (debtor) => debtor.amount.value ?? 0);
+
+			return {
+				...state,
+				creditor: {
+					...state.creditor,
+					amount: { value: sumDebtors, input: String(sumDebtors) }
+				}
+			};
 		default:
 			throw new Error(`Unhandled action type: ${action}`);
 	}
@@ -158,17 +190,10 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 	const { createdAt, updatedAt } = props.formState;
 	const [formState, dispatch] = React.useReducer(reducer, FormState.create(props.formState));
 	const [editing, setEditing] = React.useState(() => kind === FormKind.CREATE);
-	const [editedCreditorAmount, setEditedCreditorAmount] = React.useState(() => false);
 
-	// const sumCreditorAmount = React.useMemo(() => {
-	// 	const sum = formState.debtors.reduce((acc, debtor) => acc + (debtor.amount.value ?? 0), 0);
-	//
-	// 	if ((props.formState.creditor.amount ?? 0) !== sum) {
-	// 		return undefined;
-	// 	}
-	//
-	// 	return sum;
-	// }, [formState.debtors, props.formState.creditor.amount]);
+	const isSyncedAmount = React.useMemo(() => {
+		return sumBy(formState.debtors, (debtor) => debtor.amount.value ?? 0) === (formState.creditor.amount.value ?? 0);
+	}, [formState.creditor.amount.value, formState.debtors]);
 
 	const router = useRouter();
 	const onSubmit = React.useCallback(async () => {
@@ -255,18 +280,13 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					amountLabel="Total Amount"
 					userId={formState.creditor.userId}
 					amount={formState.creditor.amount.input}
-					// autoFilledAmount={editedCreditorAmount || !editing ? undefined : sumCreditorAmount}
 					onUserChange={(userId) => dispatch({ type: "changeUser", payload: { userId, memberKind: "creditor" } })}
 					onAmountChange={(amount) => {
 						dispatch({ type: "changeAmount", payload: { input: amount, memberKind: "creditor" } });
 					}}
 					action={
-						editing && editedCreditorAmount ? (
-							<Button
-								variant="subtle"
-								onClick={() => {
-									setEditedCreditorAmount(() => false);
-								}}>
+						editing && !isSyncedAmount ? (
+							<Button variant="subtle" onClick={() => dispatch({ payload: {}, type: "syncCreditorAmount" })}>
 								<TbSum /> Sum
 							</Button>
 						) : undefined

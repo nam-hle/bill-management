@@ -37,37 +37,8 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 			</GridItem>
 
 			<GridItem colSpan={{ base: 3 }}>
-				<Field label={amountLabel} errorText={errorText} invalid={errorText !== ""}>
-					<NumberInputRoot
-						min={0}
-						width="100%"
-						value={amount}
-						readOnly={disabled}
-						onValueChange={(e) => {
-							onAmountChange(e.value);
-							// const input = e.value;
-							//
-							// if (input === "") {
-							// 	onAmountChange(0);
-							// 	setNumberInput(() => "");
-							// 	setErrorText("");
-							//
-							// 	return;
-							// }
-							//
-							// const amount = parseInt(input, 10);
-							//
-							// if (isNaN(amount)) {
-							// 	setNumberInput(() => input);
-							// 	setErrorText("Amount must be a number");
-							//
-							// 	return;
-							// }
-							//
-							// setNumberInput(String(amount));
-							// setErrorText("");
-							// onAmountChange(amount);
-						}}>
+				<Field label={amountLabel} errorText={errorText} invalid={!!errorText}>
+					<NumberInputRoot min={0} width="100%" value={amount} readOnly={disabled} onValueChange={(event) => onAmountChange(event.value)}>
 						<NumberInputField />
 					</NumberInputRoot>
 				</Field>
