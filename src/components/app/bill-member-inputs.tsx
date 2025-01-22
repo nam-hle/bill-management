@@ -9,22 +9,20 @@ import { NumberInputRoot, NumberInputField } from "@/components/ui/number-input"
 namespace BillMemberInputs {
 	export interface Props {
 		label: string;
+		amount: string;
+		errorText?: string;
 		disabled?: boolean;
 		amountLabel: string;
 		users: ClientUser[];
 		action: React.ReactNode;
-		autoFilledAmount?: number;
-		amount: number | undefined;
 		userId: string | undefined;
 		onUserChange(userId: string): void;
-		onAmountChange(amount: number): void;
+		onAmountChange(string: string): void;
 	}
 }
 
 export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
-	const { users, label, userId, amount, action, disabled, amountLabel, onUserChange, onAmountChange, autoFilledAmount } = props;
-	const [numberInput, setNumberInput] = React.useState(() => String(autoFilledAmount ?? amount ?? ""));
-	const [errorText, setErrorText] = React.useState(() => "");
+	const { users, label, userId, amount, action, disabled, errorText, amountLabel, onUserChange, onAmountChange } = props;
 
 	return (
 		<>
@@ -43,32 +41,32 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 					<NumberInputRoot
 						min={0}
 						width="100%"
+						value={amount}
 						readOnly={disabled}
-						color={autoFilledAmount !== undefined ? "grey" : undefined}
-						value={autoFilledAmount !== undefined ? String(autoFilledAmount) : numberInput}
 						onValueChange={(e) => {
-							const input = e.value;
-
-							if (input === "") {
-								onAmountChange(0);
-								setNumberInput(() => "");
-								setErrorText("");
-
-								return;
-							}
-
-							const amount = parseInt(input, 10);
-
-							if (isNaN(amount)) {
-								setNumberInput(() => input);
-								setErrorText("Amount must be a number");
-
-								return;
-							}
-
-							setNumberInput(String(amount));
-							setErrorText("");
-							onAmountChange(amount);
+							onAmountChange(e.value);
+							// const input = e.value;
+							//
+							// if (input === "") {
+							// 	onAmountChange(0);
+							// 	setNumberInput(() => "");
+							// 	setErrorText("");
+							//
+							// 	return;
+							// }
+							//
+							// const amount = parseInt(input, 10);
+							//
+							// if (isNaN(amount)) {
+							// 	setNumberInput(() => input);
+							// 	setErrorText("Amount must be a number");
+							//
+							// 	return;
+							// }
+							//
+							// setNumberInput(String(amount));
+							// setErrorText("");
+							// onAmountChange(amount);
 						}}>
 						<NumberInputField />
 					</NumberInputRoot>
