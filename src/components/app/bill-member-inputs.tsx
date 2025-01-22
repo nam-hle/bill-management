@@ -8,21 +8,22 @@ import { NumberInputRoot, NumberInputField } from "@/components/ui/number-input"
 
 namespace BillMemberInputs {
 	export interface Props {
-		label: string;
-		amount: string;
-		errorText?: string;
-		disabled?: boolean;
-		amountLabel: string;
-		users: ClientUser[];
-		action?: React.ReactNode;
-		userId: string | undefined;
+		readonly label: string;
+		readonly amount: string;
+		readonly errorText?: string;
+		readonly readonly?: boolean;
+		readonly amountLabel: string;
+		readonly action?: React.ReactNode;
+		readonly userId: string | undefined;
+		readonly users: readonly ClientUser[];
+
 		onUserChange(userId: string): void;
 		onAmountChange(string: string): void;
 	}
 }
 
 export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
-	const { users, label, userId, amount, action, disabled, errorText, amountLabel, onUserChange, onAmountChange } = props;
+	const { users, label, userId, amount, action, readonly, errorText, amountLabel, onUserChange, onAmountChange } = props;
 
 	return (
 		<>
@@ -30,7 +31,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 				<Select
 					label={label}
 					value={userId}
-					readonly={disabled}
+					readonly={readonly}
 					onValueChange={onUserChange}
 					items={users.map((user) => ({ value: user.id, label: user.fullName }))}
 				/>
@@ -38,7 +39,13 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 
 			<GridItem colSpan={{ base: 3 }}>
 				<Field label={amountLabel} errorText={errorText} invalid={!!errorText}>
-					<NumberInputRoot min={0} width="100%" value={amount} readOnly={disabled} onValueChange={(event) => onAmountChange(event.value)}>
+					<NumberInputRoot
+						min={0}
+						width="100%"
+						value={amount}
+						readOnly={readonly}
+						pointerEvents={readonly ? "none" : undefined}
+						onValueChange={(event) => onAmountChange(event.value)}>
 						<NumberInputField />
 					</NumberInputRoot>
 				</Field>

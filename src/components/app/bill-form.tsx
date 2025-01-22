@@ -19,17 +19,17 @@ namespace BillForm {
 	export interface Props {
 		readonly kind: FormKind;
 		readonly billId?: string;
-		readonly users: ClientUser[];
 		readonly formState: BillFormState;
+		readonly users: readonly ClientUser[];
 	}
 }
 
 interface MemberState {
-	userId?: string;
-	amount: {
-		input: string;
-		error?: string;
-		value?: number;
+	readonly userId?: string;
+	readonly amount: {
+		readonly input: string;
+		readonly error?: string;
+		readonly value?: number;
 	};
 }
 namespace MemberState {
@@ -43,32 +43,32 @@ namespace MemberState {
 	}
 }
 
-type MemberKind = { memberKind: "creditor" } | { debtorIndex: number; memberKind: "debtor" };
+type MemberKind = { readonly memberKind: "creditor" } | { readonly debtorIndex: number; readonly memberKind: "debtor" };
 
 interface FormState {
 	readonly creditor: MemberState;
-	readonly debtors: MemberState[];
+	readonly debtors: readonly MemberState[];
 	readonly description: {
-		value: string;
-		error?: string;
+		readonly value: string;
+		readonly error?: string;
 	};
 	readonly issuedAt: {
-		input: string;
-		error?: string;
-		value: string | null;
+		readonly input: string;
+		readonly error?: string;
+		readonly value: string | null;
 	};
 }
 
 type Action =
-	| { payload: {}; type: "addDebtor" }
-	| { payload: {}; type: "submitIssuedAt" }
-	| { type: "reset"; payload: BillFormState }
-	| { payload: {}; type: "syncCreditorAmount" }
-	| { type: "changeIssuedAt"; payload: { issuedAt: string } }
-	| { type: "deleteDebtor"; payload: { debtorIndex: number } }
-	| { type: "changeDescription"; payload: { description: string } }
-	| { type: "changeUser"; payload: MemberKind & { userId: string } }
-	| { type: "changeAmount"; payload: MemberKind & { input: string } };
+	| { readonly payload: {}; readonly type: "addDebtor" }
+	| { readonly payload: {}; readonly type: "submitIssuedAt" }
+	| { readonly type: "reset"; readonly payload: BillFormState }
+	| { readonly payload: {}; readonly type: "syncCreditorAmount" }
+	| { readonly type: "changeIssuedAt"; readonly payload: { readonly issuedAt: string } }
+	| { readonly type: "deleteDebtor"; readonly payload: { readonly debtorIndex: number } }
+	| { readonly type: "changeDescription"; readonly payload: { readonly description: string } }
+	| { readonly type: "changeUser"; readonly payload: MemberKind & { readonly userId: string } }
+	| { readonly type: "changeAmount"; readonly payload: MemberKind & { readonly input: string } };
 
 namespace FormState {
 	export function create(formState: BillFormState): FormState {
@@ -133,8 +133,8 @@ const reducer = (state: FormState, action: Action): FormState => {
 			...state,
 			issuedAt: {
 				input: payload.issuedAt,
-				value: isValidDate ? format(parsedDate, SERVER_DATE_FORMAT) : null,
-				error: isValidDate ? undefined : `Invalid date format ${CLIENT_DATE_FORMAT}`
+				error: isValidDate ? undefined : `Invalid date format dd/mm/yy`,
+				value: isValidDate ? format(parsedDate, SERVER_DATE_FORMAT) : null
 			}
 		};
 	}
@@ -174,24 +174,7 @@ const reducer = (state: FormState, action: Action): FormState => {
 			}
 
 			if (payload.memberKind === "debtor") {
-				const currentSumDebtors = sumBy(state.debtors, (debtor) => debtor.amount.value ?? 0);
-
-				const debtors = state.debtors.map((debtor, index) => (index === payload.debtorIndex ? nextState : debtor));
-				const nextSumDebtors = sumBy(debtors, (debtor) => debtor.amount.value ?? 0);
-
-				const isSync = currentSumDebtors === (state.creditor.amount.value ?? 0);
-				const creditor = !isSync
-					? state.creditor
-					: {
-							...state.creditor,
-							amount: {
-								...state.creditor.amount,
-								value: nextSumDebtors,
-								input: String(nextSumDebtors)
-							}
-						};
-
-				return { ...state, debtors, creditor };
+				return { ...state, debtors: state.debtors.map((debtor, index) => (index === payload.debtorIndex ? nextState : debtor)) };
 			}
 
 			// @ts-expect-error Invalid member kind
@@ -296,9 +279,10 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 				<GridItem colSpan={{ base: 5 }}>
 					<Field required label="Description" errorText={formState.description.error} invalid={!!formState.description.error}>
 						<Input
-							disabled={!editing}
+							readOnly={!editing}
 							value={formState.description.value}
 							placeholder="Enter bill description"
+							pointerEvents={editing ? undefined : "none"}
 							onChange={(event) => dispatch({ type: "changeDescription", payload: { description: event.target.value } })}
 						/>
 					</Field>
@@ -306,8 +290,10 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 				<GridItem colSpan={{ base: 3 }}>
 					<Field label="Issued at" invalid={!!formState.issuedAt.error} errorText={formState.issuedAt.error}>
 						<Input
-							placeholder="dd/mm/yy"
+							readOnly={!editing}
+							placeholder="20/mm/yy"
 							value={formState.issuedAt.input}
+							pointerEvents={editing ? undefined : "none"}
 							onBlur={() => dispatch({ payload: {}, type: "submitIssuedAt" })}
 							onChange={(event) => dispatch({ type: "changeIssuedAt", payload: { issuedAt: event.target.value } })}
 						/>
@@ -317,7 +303,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 				<BillMemberInputs
 					users={users}
 					label="Creditor"
-					disabled={!editing}
+					readonly={!editing}
 					amountLabel="Total Amount"
 					userId={formState.creditor.userId}
 					amount={formState.creditor.amount.input}
@@ -330,7 +316,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					return (
 						<BillMemberInputs
 							key={debtorIndex}
-							disabled={!editing}
+							readonly={!editing}
 							userId={debtor.userId}
 							amountLabel="Split Amount"
 							amount={debtor.amount.input}
