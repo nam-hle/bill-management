@@ -14,7 +14,7 @@ namespace BillMemberInputs {
 		disabled?: boolean;
 		amountLabel: string;
 		users: ClientUser[];
-		action: React.ReactNode;
+		action?: React.ReactNode;
 		userId: string | undefined;
 		onUserChange(userId: string): void;
 		onAmountChange(string: string): void;

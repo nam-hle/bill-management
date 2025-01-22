@@ -132,7 +132,7 @@ export namespace BillsControllers {
 		return toClientBill(data);
 	}
 
-	export async function updateById(supabase: SupabaseInstance, id: string, payload: { description: string }) {
+	export async function updateById(supabase: SupabaseInstance, id: string, payload: { issuedAt: string; description: string }) {
 		const { data, error } = await supabase.from("bills").update(payload).eq("id", id).select();
 
 		if (error) {

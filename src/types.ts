@@ -40,6 +40,13 @@ export interface BillUpdatedNotification extends BaseClientNotification {
 
 export type ClientNotification = BillCreatedNotification | BillUpdatedNotification;
 
+export interface BillFormPayload {
+	issuedAt: string;
+	description: string;
+	creditor: { userId: string; amount: number };
+	debtors: { userId: string; amount: number }[];
+}
+
 export interface BillFormState {
 	description: string;
 	issuedAt: string | null;
