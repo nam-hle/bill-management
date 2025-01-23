@@ -29,7 +29,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 			throw new Error("User not found");
 		}
 
-		await BillsControllers.updateById(supabase, billId, { issuedAt, description });
+		await BillsControllers.updateById(supabase, billId, { issuedAt, description, updaterId: trigger.id });
 
 		// Step 2: Insert bill members
 		const payloadBillMembers: { userId: string; amount: number; role: BillMemberRole }[] = [];

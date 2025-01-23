@@ -166,7 +166,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 						<LinkedTableRow key={item.id} href={`/bills/${item.id}`}>
 							<Table.Cell>{item.id.slice(0, 6)}</Table.Cell>
 							<Table.Cell>{item.description}</Table.Cell>
-							<Table.Cell title={formatTime(item.createdAt)}>{formatDistanceTime(item.createdAt)}</Table.Cell>
+							<Table.Cell title={formatTime(item.creator.timestamp)}>{formatDistanceTime(item.creator.timestamp)}</Table.Cell>
 							<Table.Cell>{formatUserAmount(item.creator, currentUserId)}</Table.Cell>
 							<Table.Cell>{formatUserAmount(item.creditor, currentUserId)}</Table.Cell>
 							<Table.Cell>

@@ -8,9 +8,10 @@ export namespace BillsControllers {
     id,
     description,
     createdAt,
-    updatedAt,
+    updatedAt:updated_at,
     issuedAt,
-    creator:creatorId (userId:id, fullName),
+    creator:profiles!creatorId (userId:id, fullName),
+    updater:profiles!updaterId (userId:id, fullName),
     bill_members (user:userId (userId:id, fullName), amount, role)
   `;
 
@@ -86,7 +87,7 @@ export namespace BillsControllers {
 	}
 
 	function toClientBill(bill: BillSelectResult): ClientBill {
-		const { bill_members, ...rest } = bill;
+		const { creator, updater, updatedAt, createdAt, bill_members, ...rest } = bill;
 
 		const creditor = bill_members.find((bm) => bm.role === "Creditor");
 		const debtors = bill_members.filter((bm) => bm.role === "Debtor");
@@ -98,7 +99,9 @@ export namespace BillsControllers {
 		return {
 			...rest,
 			creditor: toMember(creditor),
-			debtors: debtors.map(toMember)
+			debtors: debtors.map(toMember),
+			creator: { ...creator, timestamp: createdAt },
+			updater: updater && updatedAt ? { ...updater, timestamp: updatedAt } : undefined
 		};
 
 		function toMember(billMember: BillMemberSelectResult) {
@@ -132,7 +135,7 @@ export namespace BillsControllers {
 		return toClientBill(data);
 	}
 
-	export async function updateById(supabase: SupabaseInstance, id: string, payload: { issuedAt: string; description: string }) {
+	export async function updateById(supabase: SupabaseInstance, id: string, payload: { issuedAt: string; updaterId: string; description: string }) {
 		const { data, error } = await supabase.from("bills").update(payload).eq("id", id).select();
 
 		if (error) {

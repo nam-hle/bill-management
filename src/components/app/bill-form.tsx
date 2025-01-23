@@ -18,9 +18,13 @@ import { formatDate, formatTime, CLIENT_DATE_FORMAT, formatDistanceTime, SERVER_
 namespace BillForm {
 	export interface Props {
 		readonly kind: FormKind;
-		readonly billId?: string;
 		readonly formState: BillFormState;
 		readonly users: readonly ClientUser[];
+		readonly metadata: {
+			readonly id?: string;
+			readonly creator?: { readonly userId: string; readonly timestamp: string; readonly fullName: string | null };
+			readonly updater?: { readonly userId: string; readonly timestamp: string; readonly fullName: string | null };
+		};
 	}
 }
 
@@ -210,8 +214,7 @@ const reducer = (state: FormState, action: Action): FormState => {
 };
 
 export const BillForm: React.FC<BillForm.Props> = (props) => {
-	const { kind, users, billId } = props;
-	const { createdAt, updatedAt } = props.formState;
+	const { kind, users, metadata } = props;
 	const [formState, dispatch] = React.useReducer(reducer, FormState.create(props.formState));
 	const [editing, setEditing] = React.useState(() => kind === FormKind.CREATE);
 
@@ -250,7 +253,17 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 		}
 
 		if (kind === FormKind.UPDATE) {
-			await fetch(`/api/bills/${billId}`, {
+			if (!metadata.id) {
+				toaster.create({
+					type: "error",
+					title: "Invalid bill ID",
+					description: "The bill ID is invalid. Please try again."
+				});
+
+				return;
+			}
+
+			await fetch(`/api/bills/${metadata.id}`, {
 				method: "PUT",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(FormState.toPayload(formState))
@@ -271,7 +284,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 				}
 			});
 		}
-	}, [billId, formState, kind, router]);
+	}, [formState, kind, metadata.id, router]);
 
 	return (
 		<Stack gap="{spacing.4}">
@@ -279,11 +292,13 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 				<Heading>{kind === FormKind.UPDATE ? "Bill Details" : "New Bill"}</Heading>
 				{kind === FormKind.UPDATE && (
 					<Text color="grey" textStyle="xs" fontStyle="italic">
-						Created <span title={formatTime(createdAt)}>{formatDistanceTime(createdAt)}</span> by someone
-						{updatedAt && updatedAt !== createdAt && (
+						Created <span title={formatTime(metadata.creator?.timestamp)}>{formatDistanceTime(metadata.creator?.timestamp)}</span> by{" "}
+						{metadata.creator?.fullName ?? "someone"}
+						{metadata.updater?.timestamp && (
 							<>
 								{" "}
-								• Last updated <span title={formatTime(updatedAt)}>{formatDistanceTime(updatedAt)}</span>
+								• Last updated <span title={formatTime(metadata.updater?.timestamp)}>{formatDistanceTime(metadata.updater?.timestamp)}</span> by{" "}
+								{metadata.updater?.fullName ?? "someone"}
 							</>
 						)}
 					</Text>

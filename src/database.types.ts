@@ -50,41 +50,6 @@ export type Database = {
 					avatar_url?: string | null;
 				};
 			};
-			bills: {
-				Row: {
-					id: string;
-					issuedAt: string;
-					createdAt: string;
-					creatorId: string;
-					description: string;
-					updatedAt: string | null;
-				};
-				Insert: {
-					id?: string;
-					issuedAt: string;
-					creatorId: string;
-					createdAt?: string;
-					description: string;
-					updatedAt?: string | null;
-				};
-				Update: {
-					id?: string;
-					issuedAt?: string;
-					createdAt?: string;
-					creatorId?: string;
-					description?: string;
-					updatedAt?: string | null;
-				};
-				Relationships: [
-					{
-						isOneToOne: false;
-						columns: ["creatorId"];
-						referencedColumns: ["id"];
-						referencedRelation: "profiles";
-						foreignKeyName: "bills_creatorId_fkey";
-					}
-				];
-			};
 			transactions: {
 				Row: {
 					id: string;
@@ -118,6 +83,51 @@ export type Database = {
 						referencedColumns: ["id"];
 						referencedRelation: "profiles";
 						foreignKeyName: "transactions_senderId_fkey";
+					}
+				];
+			};
+			bills: {
+				Row: {
+					id: string;
+					issuedAt: string;
+					createdAt: string;
+					creatorId: string;
+					description: string;
+					updaterId: string | null;
+					updated_at: string | null;
+				};
+				Insert: {
+					id?: string;
+					issuedAt: string;
+					creatorId: string;
+					createdAt?: string;
+					description: string;
+					updaterId?: string | null;
+					updated_at?: string | null;
+				};
+				Update: {
+					id?: string;
+					issuedAt?: string;
+					createdAt?: string;
+					creatorId?: string;
+					description?: string;
+					updaterId?: string | null;
+					updated_at?: string | null;
+				};
+				Relationships: [
+					{
+						isOneToOne: false;
+						columns: ["creatorId"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "bills_creatorId_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["updaterId"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "bills_updaterId_fkey";
 					}
 				];
 			};

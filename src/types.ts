@@ -53,8 +53,6 @@ export type BillFormTransfer = z.infer<typeof BillFormPayloadSchema>;
 export interface BillFormState {
 	description: string;
 	issuedAt: string | null;
-	createdAt: string | null;
-	updatedAt: string | null;
 	debtors: Array<{
 		userId?: string;
 		amount?: number;
@@ -85,11 +83,10 @@ export interface ClientBill {
 	readonly id: string;
 	readonly description: string;
 	readonly issuedAt: string | null;
-	readonly updatedAt: string | null;
-	readonly createdAt: string | null;
 	readonly creditor: ClientBillMember;
 	readonly debtors: ClientBillMember[];
-	readonly creator: { userId: string; fullName: string | null };
+	readonly creator: { userId: string; timestamp: string; fullName: string | null };
+	readonly updater?: { userId: string; timestamp: string; fullName: string | null };
 }
 
 export interface ClientBillMember {
