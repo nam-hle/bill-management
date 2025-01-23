@@ -430,7 +430,6 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					</Button>
 				)}
 			</HStack>
-			<pre>{JSON.stringify({ errors, hasError, formState, validating }, null, 2)}</pre>
 		</Stack>
 	);
 };
