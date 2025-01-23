@@ -136,9 +136,9 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 			<HStack width="100%">
 				{showFilters && (
 					<>
-						<FilterButton {...createOwnerFilter("creator")}>My Created Bills</FilterButton>
-						<FilterButton {...createOwnerFilter("creditor")}>My Credits</FilterButton>
-						<FilterButton {...createOwnerFilter("debtor")}>My Debts</FilterButton>
+						<FilterButton {...createOwnerFilter("creator")}>As creator</FilterButton>
+						<FilterButton {...createOwnerFilter("creditor")}>As creditor</FilterButton>
+						<FilterButton {...createOwnerFilter("debtor")}>As debtor</FilterButton>
 						<FilterButton {...createTimeFilter("since", "7d")}>Last 7 days</FilterButton>
 						<FilterButton {...createTimeFilter("since", "30d")}>Last 30 days</FilterButton>
 					</>

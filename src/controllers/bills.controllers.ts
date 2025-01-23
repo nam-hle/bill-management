@@ -39,7 +39,7 @@ export namespace BillsControllers {
 	): Promise<{ fullSize: number; bills: ClientBill[] }> {
 		const { since, memberId, debtorId, creatorId, creditorId } = filters;
 
-		let billMembersQuery = supabase.from("bill_members").select(`billId`).eq(`userId`, memberId);
+		let billMembersQuery = supabase.from("bill_members").select(`billId`);
 
 		if (creditorId !== undefined) {
 			billMembersQuery = billMembersQuery.eq("userId", creditorId).eq("role", "Creditor");
@@ -49,12 +49,15 @@ export namespace BillsControllers {
 			billMembersQuery = billMembersQuery.eq("userId", debtorId).eq("role", "Debtor");
 		}
 
+		if (creditorId === undefined && debtorId === undefined && creatorId === undefined) {
+			billMembersQuery = billMembersQuery.eq("userId", memberId);
+		}
+
 		const billMembers = (await billMembersQuery).data ?? [];
 		let billIDs = _.uniqBy(billMembers, "billId").map(({ billId }) => billId);
 
 		if (creatorId !== undefined) {
 			const createdBills = (await supabase.from("bills").select(`id`).eq("creatorId", creatorId)).data ?? [];
-
 			billIDs = _.intersection(
 				billIDs,
 				createdBills.map(({ id }) => id)

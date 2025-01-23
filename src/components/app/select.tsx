@@ -3,10 +3,9 @@
 import React from "react";
 import { createListCollection } from "@chakra-ui/react";
 
-import { SelectItem, SelectRoot, SelectLabel, SelectContent, SelectTrigger, SelectValueText } from "@/components/ui/select";
+import { SelectItem, SelectRoot, SelectContent, SelectTrigger, SelectValueText } from "@/components/ui/select";
 
 export const Select: React.FC<{
-	label?: string;
 	width?: string;
 	readonly?: boolean;
 	value: string | undefined;
@@ -29,7 +28,6 @@ export const Select: React.FC<{
 
 				props.onValueChange(e.value[0]);
 			}}>
-			{props.label && <SelectLabel>{props.label}</SelectLabel>}
 			<SelectTrigger>
 				<SelectValueText placeholder="Select one" />
 			</SelectTrigger>

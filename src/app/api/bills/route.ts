@@ -21,10 +21,10 @@ export async function POST(request: Request) {
 		const { debtors, issuedAt, creditor, description } = parsedBody.data;
 
 		const {
-			data: { user: trigger }
+			data: { user: creator }
 		} = await supabase.auth.getUser();
 
-		if (!trigger) {
+		if (!creator) {
 			throw new Error("User not found");
 		}
 
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 		const bill = await BillsControllers.createBill(supabase, {
 			issuedAt,
 			description,
-			creatorId: creditor.userId
+			creatorId: creator.id
 		});
 
 		// Step 2: Insert bill members
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
 			return {
 				billId: bill.id,
 				userId: debtor.userId,
-				triggerId: trigger.id,
+				triggerId: creator.id,
 				type: "BillCreated" as const
 			};
 		});
