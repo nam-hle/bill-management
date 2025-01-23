@@ -1,11 +1,10 @@
 import React from "react";
-import { GridItem } from "@chakra-ui/react";
+import { Input, Group, GridItem, InputAddon } from "@chakra-ui/react";
 
 import type { ClientUser } from "@/types";
 import { Field } from "@/components/ui/field";
 import { Select } from "@/components/app/select";
 import { renderError, type MemberState } from "@/components/app/bill-form";
-import { NumberInputRoot, NumberInputField } from "@/components/ui/number-input";
 
 namespace BillMemberInputs {
 	export interface Props {
@@ -40,15 +39,16 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 
 			<GridItem colSpan={{ base: 3 }}>
 				<Field label={amountLabel} {...renderError(validating, member.amount.error)}>
-					<NumberInputRoot
-						min={0}
-						width="100%"
-						readOnly={readonly}
-						value={member.amount.input}
-						pointerEvents={readonly ? "none" : undefined}
-						onValueChange={(event) => onAmountChange(event.value)}>
-						<NumberInputField />
-					</NumberInputRoot>
+					<Group attached width="100%">
+						<Input
+							textAlign="right"
+							readOnly={readonly}
+							value={member.amount.input}
+							pointerEvents={readonly ? "none" : undefined}
+							onChange={(event) => onAmountChange(event.target.value)}
+						/>
+						<InputAddon>.000 VND</InputAddon>
+					</Group>
 				</Field>
 			</GridItem>
 

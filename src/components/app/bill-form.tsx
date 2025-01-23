@@ -186,12 +186,20 @@ const reducer = (state: FormState, action: Action): FormState => {
 		if (input === "") {
 			nextState = MemberState.reduce(state, memberKind, { ...memberState, amount: { value: 0, input: "0", error: undefined } });
 		} else {
-			const amount = parseInt(input, 10);
+			if (!/^[\d.]+$/.test(input)) {
+				return state;
+			}
+
+			const amount = parseInt(input.replace(/\./g, ""), 10);
 
 			if (isNaN(amount)) {
 				nextState = MemberState.reduce(state, memberKind, { ...memberState, amount: { input, error: "Amount must be a number" } });
 			} else {
-				nextState = MemberState.reduce(state, memberKind, { ...memberState, amount: { input, value: amount, error: undefined } });
+				console.log(amount, new Intl.NumberFormat("vi-VN").format(amount));
+				nextState = MemberState.reduce(state, memberKind, {
+					...memberState,
+					amount: { value: amount, error: undefined, input: new Intl.NumberFormat("vi-VN").format(amount) }
+				});
 			}
 		}
 
@@ -430,6 +438,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					</Button>
 				)}
 			</HStack>
+			<pre>{JSON.stringify(formState, null, 2)}</pre>
 		</Stack>
 	);
 };
