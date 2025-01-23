@@ -1,14 +1,22 @@
 import { createClient } from "@/supabase/server";
 import { BillsControllers } from "@/controllers/bills.controllers";
 import { BillMembersControllers } from "@/controllers/bill-members.controllers";
-import { type ClientBill, ClientBillMember, type BillFormState, type BillMemberRole } from "@/types";
+import { type ClientBill, ClientBillMember, type BillMemberRole, BillFormPayloadSchema } from "@/types";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const body = await request.json();
 		const billId = (await params).id;
 
-		const payload = body as BillFormState;
+		const parsedBody = BillFormPayloadSchema.safeParse(body);
+
+		if (parsedBody.error) {
+			return new Response(JSON.stringify({ error: "Invalid request body", details: parsedBody.error.errors }), {
+				status: 400
+			});
+		}
+
+		const { debtors, issuedAt, creditor, description } = parsedBody.data;
 		const supabase = await createClient();
 
 		const currentBill = await BillsControllers.getBillById(supabase, billId);
@@ -21,36 +29,22 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 			throw new Error("User not found");
 		}
 
-		if (payload.description !== currentBill.description) {
-			await BillsControllers.updateById(supabase, billId, { description: payload.description });
-		}
+		await BillsControllers.updateById(supabase, billId, { issuedAt, description });
 
 		// Step 2: Insert bill members
 		const payloadBillMembers: { userId: string; amount: number; role: BillMemberRole }[] = [];
 
-		if (!payload.creditor?.userId || !payload.creditor.amount) {
-			throw new Error("Creditor is required");
-		}
-
 		payloadBillMembers.push({
 			role: "Creditor",
-			userId: payload.creditor.userId,
-			amount: payload.creditor.amount
+			userId: creditor.userId,
+			amount: creditor.amount
 		});
 
-		payload.debtors.forEach((debtor) => {
-			if (!debtor.userId || !debtor.amount) {
-				throw new Error("Debtor is missing userId or amount");
-			}
-
-			payloadBillMembers.push({
-				role: "Debtor",
-				userId: debtor.userId,
-				amount: debtor.amount
-			});
+		debtors.forEach(({ userId, amount }) => {
+			payloadBillMembers.push({ userId, amount, role: "Debtor" });
 		});
 
-		const comparisonResult = compareBillMembers(flaten(currentBill), payloadBillMembers);
+		const comparisonResult = compareBillMembers(flatten(currentBill), payloadBillMembers);
 
 		await BillMembersControllers.updateMany(
 			supabase,
@@ -69,10 +63,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 		// Step 3: Insert notifications
 		const updateAmountNotificationRequests = comparisonResult.updateBillMembers.map((debtor) => {
-			if (!debtor.userId || !debtor.amount) {
-				throw new Error("Debtor is missing userId or amount");
-			}
-
 			return supabase.from("notifications").insert({
 				billId,
 				type: "BillUpdated",
@@ -104,7 +94,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 	}
 }
 
-function flaten(clientBill: ClientBill): Omit<ClientBillMember, "fullName">[] {
+function flatten(clientBill: ClientBill): Omit<ClientBillMember, "fullName">[] {
 	const { debtors, creditor } = clientBill;
 
 	return [creditor, ...debtors];
