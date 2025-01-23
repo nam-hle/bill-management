@@ -12,10 +12,10 @@ export namespace BillsControllers {
     issuedAt,
     creator:profiles!creatorId (userId:id, fullName),
     updater:profiles!updaterId (userId:id, fullName),
-    bill_members (user:userId (userId:id, fullName), amount, role)
+    billMembers:bill_members (user:userId (userId:id, fullName), amount, role)
   `;
 
-	export async function createBill(supabase: SupabaseInstance, payload: { issuedAt: string; creatorId: string; description: string }) {
+	export async function create(supabase: SupabaseInstance, payload: { issuedAt: string; creatorId: string; description: string }) {
 		const { data } = await supabase.from("bills").insert(payload).select("id").single();
 
 		if (!data) {
@@ -25,7 +25,7 @@ export namespace BillsControllers {
 		return data;
 	}
 
-	export async function getBillsByMemberId(
+	export async function getManyByMemberId(
 		supabase: SupabaseInstance,
 		filters: {
 			since?: string;
@@ -90,10 +90,10 @@ export namespace BillsControllers {
 	}
 
 	function toClientBill(bill: BillSelectResult): ClientBill {
-		const { creator, updater, updatedAt, createdAt, bill_members, ...rest } = bill;
+		const { creator, updater, updatedAt, createdAt, billMembers, ...rest } = bill;
 
-		const creditor = bill_members.find((bm) => bm.role === "Creditor");
-		const debtors = bill_members.filter((bm) => bm.role === "Debtor");
+		const creditor = billMembers.find((bm) => bm.role === "Creditor");
+		const debtors = billMembers.filter((bm) => bm.role === "Debtor");
 
 		if (!creditor) {
 			throw new Error("Creator not found");
@@ -115,7 +115,7 @@ export namespace BillsControllers {
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	async function __getBill(supabase: SupabaseInstance) {
+	async function __get(supabase: SupabaseInstance) {
 		const { data } = await supabase.from("bills").select(BILLS_SELECT).single();
 
 		if (!data) {
@@ -125,10 +125,10 @@ export namespace BillsControllers {
 		return data;
 	}
 
-	type BillSelectResult = Awaited<ReturnType<typeof __getBill>>;
-	type BillMemberSelectResult = BillSelectResult["bill_members"][number];
+	type BillSelectResult = Awaited<ReturnType<typeof __get>>;
+	type BillMemberSelectResult = BillSelectResult["billMembers"][number];
 
-	export async function getBillById(supabase: SupabaseInstance, id: string): Promise<ClientBill> {
+	export async function getById(supabase: SupabaseInstance, id: string): Promise<ClientBill> {
 		const { data } = await supabase.from("bills").select(BILLS_SELECT).eq("id", id).single();
 
 		if (!data) {

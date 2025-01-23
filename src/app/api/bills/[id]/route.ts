@@ -19,7 +19,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 		const { debtors, issuedAt, creditor, description } = parsedBody.data;
 		const supabase = await createClient();
 
-		const currentBill = await BillsControllers.getBillById(supabase, billId);
+		const currentBill = await BillsControllers.getById(supabase, billId);
 
 		const {
 			data: { user: trigger }

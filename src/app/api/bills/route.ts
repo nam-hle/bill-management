@@ -29,7 +29,7 @@ export async function POST(request: Request) {
 		}
 
 		// Step 1: Insert bill
-		const bill = await BillsControllers.createBill(supabase, {
+		const bill = await BillsControllers.create(supabase, {
 			issuedAt,
 			description,
 			creatorId: creator.id
