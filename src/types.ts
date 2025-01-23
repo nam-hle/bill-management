@@ -64,6 +64,10 @@ export interface BillFormState {
 	};
 }
 
+export interface ErrorState {
+	readonly error: string | undefined;
+}
+
 export enum FormKind {
 	CREATE = "create",
 	UPDATE = "update"

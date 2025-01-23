@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { sumBy } from "lodash";
 import { useRouter } from "next/navigation";
 import { IoIosAddCircle } from "react-icons/io";
 import { parse, format, isValid } from "date-fns";
@@ -12,8 +11,8 @@ import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { toaster } from "@/components/ui/toaster";
 import { BillMemberInputs } from "@/components/app/bill-member-inputs";
-import { FormKind, type ClientUser, type BillFormState, type BillFormTransfer } from "@/types";
 import { formatDate, formatTime, CLIENT_DATE_FORMAT, formatDistanceTime, SERVER_DATE_FORMAT } from "@/utils";
+import { FormKind, type ClientUser, type ErrorState, type BillFormState, type BillFormTransfer } from "@/types";
 
 namespace BillForm {
 	export interface Props {
@@ -29,20 +28,16 @@ namespace BillForm {
 }
 
 interface MemberState {
-	readonly userId?: string;
-	readonly amount: {
-		readonly input: string;
-		readonly error?: string;
-		readonly value?: number;
-	};
+	readonly user: ErrorState & { readonly userId: string | undefined };
+	readonly amount: ErrorState & { readonly input: string; readonly value?: number };
 }
 namespace MemberState {
 	export function fromBillMemberState(memberState: BillFormState["creditor"]): MemberState {
 		const { userId, amount } = memberState;
 
 		return {
-			userId,
-			amount: { value: amount, input: amount === undefined ? "" : String(amount) }
+			user: { userId, error: userId === undefined ? "This field is required" : undefined },
+			amount: { value: amount, error: undefined, input: amount === undefined ? "" : String(amount) }
 		};
 	}
 }
@@ -52,13 +47,9 @@ type MemberKind = { readonly memberKind: "creditor" } | { readonly debtorIndex: 
 interface FormState {
 	readonly creditor: MemberState;
 	readonly debtors: readonly MemberState[];
-	readonly description: {
-		readonly value: string;
-		readonly error?: string;
-	};
-	readonly issuedAt: {
+	readonly description: ErrorState & { readonly value: string };
+	readonly issuedAt: ErrorState & {
 		readonly input: string;
-		readonly error?: string;
 		readonly value: string | null;
 	};
 }
@@ -67,7 +58,6 @@ type Action =
 	| { readonly payload: {}; readonly type: "addDebtor" }
 	| { readonly payload: {}; readonly type: "submitIssuedAt" }
 	| { readonly type: "reset"; readonly payload: BillFormState }
-	| { readonly payload: {}; readonly type: "syncCreditorAmount" }
 	| { readonly type: "changeIssuedAt"; readonly payload: { readonly issuedAt: string } }
 	| { readonly type: "deleteDebtor"; readonly payload: { readonly debtorIndex: number } }
 	| { readonly type: "changeDescription"; readonly payload: { readonly description: string } }
@@ -83,12 +73,9 @@ namespace FormState {
 
 		return {
 			debtors,
+			description: { error: undefined, value: description },
 			creditor: MemberState.fromBillMemberState(formState.creditor),
-			description: {
-				error: undefined,
-				value: description
-			},
-			issuedAt: { value: issuedAt, input: formatDate(issuedAt).client }
+			issuedAt: { value: issuedAt, error: undefined, input: formatDate(issuedAt).client }
 		};
 	}
 
@@ -98,8 +85,8 @@ namespace FormState {
 		return {
 			description: description.value,
 			issuedAt: issuedAt.value ?? "",
-			creditor: { userId: creditor.userId ?? "", amount: creditor.amount.value ?? 0 },
-			debtors: debtors.map((debtor) => ({ userId: debtor.userId ?? "", amount: debtor.amount.value ?? 0 }))
+			creditor: { userId: creditor.user.userId ?? "", amount: creditor.amount.value ?? 0 },
+			debtors: debtors.map((debtor) => ({ userId: debtor.user.userId ?? "", amount: debtor.amount.value ?? 0 }))
 		};
 	}
 }
@@ -112,7 +99,7 @@ const reducer = (state: FormState, action: Action): FormState => {
 	}
 
 	if (type === "addDebtor") {
-		return { ...state, debtors: [...state.debtors, { amount: { input: "" } }] };
+		return { ...state, debtors: [...state.debtors, { amount: { input: "", error: undefined }, user: { error: undefined, userId: undefined } }] };
 	}
 
 	if (type === "deleteDebtor") {
@@ -153,18 +140,13 @@ const reducer = (state: FormState, action: Action): FormState => {
 
 	if (type === "changeUser") {
 		if (payload.memberKind === "creditor") {
-			return { ...state, creditor: { ...state.creditor, userId: payload.userId } };
+			return { ...state, creditor: { ...state.creditor, user: { ...state.creditor.user, userId: payload.userId } } };
 		}
 
 		return {
 			...state,
 			debtors: state.debtors.map((debtor, index) =>
-				index === payload.debtorIndex
-					? {
-							...debtor,
-							userId: payload.userId
-						}
-					: debtor
+				index === payload.debtorIndex ? { ...debtor, user: { ...debtor.user, userId: payload.userId } } : debtor
 			)
 		};
 	}
@@ -186,7 +168,7 @@ const reducer = (state: FormState, action: Action): FormState => {
 		};
 
 		if (input === "") {
-			return mergeState({ ...currentState, amount: { value: 0, input: "0" } });
+			return mergeState({ ...currentState, amount: { value: 0, input: "0", error: undefined } });
 		}
 
 		const amount = parseInt(input, 10);
@@ -195,19 +177,7 @@ const reducer = (state: FormState, action: Action): FormState => {
 			return mergeState({ ...currentState, amount: { input, error: "Amount must be a number" } });
 		}
 
-		return mergeState({ ...currentState, amount: { input, value: amount } });
-	}
-
-	if (type === "syncCreditorAmount") {
-		const sumDebtors = sumBy(state.debtors, (debtor) => debtor.amount.value ?? 0);
-
-		return {
-			...state,
-			creditor: {
-				...state.creditor,
-				amount: { value: sumDebtors, input: String(sumDebtors) }
-			}
-		};
+		return mergeState({ ...currentState, amount: { input, value: amount, error: undefined } });
 	}
 
 	return state;
@@ -217,10 +187,21 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 	const { kind, users, metadata } = props;
 	const [formState, dispatch] = React.useReducer(reducer, FormState.create(props.formState));
 	const [editing, setEditing] = React.useState(() => kind === FormKind.CREATE);
+	const [validating, setValidating] = React.useState(() => kind === FormKind.UPDATE);
 
 	const hasError = React.useMemo(() => {
 		return !!formState.issuedAt.error || !!formState.creditor.amount.error || formState.debtors.some((debtor) => debtor.amount.error);
 	}, [formState.creditor.amount.error, formState.debtors, formState.issuedAt.error]);
+
+	const renderError = React.useCallback(
+		(error: string | undefined) => {
+			return {
+				errorText: validating ? error : undefined,
+				invalid: validating ? !!error : undefined
+			};
+		},
+		[validating]
+	);
 
 	const router = useRouter();
 	const onSubmit = React.useCallback(async () => {
@@ -306,7 +287,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 			</Stack>
 			<SimpleGrid columns={10} gap="{spacing.4}">
 				<GridItem colSpan={{ base: 5 }}>
-					<Field required label="Description" errorText={formState.description.error} invalid={!!formState.description.error}>
+					<Field required label="Description" {...renderError(formState.description.error)}>
 						<Input
 							readOnly={!editing}
 							value={formState.description.value}
@@ -317,7 +298,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					</Field>
 				</GridItem>
 				<GridItem colSpan={{ base: 3 }}>
-					<Field label="Issued at" invalid={!!formState.issuedAt.error} errorText={formState.issuedAt.error}>
+					<Field label="Issued at" {...renderError(formState.issuedAt.error)}>
 						<Input
 							readOnly={!editing}
 							placeholder="20/mm/yy"
@@ -334,7 +315,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					label="Creditor"
 					readonly={!editing}
 					amountLabel="Total Amount"
-					userId={formState.creditor.userId}
+					userId={formState.creditor.user.userId}
 					amount={formState.creditor.amount.input}
 					onUserChange={(userId) => dispatch({ type: "changeUser", payload: { userId, memberKind: "creditor" } })}
 					onAmountChange={(amount) => {
@@ -346,12 +327,12 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 						<BillMemberInputs
 							key={debtorIndex}
 							readonly={!editing}
-							userId={debtor.userId}
 							amountLabel="Split Amount"
+							userId={debtor.user.userId}
 							amount={debtor.amount.input}
 							label={`Debtor ${debtorIndex + 1}`}
-							users={users.filter((user) => user.id === debtor.userId || !formState.debtors.some((d) => d.userId === user.id))}
 							onUserChange={(userId) => dispatch({ type: "changeUser", payload: { userId, debtorIndex, memberKind: "debtor" } })}
+							users={users.filter((user) => user.id === debtor.user.userId || !formState.debtors.some((d) => d.user.userId === user.id))}
 							onAmountChange={(amount) => dispatch({ type: "changeAmount", payload: { debtorIndex, input: amount, memberKind: "debtor" } })}
 							action={
 								editing && (

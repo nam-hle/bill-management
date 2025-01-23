@@ -10,6 +10,8 @@ export async function POST(request: Request) {
 
 		const parsedBody = BillFormPayloadSchema.safeParse(body);
 
+		console.log(parsedBody);
+
 		if (parsedBody.error) {
 			return new Response(JSON.stringify({ error: "Invalid request body", details: parsedBody.error.errors }), {
 				status: 400
