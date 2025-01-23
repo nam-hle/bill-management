@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type React from "react";
 
 import { type Database } from "@/database.types";
@@ -40,12 +41,14 @@ export interface BillUpdatedNotification extends BaseClientNotification {
 
 export type ClientNotification = BillCreatedNotification | BillUpdatedNotification;
 
-export interface BillFormPayload {
-	issuedAt: string;
-	description: string;
-	creditor: { userId: string; amount: number };
-	debtors: { userId: string; amount: number }[];
-}
+export const BillFormPayloadSchema = z.object({
+	issuedAt: z.string(),
+	description: z.string(),
+	creditor: z.object({ userId: z.string(), amount: z.number() }),
+	debtors: z.array(z.object({ userId: z.string(), amount: z.number() }))
+});
+
+export type BillFormTransfer = z.infer<typeof BillFormPayloadSchema>;
 
 export interface BillFormState {
 	description: string;

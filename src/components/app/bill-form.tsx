@@ -12,7 +12,7 @@ import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { toaster } from "@/components/ui/toaster";
 import { BillMemberInputs } from "@/components/app/bill-member-inputs";
-import { FormKind, type ClientUser, type BillFormState, type BillFormPayload } from "@/types";
+import { FormKind, type ClientUser, type BillFormState, type BillFormTransfer } from "@/types";
 import { formatDate, formatTime, CLIENT_DATE_FORMAT, formatDistanceTime, SERVER_DATE_FORMAT } from "@/utils";
 
 namespace BillForm {
@@ -88,7 +88,7 @@ namespace FormState {
 		};
 	}
 
-	export function toPayload(state: FormState): BillFormPayload {
+	export function toPayload(state: FormState): BillFormTransfer {
 		const { debtors, issuedAt, creditor, description } = state;
 
 		return {
@@ -228,14 +228,22 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 				headers: {
 					"Content-Type": "application/json"
 				}
-			}).then(() => {
-				router.push("/bills");
+			}).then((response) => {
+				if (response.ok) {
+					router.push("/bills");
 
-				toaster.create({
-					type: "success",
-					title: "Bill created",
-					description: "Bill has been created successfully"
-				});
+					toaster.create({
+						type: "success",
+						title: "Bill created successfully",
+						description: "A new bill has been created and saved successfully."
+					});
+				} else {
+					toaster.create({
+						type: "error",
+						title: "Failed to create bill",
+						description: "An error occurred while creating the bill. Please try again."
+					});
+				}
 			});
 
 			return;
@@ -246,16 +254,22 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 				method: "PUT",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(FormState.toPayload(formState))
-			}).then(() => {
-				toaster.create({
-					type: "success",
-					title: "Bill updated",
-					description: "Bill has been updated successfully"
-				});
-				setEditing(() => false);
+			}).then((response) => {
+				if (response.ok) {
+					toaster.create({
+						type: "success",
+						title: "Bill updated successfully",
+						description: "The bill details have been updated successfully."
+					});
+					setEditing(() => false);
+				} else {
+					toaster.create({
+						type: "error",
+						title: "Failed to update bill",
+						description: "Unable to update the bill. Please verify your input and retry."
+					});
+				}
 			});
-
-			return;
 		}
 	}, [billId, formState, kind, router]);
 
@@ -372,7 +386,6 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					</Button>
 				)}
 			</HStack>
-			<pre style={{ fontSize: "12px" }}>{JSON.stringify(formState, null, 2)}</pre>
 		</Stack>
 	);
 };

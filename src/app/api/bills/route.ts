@@ -1,18 +1,22 @@
 import { createClient } from "@/supabase/server";
-import { type BillFormState, type BillMemberRole } from "@/types";
 import { BillsControllers } from "@/controllers/bills.controllers";
+import { type BillMemberRole, BillFormPayloadSchema } from "@/types";
 import { BillMembersControllers } from "@/controllers/bill-members.controllers";
 
 export async function POST(request: Request) {
 	try {
 		const body = await request.json();
-		const payload = body as BillFormState;
 		const supabase = await createClient();
 
-		// TODO: Convert to right format
-		if (!payload.creditor || !payload.creditor.amount || !payload.creditor.userId || !payload.issuedAt) {
-			throw new Error("Creditor is required");
+		const parsedBody = BillFormPayloadSchema.safeParse(body);
+
+		if (parsedBody.error) {
+			return new Response(JSON.stringify({ error: "Invalid request body", details: parsedBody.error.errors }), {
+				status: 400
+			});
 		}
+
+		const { debtors, issuedAt, creditor, description } = parsedBody.data;
 
 		const {
 			data: { user: trigger }
@@ -24,40 +28,32 @@ export async function POST(request: Request) {
 
 		// Step 1: Insert bill
 		const bill = await BillsControllers.createBill(supabase, {
-			issuedAt: payload.issuedAt,
-			description: payload.description,
-			creatorId: payload.creditor.userId
+			issuedAt,
+			description,
+			creatorId: creditor.userId
 		});
 
 		// Step 2: Insert bill members
-		const billMembers = payload.debtors.map((debtor) => {
-			if (!debtor.userId || !debtor.amount) {
-				throw new Error("Debtor is missing userId or amount");
-			}
-
+		const billMembers = debtors.map(({ userId, amount }) => {
 			return {
+				userId,
+				amount,
 				billId: bill.id,
-				userId: debtor.userId,
-				amount: debtor.amount,
 				role: "Debtor" as BillMemberRole
 			};
 		});
 
 		billMembers.push({
 			billId: bill.id,
-			userId: payload.creditor.userId,
-			amount: payload.creditor.amount,
+			userId: creditor.userId,
+			amount: creditor.amount,
 			role: "Creditor" as BillMemberRole
 		});
 
 		await BillMembersControllers.createMany(supabase, billMembers);
 
 		// Step 3: Insert notifications
-		const billMemberNotifications = payload.debtors.map((debtor) => {
-			if (!debtor.userId || !debtor.amount) {
-				throw new Error("Debtor is missing userId or amount");
-			}
-
+		const billMemberNotifications = debtors.map((debtor) => {
 			return {
 				billId: bill.id,
 				userId: debtor.userId,

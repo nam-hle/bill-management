@@ -1,14 +1,22 @@
 import { createClient } from "@/supabase/server";
 import { BillsControllers } from "@/controllers/bills.controllers";
 import { BillMembersControllers } from "@/controllers/bill-members.controllers";
-import { type ClientBill, ClientBillMember, type BillMemberRole, type BillFormPayload } from "@/types";
+import { type ClientBill, ClientBillMember, type BillMemberRole, BillFormPayloadSchema } from "@/types";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const body = await request.json();
 		const billId = (await params).id;
 
-		const { debtors, issuedAt, creditor, description } = body as BillFormPayload;
+		const parsedBody = BillFormPayloadSchema.safeParse(body);
+
+		if (parsedBody.error) {
+			return new Response(JSON.stringify({ error: "Invalid request body", details: parsedBody.error.errors }), {
+				status: 400
+			});
+		}
+
+		const { debtors, issuedAt, creditor, description } = parsedBody.data;
 		const supabase = await createClient();
 
 		const currentBill = await BillsControllers.getBillById(supabase, billId);
