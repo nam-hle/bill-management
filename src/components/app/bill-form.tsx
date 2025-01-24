@@ -195,7 +195,6 @@ const reducer = (state: FormState, action: Action): FormState => {
 			if (isNaN(amount)) {
 				nextState = MemberState.reduce(state, memberKind, { ...memberState, amount: { input, error: "Amount must be a number" } });
 			} else {
-				console.log(amount, new Intl.NumberFormat("vi-VN").format(amount));
 				nextState = MemberState.reduce(state, memberKind, {
 					...memberState,
 					amount: { value: amount, error: undefined, input: new Intl.NumberFormat("vi-VN").format(amount) }

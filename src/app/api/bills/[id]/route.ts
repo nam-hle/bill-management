@@ -22,14 +22,14 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 		const currentBill = await BillsControllers.getById(supabase, billId);
 
 		const {
-			data: { user: trigger }
+			data: { user: updater }
 		} = await supabase.auth.getUser();
 
-		if (!trigger) {
+		if (!updater) {
 			throw new Error("User not found");
 		}
 
-		await BillsControllers.updateById(supabase, billId, { issuedAt, description, updaterId: trigger.id });
+		await BillsControllers.updateById(supabase, billId, { issuedAt, description, updaterId: updater.id });
 
 		// Step 2: Insert bill members
 		const payloadBillMembers: { userId: string; amount: number; role: BillMemberRole }[] = [];
@@ -53,6 +53,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 		await BillMembersControllers.createMany(
 			supabase,
+			updater.id,
 			comparisonResult.addBillMembers.map((add) => ({ billId, ...add }))
 		);
 
@@ -67,7 +68,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 				billId,
 				type: "BillUpdated",
 				userId: debtor.userId,
-				triggerId: trigger.id,
+				triggerId: updater.id,
 				metadata: { current: { amount: debtor.amount }, previous: { amount: debtor.previousAmount } }
 			});
 		});

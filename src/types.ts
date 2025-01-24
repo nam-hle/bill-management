@@ -31,6 +31,7 @@ export interface BaseClientNotification extends ServerNotification {
 export interface BillCreatedNotification extends BaseClientNotification {
 	readonly bill: ClientBill;
 	readonly type: "BillCreated";
+	readonly metadata: BillCreatedNotificationMetadata;
 }
 
 export interface BillUpdatedNotification extends BaseClientNotification {
@@ -105,5 +106,14 @@ export namespace ClientBillMember {
 	}
 }
 
-export type BillMemberRole = Database["public"]["Enums"]["BillMemberRole"];
+const BillMemberRoleEnumSchema = z.enum(["Creditor", "Debtor"] as const satisfies Database["public"]["Enums"]["BillMemberRole"][]);
+export type BillMemberRole = z.infer<typeof BillMemberRoleEnumSchema>;
+
 export type NotificationType = Database["public"]["Enums"]["NotificationType"];
+
+export const BillCreatedNotificationMetadataSchema = z.object({
+	previous: z.object({}),
+	current: z.object({ amount: z.number(), role: BillMemberRoleEnumSchema })
+});
+
+type BillCreatedNotificationMetadata = z.infer<typeof BillCreatedNotificationMetadataSchema>;

@@ -1,0 +1,86 @@
+import React from "react";
+import { capitalize } from "lodash";
+import { useRouter } from "next/navigation";
+import { Text, Stack, HStack } from "@chakra-ui/react";
+
+import { formatDistanceTime } from "@/utils";
+import { Status } from "@/components/ui/status";
+import { type ClientNotification, type BillUpdatedNotification, type BillCreatedNotification } from "@/types";
+
+namespace NotificationMessage {
+	export interface Props {
+		readonly onClose: () => void;
+		readonly notification: ClientNotification;
+	}
+}
+
+export const NotificationMessage: React.FC<NotificationMessage.Props> = (props) => {
+	const { onClose, notification } = props;
+	const { bill, createdAt } = notification;
+
+	const router = useRouter();
+	const link = React.useMemo(() => `/bills/${bill.id}`, [bill.id]);
+	const content = React.useMemo(() => transformMessage(renderMessage(notification)), [notification]);
+
+	return (
+		<HStack cursor="pointer" padding="{spacing.2}" _hover={{ bg: "gray.200" }} justifyContent="space-between">
+			<Stack gap="0">
+				<Text
+					width="100%"
+					textStyle="sm"
+					onClick={() => {
+						router.push(link);
+						onClose();
+					}}>
+					{content}
+				</Text>
+				<Text textStyle="xs" color="gray.500">
+					{capitalize(formatDistanceTime(createdAt))}
+				</Text>
+			</Stack>
+			<Status maxW="20px" value="info" />
+		</HStack>
+	);
+};
+
+function renderMessage(notification: ClientNotification) {
+	switch (notification.type) {
+		case "BillCreated":
+			return renderBillCreatedMessage(notification);
+		case "BillUpdated":
+			return renderBillUpdatedMessage(notification);
+		default:
+			throw new Error("Invalid notification type");
+	}
+}
+
+function renderBillCreatedMessage(notification: BillCreatedNotification) {
+	const { bill, trigger, metadata } = notification;
+	const { role, amount } = metadata.current;
+
+	return `You’ve been added to the bill **${bill.description}** by **${trigger.fullName}** as a **${role}** with an amount of **${amount}**.`;
+}
+
+function renderBillUpdatedMessage(notification: BillUpdatedNotification) {
+	const { bill, trigger, metadata } = notification;
+
+	const { current, previous } = metadata;
+
+	if (current.amount && previous.amount) {
+		return `Your amount in bill **${bill.creator.fullName}'s ${bill.description}** has been updated from **${previous.amount}** to **${current.amount}** by **${trigger.fullName}**. Please review the changes.`;
+	}
+
+	return `Your bill **${bill.description}** created by **${bill.creator.fullName}** has been updated. Please review the changes.`;
+}
+
+function transformMessage(text: string) {
+	const parts = text.split(/(\*\*.+?\*\*)/);
+
+	return parts.map((part, index) => {
+		if (part.startsWith("**") && part.endsWith("**")) {
+			return <strong key={index}>{part.slice(2, -2)}</strong>;
+		}
+
+		return part;
+	});
+}

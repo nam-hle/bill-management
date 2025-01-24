@@ -1,5 +1,5 @@
-import { type ClientNotification } from "@/types";
 import { type SupabaseInstance } from "@/supabase/server";
+import { type BillMemberRole, type ClientNotification } from "@/types";
 
 export namespace NotificationsControllers {
 	const NOTIFICATIONS_SELECT = `
@@ -41,4 +41,33 @@ export namespace NotificationsControllers {
 
 		return serverNotification as unknown as ClientNotification[];
 	}
+
+	export interface BaseCreatePayload {
+		readonly userId: string;
+		readonly triggerId: string;
+	}
+
+	export interface CreateBillCreatedPayload extends BaseCreatePayload {
+		readonly billId: string;
+		readonly amount: number;
+		readonly role: BillMemberRole;
+	}
+
+	export async function createManyBillCreated(supabase: SupabaseInstance, payload: CreateBillCreatedPayload[]) {
+		const { error } = await supabase.from("notifications").insert(
+			payload.filter(removeSelfNotification).map(({ role, amount, ...rest }) => {
+				return {
+					...rest,
+					type: "BillCreated" as const,
+					metadata: { previous: {}, current: { role, amount } }
+				};
+			})
+		);
+
+		if (error) {
+			throw error;
+		}
+	}
+
+	const removeSelfNotification = (payload: BaseCreatePayload) => payload.userId !== payload.triggerId;
 }

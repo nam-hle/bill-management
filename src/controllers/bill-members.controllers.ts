@@ -1,5 +1,6 @@
 import { type BillMemberRole } from "@/types";
 import { type SupabaseInstance } from "@/supabase/server";
+import { NotificationsControllers } from "@/controllers/notifications.controllers";
 
 export namespace BillMembersControllers {
 	export async function updateMany(supabase: SupabaseInstance, payload: { billId: string; userId: string; amount: number; role: BillMemberRole }[]) {
@@ -16,12 +17,19 @@ export namespace BillMembersControllers {
 		}
 	}
 
-	export async function createMany(supabase: SupabaseInstance, payload: { billId: string; userId: string; amount: number; role: BillMemberRole }[]) {
-		const { error } = await supabase.from("bill_members").insert(payload);
+	export interface CreatePayload {
+		readonly billId: string;
+		readonly userId: string;
+		readonly amount: number;
+		readonly role: BillMemberRole;
+	}
+	export async function createMany(supabase: SupabaseInstance, triggerId: string, payloads: CreatePayload[]) {
+		await supabase.from("bill_members").insert(payloads);
 
-		if (error) {
-			throw error;
-		}
+		await NotificationsControllers.createManyBillCreated(
+			supabase,
+			payloads.map((payload) => ({ ...payload, triggerId }))
+		);
 	}
 
 	export async function deleteMany(supabase: SupabaseInstance, payload: { billId: string; userId: string; role: BillMemberRole }[]) {
