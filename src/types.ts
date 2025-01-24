@@ -116,4 +116,4 @@ export const BillCreatedNotificationMetadataSchema = z.object({
 	current: z.object({ amount: z.number(), role: BillMemberRoleEnumSchema })
 });
 
-type BillCreatedNotificationMetadata = z.infer<typeof BillCreatedNotificationMetadataSchema>;
+export type BillCreatedNotificationMetadata = z.infer<typeof BillCreatedNotificationMetadataSchema>;
