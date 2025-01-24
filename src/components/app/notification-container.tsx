@@ -25,6 +25,7 @@ export const NotificationContainer: React.FC<{ user: User }> = ({ user }) => {
 			setNotifications((prev) => [...data, ...prev]);
 			setUnreadCount((prev) => prev + data.filter((notification) => !notification.readStatus).length);
 		} catch (error) {
+			// eslint-disable-next-line no-console
 			console.error("Error notification data!", error);
 		}
 	}, [notifications, supabase, user.id]);

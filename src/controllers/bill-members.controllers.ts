@@ -1,22 +1,11 @@
-import { type BillMemberRole } from "@/types";
+import { pick } from "lodash";
+
 import { type SupabaseInstance } from "@/supabase/server";
+import { ClientBillMember, type BillMemberRole } from "@/types";
+import { BillsControllers } from "@/controllers/bills.controllers";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
 
 export namespace BillMembersControllers {
-	export async function updateMany(supabase: SupabaseInstance, payload: { billId: string; userId: string; amount: number; role: BillMemberRole }[]) {
-		const updatePromises = payload.map((update) =>
-			supabase.from("bill_members").update({ amount: update.amount }).match({ role: update.role, billId: update.billId, userId: update.userId })
-		);
-
-		const results = await Promise.all(updatePromises);
-
-		const errors = results.filter((result) => result.error);
-
-		if (errors.length > 0) {
-			throw new Error("Error updating bill members");
-		}
-	}
-
 	export interface CreatePayload {
 		readonly billId: string;
 		readonly userId: string;
@@ -29,6 +18,95 @@ export namespace BillMembersControllers {
 		await NotificationsControllers.createManyBillCreated(
 			supabase,
 			payloads.map((payload) => ({ ...payload, triggerId }))
+		);
+	}
+
+	export interface UpdateMemberPayload {
+		readonly userId: string;
+		readonly amount: number;
+		readonly role: BillMemberRole;
+	}
+
+	export interface UpdatePayload {
+		readonly billId: string;
+		readonly members: UpdateMemberPayload[];
+	}
+	export async function updateMany(supabase: SupabaseInstance, triggerId: string, payload: UpdatePayload) {
+		const { billId, members } = payload;
+
+		const bill = await BillsControllers.getById(supabase, billId);
+		const currentMembers = [bill.creditor, ...bill.debtors].map((member) => pick(member, ["userId", "amount", "role"]));
+
+		const comparisonResult = diffMembers(currentMembers, members);
+
+		await updateManyAmount(
+			supabase,
+			triggerId,
+			comparisonResult.updateBillMembers.map((update) => ({ billId, ...update }))
+		);
+
+		await createMany(
+			supabase,
+			triggerId,
+			comparisonResult.addBillMembers.map((add) => ({ billId, ...add }))
+		);
+
+		await deleteMany(
+			supabase,
+			triggerId,
+			comparisonResult.removeBillMembers.map(({ amount, ...remove }) => ({ billId, ...remove }))
+		);
+	}
+
+	function diffMembers(currentBillMembers: UpdateMemberPayload[], payloadBillMembers: UpdateMemberPayload[]) {
+		const addBillMembers = payloadBillMembers.filter((payloadBillMember) => {
+			return !currentBillMembers.some((currentBillMember) => ClientBillMember.isEqual(currentBillMember, payloadBillMember));
+		});
+
+		const removeBillMembers = currentBillMembers.filter((currentBillMember) => {
+			return !payloadBillMembers.some((payloadBillMember) => ClientBillMember.isEqual(currentBillMember, payloadBillMember));
+		});
+
+		const updateBillMembers = payloadBillMembers.flatMap((payloadBillMember) => {
+			const member = currentBillMembers.find(
+				(currentBillMember) => ClientBillMember.isEqual(currentBillMember, payloadBillMember) && currentBillMember.amount !== payloadBillMember.amount
+			);
+
+			if (!member) {
+				return [];
+			}
+
+			return { ...payloadBillMember, previousAmount: member.amount };
+		});
+
+		return { addBillMembers, removeBillMembers, updateBillMembers };
+	}
+
+	export interface UpdateAmountPayload {
+		readonly billId: string;
+		readonly userId: string;
+		readonly amount: number;
+		readonly role: BillMemberRole;
+		readonly previousAmount: number;
+	}
+	export async function updateManyAmount(supabase: SupabaseInstance, triggerId: string, payloads: UpdateAmountPayload[]) {
+		const updatePromises = payloads.map(({ role, amount, userId, billId }) =>
+			supabase.from("bill_members").update({ amount }).match({ role, userId, billId }).select()
+		);
+
+		const results = await Promise.all(updatePromises);
+
+		const errors = results.filter((result) => result.error);
+
+		if (errors.length > 0) {
+			throw new Error("Error updating bill members");
+		}
+
+		await NotificationsControllers.createManyBillUpdated(
+			supabase,
+			payloads.map(({ role, previousAmount, amount: currentAmount, ...payload }) => {
+				return { ...payload, triggerId, currentAmount, previousAmount };
+			})
 		);
 	}
 

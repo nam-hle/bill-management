@@ -43,7 +43,7 @@ export interface BillDeletedNotification extends BaseClientNotification {
 export interface BillUpdatedNotification extends BaseClientNotification {
 	readonly bill: ClientBill;
 	readonly type: "BillUpdated";
-	readonly metadata: Record<"previous" | "current", { amount?: number }>;
+	readonly metadata: BillUpdatedNotificationMetadata;
 }
 
 export type ClientNotification = BillCreatedNotification | BillUpdatedNotification | BillDeletedNotification;
@@ -129,3 +129,9 @@ export const BillDeletedNotificationMetadataSchema = z.object({
 	previous: z.object({ role: BillMemberRoleEnumSchema })
 });
 export type BillDeletedNotificationMetadata = z.infer<typeof BillDeletedNotificationMetadataSchema>;
+
+export const BillUpdatedNotificationMetadataSchema = z.object({
+	current: z.object({ amount: z.number() }),
+	previous: z.object({ amount: z.number() })
+});
+export type BillUpdatedNotificationMetadata = z.infer<typeof BillUpdatedNotificationMetadataSchema>;

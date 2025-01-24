@@ -72,14 +72,9 @@ function renderBillDeletedMessage(notification: BillDeletedNotification) {
 
 function renderBillUpdatedMessage(notification: BillUpdatedNotification) {
 	const { bill, trigger, metadata } = notification;
-
 	const { current, previous } = metadata;
 
-	if (current.amount && previous.amount) {
-		return `Your amount in bill **${bill.creator.fullName}'s ${bill.description}** has been updated from **${previous.amount}** to **${current.amount}** by **${trigger.fullName}**. Please review the changes.`;
-	}
-
-	return `Your bill **${bill.description}** created by **${bill.creator.fullName}** has been updated. Please review the changes.`;
+	return `Your amount in the bill ${bill.description}** has been updated from **${previous.amount}** to **${current.amount}** by **${trigger.fullName}**. Please review the changes.`;
 }
 
 function transformMessage(text: string) {

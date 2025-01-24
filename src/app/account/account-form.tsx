@@ -22,7 +22,6 @@ export default function AccountForm({ user }: { user: User | null }) {
 			const { data, error, status } = await supabase.from("profiles").select(`fullName, username, website, avatar_url`).eq("id", user?.id).single();
 
 			if (error && status !== 406) {
-				console.log(error);
 				throw error;
 			}
 

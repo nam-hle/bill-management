@@ -43,7 +43,8 @@ const eslintConfig = [
 			"react/jsx-curly-brace-presence": ["error", "never"],
 
 			"sort-keys": "off",
-			"max-params": "error",
+			"no-console": "error",
+			"max-params": ["error", 4],
 			"@typescript-eslint/no-namespace": "off",
 			"unusedImports/no-unused-imports": "error",
 			"@typescript-eslint/no-explicit-any": "warn",

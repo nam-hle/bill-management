@@ -3,6 +3,7 @@ import {
 	type BillMemberRole,
 	type NotificationType,
 	type ClientNotification,
+	type BillUpdatedNotificationMetadata,
 	type BillDeletedNotificationMetadata,
 	type BillCreatedNotificationMetadata
 } from "@/types";
@@ -50,11 +51,11 @@ export namespace NotificationsControllers {
 
 	export interface BasePayload {
 		readonly userId: string;
+		readonly billId: string;
 		readonly triggerId: string;
 	}
 
 	export interface CreateBillPayload extends BasePayload {
-		readonly billId: string;
 		readonly amount: number;
 		readonly role: BillMemberRole;
 	}
@@ -76,7 +77,6 @@ export namespace NotificationsControllers {
 	}
 
 	export interface DeletedBillPayload extends BasePayload {
-		readonly billId: string;
 		readonly role: BillMemberRole;
 	}
 
@@ -87,6 +87,27 @@ export namespace NotificationsControllers {
 					...rest,
 					type: "BillDeleted" as const satisfies NotificationType,
 					metadata: { current: {}, previous: { role } } satisfies BillDeletedNotificationMetadata
+				};
+			})
+		);
+
+		if (error) {
+			throw error;
+		}
+	}
+
+	export interface UpdatedBillPayload extends BasePayload {
+		readonly currentAmount: number;
+		readonly previousAmount: number;
+	}
+
+	export async function createManyBillUpdated(supabase: SupabaseInstance, payloads: UpdatedBillPayload[]) {
+		const { error } = await supabase.from("notifications").insert(
+			payloads.filter(removeSelfNotification).map(({ currentAmount, previousAmount, ...rest }) => {
+				return {
+					...rest,
+					type: "BillUpdated" as const satisfies NotificationType,
+					metadata: { current: { amount: currentAmount }, previous: { amount: previousAmount } } satisfies BillUpdatedNotificationMetadata
 				};
 			})
 		);
