@@ -31,7 +31,6 @@ export async function signup(formData: LoginForm) {
 	// type-casting here for convenience
 	// in practice, you should validate your inputs
 	const { error } = await supabase.auth.signUp(formData);
-	console.log(error);
 
 	if (error) {
 		redirect("/error");

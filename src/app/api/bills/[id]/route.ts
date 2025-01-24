@@ -1,7 +1,7 @@
+import { BillFormPayloadSchema } from "@/types";
 import { createClient } from "@/supabase/server";
 import { BillsControllers } from "@/controllers/bills.controllers";
 import { BillMembersControllers } from "@/controllers/bill-members.controllers";
-import { type ClientBill, ClientBillMember, type BillMemberRole, BillFormPayloadSchema } from "@/types";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
 	try {
@@ -16,74 +16,28 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 			});
 		}
 
-		const { debtors, issuedAt, creditor, description } = parsedBody.data;
 		const supabase = await createClient();
 
-		const currentBill = await BillsControllers.getById(supabase, billId);
-
 		const {
-			data: { user: trigger }
+			data: { user: updater }
 		} = await supabase.auth.getUser();
 
-		if (!trigger) {
+		if (!updater) {
 			throw new Error("User not found");
 		}
 
-		await BillsControllers.updateById(supabase, billId, { issuedAt, description, updaterId: trigger.id });
+		const { debtors, issuedAt, creditor, description } = parsedBody.data;
 
-		// Step 2: Insert bill members
-		const payloadBillMembers: { userId: string; amount: number; role: BillMemberRole }[] = [];
-
-		payloadBillMembers.push({
-			role: "Creditor",
-			userId: creditor.userId,
-			amount: creditor.amount
+		// Members need to be updated first
+		await BillMembersControllers.updateMany(supabase, updater.id, {
+			billId,
+			members: [{ ...creditor, role: "Creditor" }, ...debtors.map((debtor) => ({ ...debtor, role: "Debtor" as const }))]
 		});
 
-		debtors.forEach(({ userId, amount }) => {
-			payloadBillMembers.push({ userId, amount, role: "Debtor" });
-		});
+		await BillsControllers.updateById(supabase, billId, { issuedAt, description, updaterId: updater.id });
 
-		const comparisonResult = compareBillMembers(flatten(currentBill), payloadBillMembers);
-
-		await BillMembersControllers.updateMany(
-			supabase,
-			comparisonResult.updateBillMembers.map((update) => ({ billId, ...update }))
-		);
-
-		await BillMembersControllers.createMany(
-			supabase,
-			comparisonResult.addBillMembers.map((add) => ({ billId, ...add }))
-		);
-
-		await BillMembersControllers.deleteMany(
-			supabase,
-			comparisonResult.removeBillMembers.map((remove) => ({ billId, ...remove }))
-		);
-
-		// Step 3: Insert notifications
-		const updateAmountNotificationRequests = comparisonResult.updateBillMembers.map((debtor) => {
-			return supabase.from("notifications").insert({
-				billId,
-				type: "BillUpdated",
-				userId: debtor.userId,
-				triggerId: trigger.id,
-				metadata: { current: { amount: debtor.amount }, previous: { amount: debtor.previousAmount } }
-			});
-		});
-
-		const updateAmountNotificationResponses = await Promise.all(updateAmountNotificationRequests);
-
-		if (updateAmountNotificationResponses.some((response) => response.error)) {
-			throw new Error("Error inserting notifications");
-		}
-
-		return new Response(JSON.stringify({ success: true, data: { billId } }), {
-			status: 201
-		});
+		return new Response(JSON.stringify({ success: true, data: { billId } }), { status: 201 });
 	} catch (error) {
-		console.error("Error creating bill:", error);
-
 		return new Response(
 			JSON.stringify({
 				error: "Internal Server Error",
@@ -92,34 +46,4 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 			{ status: 500 }
 		);
 	}
-}
-
-function flatten(clientBill: ClientBill): Omit<ClientBillMember, "fullName">[] {
-	const { debtors, creditor } = clientBill;
-
-	return [creditor, ...debtors];
-}
-
-function compareBillMembers(currentBillMembers: Omit<ClientBillMember, "fullName">[], payloadBillMembers: Omit<ClientBillMember, "fullName">[]) {
-	const addBillMembers = payloadBillMembers.filter((payloadBillMember) => {
-		return !currentBillMembers.some((currentBillMember) => ClientBillMember.isEqual(currentBillMember, payloadBillMember));
-	});
-
-	const removeBillMembers = currentBillMembers.filter((currentBillMember) => {
-		return !payloadBillMembers.some((payloadBillMember) => ClientBillMember.isEqual(currentBillMember, payloadBillMember));
-	});
-
-	const updateBillMembers = payloadBillMembers.flatMap((payloadBillMember) => {
-		const member = currentBillMembers.find(
-			(currentBillMember) => ClientBillMember.isEqual(currentBillMember, payloadBillMember) && currentBillMember.amount !== payloadBillMember.amount
-		);
-
-		if (!member) {
-			return [];
-		}
-
-		return { ...payloadBillMember, previousAmount: member.amount };
-	});
-
-	return { addBillMembers, removeBillMembers, updateBillMembers };
 }

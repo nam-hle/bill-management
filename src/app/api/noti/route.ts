@@ -12,8 +12,6 @@ export async function GET() {
 			status: 200
 		});
 	} catch (error) {
-		console.error("Notification fetching:", error);
-
 		return new Response(
 			JSON.stringify({
 				error: "Internal Server Error",

@@ -10,8 +10,6 @@ export async function POST(request: Request) {
 
 		const parsedBody = BillFormPayloadSchema.safeParse(body);
 
-		console.log(parsedBody);
-
 		if (parsedBody.error) {
 			return new Response(JSON.stringify({ error: "Invalid request body", details: parsedBody.error.errors }), {
 				status: 400
@@ -52,29 +50,12 @@ export async function POST(request: Request) {
 			role: "Creditor" as BillMemberRole
 		});
 
-		await BillMembersControllers.createMany(supabase, billMembers);
-
-		// Step 3: Insert notifications
-		const billMemberNotifications = debtors.map((debtor) => {
-			return {
-				billId: bill.id,
-				userId: debtor.userId,
-				triggerId: creator.id,
-				type: "BillCreated" as const
-			};
-		});
-		const { error: notificationErrors } = await supabase.from("notifications").insert(billMemberNotifications);
-
-		if (notificationErrors) {
-			throw new Error("Error inserting notifications");
-		}
+		await BillMembersControllers.createMany(supabase, creator.id, billMembers);
 
 		return new Response(JSON.stringify({ success: true, data: { bill } }), {
 			status: 201
 		});
 	} catch (error) {
-		console.error("Error creating bill:", error);
-
 		return new Response(
 			JSON.stringify({
 				error: "Internal Server Error",
