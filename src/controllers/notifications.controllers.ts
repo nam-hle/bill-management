@@ -1,5 +1,11 @@
 import { type SupabaseInstance } from "@/supabase/server";
-import { type BillMemberRole, type ClientNotification, type BillCreatedNotificationMetadata } from "@/types";
+import {
+	type BillMemberRole,
+	type NotificationType,
+	type ClientNotification,
+	type BillDeletedNotificationMetadata,
+	type BillCreatedNotificationMetadata
+} from "@/types";
 
 export namespace NotificationsControllers {
 	const NOTIFICATIONS_SELECT = `
@@ -58,8 +64,29 @@ export namespace NotificationsControllers {
 			payload.filter(removeSelfNotification).map(({ role, amount, ...rest }) => {
 				return {
 					...rest,
-					type: "BillCreated" as const,
+					type: "BillCreated" as const satisfies NotificationType,
 					metadata: { previous: {}, current: { role, amount } } satisfies BillCreatedNotificationMetadata
+				};
+			})
+		);
+
+		if (error) {
+			throw error;
+		}
+	}
+
+	export interface DeletedBillPayload extends BasePayload {
+		readonly billId: string;
+		readonly role: BillMemberRole;
+	}
+
+	export async function createManyBillDeleted(supabase: SupabaseInstance, payloads: DeletedBillPayload[]) {
+		const { error } = await supabase.from("notifications").insert(
+			payloads.filter(removeSelfNotification).map(({ role, ...rest }) => {
+				return {
+					...rest,
+					type: "BillDeleted" as const satisfies NotificationType,
+					metadata: { current: {}, previous: { role } } satisfies BillDeletedNotificationMetadata
 				};
 			})
 		);

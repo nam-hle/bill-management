@@ -32,10 +32,14 @@ export namespace BillMembersControllers {
 		);
 	}
 
-	export async function deleteMany(supabase: SupabaseInstance, payload: { billId: string; userId: string; role: BillMemberRole }[]) {
-		const deletePromises = payload.map((deleteData) =>
-			supabase.from("bill_members").delete().match({ role: deleteData.role, billId: deleteData.billId, userId: deleteData.userId })
-		);
+	export interface DeletedPayload {
+		readonly billId: string;
+		readonly userId: string;
+		readonly role: BillMemberRole;
+	}
+
+	export async function deleteMany(supabase: SupabaseInstance, triggerId: string, payloads: DeletedPayload[]) {
+		const deletePromises = payloads.map((payload) => supabase.from("bill_members").delete().match(payload));
 
 		const results = await Promise.all(deletePromises);
 
@@ -44,6 +48,11 @@ export namespace BillMembersControllers {
 		if (errors.length > 0) {
 			throw new Error("Error deleting bill members");
 		}
+
+		await NotificationsControllers.createManyBillDeleted(
+			supabase,
+			payloads.map((payload) => ({ ...payload, triggerId }))
+		);
 	}
 
 	const SELECT = `userId, role, amount, profiles (username)`;

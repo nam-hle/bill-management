@@ -5,7 +5,7 @@ import { Text, Stack, HStack } from "@chakra-ui/react";
 
 import { formatDistanceTime } from "@/utils";
 import { Status } from "@/components/ui/status";
-import { type ClientNotification, type BillUpdatedNotification, type BillCreatedNotification } from "@/types";
+import { type ClientNotification, type BillDeletedNotification, type BillUpdatedNotification, type BillCreatedNotification } from "@/types";
 
 namespace NotificationMessage {
 	export interface Props {
@@ -47,6 +47,8 @@ function renderMessage(notification: ClientNotification) {
 	switch (notification.type) {
 		case "BillCreated":
 			return renderBillCreatedMessage(notification);
+		case "BillDeleted":
+			return renderBillDeletedMessage(notification);
 		case "BillUpdated":
 			return renderBillUpdatedMessage(notification);
 		default:
@@ -59,6 +61,13 @@ function renderBillCreatedMessage(notification: BillCreatedNotification) {
 	const { role, amount } = metadata.current;
 
 	return `You’ve been added to the bill **${bill.description}** by **${trigger.fullName}** as a **${role}** with an amount of **${amount}**.`;
+}
+
+function renderBillDeletedMessage(notification: BillDeletedNotification) {
+	const { bill, trigger, metadata } = notification;
+	const { role } = metadata.previous;
+
+	return `You’ve been removed as a **${role}** from the bill **${bill.description}** by **${trigger.fullName}**.`;
 }
 
 function renderBillUpdatedMessage(notification: BillUpdatedNotification) {

@@ -34,13 +34,19 @@ export interface BillCreatedNotification extends BaseClientNotification {
 	readonly metadata: BillCreatedNotificationMetadata;
 }
 
+export interface BillDeletedNotification extends BaseClientNotification {
+	readonly bill: ClientBill;
+	readonly type: "BillDeleted";
+	readonly metadata: BillDeletedNotificationMetadata;
+}
+
 export interface BillUpdatedNotification extends BaseClientNotification {
 	readonly bill: ClientBill;
 	readonly type: "BillUpdated";
 	readonly metadata: Record<"previous" | "current", { amount?: number }>;
 }
 
-export type ClientNotification = BillCreatedNotification | BillUpdatedNotification;
+export type ClientNotification = BillCreatedNotification | BillUpdatedNotification | BillDeletedNotification;
 
 export const BillFormPayloadSchema = z.object({
 	issuedAt: z.string(),
@@ -117,3 +123,9 @@ export const BillCreatedNotificationMetadataSchema = z.object({
 });
 
 export type BillCreatedNotificationMetadata = z.infer<typeof BillCreatedNotificationMetadataSchema>;
+
+export const BillDeletedNotificationMetadataSchema = z.object({
+	current: z.object({}),
+	previous: z.object({ role: BillMemberRoleEnumSchema })
+});
+export type BillDeletedNotificationMetadata = z.infer<typeof BillDeletedNotificationMetadataSchema>;

@@ -45,7 +45,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 		});
 
 		const comparisonResult = compareBillMembers(flatten(currentBill), payloadBillMembers);
-
+		console.log(comparisonResult);
 		await BillMembersControllers.updateMany(
 			supabase,
 			comparisonResult.updateBillMembers.map((update) => ({ billId, ...update }))
@@ -59,7 +59,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 		await BillMembersControllers.deleteMany(
 			supabase,
-			comparisonResult.removeBillMembers.map((remove) => ({ billId, ...remove }))
+			updater.id,
+			comparisonResult.removeBillMembers.map(({ amount, ...remove }) => ({ billId, ...remove }))
 		);
 
 		// Step 3: Insert notifications
@@ -98,7 +99,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 function flatten(clientBill: ClientBill): Omit<ClientBillMember, "fullName">[] {
 	const { debtors, creditor } = clientBill;
 
-	return [creditor, ...debtors];
+	return [creditor, ...debtors].map(({ fullName, ...member }) => member);
 }
 
 function compareBillMembers(currentBillMembers: Omit<ClientBillMember, "fullName">[], payloadBillMembers: Omit<ClientBillMember, "fullName">[]) {

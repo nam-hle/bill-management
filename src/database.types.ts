@@ -1,6 +1,31 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
+	graphql_public: {
+		Views: {
+			[_ in never]: never;
+		};
+		Enums: {
+			[_ in never]: never;
+		};
+		Tables: {
+			[_ in never]: never;
+		};
+		CompositeTypes: {
+			[_ in never]: never;
+		};
+		Functions: {
+			graphql: {
+				Returns: Json;
+				Args: {
+					query?: string;
+					variables?: Json;
+					extensions?: Json;
+					operationName?: string;
+				};
+			};
+		};
+	};
 	public: {
 		Views: {
 			[_ in never]: never;
@@ -19,8 +44,8 @@ export type Database = {
 		};
 		Enums: {
 			BillMemberRole: "Creditor" | "Debtor";
-			NotificationType: "BillCreated" | "BillUpdated";
 			TransactionStatus: "pending" | "confirmed" | "rejected";
+			NotificationType: "BillCreated" | "BillUpdated" | "BillDeleted";
 		};
 		Tables: {
 			profiles: {

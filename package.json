@@ -9,7 +9,8 @@
 		"watch": "tsc -watch",
 		"lint": "next lint --quiet && prettier --check .",
 		"lint:fix": "next lint --fix && prettier --write .",
-		"generate-types": "supabase gen types typescript --project-id kktfrhtzsgvnecsjoxiu > src/database.types.ts && pnpm lint:fix"
+		"generate-types": "supabase gen types typescript --project-id kktfrhtzsgvnecsjoxiu > src/database.types.ts && pnpm lint:fix",
+		"generate-types:local": "supabase gen types typescript --local > src/database.types.ts && pnpm lint:fix"
 	},
 	"dependencies": {
 		"@chakra-ui/react": "^3.2.5",
