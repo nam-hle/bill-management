@@ -5,8 +5,8 @@ import { BillMembersControllers } from "@/controllers/bill-members.controllers";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
 	try {
-		const body = await request.json();
 		const billId = (await params).id;
+		const body = await request.json();
 
 		const parsedBody = BillFormPayloadSchema.safeParse(body);
 

@@ -12,8 +12,8 @@ import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { toaster } from "@/components/ui/toaster";
 import { BillMemberInputs } from "@/components/app/bill-member-inputs";
-import { formatDate, formatTime, CLIENT_DATE_FORMAT, formatDistanceTime, SERVER_DATE_FORMAT } from "@/utils";
 import { FormKind, type ClientUser, type ErrorState, type BillFormState, type BillFormTransfer } from "@/types";
+import { formatDate, formatTime, renderError, CLIENT_DATE_FORMAT, formatDistanceTime, SERVER_DATE_FORMAT } from "@/utils";
 
 namespace BillForm {
 	export interface Props {
@@ -221,13 +221,6 @@ const reducer = (state: FormState, action: Action): FormState => {
 
 	return state;
 };
-
-export function renderError(validating: boolean, error: string | undefined) {
-	return {
-		errorText: validating ? error : undefined,
-		invalid: validating ? !!error : undefined
-	};
-}
 
 export const BillForm: React.FC<BillForm.Props> = (props) => {
 	const { kind, users, metadata } = props;
