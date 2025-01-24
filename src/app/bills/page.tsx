@@ -59,7 +59,7 @@ export default async function BillsPage(props: Props) {
 	}
 
 	const users = await UsersControllers.getUsers(supabase);
-	const { bills, fullSize } = await BillsControllers.getBillsByMemberId(
+	const { bills, fullSize } = await BillsControllers.getManyByMemberId(
 		supabase,
 		{
 			since,

@@ -12,16 +12,6 @@ export namespace UsersControllers {
 		return users;
 	}
 
-	export async function getUserById(supabase: SupabaseInstance, id: string): Promise<ClientUser> {
-		const { data } = await supabase.from("profiles").select().eq("id", id).single();
-
-		if (!data) {
-			throw new Error("Error fetching user");
-		}
-
-		return data;
-	}
-
 	export async function getBalance(supabase: SupabaseInstance, userId: string): Promise<Balance> {
 		const { data: sumData } = await supabase.from("bill_members").select("amount.sum(), role").eq("userId", userId);
 

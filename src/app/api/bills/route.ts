@@ -10,6 +10,8 @@ export async function POST(request: Request) {
 
 		const parsedBody = BillFormPayloadSchema.safeParse(body);
 
+		console.log(parsedBody);
+
 		if (parsedBody.error) {
 			return new Response(JSON.stringify({ error: "Invalid request body", details: parsedBody.error.errors }), {
 				status: 400
@@ -19,18 +21,18 @@ export async function POST(request: Request) {
 		const { debtors, issuedAt, creditor, description } = parsedBody.data;
 
 		const {
-			data: { user: trigger }
+			data: { user: creator }
 		} = await supabase.auth.getUser();
 
-		if (!trigger) {
+		if (!creator) {
 			throw new Error("User not found");
 		}
 
 		// Step 1: Insert bill
-		const bill = await BillsControllers.createBill(supabase, {
+		const bill = await BillsControllers.create(supabase, {
 			issuedAt,
 			description,
-			creatorId: creditor.userId
+			creatorId: creator.id
 		});
 
 		// Step 2: Insert bill members
@@ -57,7 +59,7 @@ export async function POST(request: Request) {
 			return {
 				billId: bill.id,
 				userId: debtor.userId,
-				triggerId: trigger.id,
+				triggerId: creator.id,
 				type: "BillCreated" as const
 			};
 		});

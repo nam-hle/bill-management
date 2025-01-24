@@ -12,8 +12,8 @@ import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { toaster } from "@/components/ui/toaster";
 import { BillMemberInputs } from "@/components/app/bill-member-inputs";
-import { FormKind, type ClientUser, type BillFormState, type BillFormTransfer } from "@/types";
 import { formatDate, formatTime, CLIENT_DATE_FORMAT, formatDistanceTime, SERVER_DATE_FORMAT } from "@/utils";
+import { FormKind, type ClientUser, type ErrorState, type BillFormState, type BillFormTransfer } from "@/types";
 
 namespace BillForm {
 	export interface Props {
@@ -28,22 +28,44 @@ namespace BillForm {
 	}
 }
 
-interface MemberState {
-	readonly userId?: string;
-	readonly amount: {
-		readonly input: string;
-		readonly error?: string;
-		readonly value?: number;
-	};
+export interface MemberState {
+	readonly user: ErrorState & { readonly userId: string | undefined };
+	readonly amount: ErrorState & { readonly input: string; readonly value?: number };
 }
 namespace MemberState {
 	export function fromBillMemberState(memberState: BillFormState["creditor"]): MemberState {
 		const { userId, amount } = memberState;
 
 		return {
-			userId,
-			amount: { value: amount, input: amount === undefined ? "" : String(amount) }
+			user: { userId, error: userId === undefined ? "This field is required" : undefined },
+			amount: { value: amount, error: undefined, input: amount === undefined ? "" : String(amount) }
 		};
+	}
+
+	export function select(state: FormState, memberKind: MemberKind): MemberState {
+		if (memberKind.memberKind === "creditor") {
+			return state.creditor;
+		}
+
+		if (memberKind.memberKind === "debtor") {
+			return state.debtors[memberKind.debtorIndex];
+		}
+
+		// @ts-expect-error Invalid member kind
+		throw new Error(`Unhandled member kind: ${memberKind.memberKind}`);
+	}
+
+	export function reduce(state: FormState, memberKind: MemberKind, memberState: MemberState): FormState {
+		if (memberKind.memberKind === "creditor") {
+			return { ...state, creditor: memberState };
+		}
+
+		if (memberKind.memberKind === "debtor") {
+			return { ...state, debtors: state.debtors.map((debtor, index) => (index === memberKind.debtorIndex ? memberState : debtor)) };
+		}
+
+		// @ts-expect-error Invalid member kind
+		throw new Error(`Unhandled member kind: ${memberKind.member}`);
 	}
 }
 
@@ -52,13 +74,9 @@ type MemberKind = { readonly memberKind: "creditor" } | { readonly debtorIndex: 
 interface FormState {
 	readonly creditor: MemberState;
 	readonly debtors: readonly MemberState[];
-	readonly description: {
-		readonly value: string;
-		readonly error?: string;
-	};
-	readonly issuedAt: {
+	readonly description: ErrorState & { readonly value: string };
+	readonly issuedAt: ErrorState & {
 		readonly input: string;
-		readonly error?: string;
 		readonly value: string | null;
 	};
 }
@@ -67,12 +85,13 @@ type Action =
 	| { readonly payload: {}; readonly type: "addDebtor" }
 	| { readonly payload: {}; readonly type: "submitIssuedAt" }
 	| { readonly type: "reset"; readonly payload: BillFormState }
-	| { readonly payload: {}; readonly type: "syncCreditorAmount" }
 	| { readonly type: "changeIssuedAt"; readonly payload: { readonly issuedAt: string } }
 	| { readonly type: "deleteDebtor"; readonly payload: { readonly debtorIndex: number } }
 	| { readonly type: "changeDescription"; readonly payload: { readonly description: string } }
 	| { readonly type: "changeUser"; readonly payload: MemberKind & { readonly userId: string } }
 	| { readonly type: "changeAmount"; readonly payload: MemberKind & { readonly input: string } };
+
+const REQUIRED_MESSAGE = "This field is required";
 
 namespace FormState {
 	export function create(formState: BillFormState): FormState {
@@ -84,11 +103,8 @@ namespace FormState {
 		return {
 			debtors,
 			creditor: MemberState.fromBillMemberState(formState.creditor),
-			description: {
-				error: undefined,
-				value: description
-			},
-			issuedAt: { value: issuedAt, input: formatDate(issuedAt).client }
+			issuedAt: { value: issuedAt, error: undefined, input: formatDate(issuedAt).client },
+			description: { value: description, error: description ? undefined : REQUIRED_MESSAGE }
 		};
 	}
 
@@ -98,8 +114,8 @@ namespace FormState {
 		return {
 			description: description.value,
 			issuedAt: issuedAt.value ?? "",
-			creditor: { userId: creditor.userId ?? "", amount: creditor.amount.value ?? 0 },
-			debtors: debtors.map((debtor) => ({ userId: debtor.userId ?? "", amount: debtor.amount.value ?? 0 }))
+			creditor: { userId: creditor.user.userId ?? "", amount: creditor.amount.value ?? 0 },
+			debtors: debtors.map((debtor) => ({ userId: debtor.user.userId ?? "", amount: debtor.amount.value ?? 0 }))
 		};
 	}
 }
@@ -112,7 +128,10 @@ const reducer = (state: FormState, action: Action): FormState => {
 	}
 
 	if (type === "addDebtor") {
-		return { ...state, debtors: [...state.debtors, { amount: { input: "" } }] };
+		return {
+			...state,
+			debtors: [...state.debtors, { amount: { input: "", error: undefined }, user: { userId: undefined, error: REQUIRED_MESSAGE } }]
+		};
 	}
 
 	if (type === "deleteDebtor") {
@@ -124,7 +143,7 @@ const reducer = (state: FormState, action: Action): FormState => {
 			...state,
 			description: {
 				value: payload.description,
-				error: payload.description ? undefined : "Description is required"
+				error: payload.description ? undefined : REQUIRED_MESSAGE
 			}
 		};
 	}
@@ -152,75 +171,85 @@ const reducer = (state: FormState, action: Action): FormState => {
 	}
 
 	if (type === "changeUser") {
-		if (payload.memberKind === "creditor") {
-			return { ...state, creditor: { ...state.creditor, userId: payload.userId } };
-		}
+		const { userId, ...memberKind } = payload;
+		const memberState = MemberState.select(state, memberKind);
+		const nextMemberState = { ...memberState, user: { ...memberState.user, userId, error: undefined } };
 
-		return {
-			...state,
-			debtors: state.debtors.map((debtor, index) =>
-				index === payload.debtorIndex
-					? {
-							...debtor,
-							userId: payload.userId
-						}
-					: debtor
-			)
-		};
+		return MemberState.reduce(state, memberKind, nextMemberState);
 	}
 
 	if (type === "changeAmount") {
-		const input = payload.input;
-		const currentState = payload.memberKind === "creditor" ? state.creditor : state.debtors[payload.debtorIndex];
-		const mergeState = (nextState: MemberState) => {
-			if (payload.memberKind === "creditor") {
-				return { ...state, creditor: nextState };
-			}
-
-			if (payload.memberKind === "debtor") {
-				return { ...state, debtors: state.debtors.map((debtor, index) => (index === payload.debtorIndex ? nextState : debtor)) };
-			}
-
-			// @ts-expect-error Invalid member kind
-			throw new Error(`Unhandled member kind: ${payload.memberKind}`);
-		};
+		const { input, ...memberKind } = payload;
+		const memberState = MemberState.select(state, memberKind);
+		let nextState: FormState;
 
 		if (input === "") {
-			return mergeState({ ...currentState, amount: { value: 0, input: "0" } });
+			nextState = MemberState.reduce(state, memberKind, { ...memberState, amount: { value: 0, input: "0", error: undefined } });
+		} else {
+			if (!/^[\d.]+$/.test(input)) {
+				return state;
+			}
+
+			const amount = parseInt(input.replace(/\./g, ""), 10);
+
+			if (isNaN(amount)) {
+				nextState = MemberState.reduce(state, memberKind, { ...memberState, amount: { input, error: "Amount must be a number" } });
+			} else {
+				console.log(amount, new Intl.NumberFormat("vi-VN").format(amount));
+				nextState = MemberState.reduce(state, memberKind, {
+					...memberState,
+					amount: { value: amount, error: undefined, input: new Intl.NumberFormat("vi-VN").format(amount) }
+				});
+			}
 		}
 
-		const amount = parseInt(input, 10);
+		const sumDebtors = sumBy(nextState.debtors, (debtor) => debtor.amount.value ?? 0);
+		const creditorAmount = nextState.creditor.amount.value ?? 0;
 
-		if (isNaN(amount)) {
-			return mergeState({ ...currentState, amount: { input, error: "Amount must be a number" } });
-		}
-
-		return mergeState({ ...currentState, amount: { input, value: amount } });
-	}
-
-	if (type === "syncCreditorAmount") {
-		const sumDebtors = sumBy(state.debtors, (debtor) => debtor.amount.value ?? 0);
-
-		return {
-			...state,
+		nextState = {
+			...nextState,
 			creditor: {
-				...state.creditor,
-				amount: { value: sumDebtors, input: String(sumDebtors) }
+				...nextState.creditor,
+				amount: {
+					...nextState.creditor.amount,
+					error: creditorAmount < sumDebtors ? "Creditor amount must be greater than or equal to sum of split amounts" : undefined
+				}
 			}
 		};
+
+		return nextState;
 	}
 
 	return state;
 };
 
+export function renderError(validating: boolean, error: string | undefined) {
+	return {
+		errorText: validating ? error : undefined,
+		invalid: validating ? !!error : undefined
+	};
+}
+
 export const BillForm: React.FC<BillForm.Props> = (props) => {
 	const { kind, users, metadata } = props;
 	const [formState, dispatch] = React.useReducer(reducer, FormState.create(props.formState));
 	const [editing, setEditing] = React.useState(() => kind === FormKind.CREATE);
+	const [validating, setValidating] = React.useState(() => kind === FormKind.UPDATE);
+
+	const errors = React.useMemo(
+		() => [
+			formState.description.error,
+			formState.issuedAt.error,
+			formState.creditor.amount.error,
+			...formState.debtors.map((debtor) => debtor.amount.error),
+			...formState.debtors.map((debtor) => debtor.user.error)
+		],
+		[formState.creditor.amount.error, formState.debtors, formState.description.error, formState.issuedAt.error]
+	);
 
 	const hasError = React.useMemo(() => {
-		return !!formState.issuedAt.error || !!formState.creditor.amount.error || formState.debtors.some((debtor) => debtor.amount.error);
-	}, [formState.creditor.amount.error, formState.debtors, formState.issuedAt.error]);
+		return errors.filter((e) => e !== undefined).length > 0;
+	}, [errors]);
 
 	const router = useRouter();
 	const onSubmit = React.useCallback(async () => {
@@ -306,7 +335,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 			</Stack>
 			<SimpleGrid columns={10} gap="{spacing.4}">
 				<GridItem colSpan={{ base: 5 }}>
-					<Field required label="Description" errorText={formState.description.error} invalid={!!formState.description.error}>
+					<Field required label="Description" {...renderError(validating, formState.description.error)}>
 						<Input
 							readOnly={!editing}
 							value={formState.description.value}
@@ -317,7 +346,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					</Field>
 				</GridItem>
 				<GridItem colSpan={{ base: 3 }}>
-					<Field label="Issued at" invalid={!!formState.issuedAt.error} errorText={formState.issuedAt.error}>
+					<Field label="Issued at" {...renderError(validating, formState.issuedAt.error)}>
 						<Input
 							readOnly={!editing}
 							placeholder="20/mm/yy"
@@ -333,9 +362,9 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					users={users}
 					label="Creditor"
 					readonly={!editing}
+					validating={validating}
 					amountLabel="Total Amount"
-					userId={formState.creditor.userId}
-					amount={formState.creditor.amount.input}
+					member={formState.creditor}
 					onUserChange={(userId) => dispatch({ type: "changeUser", payload: { userId, memberKind: "creditor" } })}
 					onAmountChange={(amount) => {
 						dispatch({ type: "changeAmount", payload: { input: amount, memberKind: "creditor" } });
@@ -344,14 +373,14 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 				{formState.debtors.map((debtor, debtorIndex) => {
 					return (
 						<BillMemberInputs
+							member={debtor}
 							key={debtorIndex}
 							readonly={!editing}
-							userId={debtor.userId}
+							validating={validating}
 							amountLabel="Split Amount"
-							amount={debtor.amount.input}
 							label={`Debtor ${debtorIndex + 1}`}
-							users={users.filter((user) => user.id === debtor.userId || !formState.debtors.some((d) => d.userId === user.id))}
 							onUserChange={(userId) => dispatch({ type: "changeUser", payload: { userId, debtorIndex, memberKind: "debtor" } })}
+							users={users.filter((user) => user.id === debtor.user.userId || !formState.debtors.some((d) => d.user.userId === user.id))}
 							onAmountChange={(amount) => dispatch({ type: "changeAmount", payload: { debtorIndex, input: amount, memberKind: "debtor" } })}
 							action={
 								editing && (
@@ -389,7 +418,15 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 							</>
 						)}
 						{kind === FormKind.CREATE && (
-							<Button variant="solid" onClick={onSubmit}>
+							<Button
+								variant="solid"
+								onClick={() => {
+									if (hasError) {
+										setValidating(() => true);
+									} else {
+										onSubmit();
+									}
+								}}>
 								<IoIosAddCircle /> Create
 							</Button>
 						)}
@@ -401,6 +438,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					</Button>
 				)}
 			</HStack>
+			<pre>{JSON.stringify(formState, null, 2)}</pre>
 		</Stack>
 	);
 };
