@@ -34,7 +34,7 @@ export namespace NotificationsControllers {
 		readonly timestamp: { after?: string; before?: string };
 	}
 
-	const PAGE_SIZE = 4;
+	const PAGE_SIZE = 5;
 
 	export async function getByUserId(
 		supabase: SupabaseInstance,
@@ -59,16 +59,9 @@ export namespace NotificationsControllers {
 
 		const count = await countUnreadNotifications(supabase, userId);
 
-		if (timestamp.after) {
-			return {
-				count,
-				notifications: notifications.slice(0, PAGE_SIZE) as unknown as ClientNotification[]
-			};
-		}
-
 		return {
 			count,
-			hasOlder: notifications.length > PAGE_SIZE,
+			hasOlder: timestamp.after ? undefined : notifications.length > PAGE_SIZE,
 			notifications: notifications.slice(0, PAGE_SIZE) as unknown as ClientNotification[]
 		};
 	}
