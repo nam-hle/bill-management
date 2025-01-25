@@ -1,5 +1,4 @@
 import React from "react";
-import { redirect } from "next/navigation";
 import { MdArrowRightAlt } from "react-icons/md";
 import { Stack, HStack, Heading, Separator } from "@chakra-ui/react";
 
@@ -18,7 +17,7 @@ export default async function DashboardPage() {
 	} = await supabase.auth.getUser();
 
 	if (!currentUser) {
-		redirect("/login");
+		throw new Error("User not found");
 	}
 
 	const balance = await UsersControllers.getBalance(supabase, currentUser.id);
