@@ -20,7 +20,7 @@ export const NotificationMessage: React.FC<NotificationMessage.Props> = (props) 
 
 	const router = useRouter();
 	const link = React.useMemo(() => `/bills/${bill.id}`, [bill.id]);
-	const content = React.useMemo(() => transformMessage(renderMessage(notification)), [notification]);
+	const message = React.useMemo(() => transformMessage(renderMessage(notification)), [notification]);
 
 	return (
 		<HStack cursor="pointer" padding="{spacing.2}" _hover={{ bg: "gray.200" }} justifyContent="space-between">
@@ -32,7 +32,7 @@ export const NotificationMessage: React.FC<NotificationMessage.Props> = (props) 
 						router.push(link);
 						onClick();
 					}}>
-					{content}
+					{message}
 				</Text>
 				<Text textStyle="xs" color="gray.500">
 					{capitalize(formatDistanceTime(createdAt))}
