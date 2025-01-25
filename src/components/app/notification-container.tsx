@@ -2,7 +2,6 @@ import React from "react";
 import { FaRegBell } from "react-icons/fa";
 import { Box, Stack, HStack, IconButton } from "@chakra-ui/react";
 
-import { noop } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { type ClientNotification } from "@/types";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -16,14 +15,33 @@ export const NotificationContainer = () => {
 	const [oldestTimestamp, setOldestTimestamp] = React.useState<string | null>(null);
 	const [hasOlder, setHasOlder] = React.useState(true);
 
+	console.log({ hasOlder, unreadCount });
+
 	const readAll = React.useCallback(() => {
 		fetch("/api/noti/read-all", {
-			method: "PUT",
+			method: "PATCH",
 			headers: { "Content-Type": "application/json" }
 		}).then((response) => {
 			if (response.ok) {
 				setUnreadCount(0);
 				setNotifications((prev) => prev.map((notification) => ({ ...notification, readStatus: true })));
+			}
+		});
+	}, []);
+
+	const read = React.useCallback((notificationId: string) => {
+		fetch(`/api/noti/${notificationId}/read`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" }
+		}).then((response) => {
+			if (response.ok) {
+				response.json().then((result) => {
+					const { unreadCount } = result as { unreadCount: number };
+					setUnreadCount(() => unreadCount);
+					setNotifications((prev) =>
+						prev.map((notification) => (notification.id === notificationId ? { ...notification, readStatus: true } : notification))
+					);
+				});
 			}
 		});
 	}, []);
@@ -151,18 +169,24 @@ export const NotificationContainer = () => {
 						</PopoverBody>
 					)}
 					{notifications.length > 0 && (
-						<PopoverBody padding={0} display="flex" maxHeight="500px" overflow="scroll" gap="{spacing.2}" margin="{spacing.2}" flexDirection="column">
-							<HStack width="100%" justifyContent="space-between">
-								<Button size="xs" onClick={noop} variant="ghost">
-									See All
-								</Button>
+						<PopoverBody padding={0} display="flex" overflowY="auto" maxHeight="500px" gap="{spacing.2}" margin="{spacing.2}" flexDirection="column">
+							<HStack justifyContent="flex-end">
 								<Button size="xs" variant="ghost" onClick={readAll} disabled={unreadCount === 0}>
 									Mark all as read
 								</Button>
 							</HStack>
 							<Stack gap="0">
 								{notifications.map((notification) => {
-									return <NotificationMessage key={notification.id} notification={notification} onClose={() => setOpen(false)} />;
+									return (
+										<NotificationMessage
+											key={notification.id}
+											notification={notification}
+											onClick={() => {
+												setOpen(false);
+												read(notification.id);
+											}}
+										/>
+									);
 								})}
 							</Stack>
 							<Box w="100%">

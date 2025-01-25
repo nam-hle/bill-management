@@ -9,13 +9,13 @@ import { type ClientNotification, type BillDeletedNotification, type BillUpdated
 
 namespace NotificationMessage {
 	export interface Props {
-		readonly onClose: () => void;
+		onClick(): void;
 		readonly notification: ClientNotification;
 	}
 }
 
 export const NotificationMessage: React.FC<NotificationMessage.Props> = (props) => {
-	const { onClose, notification } = props;
+	const { onClick, notification } = props;
 	const { bill, createdAt, readStatus } = notification;
 
 	const router = useRouter();
@@ -30,7 +30,7 @@ export const NotificationMessage: React.FC<NotificationMessage.Props> = (props) 
 					textStyle="sm"
 					onClick={() => {
 						router.push(link);
-						onClose();
+						onClick();
 					}}>
 					{content}
 				</Text>

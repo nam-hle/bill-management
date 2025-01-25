@@ -57,28 +57,30 @@ export namespace NotificationsControllers {
 			throw notificationsError;
 		}
 
-		const { count, error: countError } = await supabase
-			.from("notifications")
-			.select("*", { count: "exact" })
-			.eq("userId", userId)
-			.eq("readStatus", false);
-
-		if (countError || count === null) {
-			throw countError;
-		}
+		const count = await countUnreadNotifications(supabase, userId);
 
 		if (timestamp.after) {
 			return {
 				count,
 				notifications: notifications.slice(0, PAGE_SIZE) as unknown as ClientNotification[]
 			};
-		} else {
-			return {
-				count,
-				hasOlder: notifications.length > PAGE_SIZE,
-				notifications: notifications.slice(0, PAGE_SIZE) as unknown as ClientNotification[]
-			};
 		}
+
+		return {
+			count,
+			hasOlder: notifications.length > PAGE_SIZE,
+			notifications: notifications.slice(0, PAGE_SIZE) as unknown as ClientNotification[]
+		};
+	}
+
+	export async function countUnreadNotifications(supabase: SupabaseInstance, userId: string): Promise<number> {
+		const { data, error } = await supabase.from("notifications").select("*", { count: "exact" }).eq("userId", userId).eq("readStatus", false);
+
+		if (error || data === null) {
+			throw error;
+		}
+
+		return data.length;
 	}
 
 	export interface BasePayload {
@@ -153,5 +155,11 @@ export namespace NotificationsControllers {
 
 	export async function readAll(supabase: SupabaseInstance, userId: string) {
 		await supabase.from("notifications").update({ readStatus: true }).eq("userId", userId);
+	}
+
+	export async function read(supabase: SupabaseInstance, notificationId: string) {
+		await supabase.from("notifications").update({ readStatus: true }).eq("id", notificationId);
+
+		return countUnreadNotifications(supabase, notificationId);
 	}
 }

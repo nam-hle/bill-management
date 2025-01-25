@@ -1,7 +1,7 @@
 import { createClient } from "@/supabase/server";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
 
-export async function PUT() {
+export async function PATCH() {
 	try {
 		const supabase = await createClient();
 
