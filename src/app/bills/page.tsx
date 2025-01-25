@@ -31,7 +31,7 @@ export default async function BillsPage(props: Props) {
 	} = await supabase.auth.getUser();
 
 	if (!currentUser) {
-		throw new Error("User not found");
+		return null;
 	}
 
 	if (Array.isArray(creditor)) {

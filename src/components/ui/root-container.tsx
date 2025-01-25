@@ -12,6 +12,7 @@ import { AvatarContainer } from "@/components/app/avatar-container";
 import { NotificationContainer } from "@/components/app/notification-container";
 
 export const RootContainer: React.FC<Container & { user: User | null }> = (props) => {
+	const { user, children } = props;
 	const pathname = usePathname();
 	const pageName = pathname.split("/")[1];
 
@@ -25,15 +26,19 @@ export const RootContainer: React.FC<Container & { user: User | null }> = (props
 				paddingInline="{spacing.8}"
 				justifyContent="space-between">
 				<Stack direction="row" minHeight="48px" gap="{spacing.4}" alignItems="center">
-					<LinkButton href="/" active={pageName === ""}>
-						Home
-					</LinkButton>
-					<LinkButton href="/bills" active={pageName === "bills"}>
-						Bills
-					</LinkButton>
+					{user && (
+						<>
+							<LinkButton href="/" active={pageName === ""}>
+								Home
+							</LinkButton>
+							<LinkButton href="/bills" active={pageName === "bills"}>
+								Bills
+							</LinkButton>
+						</>
+					)}
 				</Stack>
 				<Stack direction="row" minHeight="48px" gap="{spacing.8}" alignItems="center">
-					{props.user ? (
+					{user ? (
 						<form method="post" action="/auth/signout">
 							<Button type="submit" variant="subtle">
 								Sign out
@@ -44,12 +49,12 @@ export const RootContainer: React.FC<Container & { user: User | null }> = (props
 							Login
 						</LinkButton>
 					) : null}
-					{props.user && <NotificationContainer user={props.user} />}
-					{props.user && <AvatarContainer user={props.user} />}
+					{user && <NotificationContainer user={user} />}
+					{user && <AvatarContainer user={user} />}
 				</Stack>
 			</HStack>
 			<Box as="main" marginInline="auto" maxWidth="{sizes.8xl}" paddingTop="{spacing.4}" paddingInline="{spacing.8}" minHeight="calc(100vh - 64px)">
-				{props.children}
+				{children}
 			</Box>
 		</>
 	);
