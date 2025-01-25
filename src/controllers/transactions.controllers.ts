@@ -7,17 +7,22 @@ export namespace TransactionsControllers {
     createdAt:created_at,
     issuedAt:issued_at,
     amount,
+    status,
     sender:profiles!sender_id (userId:id, username, fullName),
     receiver:profiles!receiver_id (userId:id, username, fullName)
   `;
 
 	export async function create(supabase: SupabaseInstance, payload: { amount: number; issuedAt: string; senderId: string; receiverId: string }) {
 		const { issuedAt: issued_at, senderId: sender_id, receiverId: receiver_id, ...rest } = payload;
-		const { data } = await supabase
+		const { data, error } = await supabase
 			.from("transactions")
 			.insert({ ...rest, issued_at, sender_id, receiver_id })
 			.select("id")
 			.single();
+
+		if (error) {
+			throw error;
+		}
 
 		if (!data) {
 			throw new Error("Error creating transaction");
@@ -29,7 +34,11 @@ export namespace TransactionsControllers {
 	export async function getMany(supabase: SupabaseInstance): Promise<{ fullSize: number; transactions: ClientTransaction[] }> {
 		const finalQuery = supabase.from("transactions").select(TRANSACTIONS_SELECT, { count: "exact" });
 
-		const { count, data: transactions } = await finalQuery.order("createdAt", { ascending: false });
+		const { count, error, data: transactions } = await finalQuery.order("issued_at", { ascending: false });
+
+		if (error) {
+			throw error;
+		}
 
 		return { fullSize: count ?? 0, transactions: transactions?.map(toClientTransaction) ?? [] };
 	}
