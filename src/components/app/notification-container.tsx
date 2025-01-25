@@ -15,7 +15,7 @@ export const NotificationContainer = () => {
 	const [oldestTimestamp, setOldestTimestamp] = React.useState<string | null>(null);
 	const [hasOlder, setHasOlder] = React.useState(true);
 
-	const readAll = React.useCallback(() => {
+	const markAsReadAll = React.useCallback(() => {
 		fetch("/api/notifications/read-all", { method: "PATCH" }).then((response) => {
 			if (response.ok) {
 				setUnreadCount(0);
@@ -24,7 +24,7 @@ export const NotificationContainer = () => {
 		});
 	}, []);
 
-	const read = React.useCallback((notificationId: string) => {
+	const markAsRead = React.useCallback((notificationId: string) => {
 		fetch(`/api/notifications/${notificationId}/read`, { method: "PATCH" }).then((response) => {
 			if (response.ok) {
 				response.json().then((result) => {
@@ -39,7 +39,7 @@ export const NotificationContainer = () => {
 		});
 	}, []);
 
-	const loadOlderNotifications = React.useCallback(() => {
+	const loadMore = React.useCallback(() => {
 		try {
 			if (!oldestTimestamp) {
 				return;
@@ -130,24 +130,7 @@ export const NotificationContainer = () => {
 				<PopoverTrigger asChild>
 					<IconButton rounded="full" variant="ghost">
 						<FaRegBell />
-						{unreadCount > 0 && (
-							<Box
-								top="0"
-								right="0"
-								bg="red.500"
-								color="white"
-								fontSize="2xs"
-								display="flex"
-								position="absolute"
-								borderRadius="full"
-								width="{spacing.4}"
-								alignItems="center"
-								height="{spacing.4}"
-								justifyContent="center"
-								transform="translate(20%, -20%)">
-								{unreadCount}
-							</Box>
-						)}
+						<CounterBadge count={unreadCount}></CounterBadge>
 					</IconButton>
 				</PopoverTrigger>
 				<PopoverContent width="350px">
@@ -160,7 +143,7 @@ export const NotificationContainer = () => {
 					{notifications.length > 0 && (
 						<PopoverBody padding={0} display="flex" overflowY="auto" maxHeight="500px" gap="{spacing.2}" margin="{spacing.2}" flexDirection="column">
 							<HStack justifyContent="flex-end">
-								<Button size="xs" variant="ghost" onClick={readAll} disabled={unreadCount === 0}>
+								<Button size="xs" variant="ghost" onClick={markAsReadAll} disabled={unreadCount === 0}>
 									Mark all as read
 								</Button>
 							</HStack>
@@ -172,14 +155,14 @@ export const NotificationContainer = () => {
 											notification={notification}
 											onClick={() => {
 												setOpen(false);
-												read(notification.id);
+												markAsRead(notification.id);
 											}}
 										/>
 									);
 								})}
 							</Stack>
 							<Box w="100%">
-								<Button w="100%" variant="ghost" disabled={!hasOlder} onClick={loadOlderNotifications} aria-label="Load older notifications">
+								<Button w="100%" variant="ghost" onClick={loadMore} disabled={!hasOlder} aria-label="Load older notifications">
 									{hasOlder ? "Load older notifications" : "No more notifications"}
 								</Button>
 							</Box>
@@ -188,5 +171,30 @@ export const NotificationContainer = () => {
 				</PopoverContent>
 			</PopoverRoot>
 		</>
+	);
+};
+
+const CounterBadge: React.FC<{ count: number }> = ({ count }) => {
+	if (count === 0) {
+		return null;
+	}
+
+	return (
+		<Box
+			top="0"
+			right="0"
+			bg="red.500"
+			color="white"
+			fontSize="2xs"
+			display="flex"
+			position="absolute"
+			borderRadius="full"
+			width="{spacing.4}"
+			alignItems="center"
+			height="{spacing.4}"
+			justifyContent="center"
+			transform="translate(20%, -20%)">
+			{count}
+		</Box>
 	);
 };
