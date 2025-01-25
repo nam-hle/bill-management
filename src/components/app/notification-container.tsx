@@ -3,8 +3,8 @@ import { FaRegBell } from "react-icons/fa";
 import { Box, Stack, HStack, IconButton } from "@chakra-ui/react";
 
 import { Button } from "@/components/ui/button";
-import { type ClientNotification } from "@/types";
 import { EmptyState } from "@/components/ui/empty-state";
+import { APIPayload, type ClientNotification } from "@/types";
 import { NotificationMessage } from "@/components/app/notification-message";
 import { PopoverBody, PopoverRoot, PopoverArrow, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
@@ -15,13 +15,8 @@ export const NotificationContainer = () => {
 	const [oldestTimestamp, setOldestTimestamp] = React.useState<string | null>(null);
 	const [hasOlder, setHasOlder] = React.useState(true);
 
-	console.log({ hasOlder, unreadCount });
-
 	const readAll = React.useCallback(() => {
-		fetch("/api/noti/read-all", {
-			method: "PATCH",
-			headers: { "Content-Type": "application/json" }
-		}).then((response) => {
+		fetch("/api/notifications/read-all", { method: "PATCH" }).then((response) => {
 			if (response.ok) {
 				setUnreadCount(0);
 				setNotifications((prev) => prev.map((notification) => ({ ...notification, readStatus: true })));
@@ -30,13 +25,11 @@ export const NotificationContainer = () => {
 	}, []);
 
 	const read = React.useCallback((notificationId: string) => {
-		fetch(`/api/noti/${notificationId}/read`, {
-			method: "PATCH",
-			headers: { "Content-Type": "application/json" }
-		}).then((response) => {
+		fetch(`/api/notifications/${notificationId}/read`, { method: "PATCH" }).then((response) => {
 			if (response.ok) {
 				response.json().then((result) => {
-					const { unreadCount } = result as { unreadCount: number };
+					const { unreadCount } = APIPayload.Notification.ReadNotificationResponseSchema.parse(result);
+
 					setUnreadCount(() => unreadCount);
 					setNotifications((prev) =>
 						prev.map((notification) => (notification.id === notificationId ? { ...notification, readStatus: true } : notification))
@@ -55,9 +48,7 @@ export const NotificationContainer = () => {
 			const searchParams = new URLSearchParams();
 			searchParams.append("before", oldestTimestamp);
 
-			fetch(`/api/noti?${searchParams.toString()}`, {
-				headers: { "Content-Type": "application/json" }
-			}).then((response) => {
+			fetch(`/api/notifications?${searchParams.toString()}`).then((response) => {
 				if (response.ok) {
 					response.json().then((result) => {
 						const {
@@ -92,9 +83,7 @@ export const NotificationContainer = () => {
 				searchParams.append("after", latestTimestamp);
 			}
 
-			fetch(`/api/noti?${searchParams.toString()}`, {
-				headers: { "Content-Type": "application/json" }
-			}).then((response) => {
+			fetch(`/api/notifications?${searchParams.toString()}`).then((response) => {
 				if (response.ok) {
 					response.json().then((result) => {
 						const {
