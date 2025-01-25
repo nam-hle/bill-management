@@ -25,7 +25,7 @@ export const RootContainer: React.FC<Container & { user: User | null }> = (props
 				paddingBlock="{spacing.2}"
 				paddingInline="{spacing.8}"
 				justifyContent="space-between">
-				<Stack direction="row" minHeight="48px" gap="{spacing.4}" alignItems="center">
+				<Stack direction="row" minHeight="48px" gap="{spacing.2}" alignItems="center">
 					{user && (
 						<>
 							<LinkButton href="/" active={pageName === ""}>
@@ -37,20 +37,18 @@ export const RootContainer: React.FC<Container & { user: User | null }> = (props
 						</>
 					)}
 				</Stack>
-				<Stack direction="row" minHeight="48px" gap="{spacing.8}" alignItems="center">
-					{user ? (
-						<form method="post" action="/auth/signout">
-							<Button type="submit" variant="subtle">
-								Sign out
-							</Button>
-						</form>
-					) : pageName !== "login" ? (
-						<LinkButton href="/login" variant="solid" colorPalette="steal">
-							Login
-						</LinkButton>
-					) : null}
-					{user && <NotificationContainer user={user} />}
-					{user && <AvatarContainer user={user} />}
+				<Stack direction="row" minHeight="48px" gap="{spacing.2}" alignItems="center">
+					{user && (
+						<>
+							<form method="post" action="/auth/signout">
+								<Button type="submit" variant="subtle">
+									Sign out
+								</Button>
+							</form>
+							<NotificationContainer />
+							<AvatarContainer user={user} />
+						</>
+					)}
 				</Stack>
 			</HStack>
 			<Box as="main" marginInline="auto" maxWidth="{sizes.8xl}" paddingTop="{spacing.4}" paddingInline="{spacing.8}" minHeight="calc(100vh - 64px)">

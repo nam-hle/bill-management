@@ -1,7 +1,7 @@
 import React from "react";
 import { capitalize } from "lodash";
 import { useRouter } from "next/navigation";
-import { Text, Stack, HStack } from "@chakra-ui/react";
+import { Text, Stack, HStack, Center } from "@chakra-ui/react";
 
 import { formatDistanceTime } from "@/utils";
 import { Status } from "@/components/ui/status";
@@ -16,7 +16,7 @@ namespace NotificationMessage {
 
 export const NotificationMessage: React.FC<NotificationMessage.Props> = (props) => {
 	const { onClose, notification } = props;
-	const { bill, createdAt } = notification;
+	const { bill, createdAt, readStatus } = notification;
 
 	const router = useRouter();
 	const link = React.useMemo(() => `/bills/${bill.id}`, [bill.id]);
@@ -38,7 +38,9 @@ export const NotificationMessage: React.FC<NotificationMessage.Props> = (props) 
 					{capitalize(formatDistanceTime(createdAt))}
 				</Text>
 			</Stack>
-			<Status maxW="20px" value="info" />
+			<Center width="20px" height="20px">
+				{!readStatus && <Status value="info" />}
+			</Center>
 		</HStack>
 	);
 };

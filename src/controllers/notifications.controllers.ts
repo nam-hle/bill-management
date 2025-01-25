@@ -16,37 +16,69 @@ export namespace NotificationsControllers {
 	createdAt,
 	readStatus,
 	metadata,
-	trigger:triggerId (username, fullName),
+	trigger:profiles!triggerId (username, fullName),
 
 	bill:billId (
 		id, 
 		description, 
 		createdAt, 
-		creator:creatorId (
+		creator:profiles!creatorId (
 			username,
 			fullName
 		)
 	)
 	`;
 
-	export async function getByUserId(supabase: SupabaseInstance, userId: string, from?: string): Promise<ClientNotification[]> {
-		let query = supabase.from("notifications").select(NOTIFICATIONS_SELECT).eq("userId", userId);
+	export interface QueryPayload {
+		readonly userId: string;
+		readonly timestamp: { after?: string; before?: string };
+	}
 
-		if (from !== undefined) {
-			query = query.gt("createdAt", from);
+	const PAGE_SIZE = 4;
+
+	export async function getByUserId(
+		supabase: SupabaseInstance,
+		payload: QueryPayload
+	): Promise<{ count: number; hasOlder?: boolean; notifications: ClientNotification[] }> {
+		const { userId, timestamp } = payload;
+		let query = supabase.from("notifications").select(NOTIFICATIONS_SELECT).eq("userId", userId).order("createdAt", { ascending: false });
+
+		if (timestamp.before) {
+			query = query.lt("createdAt", timestamp.before).limit(PAGE_SIZE + 1);
+		} else if (timestamp.after) {
+			query = query.gt("createdAt", timestamp.after);
+		} else {
+			query = query.limit(PAGE_SIZE + 1);
 		}
 
-		const { error, data: serverNotification } = await query.order("createdAt", { ascending: false });
+		const { data: notifications, error: notificationsError } = await query;
 
-		if (error) {
-			throw error;
+		if (notificationsError || notifications === null) {
+			throw notificationsError;
 		}
 
-		if (!serverNotification) {
-			return [];
+		const { count, error: countError } = await supabase
+			.from("notifications")
+			.select("*", { count: "exact" })
+			.eq("userId", userId)
+			.eq("readStatus", false);
+
+		if (countError || count === null) {
+			throw countError;
 		}
 
-		return serverNotification as unknown as ClientNotification[];
+		if (timestamp.after) {
+			return {
+				count,
+				notifications: notifications.slice(0, PAGE_SIZE) as unknown as ClientNotification[]
+			};
+		} else {
+			return {
+				count,
+				hasOlder: notifications.length > PAGE_SIZE,
+				notifications: notifications.slice(0, PAGE_SIZE) as unknown as ClientNotification[]
+			};
+		}
 	}
 
 	export interface BasePayload {
@@ -118,4 +150,8 @@ export namespace NotificationsControllers {
 	}
 
 	const removeSelfNotification = (payload: BasePayload) => payload.userId !== payload.triggerId;
+
+	export async function readAll(supabase: SupabaseInstance, userId: string) {
+		await supabase.from("notifications").update({ readStatus: true }).eq("userId", userId);
+	}
 }
