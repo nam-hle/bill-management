@@ -34,6 +34,9 @@ export const RootContainer: React.FC<Container & { user: User | null }> = (props
 							<LinkButton href="/bills" active={pageName === "bills"}>
 								Bills
 							</LinkButton>
+							<LinkButton href="/transactions" active={pageName === "transactions"}>
+								Transactions
+							</LinkButton>
 						</>
 					)}
 				</Stack>

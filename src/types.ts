@@ -90,6 +90,15 @@ export interface Balance {
 	readonly paid: number;
 }
 
+export interface ClientTransaction {
+	readonly id: string;
+	readonly amount: number;
+	readonly issuedAt: string;
+	readonly createdAt: string;
+	readonly sender: ClientUser;
+	readonly receiver: ClientUser;
+}
+
 export interface ClientBill {
 	readonly id: string;
 	readonly description: string;
