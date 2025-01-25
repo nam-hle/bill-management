@@ -16,37 +16,64 @@ export namespace NotificationsControllers {
 	createdAt,
 	readStatus,
 	metadata,
-	trigger:triggerId (username, fullName),
+	trigger:profiles!triggerId (username, fullName),
 
 	bill:billId (
 		id, 
 		description, 
 		createdAt, 
-		creator:creatorId (
+		creator:profiles!creatorId (
 			username,
 			fullName
 		)
 	)
 	`;
 
-	export async function getByUserId(supabase: SupabaseInstance, userId: string, from?: string): Promise<ClientNotification[]> {
-		let query = supabase.from("notifications").select(NOTIFICATIONS_SELECT).eq("userId", userId);
+	export interface QueryPayload {
+		readonly userId: string;
+		readonly timestamp: { after?: string; before?: string };
+	}
 
-		if (from !== undefined) {
-			query = query.gt("createdAt", from);
+	const PAGE_SIZE = 5;
+
+	export async function getByUserId(
+		supabase: SupabaseInstance,
+		payload: QueryPayload
+	): Promise<{ count: number; hasOlder?: boolean; notifications: ClientNotification[] }> {
+		const { userId, timestamp } = payload;
+		let query = supabase.from("notifications").select(NOTIFICATIONS_SELECT).eq("userId", userId).order("createdAt", { ascending: false });
+
+		if (timestamp.before) {
+			query = query.lt("createdAt", timestamp.before).limit(PAGE_SIZE + 1);
+		} else if (timestamp.after) {
+			query = query.gt("createdAt", timestamp.after);
+		} else {
+			query = query.limit(PAGE_SIZE + 1);
 		}
 
-		const { error, data: serverNotification } = await query.order("createdAt", { ascending: false });
+		const { data: notifications, error: notificationsError } = await query;
 
-		if (error) {
+		if (notificationsError || notifications === null) {
+			throw notificationsError;
+		}
+
+		const count = await countUnreadNotifications(supabase, userId);
+
+		return {
+			count,
+			hasOlder: timestamp.after ? undefined : notifications.length > PAGE_SIZE,
+			notifications: notifications.slice(0, PAGE_SIZE) as unknown as ClientNotification[]
+		};
+	}
+
+	export async function countUnreadNotifications(supabase: SupabaseInstance, userId: string): Promise<number> {
+		const { data, error } = await supabase.from("notifications").select("*", { count: "exact" }).eq("userId", userId).eq("readStatus", false);
+
+		if (error || data === null) {
 			throw error;
 		}
 
-		if (!serverNotification) {
-			return [];
-		}
-
-		return serverNotification as unknown as ClientNotification[];
+		return data.length;
 	}
 
 	export interface BasePayload {
@@ -118,4 +145,14 @@ export namespace NotificationsControllers {
 	}
 
 	const removeSelfNotification = (payload: BasePayload) => payload.userId !== payload.triggerId;
+
+	export async function readAll(supabase: SupabaseInstance, userId: string) {
+		await supabase.from("notifications").update({ readStatus: true }).eq("userId", userId);
+	}
+
+	export async function read(supabase: SupabaseInstance, notificationId: string) {
+		await supabase.from("notifications").update({ readStatus: true }).eq("id", notificationId);
+
+		return countUnreadNotifications(supabase, notificationId);
+	}
 }

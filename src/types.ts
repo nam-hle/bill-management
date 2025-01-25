@@ -142,3 +142,17 @@ export const LoginFormPayloadSchema = z.object({
 });
 
 export type LoginFormPayload = z.infer<typeof LoginFormPayloadSchema>;
+
+export const NotificationsQuerySchema = z.union([z.object({ before: z.string() }), z.object({ after: z.string().nullable() })]);
+
+export type NotificationsQuery = z.infer<typeof NotificationsQuerySchema>;
+
+export namespace APIPayload {
+	export namespace Notification {
+		export const ReadNotificationResponseSchema = z.object({
+			unreadCount: z.number()
+		});
+
+		export type ReadNotificationResponse = z.infer<typeof ReadNotificationResponseSchema>;
+	}
+}

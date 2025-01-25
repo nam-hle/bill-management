@@ -1,6 +1,7 @@
 import { createClient } from "@/supabase/server";
+import { NotificationsControllers } from "@/controllers/notifications.controllers";
 
-export async function GET() {
+export async function PATCH() {
 	try {
 		const supabase = await createClient();
 
@@ -8,9 +9,13 @@ export async function GET() {
 			data: { user }
 		} = await supabase.auth.getUser();
 
-		return new Response(JSON.stringify({ success: true, data: { user } }), {
-			status: 200
-		});
+		if (!user) {
+			throw new Error("User not found");
+		}
+
+		await NotificationsControllers.readAll(supabase, user.id);
+
+		return new Response(JSON.stringify({ success: true }), { status: 200 });
 	} catch (error) {
 		return new Response(
 			JSON.stringify({
