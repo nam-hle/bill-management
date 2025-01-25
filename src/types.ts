@@ -135,3 +135,10 @@ export const BillUpdatedNotificationMetadataSchema = z.object({
 	previous: z.object({ amount: z.number() })
 });
 export type BillUpdatedNotificationMetadata = z.infer<typeof BillUpdatedNotificationMetadataSchema>;
+
+export const LoginFormPayloadSchema = z.object({
+	email: z.string(),
+	password: z.string()
+});
+
+export type LoginFormPayload = z.infer<typeof LoginFormPayloadSchema>;

@@ -1,10 +1,11 @@
 import React from "react";
 import { Input, Group, GridItem, InputAddon } from "@chakra-ui/react";
 
+import { renderError } from "@/utils";
 import type { ClientUser } from "@/types";
 import { Field } from "@/components/ui/field";
 import { Select } from "@/components/app/select";
-import { renderError, type MemberState } from "@/components/app/bill-form";
+import { type MemberState } from "@/components/app/bill-form";
 
 namespace BillMemberInputs {
 	export interface Props {

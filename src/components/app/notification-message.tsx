@@ -74,7 +74,7 @@ function renderBillUpdatedMessage(notification: BillUpdatedNotification) {
 	const { bill, trigger, metadata } = notification;
 	const { current, previous } = metadata;
 
-	return `Your amount in the bill ${bill.description}** has been updated from **${previous.amount}** to **${current.amount}** by **${trigger.fullName}**. Please review the changes.`;
+	return `Your amount in the bill **${bill.description}** has been updated from **${previous.amount}** to **${current.amount}** by **${trigger.fullName}**. Please review the change.`;
 }
 
 function transformMessage(text: string) {
