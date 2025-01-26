@@ -10,7 +10,7 @@ create type "public"."TransactionStatus" as enum ('Waiting', 'Confirmed', 'Rejec
 
 alter table "public"."transactions" alter column status type "public"."TransactionStatus" using status::text::"public"."TransactionStatus";
 
-alter table "public"."transactions" alter column "status" set default 'pending'::"TransactionStatus";
+alter table "public"."transactions" alter column "status" set default 'Waiting'::"TransactionStatus";
 
 drop type "public"."TransactionStatus__old_version_to_be_dropped";
 
