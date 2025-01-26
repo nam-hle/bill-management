@@ -3,6 +3,7 @@ import {
 	type BillMemberRole,
 	type NotificationType,
 	type ClientNotification,
+	type TransactionCreatedNotification,
 	type BillUpdatedNotificationMetadata,
 	type BillDeletedNotificationMetadata,
 	type BillCreatedNotificationMetadata
@@ -17,6 +18,13 @@ export namespace NotificationsControllers {
 	readStatus,
 	metadata,
 	trigger:profiles!triggerId (username, fullName),
+	
+	transaction:transaction_id (
+		id,
+		amount,
+		sender:profiles!sender_id (userId:id, username, fullName),
+    receiver:profiles!receiver_id (userId:id, username, fullName)
+	),
 
 	bill:billId (
 		id, 
@@ -62,8 +70,41 @@ export namespace NotificationsControllers {
 		return {
 			count,
 			hasOlder: timestamp.after ? undefined : notifications.length > PAGE_SIZE,
-			notifications: notifications.slice(0, PAGE_SIZE) as unknown as ClientNotification[]
+			notifications: notifications.slice(0, PAGE_SIZE).map(toClientNotification)
 		};
+	}
+
+	type NotificationSelectResult = Awaited<ReturnType<typeof __get>>;
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	async function __get(supabase: SupabaseInstance) {
+		const { data } = await supabase.from("notifications").select(NOTIFICATIONS_SELECT).single();
+
+		if (!data) {
+			throw new Error("Bill not found");
+		}
+
+		return data;
+	}
+
+	function toClientNotification(selectResult: NotificationSelectResult): ClientNotification {
+		if (selectResult.type === "BillCreated" || selectResult.type === "BillDeleted" || selectResult.type === "BillUpdated") {
+			if (selectResult.bill === null) {
+				throw new Error("Bill not found");
+			}
+
+			return selectResult as unknown as ClientNotification;
+		}
+
+		if (selectResult.type === "TransactionCreated") {
+			console.log(selectResult);
+
+			return {
+				...selectResult
+			} as unknown as TransactionCreatedNotification;
+		}
+
+		throw new Error("Invalid notification type");
 	}
 
 	export async function countUnreadNotifications(supabase: SupabaseInstance, userId: string): Promise<number> {
@@ -78,11 +119,14 @@ export namespace NotificationsControllers {
 
 	export interface BasePayload {
 		readonly userId: string;
-		readonly billId: string;
 		readonly triggerId: string;
 	}
 
-	export interface CreateBillPayload extends BasePayload {
+	export interface BaseBillPayload extends BasePayload {
+		readonly billId: string;
+	}
+
+	export interface CreateBillPayload extends BaseBillPayload {
 		readonly amount: number;
 		readonly role: BillMemberRole;
 	}
@@ -103,7 +147,7 @@ export namespace NotificationsControllers {
 		}
 	}
 
-	export interface DeletedBillPayload extends BasePayload {
+	export interface DeletedBillPayload extends BaseBillPayload {
 		readonly role: BillMemberRole;
 	}
 
@@ -123,7 +167,7 @@ export namespace NotificationsControllers {
 		}
 	}
 
-	export interface UpdatedBillPayload extends BasePayload {
+	export interface UpdatedBillPayload extends BaseBillPayload {
 		readonly currentAmount: number;
 		readonly previousAmount: number;
 	}
@@ -144,7 +188,19 @@ export namespace NotificationsControllers {
 		}
 	}
 
-	const removeSelfNotification = (payload: BasePayload) => payload.userId !== payload.triggerId;
+	export interface TransactionPayload extends BasePayload {
+		readonly transactionId: string;
+	}
+	export async function createTransactionCreated(supabase: SupabaseInstance, payload: TransactionPayload) {
+		const { userId, triggerId, transactionId } = payload;
+		const { error } = await supabase.from("notifications").insert([{ userId, triggerId, type: "TransactionCreated", metadata: { transactionId } }]);
+
+		if (error) {
+			throw error;
+		}
+	}
+
+	const removeSelfNotification = (payload: BaseBillPayload) => payload.userId !== payload.triggerId;
 
 	export async function readAll(supabase: SupabaseInstance, userId: string) {
 		await supabase.from("notifications").update({ readStatus: true }).eq("userId", userId);

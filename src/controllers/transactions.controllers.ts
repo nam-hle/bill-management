@@ -1,5 +1,6 @@
-import { type ClientTransaction } from "@/types";
 import { type SupabaseInstance } from "@/supabase/server";
+import { type ClientTransaction, TransactionStatusEnumSchema } from "@/types";
+import { NotificationsControllers } from "@/controllers/notifications.controllers";
 
 export namespace TransactionsControllers {
 	const TRANSACTIONS_SELECT = `
@@ -64,6 +65,25 @@ export namespace TransactionsControllers {
 			sender: { id: sender.userId, fullName: sender.fullName, username: sender.username },
 			receiver: { id: receiver.userId, fullName: receiver.fullName, username: receiver.username }
 		};
+	}
+
+	export async function confirm(supabase: SupabaseInstance, id: string) {
+		const { data, error } = await supabase
+			.from("transactions")
+			.update({ status: TransactionStatusEnumSchema.enum.Confirmed })
+			.eq("id", id)
+			.select(TRANSACTIONS_SELECT)
+			.single();
+
+		if (error) {
+			throw error;
+		}
+
+		await NotificationsControllers.createTransactionCreated(supabase, {
+			transactionId: id,
+			userId: data.receiver.userId,
+			triggerId: data.sender.userId
+		});
 	}
 
 	export async function updateById(supabase: SupabaseInstance, id: string, payload: { issuedAt: string; updaterId: string; description: string }) {

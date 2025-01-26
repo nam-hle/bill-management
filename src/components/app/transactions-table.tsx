@@ -1,8 +1,11 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { Table, Badge, HStack, VStack, Heading } from "@chakra-ui/react";
 
+import { Button } from "@/components/ui/button";
+import { toaster } from "@/components/ui/toaster";
 import { EmptyState } from "@/components/ui/empty-state";
 import { displayDate, displayDateAsTitle } from "@/utils";
 import { type ClientTransaction, TransactionStatusEnumSchema } from "@/types";
@@ -22,6 +25,30 @@ namespace BillsTable {
 
 export const TransactionsTable: React.FC<BillsTable.Props> = (props) => {
 	const { title, action, fullSize, transactions, showFullSize, currentUserId } = props;
+	const router = useRouter();
+	const createConfirmHandler = React.useCallback(
+		(transactionId: string) => {
+			return async () => {
+				fetch(`/api/transactions/${transactionId}/confirm`, { method: "PATCH" }).then((response) => {
+					if (response.ok) {
+						toaster.create({
+							type: "success",
+							title: "Transaction Confirmed",
+							description: "The transaction has been confirmed successfully."
+						});
+						router.refresh();
+					} else {
+						toaster.create({
+							type: "error",
+							title: "Error",
+							description: "An error occurred while confirming the transaction."
+						});
+					}
+				});
+			};
+		},
+		[router]
+	);
 
 	return (
 		<VStack width="100%" gap="{spacing.4}">
@@ -44,6 +71,7 @@ export const TransactionsTable: React.FC<BillsTable.Props> = (props) => {
 							<Table.ColumnHeader>Receiver</Table.ColumnHeader>
 							<Table.ColumnHeader>Amount</Table.ColumnHeader>
 							<Table.ColumnHeader>Status</Table.ColumnHeader>
+							<Table.ColumnHeader></Table.ColumnHeader>
 						</Table.Row>
 					</Table.Header>
 					<Table.Body>
@@ -66,6 +94,13 @@ export const TransactionsTable: React.FC<BillsTable.Props> = (props) => {
 										}>
 										{transaction.status}
 									</Badge>
+								</Table.Cell>
+								<Table.Cell>
+									{transaction.status === TransactionStatusEnumSchema.enum.Waiting && (
+										<Button variant="solid" onClick={createConfirmHandler(transaction.id)}>
+											Confirm
+										</Button>
+									)}
 								</Table.Cell>
 							</Table.Row>
 						))}

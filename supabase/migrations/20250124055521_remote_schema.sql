@@ -98,16 +98,16 @@ CREATE OR REPLACE FUNCTION "public"."calculate_balances"() RETURNS TABLE("user_i
     AS $$
 BEGIN
   RETURN QUERY
-  SELECT 
+  SELECT
       user_id
-      -- SUM(CASE 
+      -- SUM(CASE
       --     WHEN role = 'Creditor' THEN amount
       --     WHEN role = 'Debtor' THEN -amount
       --     ELSE 0
       -- END) AS balance
-  FROM 
+  FROM
       bill_members
-  GROUP BY 
+  GROUP BY
       user_id;
 END;
 $$;
@@ -316,11 +316,6 @@ CREATE POLICY "Enable all" ON "public"."bills" USING (true) WITH CHECK (true);
 
 
 CREATE POLICY "Enable all" ON "public"."notifications" USING (true);
-
-
-
-CREATE POLICY "Enable read access for all users" ON "public"."transactions" FOR SELECT USING (true);
-
 
 
 CREATE POLICY "Public profiles are viewable by everyone." ON "public"."profiles" FOR SELECT USING (true);
