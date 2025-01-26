@@ -1,10 +1,10 @@
-import { createClient } from "@/supabase/server";
+import { createSupabaseServer } from "@/supabase/server";
 import { TransactionsControllers } from "@/controllers/transactions.controllers";
 
 export async function PATCH(_request: Request, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const transactionId = (await params).id;
-		const supabase = await createClient();
+		const supabase = await createSupabaseServer();
 
 		await TransactionsControllers.update(supabase, { id: transactionId, status: "Confirmed" });
 

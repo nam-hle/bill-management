@@ -3,9 +3,9 @@ import { type Metadata } from "next";
 import { VStack } from "@chakra-ui/react";
 import { IoIosAddCircle } from "react-icons/io";
 
-import { createClient } from "@/supabase/server";
 import { LinkButton } from "@/components/ui/link-button";
 import { TransactionsTable } from "@/components/app/transactions-table";
+import { getCurrentUser, createSupabaseServer } from "@/supabase/server";
 import { TransactionsControllers } from "@/controllers/transactions.controllers";
 
 export const metadata: Metadata = {
@@ -13,24 +13,15 @@ export const metadata: Metadata = {
 };
 
 export default async function BillsPage() {
-	const supabase = await createClient();
-
-	const {
-		data: { user: currentUser }
-	} = await supabase.auth.getUser();
-
-	if (!currentUser) {
-		throw new Error("User not found");
-	}
+	const supabase = await createSupabaseServer();
+	const currentUser = await getCurrentUser();
 
 	const { fullSize, transactions } = await TransactionsControllers.getMany(supabase);
 
 	return (
 		<VStack gap="{spacing.4}" alignItems="flex-start">
 			<TransactionsTable
-				showFilters
-				showFullSize
-				showPagination
+				mode="advance"
 				fullSize={fullSize}
 				transactions={transactions}
 				currentUserId={currentUser.id}

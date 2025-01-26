@@ -1,19 +1,12 @@
-import { createClient } from "@/supabase/server";
+import { getCurrentUser, createSupabaseServer } from "@/supabase/server";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
 
 export async function PATCH() {
 	try {
-		const supabase = await createClient();
+		const supabase = await createSupabaseServer();
+		const currentUser = await getCurrentUser();
 
-		const {
-			data: { user }
-		} = await supabase.auth.getUser();
-
-		if (!user) {
-			throw new Error("User not found");
-		}
-
-		await NotificationsControllers.readAll(supabase, user.id);
+		await NotificationsControllers.readAll(supabase, currentUser.id);
 
 		return new Response(JSON.stringify({ success: true }), { status: 200 });
 	} catch (error) {

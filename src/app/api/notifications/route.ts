@@ -1,26 +1,19 @@
 import { type NextRequest } from "next/server";
 
-import { createClient } from "@/supabase/server";
+import { getCurrentUser, createSupabaseServer } from "@/supabase/server";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
 
 export async function GET(request: NextRequest) {
 	try {
-		const supabase = await createClient();
+		const supabase = await createSupabaseServer();
 
 		const searchParams = request.nextUrl.searchParams;
 		const after = searchParams.get("after") ?? undefined;
 		const before = searchParams.get("before") ?? undefined;
-
-		const {
-			data: { user }
-		} = await supabase.auth.getUser();
-
-		if (!user) {
-			throw new Error("User not found");
-		}
+		const currentUser = await getCurrentUser();
 
 		const { count, hasOlder, notifications } = await NotificationsControllers.getByUserId(supabase, {
-			userId: user.id,
+			userId: currentUser.id,
 			timestamp: { after, before }
 		});
 

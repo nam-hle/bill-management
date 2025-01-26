@@ -10,28 +10,27 @@ import { LinkedTableRow } from "@/components/app/table-body-row";
 import { TransactionAction } from "@/components/app/transaction-action";
 import { TransactionStatusBadge } from "@/components/app/transaction-status-badge";
 
-namespace BillsTable {
+namespace TransactionsTable {
 	export interface Props {
 		readonly title?: string;
 		readonly fullSize: number;
 		readonly showFilters?: boolean;
 		readonly currentUserId: string;
-		readonly showFullSize?: boolean;
-		readonly showPagination?: boolean;
 		readonly action?: React.ReactNode;
+		readonly mode: "basic" | "advance";
 		readonly transactions: ClientTransaction[];
 	}
 }
 
-export const TransactionsTable: React.FC<BillsTable.Props> = (props) => {
-	const { title, action, fullSize, transactions, showFullSize, currentUserId } = props;
+export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
+	const { mode, title, action, fullSize, transactions, currentUserId } = props;
 
 	return (
 		<VStack width="100%" gap="{spacing.4}">
 			<HStack width="100%" justifyContent="space-between">
 				<Heading as="h1">
 					{title ?? "Transactions"}
-					{showFullSize ? ` (${fullSize})` : ""}
+					{mode === "advance" ? ` (${fullSize})` : ""}
 				</Heading>
 				{action}
 			</HStack>
