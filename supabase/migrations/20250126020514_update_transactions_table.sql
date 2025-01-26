@@ -1,5 +1,3 @@
-drop policy "Enable read access for all users" on "public"."transactions";
-
 alter table "public"."transactions" drop constraint "transactions_receiverId_fkey";
 
 alter table "public"."transactions" drop constraint "transactions_senderId_fkey";
