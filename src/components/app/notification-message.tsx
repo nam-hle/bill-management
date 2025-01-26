@@ -10,7 +10,9 @@ import {
 	type BillDeletedNotification,
 	type BillUpdatedNotification,
 	type BillCreatedNotification,
-	type TransactionCreatedNotification
+	type TransactionWaitingNotification,
+	type TransactionDeclinedNotification,
+	type TransactionConfirmedNotification
 } from "@/types";
 
 namespace NotificationMessage {
@@ -60,7 +62,9 @@ function renderLink(notification: ClientNotification) {
 		case "BillDeleted":
 		case "BillUpdated":
 			return `/bills/${notification.bill.id}`;
-		case "TransactionCreated":
+		case "TransactionWaiting":
+		case "TransactionConfirmed":
+		case "TransactionDeclined":
 			return `/transactions/${notification.transaction.id}`;
 		default:
 			return undefined;
@@ -75,14 +79,32 @@ function renderMessage(notification: ClientNotification) {
 			return renderBillDeletedMessage(notification);
 		case "BillUpdated":
 			return renderBillUpdatedMessage(notification);
-		case "TransactionCreated":
-			return renderTransactionCreatedMessage(notification);
+		case "TransactionWaiting":
+			return renderTransactionWaitingMessage(notification);
+		case "TransactionDeclined":
+			return renderTransactionDeclinedMessage(notification);
+		case "TransactionConfirmed":
+			return renderTransactionConfirmedMessage(notification);
 		default:
 			throw new Error("Invalid notification type");
 	}
 }
 
-function renderTransactionCreatedMessage(notification: TransactionCreatedNotification) {
+function renderTransactionConfirmedMessage(notification: TransactionConfirmedNotification) {
+	const { transaction } = notification;
+	const { amount, receiver } = transaction;
+
+	return `Your transaction of **${amount}** to **${receiver.fullName}** has been confirmed.`;
+}
+
+function renderTransactionDeclinedMessage(notification: TransactionDeclinedNotification) {
+	const { transaction } = notification;
+	const { sender, amount } = transaction;
+
+	return `Your transaction of **${amount}** from **${sender.fullName}** has been declined.`;
+}
+
+function renderTransactionWaitingMessage(notification: TransactionWaitingNotification) {
 	const { transaction } = notification;
 	const { sender, amount } = transaction;
 

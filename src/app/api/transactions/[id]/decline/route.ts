@@ -6,7 +6,7 @@ export async function PATCH(_request: Request, { params }: { params: Promise<{ i
 		const transactionId = (await params).id;
 		const supabase = await createClient();
 
-		await TransactionsControllers.update(supabase, { id: transactionId, status: "Confirmed" });
+		await TransactionsControllers.update(supabase, { id: transactionId, status: "Declined" });
 
 		return new Response(JSON.stringify({}), { status: 201 });
 	} catch (error) {

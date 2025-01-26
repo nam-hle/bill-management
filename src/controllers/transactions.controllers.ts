@@ -1,5 +1,5 @@
 import { type SupabaseInstance } from "@/supabase/server";
-import { type ClientTransaction, TransactionStatusEnumSchema } from "@/types";
+import { type TransactionStatus, type ClientTransaction } from "@/types";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
 
 export namespace TransactionsControllers {
@@ -28,6 +28,13 @@ export namespace TransactionsControllers {
 		if (!data) {
 			throw new Error("Error creating transaction");
 		}
+
+		await NotificationsControllers.createTransaction(supabase, {
+			status: "Waiting",
+			userId: receiver_id,
+			triggerId: sender_id,
+			transactionId: data.id
+		});
 
 		return data;
 	}
@@ -67,19 +74,21 @@ export namespace TransactionsControllers {
 		};
 	}
 
-	export async function confirm(supabase: SupabaseInstance, id: string) {
-		const { data, error } = await supabase
-			.from("transactions")
-			.update({ status: TransactionStatusEnumSchema.enum.Confirmed })
-			.eq("id", id)
-			.select(TRANSACTIONS_SELECT)
-			.single();
+	export interface UpdatePayload {
+		readonly id: string;
+		readonly status: Exclude<TransactionStatus, "Waiting">;
+	}
+
+	export async function update(supabase: SupabaseInstance, payload: UpdatePayload) {
+		const { id, status } = payload;
+		const { data, error } = await supabase.from("transactions").update({ status }).eq("id", id).select(TRANSACTIONS_SELECT).single();
 
 		if (error) {
 			throw error;
 		}
 
-		await NotificationsControllers.createTransactionCreated(supabase, {
+		await NotificationsControllers.createTransaction(supabase, {
+			status,
 			transactionId: id,
 			userId: data.receiver.userId,
 			triggerId: data.sender.userId

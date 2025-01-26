@@ -7,8 +7,8 @@ import { Table, Badge, HStack, VStack, Heading } from "@chakra-ui/react";
 import { Button } from "@/components/ui/button";
 import { toaster } from "@/components/ui/toaster";
 import { EmptyState } from "@/components/ui/empty-state";
-import { displayDate, displayDateAsTitle } from "@/utils";
 import { type ClientTransaction, TransactionStatusEnumSchema } from "@/types";
+import { capitalize, convertVerb, displayDate, displayDateAsTitle } from "@/utils";
 
 namespace BillsTable {
 	export interface Props {
@@ -26,22 +26,23 @@ namespace BillsTable {
 export const TransactionsTable: React.FC<BillsTable.Props> = (props) => {
 	const { title, action, fullSize, transactions, showFullSize, currentUserId } = props;
 	const router = useRouter();
-	const createConfirmHandler = React.useCallback(
-		(transactionId: string) => {
+
+	const createHandler = React.useCallback(
+		(transactionId: string, status: "confirm" | "decline") => {
 			return async () => {
-				fetch(`/api/transactions/${transactionId}/confirm`, { method: "PATCH" }).then((response) => {
+				fetch(`/api/transactions/${transactionId}/${status}`, { method: "PATCH" }).then((response) => {
 					if (response.ok) {
 						toaster.create({
 							type: "success",
-							title: "Transaction Confirmed",
-							description: "The transaction has been confirmed successfully."
+							title: `Transaction ${capitalize(convertVerb(status).pastTense)}`,
+							description: `The transaction has been ${convertVerb(status).pastTense} successfully`
 						});
 						router.refresh();
 					} else {
 						toaster.create({
 							type: "error",
 							title: "Error",
-							description: "An error occurred while confirming the transaction."
+							description: `An error occurred while ${convertVerb(status).vIng} the transaction`
 						});
 					}
 				});
@@ -96,9 +97,14 @@ export const TransactionsTable: React.FC<BillsTable.Props> = (props) => {
 									</Badge>
 								</Table.Cell>
 								<Table.Cell>
-									{transaction.status === TransactionStatusEnumSchema.enum.Waiting && (
-										<Button variant="solid" onClick={createConfirmHandler(transaction.id)}>
+									{transaction.status === TransactionStatusEnumSchema.enum.Waiting && transaction.receiver.id === currentUserId && (
+										<Button variant="solid" onClick={createHandler(transaction.id, "confirm")}>
 											Confirm
+										</Button>
+									)}
+									{transaction.status === TransactionStatusEnumSchema.enum.Waiting && transaction.sender.id === currentUserId && (
+										<Button variant="solid" onClick={createHandler(transaction.id, "decline")}>
+											Decline
 										</Button>
 									)}
 								</Table.Cell>

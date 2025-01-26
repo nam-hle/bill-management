@@ -45,13 +45,29 @@ export interface BillUpdatedNotification extends BaseClientNotification {
 	readonly type: "BillUpdated";
 	readonly metadata: BillUpdatedNotificationMetadata;
 }
-export interface TransactionCreatedNotification extends BaseClientNotification {
-	readonly type: "TransactionCreated";
+
+export interface TransactionWaitingNotification extends BaseClientNotification {
+	readonly type: "TransactionWaiting";
 	readonly transaction: ClientTransaction;
-	readonly metadata: BillUpdatedNotificationMetadata;
 }
 
-export type ClientNotification = BillCreatedNotification | BillUpdatedNotification | BillDeletedNotification | TransactionCreatedNotification;
+export interface TransactionConfirmedNotification extends BaseClientNotification {
+	readonly type: "TransactionConfirmed";
+	readonly transaction: ClientTransaction;
+}
+
+export interface TransactionDeclinedNotification extends BaseClientNotification {
+	readonly type: "TransactionDeclined";
+	readonly transaction: ClientTransaction;
+}
+
+export type ClientNotification =
+	| BillCreatedNotification
+	| BillUpdatedNotification
+	| BillDeletedNotification
+	| TransactionWaitingNotification
+	| TransactionConfirmedNotification
+	| TransactionDeclinedNotification;
 
 export const BillFormPayloadSchema = z.object({
 	issuedAt: z.string(),
@@ -130,7 +146,7 @@ export namespace ClientBillMember {
 export const TransactionStatusEnumSchema = z.enum([
 	"Waiting",
 	"Confirmed",
-	"Rejected"
+	"Declined"
 ] as const satisfies Database["public"]["Enums"]["TransactionStatus"][]);
 export type TransactionStatus = z.infer<typeof TransactionStatusEnumSchema>;
 
@@ -138,10 +154,6 @@ const BillMemberRoleEnumSchema = z.enum(["Creditor", "Debtor"] as const satisfie
 export type BillMemberRole = z.infer<typeof BillMemberRoleEnumSchema>;
 
 export type NotificationType = Database["public"]["Enums"]["NotificationType"];
-
-export const TransactionCreatedNotificationMetadataSchema = z.object({});
-
-export type TransactionCreatedNotificationMetadata = z.infer<typeof TransactionCreatedNotificationMetadataSchema>;
 
 export const BillCreatedNotificationMetadataSchema = z.object({
 	previous: z.object({}),

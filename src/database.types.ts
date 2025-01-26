@@ -44,8 +44,8 @@ export type Database = {
 		};
 		Enums: {
 			BillMemberRole: "Creditor" | "Debtor";
-			TransactionStatus: "Waiting" | "Confirmed" | "Rejected";
-			NotificationType: "BillCreated" | "BillUpdated" | "BillDeleted" | "TransactionCreated" | "TransactionConfirmed" | "TransactionRejected";
+			TransactionStatus: "Waiting" | "Confirmed" | "Declined";
+			NotificationType: "BillCreated" | "BillUpdated" | "BillDeleted" | "TransactionWaiting" | "TransactionConfirmed" | "TransactionDeclined";
 		};
 		Tables: {
 			profiles: {

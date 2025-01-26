@@ -2,8 +2,9 @@ import { type SupabaseInstance } from "@/supabase/server";
 import {
 	type BillMemberRole,
 	type NotificationType,
+	type TransactionStatus,
 	type ClientNotification,
-	type TransactionCreatedNotification,
+	type TransactionWaitingNotification,
 	type BillUpdatedNotificationMetadata,
 	type BillDeletedNotificationMetadata,
 	type BillCreatedNotificationMetadata
@@ -88,23 +89,29 @@ export namespace NotificationsControllers {
 	}
 
 	function toClientNotification(selectResult: NotificationSelectResult): ClientNotification {
-		if (selectResult.type === "BillCreated" || selectResult.type === "BillDeleted" || selectResult.type === "BillUpdated") {
-			if (selectResult.bill === null) {
-				throw new Error("Bill not found");
-			}
+		switch (selectResult.type) {
+			case "BillCreated":
+			case "BillDeleted":
+			case "BillUpdated":
+				if (selectResult.bill === null) {
+					throw new Error("Bill not found");
+				}
 
-			return selectResult as unknown as ClientNotification;
+				return selectResult as unknown as ClientNotification;
+
+			case "TransactionWaiting":
+			case "TransactionConfirmed":
+			case "TransactionDeclined":
+				if (selectResult.transaction === null) {
+					throw new Error("Transaction not found");
+				}
+
+				return {
+					...selectResult
+				} as unknown as TransactionWaitingNotification;
+			default:
+				throw new Error(`Invalid notification type. Got: ${selectResult.type}`);
 		}
-
-		if (selectResult.type === "TransactionCreated") {
-			console.log(selectResult);
-
-			return {
-				...selectResult
-			} as unknown as TransactionCreatedNotification;
-		}
-
-		throw new Error("Invalid notification type");
 	}
 
 	export async function countUnreadNotifications(supabase: SupabaseInstance, userId: string): Promise<number> {
@@ -190,10 +197,11 @@ export namespace NotificationsControllers {
 
 	export interface TransactionPayload extends BasePayload {
 		readonly transactionId: string;
+		readonly status: TransactionStatus;
 	}
-	export async function createTransactionCreated(supabase: SupabaseInstance, payload: TransactionPayload) {
-		const { userId, triggerId, transactionId } = payload;
-		const { error } = await supabase.from("notifications").insert([{ userId, triggerId, type: "TransactionCreated", metadata: { transactionId } }]);
+	export async function createTransaction(supabase: SupabaseInstance, payload: TransactionPayload) {
+		const { userId, status, triggerId, transactionId: transaction_id } = payload;
+		const { error } = await supabase.from("notifications").insert([{ userId, triggerId, transaction_id, type: `Transaction${status}` }]);
 
 		if (error) {
 			throw error;
