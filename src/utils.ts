@@ -1,4 +1,4 @@
-import { parse, format, isValid, formatDistanceToNow } from "date-fns";
+import { parse, format, isValid, isToday, isThisWeek, isYesterday, formatDistanceToNow, differenceInCalendarDays } from "date-fns";
 
 export function noop() {}
 
@@ -25,6 +25,34 @@ export function formatTime(time: string | undefined | null) {
 	}
 
 	return format(new Date(time), "PPpp");
+}
+
+export function displayDateAsTitle(date: string | undefined | null) {
+	if (date === undefined || date === null) {
+		return "";
+	}
+
+	return format(date, "MMMM dd, yyyy");
+}
+
+export function displayDate(date: string | undefined | null) {
+	if (date === undefined || date === null) {
+		return "";
+	}
+
+	const daysDifference = differenceInCalendarDays(new Date(), date);
+
+	if (isToday(date)) {
+		return "Today";
+	} else if (isYesterday(date)) {
+		return "Yesterday";
+	} else if (isThisWeek(date)) {
+		return `This ${format(date, "EEEE")}`;
+	} else if (daysDifference < 30) {
+		return `${daysDifference} days ago`;
+	} else {
+		return capitalize(formatDistanceToNow(date, { addSuffix: true }));
+	}
 }
 
 export function formatDistanceTime(time: string | undefined | null) {

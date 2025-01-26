@@ -90,6 +90,16 @@ export interface Balance {
 	readonly paid: number;
 }
 
+export interface ClientTransaction {
+	readonly id: string;
+	readonly amount: number;
+	readonly issuedAt: string;
+	readonly createdAt: string;
+	readonly sender: ClientUser;
+	readonly receiver: ClientUser;
+	readonly status: TransactionStatus;
+}
+
 export interface ClientBill {
 	readonly id: string;
 	readonly description: string;
@@ -111,6 +121,13 @@ export namespace ClientBillMember {
 		return a.userId === b.userId && a.role === b.role;
 	}
 }
+
+export const TransactionStatusEnumSchema = z.enum([
+	"Waiting",
+	"Confirmed",
+	"Rejected"
+] as const satisfies Database["public"]["Enums"]["TransactionStatus"][]);
+export type TransactionStatus = z.infer<typeof TransactionStatusEnumSchema>;
 
 const BillMemberRoleEnumSchema = z.enum(["Creditor", "Debtor"] as const satisfies Database["public"]["Enums"]["BillMemberRole"][]);
 export type BillMemberRole = z.infer<typeof BillMemberRoleEnumSchema>;
@@ -154,5 +171,15 @@ export namespace APIPayload {
 		});
 
 		export type ReadNotificationResponse = z.infer<typeof ReadNotificationResponseSchema>;
+	}
+
+	export namespace Transaction {
+		export const CreateTransactionRequestPayloadSchema = z.object({
+			amount: z.number(),
+			issuedAt: z.string(),
+			receiverId: z.string()
+		});
+
+		export type CreateTransactionRequestPayload = z.infer<typeof CreateTransactionRequestPayloadSchema>;
 	}
 }

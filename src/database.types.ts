@@ -44,7 +44,7 @@ export type Database = {
 		};
 		Enums: {
 			BillMemberRole: "Creditor" | "Debtor";
-			TransactionStatus: "pending" | "confirmed" | "rejected";
+			TransactionStatus: "Waiting" | "Confirmed" | "Rejected";
 			NotificationType: "BillCreated" | "BillUpdated" | "BillDeleted";
 		};
 		Tables: {
@@ -74,42 +74,6 @@ export type Database = {
 					updatedAt?: string | null;
 					avatar_url?: string | null;
 				};
-			};
-			transactions: {
-				Row: {
-					id: string;
-					senderId: string;
-					receiverId: string;
-					status: Database["public"]["Enums"]["TransactionStatus"];
-				};
-				Insert: {
-					id?: string;
-					senderId?: string;
-					receiverId?: string;
-					status?: Database["public"]["Enums"]["TransactionStatus"];
-				};
-				Update: {
-					id?: string;
-					senderId?: string;
-					receiverId?: string;
-					status?: Database["public"]["Enums"]["TransactionStatus"];
-				};
-				Relationships: [
-					{
-						isOneToOne: false;
-						columns: ["receiverId"];
-						referencedColumns: ["id"];
-						referencedRelation: "profiles";
-						foreignKeyName: "transactions_receiverId_fkey";
-					},
-					{
-						isOneToOne: false;
-						columns: ["senderId"];
-						referencedColumns: ["id"];
-						referencedRelation: "profiles";
-						foreignKeyName: "transactions_senderId_fkey";
-					}
-				];
 			};
 			bills: {
 				Row: {
@@ -198,6 +162,51 @@ export type Database = {
 						referencedColumns: ["id"];
 						referencedRelation: "profiles";
 						foreignKeyName: "bill_members_userId_fkey";
+					}
+				];
+			};
+			transactions: {
+				Row: {
+					id: string;
+					amount: number;
+					issued_at: string;
+					sender_id: string;
+					created_at: string;
+					receiver_id: string;
+					status: Database["public"]["Enums"]["TransactionStatus"];
+				};
+				Insert: {
+					id?: string;
+					amount: number;
+					issued_at: string;
+					sender_id: string;
+					created_at?: string;
+					receiver_id: string;
+					status?: Database["public"]["Enums"]["TransactionStatus"];
+				};
+				Update: {
+					id?: string;
+					amount?: number;
+					issued_at?: string;
+					sender_id?: string;
+					created_at?: string;
+					receiver_id?: string;
+					status?: Database["public"]["Enums"]["TransactionStatus"];
+				};
+				Relationships: [
+					{
+						isOneToOne: false;
+						columns: ["receiver_id"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "transactions_receiver_id_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["sender_id"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "transactions_sender_id_fkey";
 					}
 				];
 			};
