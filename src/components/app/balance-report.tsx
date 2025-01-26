@@ -1,21 +1,15 @@
 import React from "react";
 import { Stack, HStack, Heading } from "@chakra-ui/react";
 
-import { createSupabaseServer } from "@/supabase/server";
 import { UsersControllers } from "@/controllers/users.controllers";
+import { getCurrentUser, createSupabaseServer } from "@/supabase/server";
 import { StatRoot, StatLabel, StatValueText } from "@/components/ui/stat";
 import { TransactionsControllers } from "@/controllers/transactions.controllers";
 
 export async function BalanceReport() {
 	const supabase = await createSupabaseServer();
 
-	const {
-		data: { user: currentUser }
-	} = await supabase.auth.getUser();
-
-	if (!currentUser) {
-		throw new Error("User not found");
-	}
+	const currentUser = await getCurrentUser();
 
 	const balance = await UsersControllers.getBalance(supabase, currentUser.id);
 	const { sent, received } = await TransactionsControllers.report(supabase, currentUser.id);

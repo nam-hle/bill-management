@@ -1,6 +1,6 @@
-import { createSupabaseServer } from "@/supabase/server";
 import { BillsControllers } from "@/controllers/bills.controllers";
 import { type BillMemberRole, BillFormPayloadSchema } from "@/types";
+import { getCurrentUser, createSupabaseServer } from "@/supabase/server";
 import { BillMembersControllers } from "@/controllers/bill-members.controllers";
 
 export async function POST(request: Request) {
@@ -17,14 +17,7 @@ export async function POST(request: Request) {
 		}
 
 		const { debtors, issuedAt, creditor, description } = parsedBody.data;
-
-		const {
-			data: { user: creator }
-		} = await supabase.auth.getUser();
-
-		if (!creator) {
-			throw new Error("User not found");
-		}
+		const creator = await getCurrentUser();
 
 		// Step 1: Insert bill
 		const bill = await BillsControllers.create(supabase, {

@@ -1,6 +1,6 @@
 import { BillFormPayloadSchema } from "@/types";
-import { createSupabaseServer } from "@/supabase/server";
 import { BillsControllers } from "@/controllers/bills.controllers";
+import { getCurrentUser, createSupabaseServer } from "@/supabase/server";
 import { BillMembersControllers } from "@/controllers/bill-members.controllers";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -18,9 +18,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 		const supabase = await createSupabaseServer();
 
-		const {
-			data: { user: updater }
-		} = await supabase.auth.getUser();
+		const updater = await getCurrentUser();
 
 		if (!updater) {
 			throw new Error("User not found");

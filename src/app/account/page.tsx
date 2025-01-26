@@ -1,7 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 
-import { createSupabaseServer } from "@/supabase/server";
+import { getCurrentUser } from "@/supabase/server";
 
 import AccountForm from "./account-form";
 
@@ -10,11 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Account() {
-	const supabase = await createSupabaseServer();
+	const currentUser = await getCurrentUser();
 
-	const {
-		data: { user }
-	} = await supabase.auth.getUser();
-
-	return <AccountForm user={user} />;
+	return <AccountForm user={currentUser} />;
 }

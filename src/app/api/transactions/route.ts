@@ -1,5 +1,5 @@
 import { APIPayload } from "@/types";
-import { createSupabaseServer } from "@/supabase/server";
+import { getCurrentUser, createSupabaseServer } from "@/supabase/server";
 import { TransactionsControllers } from "@/controllers/transactions.controllers";
 
 export async function POST(request: Request) {
@@ -16,14 +16,7 @@ export async function POST(request: Request) {
 		}
 
 		const { amount, issuedAt, receiverId } = parsedBody.data;
-
-		const {
-			data: { user: sender }
-		} = await supabase.auth.getUser();
-
-		if (!sender) {
-			throw new Error("User not found");
-		}
+		const sender = await getCurrentUser();
 
 		await TransactionsControllers.create(supabase, {
 			amount,
