@@ -2,7 +2,9 @@ import { type SupabaseInstance } from "@/supabase/server";
 import {
 	type BillMemberRole,
 	type NotificationType,
+	type TransactionStatus,
 	type ClientNotification,
+	type TransactionWaitingNotification,
 	type BillUpdatedNotificationMetadata,
 	type BillDeletedNotificationMetadata,
 	type BillCreatedNotificationMetadata
@@ -17,6 +19,13 @@ export namespace NotificationsControllers {
 	readStatus,
 	metadata,
 	trigger:profiles!triggerId (username, fullName),
+	
+	transaction:transaction_id (
+		id,
+		amount,
+		sender:profiles!sender_id (userId:id, username, fullName),
+    receiver:profiles!receiver_id (userId:id, username, fullName)
+	),
 
 	bill:billId (
 		id, 
@@ -62,8 +71,47 @@ export namespace NotificationsControllers {
 		return {
 			count,
 			hasOlder: timestamp.after ? undefined : notifications.length > PAGE_SIZE,
-			notifications: notifications.slice(0, PAGE_SIZE) as unknown as ClientNotification[]
+			notifications: notifications.slice(0, PAGE_SIZE).map(toClientNotification)
 		};
+	}
+
+	type NotificationSelectResult = Awaited<ReturnType<typeof __get>>;
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	async function __get(supabase: SupabaseInstance) {
+		const { data } = await supabase.from("notifications").select(NOTIFICATIONS_SELECT).single();
+
+		if (!data) {
+			throw new Error("Bill not found");
+		}
+
+		return data;
+	}
+
+	function toClientNotification(selectResult: NotificationSelectResult): ClientNotification {
+		switch (selectResult.type) {
+			case "BillCreated":
+			case "BillDeleted":
+			case "BillUpdated":
+				if (selectResult.bill === null) {
+					throw new Error("Bill not found");
+				}
+
+				return selectResult as unknown as ClientNotification;
+
+			case "TransactionWaiting":
+			case "TransactionConfirmed":
+			case "TransactionDeclined":
+				if (selectResult.transaction === null) {
+					throw new Error("Transaction not found");
+				}
+
+				return {
+					...selectResult
+				} as unknown as TransactionWaitingNotification;
+			default:
+				throw new Error(`Invalid notification type. Got: ${selectResult.type}`);
+		}
 	}
 
 	export async function countUnreadNotifications(supabase: SupabaseInstance, userId: string): Promise<number> {
@@ -78,11 +126,14 @@ export namespace NotificationsControllers {
 
 	export interface BasePayload {
 		readonly userId: string;
-		readonly billId: string;
 		readonly triggerId: string;
 	}
 
-	export interface CreateBillPayload extends BasePayload {
+	export interface BaseBillPayload extends BasePayload {
+		readonly billId: string;
+	}
+
+	export interface CreateBillPayload extends BaseBillPayload {
 		readonly amount: number;
 		readonly role: BillMemberRole;
 	}
@@ -103,7 +154,7 @@ export namespace NotificationsControllers {
 		}
 	}
 
-	export interface DeletedBillPayload extends BasePayload {
+	export interface DeletedBillPayload extends BaseBillPayload {
 		readonly role: BillMemberRole;
 	}
 
@@ -123,7 +174,7 @@ export namespace NotificationsControllers {
 		}
 	}
 
-	export interface UpdatedBillPayload extends BasePayload {
+	export interface UpdatedBillPayload extends BaseBillPayload {
 		readonly currentAmount: number;
 		readonly previousAmount: number;
 	}
@@ -144,7 +195,20 @@ export namespace NotificationsControllers {
 		}
 	}
 
-	const removeSelfNotification = (payload: BasePayload) => payload.userId !== payload.triggerId;
+	export interface TransactionPayload extends BasePayload {
+		readonly transactionId: string;
+		readonly status: TransactionStatus;
+	}
+	export async function createTransaction(supabase: SupabaseInstance, payload: TransactionPayload) {
+		const { userId, status, triggerId, transactionId: transaction_id } = payload;
+		const { error } = await supabase.from("notifications").insert([{ userId, triggerId, transaction_id, type: `Transaction${status}` }]);
+
+		if (error) {
+			throw error;
+		}
+	}
+
+	const removeSelfNotification = (payload: BaseBillPayload) => payload.userId !== payload.triggerId;
 
 	export async function readAll(supabase: SupabaseInstance, userId: string) {
 		await supabase.from("notifications").update({ readStatus: true }).eq("userId", userId);

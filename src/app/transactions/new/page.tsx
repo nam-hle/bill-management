@@ -20,5 +20,5 @@ export default async function NewTransactionPage() {
 		throw new Error("User not found");
 	}
 
-	return <TransactionForm users={users.filter((user) => user.id !== currentUser.id)} />;
+	return <TransactionForm users={users} kind={{ type: "create" }} currentUserId={currentUser.id} />;
 }

@@ -1,11 +1,14 @@
 "use client";
 
 import React from "react";
-import { Table, Badge, HStack, VStack, Heading } from "@chakra-ui/react";
+import { Table, HStack, VStack, Heading } from "@chakra-ui/react";
 
+import { type ClientTransaction } from "@/types";
 import { EmptyState } from "@/components/ui/empty-state";
 import { displayDate, displayDateAsTitle } from "@/utils";
-import { type ClientTransaction, TransactionStatusEnumSchema } from "@/types";
+import { LinkedTableRow } from "@/components/app/table-body-row";
+import { TransactionAction } from "@/components/app/transaction-action";
+import { TransactionStatusBadge } from "@/components/app/transaction-status-badge";
 
 namespace BillsTable {
 	export interface Props {
@@ -44,30 +47,24 @@ export const TransactionsTable: React.FC<BillsTable.Props> = (props) => {
 							<Table.ColumnHeader>Receiver</Table.ColumnHeader>
 							<Table.ColumnHeader>Amount</Table.ColumnHeader>
 							<Table.ColumnHeader>Status</Table.ColumnHeader>
+							<Table.ColumnHeader></Table.ColumnHeader>
 						</Table.Row>
 					</Table.Header>
 					<Table.Body>
 						{transactions.map((transaction) => (
-							<Table.Row key={transaction.id}>
+							<LinkedTableRow key={transaction.id} href={`/transactions/${transaction.id}`}>
 								<Table.Cell>{transaction.id.slice(0, 6)}</Table.Cell>
 								<Table.Cell title={displayDateAsTitle(transaction.issuedAt)}>{displayDate(transaction.issuedAt)}</Table.Cell>
 								<Table.Cell>{formatUser(transaction.sender, currentUserId)}</Table.Cell>
 								<Table.Cell>{formatUser(transaction.receiver, currentUserId)}</Table.Cell>
 								<Table.Cell>{transaction.amount}</Table.Cell>
 								<Table.Cell>
-									<Badge
-										size="lg"
-										colorPalette={
-											transaction.status === TransactionStatusEnumSchema.enum.Waiting
-												? undefined
-												: transaction.status === TransactionStatusEnumSchema.enum.Confirmed
-													? "green"
-													: "red"
-										}>
-										{transaction.status}
-									</Badge>
+									<TransactionStatusBadge status={transaction.status} />
 								</Table.Cell>
-							</Table.Row>
+								<Table.Cell>
+									<TransactionAction transaction={transaction} currentUserId={currentUserId} />
+								</Table.Cell>
+							</LinkedTableRow>
 						))}
 					</Table.Body>
 				</Table.Root>

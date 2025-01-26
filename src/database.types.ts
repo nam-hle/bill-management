@@ -44,8 +44,8 @@ export type Database = {
 		};
 		Enums: {
 			BillMemberRole: "Creditor" | "Debtor";
-			TransactionStatus: "Waiting" | "Confirmed" | "Rejected";
-			NotificationType: "BillCreated" | "BillUpdated" | "BillDeleted";
+			TransactionStatus: "Waiting" | "Confirmed" | "Declined";
+			NotificationType: "BillCreated" | "BillUpdated" | "BillDeleted" | "TransactionWaiting" | "TransactionConfirmed" | "TransactionDeclined";
 		};
 		Tables: {
 			profiles: {
@@ -219,6 +219,7 @@ export type Database = {
 					readStatus: boolean;
 					billId: string | null;
 					metadata: Json | null;
+					transaction_id: string | null;
 					type: Database["public"]["Enums"]["NotificationType"];
 				};
 				Insert: {
@@ -229,6 +230,7 @@ export type Database = {
 					readStatus?: boolean;
 					billId?: string | null;
 					metadata?: Json | null;
+					transaction_id?: string | null;
 					type: Database["public"]["Enums"]["NotificationType"];
 				};
 				Update: {
@@ -239,6 +241,7 @@ export type Database = {
 					readStatus?: boolean;
 					billId?: string | null;
 					metadata?: Json | null;
+					transaction_id?: string | null;
 					type?: Database["public"]["Enums"]["NotificationType"];
 				};
 				Relationships: [
@@ -248,6 +251,13 @@ export type Database = {
 						referencedColumns: ["id"];
 						referencedRelation: "bills";
 						foreignKeyName: "notifications_billId_fkey";
+					},
+					{
+						isOneToOne: false;
+						referencedColumns: ["id"];
+						columns: ["transaction_id"];
+						referencedRelation: "transactions";
+						foreignKeyName: "notifications_transaction_id_fkey";
 					},
 					{
 						isOneToOne: false;

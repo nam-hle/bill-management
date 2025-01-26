@@ -73,3 +73,29 @@ export function renderError(validating: boolean, error: string | undefined) {
 		invalid: validating ? !!error : undefined
 	};
 }
+
+export function convertVerb(verb: string) {
+	let pastTense;
+
+	if (verb.endsWith("e")) {
+		pastTense = verb + "d";
+	} else if (/[aeiou][^aeiouy]$/.test(verb)) {
+		pastTense = verb + verb.slice(-1) + "ed";
+	} else if (verb.endsWith("y") && !/[aeiou]y$/.test(verb)) {
+		pastTense = verb.slice(0, -1) + "ied";
+	} else {
+		pastTense = verb + "ed";
+	}
+
+	let vIng;
+
+	if (verb.endsWith("e") && !verb.endsWith("ee")) {
+		vIng = verb.slice(0, -1) + "ing";
+	} else if (/[aeiou][^aeiouy]$/.test(verb)) {
+		vIng = verb + verb.slice(-1) + "ing";
+	} else {
+		vIng = verb + "ing";
+	}
+
+	return { vIng, pastTense };
+}

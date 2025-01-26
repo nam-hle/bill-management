@@ -5,7 +5,15 @@ import { Text, Stack, HStack, Center } from "@chakra-ui/react";
 
 import { formatDistanceTime } from "@/utils";
 import { Status } from "@/components/ui/status";
-import { type ClientNotification, type BillDeletedNotification, type BillUpdatedNotification, type BillCreatedNotification } from "@/types";
+import {
+	type ClientNotification,
+	type BillDeletedNotification,
+	type BillUpdatedNotification,
+	type BillCreatedNotification,
+	type TransactionWaitingNotification,
+	type TransactionDeclinedNotification,
+	type TransactionConfirmedNotification
+} from "@/types";
 
 namespace NotificationMessage {
 	export interface Props {
@@ -16,10 +24,10 @@ namespace NotificationMessage {
 
 export const NotificationMessage: React.FC<NotificationMessage.Props> = (props) => {
 	const { onClick, notification } = props;
-	const { bill, createdAt, readStatus } = notification;
+	const { createdAt, readStatus } = notification;
 
 	const router = useRouter();
-	const link = React.useMemo(() => `/bills/${bill.id}`, [bill.id]);
+	const link = React.useMemo(() => renderLink(notification), [notification]);
 	const message = React.useMemo(() => transformMessage(renderMessage(notification)), [notification]);
 
 	return (
@@ -29,7 +37,10 @@ export const NotificationMessage: React.FC<NotificationMessage.Props> = (props) 
 					width="100%"
 					textStyle="sm"
 					onClick={() => {
-						router.push(link);
+						if (link) {
+							router.push(link);
+						}
+
 						onClick();
 					}}>
 					{message}
@@ -45,6 +56,21 @@ export const NotificationMessage: React.FC<NotificationMessage.Props> = (props) 
 	);
 };
 
+function renderLink(notification: ClientNotification) {
+	switch (notification.type) {
+		case "BillCreated":
+		case "BillDeleted":
+		case "BillUpdated":
+			return `/bills/${notification.bill.id}`;
+		case "TransactionWaiting":
+		case "TransactionConfirmed":
+		case "TransactionDeclined":
+			return `/transactions/${notification.transaction.id}`;
+		default:
+			return undefined;
+	}
+}
+
 function renderMessage(notification: ClientNotification) {
 	switch (notification.type) {
 		case "BillCreated":
@@ -53,9 +79,36 @@ function renderMessage(notification: ClientNotification) {
 			return renderBillDeletedMessage(notification);
 		case "BillUpdated":
 			return renderBillUpdatedMessage(notification);
+		case "TransactionWaiting":
+			return renderTransactionWaitingMessage(notification);
+		case "TransactionDeclined":
+			return renderTransactionDeclinedMessage(notification);
+		case "TransactionConfirmed":
+			return renderTransactionConfirmedMessage(notification);
 		default:
 			throw new Error("Invalid notification type");
 	}
+}
+
+function renderTransactionConfirmedMessage(notification: TransactionConfirmedNotification) {
+	const { transaction } = notification;
+	const { amount, receiver } = transaction;
+
+	return `Your transaction of **${amount}** to **${receiver.fullName}** has been confirmed.`;
+}
+
+function renderTransactionDeclinedMessage(notification: TransactionDeclinedNotification) {
+	const { transaction } = notification;
+	const { sender, amount } = transaction;
+
+	return `Your transaction of **${amount}** from **${sender.fullName}** has been declined.`;
+}
+
+function renderTransactionWaitingMessage(notification: TransactionWaitingNotification) {
+	const { transaction } = notification;
+	const { sender, amount } = transaction;
+
+	return `You have received a new transaction of **${amount}** from **${sender.fullName}**. Please review and confirm it.`;
 }
 
 function renderBillCreatedMessage(notification: BillCreatedNotification) {
