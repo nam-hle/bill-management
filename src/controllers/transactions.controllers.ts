@@ -87,25 +87,32 @@ export namespace TransactionsControllers {
 			throw error;
 		}
 
-		await NotificationsControllers.createTransaction(supabase, {
-			status,
-			transactionId: id,
-			userId: data.receiver.userId,
-			triggerId: data.sender.userId
-		});
+		if (status === "Confirmed") {
+			await NotificationsControllers.createTransaction(supabase, {
+				status,
+				transactionId: id,
+				userId: data.sender.userId,
+				triggerId: data.receiver.userId
+			});
+		} else if (status === "Declined") {
+			await NotificationsControllers.createTransaction(supabase, {
+				status,
+				transactionId: id,
+				userId: data.receiver.userId,
+				triggerId: data.sender.userId
+			});
+		} else {
+			throw new Error("Invalid status");
+		}
 	}
 
-	export async function updateById(supabase: SupabaseInstance, id: string, payload: { issuedAt: string; updaterId: string; description: string }) {
-		const { data, error } = await supabase.from("bills").update(payload).eq("id", id).select();
-
-		if (error) {
-			throw error;
-		}
+	export async function getById(supabase: SupabaseInstance, id: string): Promise<ClientTransaction> {
+		const { data } = await supabase.from("transactions").select(TRANSACTIONS_SELECT).eq("id", id).single();
 
 		if (!data) {
-			throw new Error("Error updating bill");
+			throw `Bill with id ${id} not found`;
 		}
 
-		return data;
+		return toClientTransaction(data);
 	}
 }

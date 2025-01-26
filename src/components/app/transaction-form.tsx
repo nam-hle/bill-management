@@ -11,19 +11,30 @@ import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/app/select";
 import { toaster } from "@/components/ui/toaster";
-import { type APIPayload, type ClientUser } from "@/types";
+import { TransactionAction } from "@/components/app/transaction-action";
+import { type APIPayload, type ClientUser, type ClientTransaction } from "@/types";
+import { TransactionStatusBadge } from "@/components/app/transaction-status-badge";
 
 namespace TransactionForm {
 	export interface Props {
+		readonly currentUserId: string;
 		readonly users: readonly ClientUser[];
+		readonly kind:
+			| {
+					readonly type: "create";
+			  }
+			| {
+					readonly type: "update";
+					readonly transaction: ClientTransaction;
+			  };
 	}
 }
 
 export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
-	const { users } = props;
+	const { kind, users, currentUserId } = props;
 
-	const [receiverId, setReceiverId] = React.useState<string | undefined>();
-	const [amount, setAmount] = React.useState<string>("0");
+	const [receiverId, setReceiverId] = React.useState<string | undefined>(() => (kind.type === "update" ? kind.transaction.receiver.id : undefined));
+	const [amount, setAmount] = React.useState<string>(() => (kind.type === "update" ? kind.transaction.amount.toString() : ""));
 
 	const router = useRouter();
 	const onSubmit = React.useCallback(async () => {
@@ -56,27 +67,54 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 		});
 	}, [amount, receiverId, router]);
 
+	console.log(receiverId);
+
 	return (
 		<Stack gap="{spacing.4}">
-			<Stack gap={0}>
-				<Heading>New Transaction</Heading>
-			</Stack>
+			<HStack gap={0} justifyContent="space-between">
+				<Heading>
+					{kind.type === "create" ? "New Transaction" : "Transaction Details"}{" "}
+					{kind.type === "update" && <TransactionStatusBadge size="sm" status={kind.transaction.status} />}
+				</Heading>
+				{kind.type === "update" && <TransactionAction currentUserId={currentUserId} transaction={kind.transaction} />}
+			</HStack>
 
 			<Field required label="Receiver">
-				<Select value={receiverId} onValueChange={setReceiverId} items={users.map((user) => ({ value: user.id, label: user.fullName }))} />
+				<Select
+					value={receiverId}
+					onValueChange={setReceiverId}
+					readonly={kind.type === "update"}
+					items={users.flatMap((user) => {
+						if (kind.type === "update") {
+							return { value: user.id, label: user.fullName };
+						}
+
+						if (kind.type === "create") {
+							if (user.id !== currentUserId) {
+								return { value: user.id, label: user.fullName };
+							}
+
+							return [];
+						}
+
+						throw new Error("Invalid kind type");
+					})}
+				/>
 			</Field>
 			<Field label="Amount">
 				<Group attached width="100%">
-					<Input value={amount} textAlign="right" onChange={(event) => setAmount(event.target.value)} />
+					<Input value={amount} textAlign="right" readOnly={kind.type === "update"} onChange={(event) => setAmount(event.target.value)} />
 					<InputAddon>.000 VND</InputAddon>
 				</Group>
 			</Field>
 
-			<HStack>
-				<Button variant="solid" onClick={onSubmit}>
-					<IoIosAddCircle /> Create
-				</Button>
-			</HStack>
+			{kind.type === "create" && (
+				<HStack>
+					<Button variant="solid" onClick={onSubmit}>
+						<IoIosAddCircle /> Create
+					</Button>
+				</HStack>
+			)}
 		</Stack>
 	);
 };

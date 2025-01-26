@@ -1,14 +1,14 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
-import { Table, Badge, HStack, VStack, Heading } from "@chakra-ui/react";
+import { Table, HStack, VStack, Heading } from "@chakra-ui/react";
 
-import { Button } from "@/components/ui/button";
-import { toaster } from "@/components/ui/toaster";
+import { type ClientTransaction } from "@/types";
 import { EmptyState } from "@/components/ui/empty-state";
-import { type ClientTransaction, TransactionStatusEnumSchema } from "@/types";
-import { capitalize, convertVerb, displayDate, displayDateAsTitle } from "@/utils";
+import { displayDate, displayDateAsTitle } from "@/utils";
+import { LinkedTableRow } from "@/components/app/table-body-row";
+import { TransactionAction } from "@/components/app/transaction-action";
+import { TransactionStatusBadge } from "@/components/app/transaction-status-badge";
 
 namespace BillsTable {
 	export interface Props {
@@ -25,31 +25,6 @@ namespace BillsTable {
 
 export const TransactionsTable: React.FC<BillsTable.Props> = (props) => {
 	const { title, action, fullSize, transactions, showFullSize, currentUserId } = props;
-	const router = useRouter();
-
-	const createHandler = React.useCallback(
-		(transactionId: string, status: "confirm" | "decline") => {
-			return async () => {
-				fetch(`/api/transactions/${transactionId}/${status}`, { method: "PATCH" }).then((response) => {
-					if (response.ok) {
-						toaster.create({
-							type: "success",
-							title: `Transaction ${capitalize(convertVerb(status).pastTense)}`,
-							description: `The transaction has been ${convertVerb(status).pastTense} successfully`
-						});
-						router.refresh();
-					} else {
-						toaster.create({
-							type: "error",
-							title: "Error",
-							description: `An error occurred while ${convertVerb(status).vIng} the transaction`
-						});
-					}
-				});
-			};
-		},
-		[router]
-	);
 
 	return (
 		<VStack width="100%" gap="{spacing.4}">
@@ -77,38 +52,19 @@ export const TransactionsTable: React.FC<BillsTable.Props> = (props) => {
 					</Table.Header>
 					<Table.Body>
 						{transactions.map((transaction) => (
-							<Table.Row key={transaction.id}>
+							<LinkedTableRow key={transaction.id} href={`/transactions/${transaction.id}`}>
 								<Table.Cell>{transaction.id.slice(0, 6)}</Table.Cell>
 								<Table.Cell title={displayDateAsTitle(transaction.issuedAt)}>{displayDate(transaction.issuedAt)}</Table.Cell>
 								<Table.Cell>{formatUser(transaction.sender, currentUserId)}</Table.Cell>
 								<Table.Cell>{formatUser(transaction.receiver, currentUserId)}</Table.Cell>
 								<Table.Cell>{transaction.amount}</Table.Cell>
 								<Table.Cell>
-									<Badge
-										size="lg"
-										colorPalette={
-											transaction.status === TransactionStatusEnumSchema.enum.Waiting
-												? undefined
-												: transaction.status === TransactionStatusEnumSchema.enum.Confirmed
-													? "green"
-													: "red"
-										}>
-										{transaction.status}
-									</Badge>
+									<TransactionStatusBadge status={transaction.status} />
 								</Table.Cell>
 								<Table.Cell>
-									{transaction.status === TransactionStatusEnumSchema.enum.Waiting && transaction.receiver.id === currentUserId && (
-										<Button variant="solid" onClick={createHandler(transaction.id, "confirm")}>
-											Confirm
-										</Button>
-									)}
-									{transaction.status === TransactionStatusEnumSchema.enum.Waiting && transaction.sender.id === currentUserId && (
-										<Button variant="solid" onClick={createHandler(transaction.id, "decline")}>
-											Decline
-										</Button>
-									)}
+									<TransactionAction transaction={transaction} currentUserId={currentUserId} />
 								</Table.Cell>
-							</Table.Row>
+							</LinkedTableRow>
 						))}
 					</Table.Body>
 				</Table.Root>
