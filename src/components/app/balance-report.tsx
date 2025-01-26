@@ -27,23 +27,23 @@ export async function BalanceReport() {
 			<HStack justify="space-between">
 				<StatRoot>
 					<StatLabel info="The total amount you need to pay back to others">Owed</StatLabel>
-					<StatValueText color="blue.400" value={balance.owed} />
+					<StatValueText color="green.600" value={balance.owed} />
 				</StatRoot>
 				<StatRoot>
 					<StatLabel info="The total amount you have received by transactions by others">Received</StatLabel>
-					<StatValueText color="blue.400" value={(received ?? "N/A") as number} />
+					<StatValueText value={received} color="green.600" />
 				</StatRoot>
 				<StatRoot>
 					<StatLabel info="The total amount you have paid on behalf of others">Paid</StatLabel>
-					<StatValueText color="red.400" value={-balance.paid} />
+					<StatValueText color="red.600" value={-balance.paid} />
 				</StatRoot>
 				<StatRoot>
 					<StatLabel info="The total amount you sent by transactions to others">Sent</StatLabel>
-					<StatValueText color="red.400" value={-(sent ?? "N/A") as number} />
+					<StatValueText value={-sent} color="red.600" />
 				</StatRoot>
 				<StatRoot>
 					<StatLabel>Net Balance</StatLabel>
-					<StatValueText value={balance.net} />
+					<StatValueText value={balance.net} color={balance.net >= 0 ? "green.600" : "red:600"} />
 				</StatRoot>
 			</HStack>
 		</Stack>
