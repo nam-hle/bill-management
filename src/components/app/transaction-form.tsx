@@ -67,8 +67,6 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 		});
 	}, [amount, receiverId, router]);
 
-	console.log(receiverId);
-
 	return (
 		<Stack gap="{spacing.4}">
 			<HStack gap={0} justifyContent="space-between">
