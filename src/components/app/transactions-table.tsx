@@ -3,9 +3,9 @@
 import React from "react";
 import { Table, Badge, HStack, VStack, Heading } from "@chakra-ui/react";
 
-import { type ClientTransaction } from "@/types";
 import { EmptyState } from "@/components/ui/empty-state";
 import { displayDate, displayDateAsTitle } from "@/utils";
+import { type ClientTransaction, TransactionStatusEnumSchema } from "@/types";
 
 namespace BillsTable {
 	export interface Props {
@@ -55,7 +55,15 @@ export const TransactionsTable: React.FC<BillsTable.Props> = (props) => {
 								<Table.Cell>{formatUser(transaction.receiver, currentUserId)}</Table.Cell>
 								<Table.Cell>{transaction.amount}</Table.Cell>
 								<Table.Cell>
-									<Badge size="lg" colorPalette={transaction.status === "Waiting" ? undefined : transaction.status === "Confirmed" ? "green" : "red"}>
+									<Badge
+										size="lg"
+										colorPalette={
+											transaction.status === TransactionStatusEnumSchema.enum.Waiting
+												? undefined
+												: transaction.status === TransactionStatusEnumSchema.enum.Confirmed
+													? "green"
+													: "red"
+										}>
 										{transaction.status}
 									</Badge>
 								</Table.Cell>

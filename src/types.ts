@@ -122,7 +122,7 @@ export namespace ClientBillMember {
 	}
 }
 
-const TransactionStatusEnumSchema = z.enum([
+export const TransactionStatusEnumSchema = z.enum([
 	"Waiting",
 	"Confirmed",
 	"Rejected"
