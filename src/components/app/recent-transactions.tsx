@@ -17,6 +17,7 @@ export async function RecentTransactions() {
 
 	return (
 		<TransactionsTable
+			mode="basic"
 			fullSize={count}
 			title="Recent transactions"
 			transactions={transactions}

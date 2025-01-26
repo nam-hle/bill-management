@@ -28,9 +28,7 @@ export default async function BillsPage() {
 	return (
 		<VStack gap="{spacing.4}" alignItems="flex-start">
 			<TransactionsTable
-				showFilters
-				showFullSize
-				showPagination
+				mode="advance"
 				fullSize={fullSize}
 				transactions={transactions}
 				currentUserId={currentUser.id}

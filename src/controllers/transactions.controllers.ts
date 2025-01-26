@@ -133,4 +133,11 @@ export namespace TransactionsControllers {
 
 		return { count, transactions: data.map(toClientTransaction) };
 	}
+
+	export async function report(supabase: SupabaseInstance, userId: string): Promise<{ sent: number; received: number }> {
+		const { data: received } = await supabase.from("transactions").select("amount.sum()").eq("receiver_id", userId).neq("status", "Declined");
+		const { data: sent } = await supabase.from("transactions").select("amount.sum()").eq("sender_id", userId).neq("status", "Confirmed");
+
+		return { sent: sent?.[0].sum ?? 0, received: received?.[0].sum ?? 0 };
+	}
 }
