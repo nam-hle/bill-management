@@ -6,7 +6,21 @@ import { type Database } from "@/database.types";
 
 export type SupabaseInstance = SupabaseClient<Database, "public", Database["public"]>;
 
-export async function createClient(): Promise<SupabaseInstance> {
+export async function getCurrentUser() {
+	const supabase = await createSupabaseServer();
+
+	const {
+		data: { user: currentUser }
+	} = await supabase.auth.getUser();
+
+	if (!currentUser) {
+		throw new Error("User not found");
+	}
+
+	return currentUser;
+}
+
+export async function createSupabaseServer(): Promise<SupabaseInstance> {
 	const cookieStore = await cookies();
 
 	return createServerClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {

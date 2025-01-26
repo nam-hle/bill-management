@@ -1,7 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 
-import { createClient } from "@/supabase/server";
+import { createSupabaseServer } from "@/supabase/server";
 import { UsersControllers } from "@/controllers/users.controllers";
 import { TransactionForm } from "@/components/app/transaction-form";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function NewTransactionPage() {
-	const supabase = await createClient();
+	const supabase = await createSupabaseServer();
 	const users = await UsersControllers.getUsers(supabase);
 	const {
 		data: { user: currentUser }

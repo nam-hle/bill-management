@@ -3,7 +3,7 @@ import { type User } from "@supabase/supabase-js";
 import React, { useEffect, useCallback } from "react";
 
 import { Avatar } from "@/components/ui/avatar";
-import { createClient } from "@/supabase/client";
+import { createSupabaseClient } from "@/supabase/client";
 
 const colorPalette = ["red", "blue", "green", "yellow", "purple", "orange"];
 const pickPalette = (name: string) => {
@@ -13,7 +13,7 @@ const pickPalette = (name: string) => {
 };
 
 export const AvatarContainer: React.FC<{ user: User }> = ({ user }) => {
-	const supabase = createClient();
+	const supabase = createSupabaseClient();
 
 	const [fullName, setFullname] = React.useState<string | null>(null);
 	const [loading, setLoading] = React.useState(true);

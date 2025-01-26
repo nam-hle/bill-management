@@ -1,11 +1,11 @@
 import { APIPayload } from "@/types";
-import { createClient } from "@/supabase/server";
+import { createSupabaseServer } from "@/supabase/server";
 import { TransactionsControllers } from "@/controllers/transactions.controllers";
 
 export async function POST(request: Request) {
 	try {
 		const body = await request.json();
-		const supabase = await createClient();
+		const supabase = await createSupabaseServer();
 
 		const parsedBody = APIPayload.Transaction.CreateTransactionRequestPayloadSchema.safeParse(body);
 

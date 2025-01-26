@@ -1,11 +1,11 @@
 import { type NextRequest } from "next/server";
 
-import { createClient } from "@/supabase/server";
+import { createSupabaseServer } from "@/supabase/server";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
 
 export async function GET(request: NextRequest) {
 	try {
-		const supabase = await createClient();
+		const supabase = await createSupabaseServer();
 
 		const searchParams = request.nextUrl.searchParams;
 		const after = searchParams.get("after") ?? undefined;

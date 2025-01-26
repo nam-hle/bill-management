@@ -1,4 +1,4 @@
-import { createClient } from "@/supabase/server";
+import { createSupabaseServer } from "@/supabase/server";
 import { BillsControllers } from "@/controllers/bills.controllers";
 import { type BillMemberRole, BillFormPayloadSchema } from "@/types";
 import { BillMembersControllers } from "@/controllers/bill-members.controllers";
@@ -6,7 +6,7 @@ import { BillMembersControllers } from "@/controllers/bill-members.controllers";
 export async function POST(request: Request) {
 	try {
 		const body = await request.json();
-		const supabase = await createClient();
+		const supabase = await createSupabaseServer();
 
 		const parsedBody = BillFormPayloadSchema.safeParse(body);
 

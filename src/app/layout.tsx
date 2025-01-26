@@ -2,8 +2,8 @@ import React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
-import { createClient } from "@/supabase/server";
 import { Toaster } from "@/components/ui/toaster";
+import { createSupabaseServer } from "@/supabase/server";
 import { RootContainer } from "@/components/ui/root-container";
 import { LayoutProvider } from "@/components/ui/layout-provider";
 const interSans = Inter({
@@ -24,7 +24,7 @@ export default async function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
-	const supabase = await createClient();
+	const supabase = await createSupabaseServer();
 
 	const {
 		data: { user }

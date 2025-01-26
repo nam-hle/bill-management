@@ -3,7 +3,7 @@ import { type Metadata } from "next";
 import { VStack } from "@chakra-ui/react";
 import { IoIosAddCircle } from "react-icons/io";
 
-import { createClient } from "@/supabase/server";
+import { createSupabaseServer } from "@/supabase/server";
 import { LinkButton } from "@/components/ui/link-button";
 import { TransactionsTable } from "@/components/app/transactions-table";
 import { TransactionsControllers } from "@/controllers/transactions.controllers";
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function BillsPage() {
-	const supabase = await createClient();
+	const supabase = await createSupabaseServer();
 
 	const {
 		data: { user: currentUser }

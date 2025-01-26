@@ -1,9 +1,9 @@
-import { createClient } from "@/supabase/server";
+import { createSupabaseServer } from "@/supabase/server";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
 
 export async function PATCH() {
 	try {
-		const supabase = await createClient();
+		const supabase = await createSupabaseServer();
 
 		const {
 			data: { user }

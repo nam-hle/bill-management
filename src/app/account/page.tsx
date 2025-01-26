@@ -1,7 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 
-import { createClient } from "@/supabase/server";
+import { createSupabaseServer } from "@/supabase/server";
 
 import AccountForm from "./account-form";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Account() {
-	const supabase = await createClient();
+	const supabase = await createSupabaseServer();
 
 	const {
 		data: { user }

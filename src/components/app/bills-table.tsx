@@ -19,12 +19,10 @@ namespace BillsTable {
 		readonly title?: string;
 		readonly fullSize: number;
 		readonly bills: ClientBill[];
-		readonly showFilters?: boolean;
 		readonly currentUserId: string;
 		readonly showFullSize?: boolean;
-		readonly showSearchBar?: boolean;
-		readonly showPagination?: boolean;
 		readonly action?: React.ReactNode;
+		readonly mode: "basic" | "advance";
 	}
 }
 
@@ -61,7 +59,7 @@ function toTextSearch(searchParams: ReadonlyURLSearchParams) {
 }
 
 export const BillsTable: React.FC<BillsTable.Props> = (props) => {
-	const { bills, title, action, fullSize, showFilters, showFullSize, currentUserId, showSearchBar, showPagination } = props;
+	const { mode, bills, title, action, fullSize, showFullSize, currentUserId } = props;
 	const searchParams = useSearchParams();
 	const [textSearch, setTextSearch] = React.useState(() => toTextSearch(searchParams));
 
@@ -133,22 +131,18 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 				</Heading>
 				{action}
 			</HStack>
-			<HStack width="100%">
-				{showFilters && (
-					<>
-						<FilterButton {...createOwnerFilter("creator")}>As creator</FilterButton>
-						<FilterButton {...createOwnerFilter("creditor")}>As creditor</FilterButton>
-						<FilterButton {...createOwnerFilter("debtor")}>As debtor</FilterButton>
-						<FilterButton {...createTimeFilter("since", "7d")}>Last 7 days</FilterButton>
-						<FilterButton {...createTimeFilter("since", "30d")}>Last 30 days</FilterButton>
-					</>
-				)}
-				{showSearchBar && (
+			{mode === "advance" && (
+				<HStack width="100%">
+					<FilterButton {...createOwnerFilter("creator")}>As creator</FilterButton>
+					<FilterButton {...createOwnerFilter("creditor")}>As creditor</FilterButton>
+					<FilterButton {...createOwnerFilter("debtor")}>As debtor</FilterButton>
+					<FilterButton {...createTimeFilter("since", "7d")}>Last 7 days</FilterButton>
+					<FilterButton {...createTimeFilter("since", "30d")}>Last 30 days</FilterButton>
 					<InputGroup w="200px" marginLeft="auto" startElement={<GoSearch />}>
 						<Input onBlur={onSearch} value={textSearch} placeholder="Type to search.." onChange={(e) => setTextSearch(e.target.value)} />
 					</InputGroup>
-				)}
-			</HStack>
+				</HStack>
+			)}
 
 			<Table.Root size="md" interactive variant="outline">
 				<Table.Header>
@@ -183,7 +177,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 					))}
 				</Table.Body>
 			</Table.Root>
-			{showPagination && pagination.pageSize < fullSize && (
+			{mode === "advance" && pagination.pageSize < fullSize && (
 				<HStack w="100%" justifyContent="flex-end">
 					<PaginationRoot siblingCount={1} count={fullSize} onPageChange={onPageChange} page={pagination.pageNumber} pageSize={pagination.pageSize}>
 						<PaginationPrevTrigger />

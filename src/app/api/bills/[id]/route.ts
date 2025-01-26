@@ -1,5 +1,5 @@
 import { BillFormPayloadSchema } from "@/types";
-import { createClient } from "@/supabase/server";
+import { createSupabaseServer } from "@/supabase/server";
 import { BillsControllers } from "@/controllers/bills.controllers";
 import { BillMembersControllers } from "@/controllers/bill-members.controllers";
 
@@ -16,7 +16,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 			});
 		}
 
-		const supabase = await createClient();
+		const supabase = await createSupabaseServer();
 
 		const {
 			data: { user: updater }

@@ -1,6 +1,6 @@
 import { type SupabaseInstance } from "@/supabase/server";
-import { type TransactionStatus, type ClientTransaction } from "@/types";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
+import { Pagination, type TransactionStatus, type ClientTransaction } from "@/types";
 
 export namespace TransactionsControllers {
 	const TRANSACTIONS_SELECT = `
@@ -114,5 +114,23 @@ export namespace TransactionsControllers {
 		}
 
 		return toClientTransaction(data);
+	}
+
+	export async function getByUserId(
+		supabase: SupabaseInstance,
+		payload: { userId: string; pagination: Pagination }
+	): Promise<{ count: number; transactions: ClientTransaction[] }> {
+		const { userId, pagination } = payload;
+		const { data, count } = await supabase
+			.from("transactions")
+			.select(TRANSACTIONS_SELECT, { count: "exact" })
+			.or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+			.range(...Pagination.toRange(pagination));
+
+		if (!data || count === null) {
+			throw new Error("Error fetching transactions");
+		}
+
+		return { count, transactions: data.map(toClientTransaction) };
 	}
 }

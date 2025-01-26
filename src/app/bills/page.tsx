@@ -3,7 +3,7 @@ import { type Metadata } from "next";
 import { VStack } from "@chakra-ui/react";
 import { IoIosAddCircle } from "react-icons/io";
 
-import { createClient } from "@/supabase/server";
+import { createSupabaseServer } from "@/supabase/server";
 import { LinkButton } from "@/components/ui/link-button";
 import { BillsTable } from "@/components/app/bills-table";
 import { PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
@@ -24,7 +24,7 @@ export default async function BillsPage(props: Props) {
 	const searchParams = await props.searchParams;
 	const { page, since, debtor, search, creator, creditor } = searchParams;
 
-	const supabase = await createClient();
+	const supabase = await createSupabaseServer();
 
 	const {
 		data: { user: currentUser }
@@ -87,10 +87,7 @@ export default async function BillsPage(props: Props) {
 	return (
 		<VStack gap="{spacing.4}" alignItems="flex-start">
 			<BillsTable
-				showFilters
-				showFullSize
-				showSearchBar
-				showPagination
+				mode="advance"
 				fullSize={fullSize}
 				bills={bills ?? []}
 				currentUserId={currentUser.id}

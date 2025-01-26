@@ -1,7 +1,7 @@
 import { type EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { createClient } from "@/supabase/server";
+import { createSupabaseServer } from "@/supabase/server";
 
 // Creating a handler to a GET request to route /auth/confirm
 export async function GET(request: NextRequest) {
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 	redirectTo.searchParams.delete("type");
 
 	if (token_hash && type) {
-		const supabase = await createClient();
+		const supabase = await createSupabaseServer();
 
 		const { error } = await supabase.auth.verifyOtp({
 			type,

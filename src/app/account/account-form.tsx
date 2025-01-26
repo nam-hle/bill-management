@@ -5,10 +5,10 @@ import { Input, Stack, HStack, Heading } from "@chakra-ui/react";
 
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/supabase/client";
+import { createSupabaseClient } from "@/supabase/client";
 
 export default function AccountForm({ user }: { user: User | null }) {
-	const supabase = createClient();
+	const supabase = createSupabaseClient();
 	const [loading, setLoading] = useState(true);
 	const [fullname, setFullname] = useState<string | null>(null);
 	const [username, setUsername] = useState<string | null>(null);
