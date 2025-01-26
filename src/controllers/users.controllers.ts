@@ -12,25 +12,15 @@ export namespace UsersControllers {
 		return users;
 	}
 
-	export async function getBalance(supabase: SupabaseInstance, userId: string): Promise<Balance> {
-		const { data: sumData } = await supabase.from("bill_members").select("amount.sum(), role").eq("userId", userId);
+	export async function report(supabase: SupabaseInstance, userId: string): Promise<Balance> {
+		const { data, error } = await supabase.rpc("report", { target_user_id: userId }).single();
 
-		const owed = sumData?.find(({ role }) => role === "Debtor")?.sum || 0;
-		const paid = sumData?.find(({ role }) => role === "Creditor")?.sum || 0;
+		if (error) {
+			throw error;
+		}
 
-		const { data: billMembers } = await supabase.from("bill_members").select("amount, role, billId").eq("userId", userId);
+		const { owed, paid, sent, received, self_paid } = data;
 
-		const selfPaid =
-			billMembers
-				?.map((billMember) => {
-					if (billMember.role === "Debtor" && billMembers?.some((bm) => bm.billId === billMember.billId && bm.role === "Creditor")) {
-						return billMember.amount;
-					}
-
-					return 0;
-				})
-				.reduce((acc, val) => acc + val, 0) ?? 0;
-
-		return { net: paid - owed, owed: owed - selfPaid, paid: paid - selfPaid };
+		return { sent, received, owed: owed - self_paid, paid: paid - self_paid, net: paid - owed + received - sent };
 	}
 }

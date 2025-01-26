@@ -33,6 +33,11 @@ export type Database = {
 		CompositeTypes: {
 			[_ in never]: never;
 		};
+		Enums: {
+			BillMemberRole: "Creditor" | "Debtor";
+			TransactionStatus: "Waiting" | "Confirmed" | "Declined";
+			NotificationType: "BillCreated" | "BillUpdated" | "BillDeleted" | "TransactionWaiting" | "TransactionConfirmed" | "TransactionDeclined";
+		};
 		Functions: {
 			calculate_balances: {
 				Args: Record<PropertyKey, never>;
@@ -41,11 +46,18 @@ export type Database = {
 					balance: number;
 				}[];
 			};
-		};
-		Enums: {
-			BillMemberRole: "Creditor" | "Debtor";
-			TransactionStatus: "Waiting" | "Confirmed" | "Declined";
-			NotificationType: "BillCreated" | "BillUpdated" | "BillDeleted" | "TransactionWaiting" | "TransactionConfirmed" | "TransactionDeclined";
+			report: {
+				Args: {
+					target_user_id: string;
+				};
+				Returns: {
+					paid: number;
+					owed: number;
+					sent: number;
+					received: number;
+					self_paid: number;
+				}[];
+			};
 		};
 		Tables: {
 			profiles: {

@@ -109,6 +109,8 @@ export interface Balance {
 	readonly net: number;
 	readonly owed: number;
 	readonly paid: number;
+	readonly sent: number;
+	readonly received: number;
 }
 
 export interface ClientTransaction {
