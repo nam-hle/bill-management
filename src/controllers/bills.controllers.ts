@@ -140,7 +140,8 @@ export namespace BillsControllers {
 	}
 
 	export async function updateById(supabase: SupabaseInstance, id: string, payload: { issuedAt: string; updaterId: string; description: string }) {
-		const { data, error } = await supabase.from("bills").update(payload).eq("id", id).select();
+		const { description, issuedAt: issued_at, updaterId: updater_id } = payload;
+		const { data, error } = await supabase.from("bills").update({ issued_at, updater_id, description }).eq("id", id).select();
 
 		if (error) {
 			throw error;

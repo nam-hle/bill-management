@@ -93,7 +93,7 @@ export namespace BillMembersControllers {
 	}
 	export async function updateManyAmount(supabase: SupabaseInstance, triggerId: string, payloads: UpdateAmountPayload[]) {
 		const updatePromises = payloads.map(({ role, amount, userId, billId }) =>
-			supabase.from("bill_members").update({ amount }).match({ role, userId, billId }).select()
+			supabase.from("bill_members").update({ amount }).match({ role, user_id: userId, bill_id: billId }).select()
 		);
 
 		const results = await Promise.all(updatePromises);
