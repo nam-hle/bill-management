@@ -7,16 +7,17 @@ export namespace BillsControllers {
 	const BILLS_SELECT = `
     id,
     description,
-    createdAt,
+    createdAt:created_at,
     updatedAt:updated_at,
-    issuedAt,
-    creator:profiles!creatorId (userId:id, fullName),
-    updater:profiles!updaterId (userId:id, fullName),
-    billMembers:bill_members (user:userId (userId:id, fullName), amount, role)
+    issuedAt:issued_at,
+    creator:profiles!creator_id (userId:id, fullName:full_name),
+    updater:profiles!updater_id (userId:id, fullName:full_name),
+    billMembers:bill_members (user:user_id (userId:id, fullName:full_name), amount, role)
   `;
 
 	export async function create(supabase: SupabaseInstance, payload: { issuedAt: string; creatorId: string; description: string }) {
-		const { data } = await supabase.from("bills").insert(payload).select("id").single();
+		const { description, issuedAt: issued_at, creatorId: creator_id } = payload;
+		const { data } = await supabase.from("bills").insert({ issued_at, creator_id, description }).select("id").single();
 
 		if (!data) {
 			throw new Error("Error creating bill");
@@ -39,25 +40,25 @@ export namespace BillsControllers {
 	): Promise<{ fullSize: number; bills: ClientBill[] }> {
 		const { since, memberId, debtorId, creatorId, creditorId } = filters;
 
-		let billMembersQuery = supabase.from("bill_members").select(`billId`);
+		let billMembersQuery = supabase.from("bill_members").select(`billId:bill_id`);
 
 		if (creditorId !== undefined) {
-			billMembersQuery = billMembersQuery.eq("userId", creditorId).eq("role", "Creditor");
+			billMembersQuery = billMembersQuery.eq("user_id", creditorId).eq("role", "Creditor");
 		}
 
 		if (debtorId !== undefined) {
-			billMembersQuery = billMembersQuery.eq("userId", debtorId).eq("role", "Debtor");
+			billMembersQuery = billMembersQuery.eq("user_id", debtorId).eq("role", "Debtor");
 		}
 
 		if (creditorId === undefined && debtorId === undefined && creatorId === undefined) {
-			billMembersQuery = billMembersQuery.eq("userId", memberId);
+			billMembersQuery = billMembersQuery.eq("user_id", memberId);
 		}
 
 		const billMembers = (await billMembersQuery).data ?? [];
 		let billIDs = _.uniqBy(billMembers, "billId").map(({ billId }) => billId);
 
 		if (creatorId !== undefined) {
-			const createdBills = (await supabase.from("bills").select(`id`).eq("creatorId", creatorId)).data ?? [];
+			const createdBills = (await supabase.from("bills").select(`id`).eq("creator_id", creatorId)).data ?? [];
 			billIDs = _.intersection(
 				billIDs,
 				createdBills.map(({ id }) => id)
@@ -69,7 +70,7 @@ export namespace BillsControllers {
 
 			if (!isNaN(days)) {
 				const date = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-				const timeBills = (await supabase.from("bills").select(`id`).gt("createdAt", date)).data ?? [];
+				const timeBills = (await supabase.from("bills").select(`id`).gt("created_at", date)).data ?? [];
 
 				billIDs = _.intersection(
 					billIDs,
@@ -84,7 +85,7 @@ export namespace BillsControllers {
 			finalQuery = finalQuery.filter("description", "fts", `${filters.textSearch}:*`);
 		}
 
-		const { count, data: bills } = await finalQuery.order("createdAt", { ascending: false }).range(...Pagination.toRange(pagination));
+		const { count, data: bills } = await finalQuery.order("created_at", { ascending: false }).range(...Pagination.toRange(pagination));
 
 		return { fullSize: count ?? 0, bills: bills?.map(toClientBill) ?? [] };
 	}

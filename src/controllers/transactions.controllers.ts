@@ -9,8 +9,8 @@ export namespace TransactionsControllers {
     issuedAt:issued_at,
     amount,
     status,
-    sender:profiles!sender_id (userId:id, username, fullName),
-    receiver:profiles!receiver_id (userId:id, username, fullName)
+    sender:profiles!sender_id (userId:id, username, fullName:full_name),
+    receiver:profiles!receiver_id (userId:id, username, fullName:full_name)
   `;
 
 	export async function create(supabase: SupabaseInstance, payload: { amount: number; issuedAt: string; senderId: string; receiverId: string }) {
@@ -92,8 +92,8 @@ export namespace TransactionsControllers {
 
 		return {
 			...rest,
-			sender: { id: sender.userId, fullName: sender.fullName, username: sender.username },
-			receiver: { id: receiver.userId, fullName: receiver.fullName, username: receiver.username }
+			sender: { id: sender.userId, username: sender.username, fullName: sender.fullName },
+			receiver: { id: receiver.userId, username: receiver.username, fullName: receiver.fullName }
 		};
 	}
 

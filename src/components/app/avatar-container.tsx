@@ -22,7 +22,11 @@ export const AvatarContainer: React.FC<{ user: User }> = ({ user }) => {
 		try {
 			setLoading(true);
 
-			const { data, error, status } = await supabase.from("profiles").select(`fullName, username, website, avatar_url`).eq("id", user?.id).single();
+			const { data, error, status } = await supabase
+				.from("profiles")
+				.select(`fullName:full_name, username, website, avatar_url`)
+				.eq("id", user?.id)
+				.single();
 
 			if (error && status !== 406) {
 				throw error;

@@ -2,8 +2,14 @@ import { type Balance, type ClientUser } from "@/types";
 import { type SupabaseInstance } from "@/supabase/server";
 
 export namespace UsersControllers {
+	const USERS_SELECT = `
+    id,
+    username,
+    fullName:full_name
+  `;
+
 	export async function getUsers(supabase: SupabaseInstance): Promise<ClientUser[]> {
-		const { data: users } = await supabase.from("profiles").select();
+		const { data: users } = await supabase.from("profiles").select(USERS_SELECT);
 
 		if (!users) {
 			throw new Error("Error fetching users");

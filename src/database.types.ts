@@ -33,19 +33,7 @@ export type Database = {
 		CompositeTypes: {
 			[_ in never]: never;
 		};
-		Enums: {
-			BillMemberRole: "Creditor" | "Debtor";
-			TransactionStatus: "Waiting" | "Confirmed" | "Declined";
-			NotificationType: "BillCreated" | "BillUpdated" | "BillDeleted" | "TransactionWaiting" | "TransactionConfirmed" | "TransactionDeclined";
-		};
 		Functions: {
-			calculate_balances: {
-				Args: Record<PropertyKey, never>;
-				Returns: {
-					user_id: string;
-					balance: number;
-				}[];
-			};
 			report: {
 				Args: {
 					target_user_id: string;
@@ -59,76 +47,81 @@ export type Database = {
 				}[];
 			};
 		};
+		Enums: {
+			BillMemberRole: "Creditor" | "Debtor";
+			TransactionStatus: "Waiting" | "Confirmed" | "Declined";
+			NotificationType: "BillCreated" | "BillUpdated" | "BillDeleted" | "TransactionWaiting" | "TransactionConfirmed" | "TransactionDeclined";
+		};
 		Tables: {
 			profiles: {
 				Relationships: [];
 				Row: {
 					id: string;
-					fullName: string;
 					username: string;
+					full_name: string;
 					website: string | null;
-					updatedAt: string | null;
 					avatar_url: string | null;
+					updated_at: string | null;
 				};
 				Insert: {
 					id: string;
-					fullName?: string;
 					username?: string;
+					full_name?: string;
 					website?: string | null;
-					updatedAt?: string | null;
 					avatar_url?: string | null;
+					updated_at?: string | null;
 				};
 				Update: {
 					id?: string;
-					fullName?: string;
 					username?: string;
+					full_name?: string;
 					website?: string | null;
-					updatedAt?: string | null;
 					avatar_url?: string | null;
+					updated_at?: string | null;
 				};
 			};
 			bills: {
 				Row: {
 					id: string;
-					issuedAt: string;
-					createdAt: string;
-					creatorId: string;
+					issued_at: string;
+					created_at: string;
+					creator_id: string;
 					description: string;
-					updaterId: string | null;
 					updated_at: string | null;
+					updater_id: string | null;
 				};
 				Insert: {
 					id?: string;
-					issuedAt: string;
-					creatorId: string;
-					createdAt?: string;
+					issued_at: string;
+					creator_id: string;
+					created_at?: string;
 					description: string;
-					updaterId?: string | null;
 					updated_at?: string | null;
+					updater_id?: string | null;
 				};
 				Update: {
 					id?: string;
-					issuedAt?: string;
-					createdAt?: string;
-					creatorId?: string;
+					issued_at?: string;
+					created_at?: string;
+					creator_id?: string;
 					description?: string;
-					updaterId?: string | null;
 					updated_at?: string | null;
+					updater_id?: string | null;
 				};
 				Relationships: [
 					{
 						isOneToOne: false;
-						columns: ["creatorId"];
+						columns: ["creator_id"];
 						referencedColumns: ["id"];
 						referencedRelation: "profiles";
-						foreignKeyName: "bills_creatorId_fkey";
+						foreignKeyName: "bills_creator_id_fkey";
 					},
 					{
 						isOneToOne: false;
-						columns: ["updaterId"];
+						columns: ["updater_id"];
 						referencedColumns: ["id"];
 						referencedRelation: "profiles";
-						foreignKeyName: "bills_updaterId_fkey";
+						foreignKeyName: "bills_updater_id_fkey";
 					}
 				];
 			};
@@ -136,44 +129,44 @@ export type Database = {
 				Row: {
 					id: string;
 					amount: number;
-					billId: string;
-					userId: string;
-					createdAt: string;
-					updatedAt: string | null;
+					bill_id: string;
+					user_id: string;
+					created_at: string;
+					updated_at: string | null;
 					role: Database["public"]["Enums"]["BillMemberRole"];
 				};
 				Insert: {
 					id?: string;
 					amount: number;
-					userId: string;
-					billId?: string;
-					createdAt?: string;
-					updatedAt?: string | null;
+					user_id: string;
+					bill_id?: string;
+					created_at?: string;
+					updated_at?: string | null;
 					role?: Database["public"]["Enums"]["BillMemberRole"];
 				};
 				Update: {
 					id?: string;
 					amount?: number;
-					billId?: string;
-					userId?: string;
-					createdAt?: string;
-					updatedAt?: string | null;
+					bill_id?: string;
+					user_id?: string;
+					created_at?: string;
+					updated_at?: string | null;
 					role?: Database["public"]["Enums"]["BillMemberRole"];
 				};
 				Relationships: [
 					{
 						isOneToOne: false;
-						columns: ["billId"];
+						columns: ["bill_id"];
 						referencedColumns: ["id"];
 						referencedRelation: "bills";
 						foreignKeyName: "bill_members_bill_id_fkey";
 					},
 					{
 						isOneToOne: false;
-						columns: ["userId"];
+						columns: ["user_id"];
 						referencedColumns: ["id"];
 						referencedRelation: "profiles";
-						foreignKeyName: "bill_members_userId_fkey";
+						foreignKeyName: "bill_members_user_id_fkey";
 					}
 				];
 			};
@@ -225,44 +218,44 @@ export type Database = {
 			notifications: {
 				Row: {
 					id: string;
-					userId: string;
-					createdAt: string;
-					triggerId: string;
-					readStatus: boolean;
-					billId: string | null;
+					user_id: string;
+					created_at: string;
+					trigger_id: string;
+					read_status: boolean;
 					metadata: Json | null;
+					bill_id: string | null;
 					transaction_id: string | null;
 					type: Database["public"]["Enums"]["NotificationType"];
 				};
 				Insert: {
 					id?: string;
-					userId?: string;
-					triggerId: string;
-					createdAt?: string;
-					readStatus?: boolean;
-					billId?: string | null;
+					user_id?: string;
+					trigger_id: string;
+					created_at?: string;
+					read_status?: boolean;
 					metadata?: Json | null;
+					bill_id?: string | null;
 					transaction_id?: string | null;
 					type: Database["public"]["Enums"]["NotificationType"];
 				};
 				Update: {
 					id?: string;
-					userId?: string;
-					createdAt?: string;
-					triggerId?: string;
-					readStatus?: boolean;
-					billId?: string | null;
+					user_id?: string;
+					created_at?: string;
+					trigger_id?: string;
+					read_status?: boolean;
 					metadata?: Json | null;
+					bill_id?: string | null;
 					transaction_id?: string | null;
 					type?: Database["public"]["Enums"]["NotificationType"];
 				};
 				Relationships: [
 					{
 						isOneToOne: false;
-						columns: ["billId"];
+						columns: ["bill_id"];
 						referencedColumns: ["id"];
 						referencedRelation: "bills";
-						foreignKeyName: "notifications_billId_fkey";
+						foreignKeyName: "notifications_bill_id_fkey";
 					},
 					{
 						isOneToOne: false;
@@ -273,17 +266,17 @@ export type Database = {
 					},
 					{
 						isOneToOne: false;
-						columns: ["triggerId"];
+						columns: ["trigger_id"];
 						referencedColumns: ["id"];
 						referencedRelation: "profiles";
-						foreignKeyName: "notifications_triggerId_fkey";
+						foreignKeyName: "notifications_trigger_id_fkey";
 					},
 					{
 						isOneToOne: false;
-						columns: ["userId"];
+						columns: ["user_id"];
 						referencedColumns: ["id"];
 						referencedRelation: "profiles";
-						foreignKeyName: "notifications_userId_fkey";
+						foreignKeyName: "notifications_user_id_fkey";
 					}
 				];
 			};
