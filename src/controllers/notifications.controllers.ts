@@ -14,26 +14,26 @@ export namespace NotificationsControllers {
 	const NOTIFICATIONS_SELECT = `
 	id, 
 	type,
-	userId,
-	createdAt,
-	readStatus,
+	user_id,
+	created_at,
+	read_status,
 	metadata,
-	trigger:profiles!triggerId (username, fullName),
+	trigger:profiles!trigger_id (username, fullName:full_name),
 	
 	transaction:transaction_id (
 		id,
 		amount,
-		sender:profiles!sender_id (userId:id, username, fullName),
-    receiver:profiles!receiver_id (userId:id, username, fullName)
+		sender:profiles!sender_id (userId:id, username, fullName:full_name),
+    receiver:profiles!receiver_id (userId:id, username, fullName:full_name)
 	),
 
-	bill:billId (
+	bill:bill_id (
 		id, 
 		description, 
-		createdAt, 
-		creator:profiles!creatorId (
+		createdAt:created_at, 
+		creator:profiles!creator_id (
 			username,
-			fullName
+			fullName:full_name
 		)
 	)
 	`;
@@ -50,12 +50,12 @@ export namespace NotificationsControllers {
 		payload: QueryPayload
 	): Promise<{ count: number; hasOlder?: boolean; notifications: ClientNotification[] }> {
 		const { userId, timestamp } = payload;
-		let query = supabase.from("notifications").select(NOTIFICATIONS_SELECT).eq("userId", userId).order("createdAt", { ascending: false });
+		let query = supabase.from("notifications").select(NOTIFICATIONS_SELECT).eq("user_id", userId).order("created_at", { ascending: false });
 
 		if (timestamp.before) {
-			query = query.lt("createdAt", timestamp.before).limit(PAGE_SIZE + 1);
+			query = query.lt("created_at", timestamp.before).limit(PAGE_SIZE + 1);
 		} else if (timestamp.after) {
-			query = query.gt("createdAt", timestamp.after);
+			query = query.gt("created_at", timestamp.after);
 		} else {
 			query = query.limit(PAGE_SIZE + 1);
 		}
@@ -115,7 +115,7 @@ export namespace NotificationsControllers {
 	}
 
 	export async function countUnreadNotifications(supabase: SupabaseInstance, userId: string): Promise<number> {
-		const { data, error } = await supabase.from("notifications").select("*", { count: "exact" }).eq("userId", userId).eq("readStatus", false);
+		const { data, error } = await supabase.from("notifications").select("*", { count: "exact" }).eq("user_id", userId).eq("read_status", false);
 
 		if (error || data === null) {
 			throw error;
@@ -140,9 +140,10 @@ export namespace NotificationsControllers {
 
 	export async function createManyBillCreated(supabase: SupabaseInstance, payload: CreateBillPayload[]) {
 		const { error } = await supabase.from("notifications").insert(
-			payload.filter(removeSelfNotification).map(({ role, amount, ...rest }) => {
+			payload.filter(removeSelfNotification).map(({ role, amount, triggerId: trigger_id, ...rest }) => {
 				return {
 					...rest,
+					trigger_id,
 					type: "BillCreated" as const satisfies NotificationType,
 					metadata: { previous: {}, current: { role, amount } } satisfies BillCreatedNotificationMetadata
 				};
@@ -160,9 +161,10 @@ export namespace NotificationsControllers {
 
 	export async function createManyBillDeleted(supabase: SupabaseInstance, payloads: DeletedBillPayload[]) {
 		const { error } = await supabase.from("notifications").insert(
-			payloads.filter(removeSelfNotification).map(({ role, ...rest }) => {
+			payloads.filter(removeSelfNotification).map(({ role, triggerId: trigger_id, ...rest }) => {
 				return {
 					...rest,
+					trigger_id,
 					type: "BillDeleted" as const satisfies NotificationType,
 					metadata: { current: {}, previous: { role } } satisfies BillDeletedNotificationMetadata
 				};
@@ -181,9 +183,10 @@ export namespace NotificationsControllers {
 
 	export async function createManyBillUpdated(supabase: SupabaseInstance, payloads: UpdatedBillPayload[]) {
 		const { error } = await supabase.from("notifications").insert(
-			payloads.filter(removeSelfNotification).map(({ currentAmount, previousAmount, ...rest }) => {
+			payloads.filter(removeSelfNotification).map(({ currentAmount, previousAmount, triggerId: trigger_id, ...rest }) => {
 				return {
 					...rest,
+					trigger_id,
 					type: "BillUpdated" as const satisfies NotificationType,
 					metadata: { current: { amount: currentAmount }, previous: { amount: previousAmount } } satisfies BillUpdatedNotificationMetadata
 				};
@@ -200,8 +203,8 @@ export namespace NotificationsControllers {
 		readonly status: TransactionStatus;
 	}
 	export async function createTransaction(supabase: SupabaseInstance, payload: TransactionPayload) {
-		const { userId, status, triggerId, transactionId: transaction_id } = payload;
-		const { error } = await supabase.from("notifications").insert([{ userId, triggerId, transaction_id, type: `Transaction${status}` }]);
+		const { status, userId: user_id, triggerId: trigger_id, transactionId: transaction_id } = payload;
+		const { error } = await supabase.from("notifications").insert([{ user_id, trigger_id, transaction_id, type: `Transaction${status}` }]);
 
 		if (error) {
 			throw error;
@@ -211,11 +214,11 @@ export namespace NotificationsControllers {
 	const removeSelfNotification = (payload: BaseBillPayload) => payload.userId !== payload.triggerId;
 
 	export async function readAll(supabase: SupabaseInstance, userId: string) {
-		await supabase.from("notifications").update({ readStatus: true }).eq("userId", userId);
+		await supabase.from("notifications").update({ read_status: true }).eq("user_id", userId);
 	}
 
 	export async function read(supabase: SupabaseInstance, notificationId: string) {
-		await supabase.from("notifications").update({ readStatus: true }).eq("id", notificationId);
+		await supabase.from("notifications").update({ read_status: true }).eq("id", notificationId);
 
 		return countUnreadNotifications(supabase, notificationId);
 	}

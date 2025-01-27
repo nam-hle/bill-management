@@ -13,7 +13,9 @@ export namespace BillMembersControllers {
 		readonly role: BillMemberRole;
 	}
 	export async function createMany(supabase: SupabaseInstance, triggerId: string, payloads: CreatePayload[]) {
-		await supabase.from("bill_members").insert(payloads);
+		await supabase
+			.from("bill_members")
+			.insert(payloads.map(({ billId: bill_id, userId: user_id, ...payload }) => ({ ...payload, bill_id, user_id })));
 
 		await NotificationsControllers.createManyBillCreated(
 			supabase,
@@ -117,7 +119,9 @@ export namespace BillMembersControllers {
 	}
 
 	export async function deleteMany(supabase: SupabaseInstance, triggerId: string, payloads: DeletedPayload[]) {
-		const deletePromises = payloads.map((payload) => supabase.from("bill_members").delete().match(payload));
+		const deletePromises = payloads.map(({ role, userId: user_id, billId: bill_id }) =>
+			supabase.from("bill_members").delete().match({ role, bill_id, user_id })
+		);
 
 		const results = await Promise.all(deletePromises);
 
@@ -133,7 +137,7 @@ export namespace BillMembersControllers {
 		);
 	}
 
-	const SELECT = `userId, role, amount, profiles (username)`;
+	const SELECT = `userId:user_id, role, amount, profiles (username)`;
 
 	export async function getAll(supabase: SupabaseInstance) {
 		const { data } = await supabase.from("bill_members").select(SELECT);

@@ -26,8 +26,16 @@ export namespace Pagination {
 	}
 }
 
-export type ClientUser = Pick<Database["public"]["Tables"]["profiles"]["Row"], "id" | "username" | "fullName">;
-export type ServerNotification = Omit<Database["public"]["Tables"]["notifications"]["Row"], "billId" | "metadata" | "triggerId">;
+export interface ClientUser extends Pick<Database["public"]["Tables"]["profiles"]["Row"], "id" | "username"> {
+	readonly fullName: string;
+}
+export interface ServerNotification extends Pick<Database["public"]["Tables"]["notifications"]["Row"], "metadata"> {
+	readonly id: string;
+	readonly billId: string;
+	readonly triggerId: string;
+	readonly createdAt: string;
+	readonly readStatus: boolean;
+}
 
 export interface BaseClientNotification extends ServerNotification {
 	readonly type: NotificationType;
