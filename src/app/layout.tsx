@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
 import { Toaster } from "@/components/ui/toaster";
-import { getCurrentUser } from "@/supabase/server";
+import { createSupabaseServer } from "@/supabase/server";
 import { RootContainer } from "@/components/ui/root-container";
 import { LayoutProvider } from "@/components/ui/layout-provider";
 const interSans = Inter({
@@ -24,7 +24,11 @@ export default async function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
-	const currentUser = await getCurrentUser();
+	const supabase = await createSupabaseServer();
+
+	const {
+		data: { user: currentUser }
+	} = await supabase.auth.getUser();
 
 	return (
 		<html lang="en" suppressHydrationWarning>

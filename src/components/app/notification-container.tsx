@@ -96,10 +96,10 @@ export const NotificationContainer = () => {
 
 						if (notifications.length > 0) {
 							setLatestTimestamp(notifications[0].createdAt);
-						}
 
-						if (!latestTimestamp) {
-							setOldestTimestamp(notifications[notifications.length - 1].createdAt);
+							if (!latestTimestamp) {
+								setOldestTimestamp(notifications[notifications.length - 1].createdAt);
+							}
 						}
 
 						if (hasOlderPayload !== undefined) {

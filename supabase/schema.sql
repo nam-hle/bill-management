@@ -12,7 +12,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 
-CREATE EXTENSION IF NOT EXISTS "pgsodium" WITH SCHEMA "pgsodium";
+CREATE EXTENSION IF NOT EXISTS "pgsodium" WITH .SCHEMA "pg-0sodium";
 
 
 
@@ -98,16 +98,16 @@ CREATE OR REPLACE FUNCTION "public"."calculate_balances"() RETURNS TABLE("user_i
     AS $$
 BEGIN
   RETURN QUERY
-  SELECT 
+  SELECT
       user_id
-      -- SUM(CASE 
+      -- SUM(CASE
       --     WHEN role = 'Creditor' THEN amount
       --     WHEN role = 'Debtor' THEN -amount
       --     ELSE 0
       -- END) AS balance
-  FROM 
+  FROM
       bill_members
-  GROUP BY 
+  GROUP BY
       user_id;
 END;
 $$;

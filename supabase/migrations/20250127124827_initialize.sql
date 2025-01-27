@@ -119,18 +119,18 @@ $$;
 ALTER FUNCTION "public"."handle_new_user"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."report"("target_user_id" "uuid") RETURNS TABLE("paid" bigint, "owed" bigint, "self_paid" bigint, "received" numeric, "sent" numeric)
+CREATE OR REPLACE FUNCTION "public"."report"("target_user_id" "uuid") RETURNS TABLE("paid" bigint, "owed" bigint, "self_paid" numeric, "received" numeric, "sent" numeric)
     LANGUAGE "plpgsql"
     AS $$
 BEGIN
     RETURN QUERY
         WITH SelfPaid AS (
             SELECT
-                sum(bm.amount *  (case when role = 'Creditor' then 0 else 1 end)) as self_paid
+                sum(amount *  (case when role = 'Creditor' then 0 else 1 end)) as total_self_paid
             FROM bill_members bm
-            WHERE bm.user_id = target_user_id
-            GROUP BY bm.bill_id, bm.user_id
-            HAVING COUNT(DISTINCT bm."role") = 2
+            WHERE user_id = target_user_id
+            GROUP BY bill_id, bm.user_id
+            HAVING COUNT(DISTINCT role) = 2
         ),
              ReceivedTransactions AS (
                  SELECT COALESCE(SUM(amount), 0)
@@ -146,11 +146,11 @@ BEGIN
              )
 
         SELECT
-            SUM((CASE WHEN role = 'Creditor' THEN amount ELSE 0 END)) as paid,
-            SUM((CASE WHEN role = 'Debtor' THEN amount ELSE 0 END)) as owed,
-            (SELECT * FROM SelfPaid) as self_paid,
-            (SELECT * FROM ReceivedTransactions) as received,
-            (SELECT * FROM SentTransactions) as sent
+            SUM((CASE WHEN role = 'Creditor' THEN amount ELSE 0 END)),
+            SUM((CASE WHEN role = 'Debtor' THEN amount ELSE 0 END)),
+            (select coalesce(sum(total_self_paid),0) from SelfPaid),
+            (SELECT * FROM ReceivedTransactions),
+            (SELECT * FROM SentTransactions)
         FROM bill_members bm
         WHERE bm.user_id = target_user_id;
 END
