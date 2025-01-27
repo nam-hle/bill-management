@@ -1,4 +1,4 @@
-import { type SupabaseInstance } from "@/supabase/server";
+import { getCurrentUser, type SupabaseInstance } from "@/supabase/server";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
 import { Pagination, type TransactionStatus, type ClientTransaction } from "@/types";
 
@@ -39,10 +39,33 @@ export namespace TransactionsControllers {
 		return data;
 	}
 
-	export async function getMany(supabase: SupabaseInstance): Promise<{ fullSize: number; transactions: ClientTransaction[] }> {
+	export async function getMany(
+		supabase: SupabaseInstance,
+		filters?: {
+			senderId?: string;
+			receiverId?: string;
+			pagination?: Pagination;
+		}
+	): Promise<{ fullSize: number; transactions: ClientTransaction[] }> {
 		const finalQuery = supabase.from("transactions").select(TRANSACTIONS_SELECT, { count: "exact" });
 
-		const { count, error, data: transactions } = await finalQuery.order("issued_at", { ascending: false });
+		const currentUser = await getCurrentUser();
+
+		const { senderId, receiverId, pagination } = filters ?? {};
+
+		if (senderId) {
+			finalQuery.eq("sender_id", senderId);
+		} else if (receiverId) {
+			finalQuery.eq("receiver_id", receiverId);
+		} else {
+			finalQuery.or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`);
+		}
+
+		const {
+			count,
+			error,
+			data: transactions
+		} = await finalQuery.order("issued_at", { ascending: false }).range(...Pagination.toRange(pagination ?? Pagination.getDefault()));
 
 		if (error) {
 			throw error;

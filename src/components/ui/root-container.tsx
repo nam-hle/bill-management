@@ -54,7 +54,7 @@ export const RootContainer: React.FC<Container & { user: User | null }> = (props
 					)}
 				</Stack>
 			</HStack>
-			<Box as="main" marginInline="auto" maxWidth="{sizes.8xl}" paddingTop="{spacing.4}" paddingInline="{spacing.8}" minHeight="calc(100vh - 64px)">
+			<Box as="main" marginInline="auto" maxWidth="{sizes.8xl}" paddingBlock="{spacing.4}" paddingInline="{spacing.8}" minHeight="calc(100vh - 64px)">
 				{children}
 			</Box>
 		</>
