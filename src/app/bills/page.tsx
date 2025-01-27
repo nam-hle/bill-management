@@ -5,10 +5,10 @@ import { IoIosAddCircle } from "react-icons/io";
 
 import { LinkButton } from "@/components/ui/link-button";
 import { BillsTable } from "@/components/app/bills-table";
-import { PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
 import { BalancesTable } from "@/components/app/balances-table";
 import { UsersControllers } from "@/controllers/users.controllers";
 import { BillsControllers } from "@/controllers/bills.controllers";
+import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
 import { getCurrentUser, createSupabaseServer } from "@/supabase/server";
 import { BillMembersControllers } from "@/controllers/bill-members.controllers";
 
@@ -62,7 +62,7 @@ export default async function BillsPage(props: Props) {
 			creatorId: creator === "me" ? currentUser.id : creator,
 			creditorId: creditor === "me" ? currentUser.id : creditor
 		},
-		{ pageSize: PAGE_SIZE, pageNumber: page ? parseInt(page, 10) : DEFAULT_PAGE_NUMBER }
+		{ pageSize: DEFAULT_PAGE_SIZE, pageNumber: page ? parseInt(page, 10) : DEFAULT_PAGE_NUMBER }
 	);
 
 	const membersData = await BillMembersControllers.getAll(supabase);

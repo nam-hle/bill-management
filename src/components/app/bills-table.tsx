@@ -9,9 +9,9 @@ import { useRouter, useSearchParams, type ReadonlyURLSearchParams } from "next/n
 import { type ClientBill } from "@/types";
 import { InputGroup } from "@/components/ui/input-group";
 import { formatTime, formatDistanceTime } from "@/utils";
-import { PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
 import { FilterButton } from "@/components/app/filter-button";
 import { LinkedTableRow } from "@/components/app/table-body-row";
+import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
 import { PaginationRoot, PaginationItems, PaginationNextTrigger, PaginationPrevTrigger } from "@/components/ui/pagination";
 
 namespace BillsTable {
@@ -49,7 +49,7 @@ function toPagination(searchParams: ReadonlyURLSearchParams) {
 	const pageNumber = searchParams.get("page");
 
 	return {
-		pageSize: pageSize ? parseInt(pageSize, 10) : PAGE_SIZE,
+		pageSize: pageSize ? parseInt(pageSize, 10) : DEFAULT_PAGE_SIZE,
 		pageNumber: pageNumber ? parseInt(pageNumber, 10) : DEFAULT_PAGE_NUMBER
 	};
 }

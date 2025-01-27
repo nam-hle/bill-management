@@ -2,6 +2,7 @@ import { z } from "zod";
 import type React from "react";
 
 import { type Database } from "@/database.types";
+import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
 
 export interface Container {
 	children: React.ReactNode;
@@ -9,9 +10,14 @@ export interface Container {
 
 export interface Pagination {
 	readonly pageSize: number;
+	/** 1-based */
 	readonly pageNumber: number;
 }
 export namespace Pagination {
+	export function getDefault(): Pagination {
+		return { pageSize: DEFAULT_PAGE_SIZE, pageNumber: DEFAULT_PAGE_NUMBER };
+	}
+
 	export function toRange(pagination: Pagination): [number, number] {
 		const start = (pagination.pageNumber - 1) * pagination.pageSize;
 		const end = start + pagination.pageSize - 1;
