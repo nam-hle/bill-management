@@ -29,7 +29,7 @@ alter table "public"."bill_members" validate constraint "bill_members_bill_id_fk
 ALTER TABLE "public"."bills" RENAME COLUMN "createdAt" TO "created_at";
 ALTER TABLE "public"."bills" RENAME COLUMN "issuedAt" TO "issued_at";
 ALTER TABLE "public"."bills" RENAME COLUMN "creatorId" TO "creator_id";
-ALTER TABLE "public"."bills" RENAME COLUMN "updatedAt" TO "updated_at";
+-- ALTER TABLE "public"."bills" RENAME COLUMN "updatedAt" TO "updated_at";
 ALTER TABLE "public"."bills" RENAME COLUMN "updaterId" TO "updater_id";
 
 alter table "public"."bills" add constraint "bills_creator_id_fkey" FOREIGN KEY (creator_id) REFERENCES profiles(id) not valid;
