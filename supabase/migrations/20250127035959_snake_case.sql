@@ -13,7 +13,7 @@ alter table "public"."notifications" drop constraint "notifications_triggerId_fk
 -- bill_members
 
 ALTER TABLE "public"."bill_members" RENAME COLUMN "billId" TO "bill_id";
-ALTER TABLE "public"."bill_members" RENAME COLUMN "createdAt" TO "created_at";
+-- ALTER TABLE "public"."bill_members" RENAME COLUMN "createdAt" TO "created_at";
 ALTER TABLE "public"."bill_members" RENAME COLUMN "updatedAt" TO "updated_at";
 ALTER TABLE "public"."bill_members" RENAME COLUMN "createdAt" TO "created_at";
 ALTER TABLE "public"."bill_members" RENAME COLUMN "userId" TO "user_id";
