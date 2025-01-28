@@ -7,7 +7,6 @@ import { Box, Stack, HStack } from "@chakra-ui/react";
 
 import { downloadImage } from "@/utils";
 import { type Container } from "@/types";
-import { Button } from "@/components/ui/button";
 import { LinkButton } from "@/components/app/link-button";
 import { AvatarContainer } from "@/components/app/avatar-container";
 import { NotificationContainer } from "@/components/app/notification-container";
@@ -50,11 +49,6 @@ export const RootContainer: React.FC<Container & { user: User | null; unresolved
 				<Stack direction="row" minHeight="48px" gap="{spacing.2}" alignItems="center">
 					{user && (
 						<>
-							<form method="post" action="/auth/signout">
-								<Button type="submit" variant="subtle">
-									Sign out
-								</Button>
-							</form>
 							<NotificationContainer />
 							<AvatarContainer user={user} avatarUrl={avatarUrl} />
 						</>
