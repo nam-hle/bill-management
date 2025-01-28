@@ -1,20 +1,27 @@
 "use client";
 
-import React from "react";
 import { usePathname } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
+import React, { useState, useEffect } from "react";
 import { Box, Stack, HStack } from "@chakra-ui/react";
 
+import { downloadImage } from "@/utils";
 import { type Container } from "@/types";
 import { Button } from "@/components/ui/button";
 import { LinkButton } from "@/components/app/link-button";
 import { AvatarContainer } from "@/components/app/avatar-container";
 import { NotificationContainer } from "@/components/app/notification-container";
 
-export const RootContainer: React.FC<Container & { user: User | null }> = (props) => {
-	const { user, children } = props;
+export const RootContainer: React.FC<Container & { user: User | null; unresolvedAvatarUrl: string | undefined }> = (props) => {
+	const { user, children, unresolvedAvatarUrl } = props;
 	const pathname = usePathname();
 	const pageName = pathname.split("/")[1];
+
+	const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
+
+	useEffect(() => {
+		downloadImage(unresolvedAvatarUrl).then(setAvatarUrl);
+	}, [unresolvedAvatarUrl]);
 
 	return (
 		<>
@@ -49,7 +56,7 @@ export const RootContainer: React.FC<Container & { user: User | null }> = (props
 								</Button>
 							</form>
 							<NotificationContainer />
-							<AvatarContainer user={user} />
+							<AvatarContainer user={user} avatarUrl={avatarUrl} />
 						</>
 					)}
 				</Stack>

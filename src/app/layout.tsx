@@ -30,12 +30,22 @@ export default async function RootLayout({
 		data: { user: currentUser }
 	} = await supabase.auth.getUser();
 
+	let unresolvedAvatarUrl: string | undefined;
+
+	if (currentUser) {
+		const { data } = await supabase.from("profiles").select(`avatar_url`).eq("id", currentUser.id).single();
+
+		unresolvedAvatarUrl = data?.avatar_url ?? undefined;
+	}
+
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<body className={interSans.variable}>
 				<LayoutProvider>
 					<Toaster />
-					<RootContainer user={currentUser}>{children}</RootContainer>
+					<RootContainer user={currentUser} unresolvedAvatarUrl={unresolvedAvatarUrl}>
+						{children}
+					</RootContainer>
 				</LayoutProvider>
 			</body>
 		</html>

@@ -12,7 +12,7 @@ const pickPalette = (name: string) => {
 	return colorPalette[index];
 };
 
-export const AvatarContainer: React.FC<{ user: User }> = ({ user }) => {
+export const AvatarContainer: React.FC<{ user: User; avatarUrl: string | undefined }> = ({ user, avatarUrl }) => {
 	const supabase = createSupabaseClient();
 
 	const [fullName, setFullname] = React.useState<string | null>(null);
@@ -55,6 +55,7 @@ export const AvatarContainer: React.FC<{ user: User }> = ({ user }) => {
 		<Avatar
 			size="lg"
 			as="button"
+			src={avatarUrl}
 			cursor="pointer"
 			name={fullName ?? undefined}
 			onClick={() => router.push("/account")}

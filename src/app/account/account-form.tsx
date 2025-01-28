@@ -3,6 +3,7 @@ import { type User } from "@supabase/supabase-js";
 import React, { useState, useEffect, useCallback } from "react";
 import { Input, Stack, HStack, Heading } from "@chakra-ui/react";
 
+import Avatar from "@/components/app/avatar";
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { createSupabaseClient } from "@/supabase/client";
@@ -13,7 +14,7 @@ export default function AccountForm({ user }: { user: User | null }) {
 	const [fullname, setFullname] = useState<string | null>(null);
 	const [username, setUsername] = useState<string | null>(null);
 	const [website, setWebsite] = useState<string | null>(null);
-	const [avatar_url, setAvatarUrl] = useState<string | null>(null);
+	const [avatar_url, setAvatarUrl] = useState<string | undefined>(undefined);
 
 	const getProfile = useCallback(async () => {
 		try {
@@ -54,7 +55,7 @@ export default function AccountForm({ user }: { user: User | null }) {
 		website: string | null;
 		username: string | null;
 		fullname: string | null;
-		avatar_url: string | null;
+		avatar_url: string | undefined;
 	}) {
 		try {
 			setLoading(true);
@@ -63,15 +64,17 @@ export default function AccountForm({ user }: { user: User | null }) {
 				website,
 				username,
 				avatar_url,
-				fullName: fullname,
+				full_name: fullname,
 				id: user?.id as string,
 				updated_at: new Date().toISOString()
 			});
 
-			if (error) throw error;
-			alert("Profile updated!");
+			if (error) {
+				throw error;
+			}
 		} catch (error) {
-			alert("Error updating the data!");
+			// eslint-disable-next-line no-console
+			console.error("Error updating profile: ", error);
 		} finally {
 			setLoading(false);
 		}
@@ -80,6 +83,15 @@ export default function AccountForm({ user }: { user: User | null }) {
 	return (
 		<Stack width="30%" gap="{spacing.4}" marginInline="auto">
 			<Heading>Account</Heading>
+			<Avatar
+				size={150}
+				url={avatar_url}
+				uid={user?.id ?? null}
+				onUpload={(url) => {
+					setAvatarUrl(url);
+					updateProfile({ website, fullname, username, avatar_url: url });
+				}}
+			/>
 			<Field disabled label="Email">
 				<Input value={user?.email} placeholder="Enter your email" />
 			</Field>
