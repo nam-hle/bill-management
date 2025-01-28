@@ -30,7 +30,7 @@ export const AvatarContainer: React.FC<AvatarContainer.Props> = ({ user }) => {
 	const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
 
 	useEffect(() => {
-		downloadImage(user?.avatarUrl).then(setAvatarUrl);
+		downloadImage("avatar", user?.avatarUrl).then(setAvatarUrl);
 	}, [user?.avatarUrl]);
 
 	const router = useRouter();

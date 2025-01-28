@@ -11,6 +11,7 @@ import { Text, Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chak
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { toaster } from "@/components/ui/toaster";
+import { ReceiptUpload } from "@/components/app/receipt-upload";
 import { BillMemberInputs } from "@/components/app/bill-member-inputs";
 import { FormKind, type ClientUser, type ErrorState, type BillFormState, type BillFormTransfer } from "@/types";
 import { formatDate, formatTime, renderError, CLIENT_DATE_FORMAT, formatDistanceTime, SERVER_DATE_FORMAT } from "@/utils";
@@ -326,6 +327,9 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 				)}
 			</Stack>
 			<SimpleGrid columns={10} gap="{spacing.4}">
+				<GridItem colSpan={{ base: 10 }}>
+					<ReceiptUpload />
+				</GridItem>
 				<GridItem colSpan={{ base: 5 }}>
 					<Field required label="Description" {...renderError(validating, formState.description.error)}>
 						<Input

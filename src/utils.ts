@@ -2,7 +2,7 @@ import { parse, format, isValid, isToday, isThisWeek, isYesterday, formatDistanc
 
 import { createSupabaseClient } from "@/supabase/client";
 
-export async function downloadImage(path: string | undefined) {
+export async function downloadImage(bucketName: string, path: string | undefined) {
 	try {
 		if (!path) {
 			return;
@@ -10,7 +10,7 @@ export async function downloadImage(path: string | undefined) {
 
 		const supabase = createSupabaseClient();
 
-		const { data, error } = await supabase.storage.from("avatars").download(path);
+		const { data, error } = await supabase.storage.from(bucketName).download(path);
 
 		if (error) {
 			throw error;
@@ -121,4 +121,8 @@ export function convertVerb(verb: string) {
 	}
 
 	return { vIng, pastTense };
+}
+
+export function generateUid(): string {
+	return Math.round(Math.random() * Math.pow(2, 32)).toString(16);
 }

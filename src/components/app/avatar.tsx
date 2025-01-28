@@ -15,7 +15,7 @@ export default function Avatar(props: { size: number; uid: string | null; url: s
 	const [uploading, setUploading] = useState(false);
 
 	useEffect(() => {
-		downloadImage(url).then(setAvatarUrl);
+		downloadImage("avatars", url).then(setAvatarUrl);
 	}, [url, supabase]);
 
 	const uploadAvatar = async (file: File) => {
@@ -53,7 +53,6 @@ export default function Avatar(props: { size: number; uid: string | null; url: s
 						{avatarUrl ? "Change" : "Upload"}
 					</Button>
 				</FileUploadTrigger>
-				{/*<FileUploadList />*/}
 			</FileUploadRoot>
 		</Stack>
 	);
