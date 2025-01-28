@@ -10,6 +10,7 @@ export namespace BillsControllers {
     createdAt:created_at,
     updatedAt:updated_at,
     issuedAt:issued_at,
+    receiptFile:receipt_file,
     creator:profiles!creator_id (userId:id, fullName:full_name),
     updater:profiles!updater_id (userId:id, fullName:full_name),
     billMembers:bill_members (user:user_id (userId:id, fullName:full_name), amount, role)
@@ -139,9 +140,13 @@ export namespace BillsControllers {
 		return toClientBill(data);
 	}
 
-	export async function updateById(supabase: SupabaseInstance, id: string, payload: { issuedAt: string; updaterId: string; description: string }) {
-		const { description, issuedAt: issued_at, updaterId: updater_id } = payload;
-		const { data, error } = await supabase.from("bills").update({ issued_at, updater_id, description }).eq("id", id).select();
+	export async function updateById(
+		supabase: SupabaseInstance,
+		id: string,
+		payload: { issuedAt: string; updaterId: string; description: string; receiptFile: string | null }
+	) {
+		const { description, issuedAt: issued_at, updaterId: updater_id, receiptFile: receipt_file } = payload;
+		const { data, error } = await supabase.from("bills").update({ issued_at, updater_id, description, receipt_file }).eq("id", id).select();
 
 		if (error) {
 			throw error;

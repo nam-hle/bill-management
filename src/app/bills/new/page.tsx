@@ -23,6 +23,7 @@ export default async function NewBillPage() {
 				creditor: {},
 				issuedAt: null,
 				description: "",
+				receiptFile: null,
 				debtors: [{ userId: undefined, amount: undefined }]
 			}}
 		/>
