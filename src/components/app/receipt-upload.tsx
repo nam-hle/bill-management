@@ -39,18 +39,6 @@ export const ReceiptUpload: React.FC<{ editing: boolean; receiptFile: string | u
 		}
 	};
 
-	const Preview = React.useCallback(
-		(props: { children?: React.ReactNode }) => {
-			return (
-				<Stack width="100%" height="100%" alignItems="center" justifyContent="center">
-					{receiptUrl && <Image alt="receipt" src={receiptUrl} cursor="pointer" maxHeight="100px" onClick={() => setOpenDialog(true)} />}
-					{props.children}
-				</Stack>
-			);
-		},
-		[receiptUrl]
-	);
-
 	if (!editing && !receiptUrl) {
 		return (
 			<EmptyState
