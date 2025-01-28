@@ -1,5 +1,28 @@
 import { parse, format, isValid, isToday, isThisWeek, isYesterday, formatDistanceToNow, differenceInCalendarDays } from "date-fns";
 
+import { createSupabaseClient } from "@/supabase/client";
+
+export async function downloadImage(path: string | undefined) {
+	try {
+		if (!path) {
+			return;
+		}
+
+		const supabase = createSupabaseClient();
+
+		const { data, error } = await supabase.storage.from("avatars").download(path);
+
+		if (error) {
+			throw error;
+		}
+
+		return URL.createObjectURL(data);
+	} catch (error) {
+		// eslint-disable-next-line no-console
+		console.error("Error downloading image: ", error);
+	}
+}
+
 export function noop() {}
 
 export const CLIENT_DATE_FORMAT = "dd/MM/yy";

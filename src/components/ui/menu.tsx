@@ -31,10 +31,12 @@ export const MenuArrow = React.forwardRef<HTMLDivElement, ChakraMenu.ArrowProps>
 
 export const MenuCheckboxItem = React.forwardRef<HTMLDivElement, ChakraMenu.CheckboxItemProps>(function MenuCheckboxItem(props, ref) {
 	return (
-		<ChakraMenu.CheckboxItem ref={ref} {...props}>
-			<ChakraMenu.ItemIndicator hidden={false}>
-				<LuCheck />
-			</ChakraMenu.ItemIndicator>
+		<ChakraMenu.CheckboxItem ps="8" ref={ref} {...props}>
+			<AbsoluteCenter asChild insetStart="4" axis="horizontal">
+				<ChakraMenu.ItemIndicator>
+					<LuCheck />
+				</ChakraMenu.ItemIndicator>
+			</AbsoluteCenter>
 			{props.children}
 		</ChakraMenu.CheckboxItem>
 	);
@@ -45,7 +47,7 @@ export const MenuRadioItem = React.forwardRef<HTMLDivElement, ChakraMenu.RadioIt
 
 	return (
 		<ChakraMenu.RadioItem ps="8" ref={ref} {...rest}>
-			<AbsoluteCenter asChild left="4" axis="horizontal">
+			<AbsoluteCenter asChild insetStart="4" axis="horizontal">
 				<ChakraMenu.ItemIndicator>
 					<LuCheck />
 				</ChakraMenu.ItemIndicator>

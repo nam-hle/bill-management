@@ -125,52 +125,50 @@ export const NotificationContainer = () => {
 	const [open, setOpen] = React.useState(false);
 
 	return (
-		<>
-			<PopoverRoot size="lg" open={open} onOpenChange={(e) => setOpen(e.open)} positioning={{ placement: "bottom-end" }}>
-				<PopoverTrigger asChild>
-					<IconButton rounded="full" variant="ghost">
-						<FaRegBell />
-						<CounterBadge count={unreadCount}></CounterBadge>
-					</IconButton>
-				</PopoverTrigger>
-				<PopoverContent width="350px">
-					<PopoverArrow />
-					{notifications.length === 0 && (
-						<PopoverBody padding={0}>
-							<EmptyState title="You have no notifications" />
-						</PopoverBody>
-					)}
-					{notifications.length > 0 && (
-						<PopoverBody padding={0} display="flex" overflowY="auto" maxHeight="500px" gap="{spacing.2}" margin="{spacing.2}" flexDirection="column">
-							<HStack justifyContent="flex-end">
-								<Button size="xs" variant="ghost" onClick={markAsReadAll} disabled={unreadCount === 0}>
-									Mark all as read
-								</Button>
-							</HStack>
-							<Stack gap="0">
-								{notifications.map((notification) => {
-									return (
-										<NotificationMessage
-											key={notification.id}
-											notification={notification}
-											onClick={() => {
-												setOpen(false);
-												markAsRead(notification.id);
-											}}
-										/>
-									);
-								})}
-							</Stack>
-							<Box w="100%">
-								<Button w="100%" variant="ghost" onClick={loadMore} disabled={!hasOlder} aria-label="Load older notifications">
-									{hasOlder ? "Load older notifications" : "No more notifications"}
-								</Button>
-							</Box>
-						</PopoverBody>
-					)}
-				</PopoverContent>
-			</PopoverRoot>
-		</>
+		<PopoverRoot size="lg" open={open} onOpenChange={(e) => setOpen(e.open)} positioning={{ placement: "bottom-end" }}>
+			<PopoverTrigger asChild>
+				<IconButton rounded="full" variant="ghost">
+					<FaRegBell />
+					<CounterBadge count={unreadCount}></CounterBadge>
+				</IconButton>
+			</PopoverTrigger>
+			<PopoverContent width="350px">
+				<PopoverArrow />
+				{notifications.length === 0 && (
+					<PopoverBody padding={0}>
+						<EmptyState title="You have no notifications" />
+					</PopoverBody>
+				)}
+				{notifications.length > 0 && (
+					<PopoverBody padding={0} display="flex" overflowY="auto" maxHeight="500px" gap="{spacing.2}" margin="{spacing.2}" flexDirection="column">
+						<HStack justifyContent="flex-end">
+							<Button size="xs" variant="ghost" onClick={markAsReadAll} disabled={unreadCount === 0}>
+								Mark all as read
+							</Button>
+						</HStack>
+						<Stack gap="0">
+							{notifications.map((notification) => {
+								return (
+									<NotificationMessage
+										key={notification.id}
+										notification={notification}
+										onClick={() => {
+											setOpen(false);
+											markAsRead(notification.id);
+										}}
+									/>
+								);
+							})}
+						</Stack>
+						<Box w="100%">
+							<Button w="100%" variant="ghost" onClick={loadMore} disabled={!hasOlder} aria-label="Load older notifications">
+								{hasOlder ? "Load older notifications" : "No more notifications"}
+							</Button>
+						</Box>
+					</PopoverBody>
+				)}
+			</PopoverContent>
+		</PopoverRoot>
 	);
 };
 

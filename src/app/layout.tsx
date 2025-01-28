@@ -2,9 +2,8 @@ import React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
-import { Toaster } from "@/components/ui/toaster";
 import { createSupabaseServer } from "@/supabase/server";
-import { RootContainer } from "@/components/ui/root-container";
+import { Application } from "@/components/app/application";
 import { LayoutProvider } from "@/components/ui/layout-provider";
 const interSans = Inter({
 	subsets: ["latin"],
@@ -30,12 +29,21 @@ export default async function RootLayout({
 		data: { user: currentUser }
 	} = await supabase.auth.getUser();
 
+	let user: { fullName?: string; avatarUrl?: string } | undefined;
+
+	if (currentUser) {
+		const { data: profile } = await supabase.from("profiles").select(`fullName:full_name, avatar_url`).eq("id", currentUser.id).single();
+
+		if (profile) {
+			user = { fullName: profile.fullName, avatarUrl: profile.avatar_url ?? undefined };
+		}
+	}
+
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<body className={interSans.variable}>
 				<LayoutProvider>
-					<Toaster />
-					<RootContainer user={currentUser}>{children}</RootContainer>
+					<Application user={user}>{children}</Application>
 				</LayoutProvider>
 			</body>
 		</html>

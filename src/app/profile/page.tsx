@@ -3,14 +3,14 @@ import type { Metadata } from "next";
 
 import { getCurrentUser } from "@/supabase/server";
 
-import AccountForm from "./account-form";
+import ProfileForm from "./profile-form";
 
 export const metadata: Metadata = {
-	title: "Account"
+	title: "Profile"
 };
 
-export default async function Account() {
+export default async function Profile() {
 	const currentUser = await getCurrentUser();
 
-	return <AccountForm user={currentUser} />;
+	return <ProfileForm user={currentUser} />;
 }
