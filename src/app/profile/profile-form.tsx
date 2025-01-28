@@ -8,7 +8,7 @@ import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { createSupabaseClient } from "@/supabase/client";
 
-export default function AccountForm({ user }: { user: User | null }) {
+export default function ProfileForm({ user }: { user: User | null }) {
 	const supabase = createSupabaseClient();
 	const [loading, setLoading] = useState(true);
 	const [fullname, setFullname] = useState<string | null>(null);
@@ -103,7 +103,7 @@ export default function AccountForm({ user }: { user: User | null }) {
 			</Field>
 			<HStack justifyContent="flex-end">
 				<Button loading={loading} loadingText="Updating..." onClick={() => updateProfile({ website, fullname, username, avatar_url })}>
-					Update
+					Save Changes
 				</Button>
 			</HStack>
 		</Stack>

@@ -5,6 +5,7 @@ import { IconButton } from "@chakra-ui/react";
 import React, { useState, useEffect } from "react";
 
 import { downloadImage } from "@/utils";
+import { type Container } from "@/types";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { PopoverBody, PopoverRoot, PopoverArrow, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -35,6 +36,7 @@ export const AvatarContainer: React.FC<AvatarContainer.Props> = ({ user }) => {
 	const router = useRouter();
 	const signOut = React.useCallback(() => {
 		fetch("/auth/signout", { method: "POST" }).then(() => {
+			setOpen(false);
 			router.refresh();
 		});
 	}, [router]);
@@ -56,16 +58,28 @@ export const AvatarContainer: React.FC<AvatarContainer.Props> = ({ user }) => {
 			<PopoverContent width="150px">
 				<PopoverArrow />
 				<PopoverBody gap="{spacing.2}" flexDirection="column" padding="{spacing.1.5}">
-					<Button size="sm" width="100%" variant="ghost" justifyContent="flex-start" onClick={() => router.push("/account")}>
+					<MenuItem
+						onClick={() => {
+							router.push("/profile");
+							setOpen(false);
+						}}>
 						<FaRegUser />
 						Profile
-					</Button>
-					<Button size="sm" width="100%" variant="ghost" onClick={signOut} justifyContent="flex-start">
+					</MenuItem>
+					<MenuItem onClick={signOut}>
 						<PiSignOut />
 						Sign out
-					</Button>
+					</MenuItem>
 				</PopoverBody>
 			</PopoverContent>
 		</PopoverRoot>
+	);
+};
+
+const MenuItem: React.FC<{ onClick(): void } & Container> = ({ onClick, children }) => {
+	return (
+		<Button size="sm" width="100%" variant="ghost" onClick={onClick} justifyContent="flex-start">
+			{children}
+		</Button>
 	);
 };
