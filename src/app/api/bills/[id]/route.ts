@@ -24,7 +24,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 			throw new Error("User not found");
 		}
 
-		console.log(parsedBody.data);
 		const { debtors, issuedAt, creditor, description, receiptFile } = parsedBody.data;
 
 		// Members need to be updated first

@@ -2,7 +2,7 @@ import { parse, format, isValid, isToday, isThisWeek, isYesterday, formatDistanc
 
 import { createSupabaseClient } from "@/supabase/client";
 
-export async function downloadImage(bucketName: string, path: string | undefined) {
+export async function downloadImage(bucketName: "avatars" | "receipts", path: string | undefined) {
 	try {
 		if (!path) {
 			return;
