@@ -46,7 +46,7 @@ export const AvatarContainer: React.FC<AvatarContainer.Props> = ({ user }) => {
 			<PopoverTrigger asChild>
 				<IconButton rounded="full" variant="ghost">
 					<Avatar
-						size="lg"
+						size="sm"
 						as="button"
 						src={avatarUrl}
 						cursor="pointer"

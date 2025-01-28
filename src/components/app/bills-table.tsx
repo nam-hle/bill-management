@@ -3,7 +3,7 @@
 import _ from "lodash";
 import React from "react";
 import { GoSearch } from "react-icons/go";
-import { Table, Input, HStack, VStack, Heading } from "@chakra-ui/react";
+import { Text, Table, Input, HStack, VStack, Heading } from "@chakra-ui/react";
 import { useRouter, useSearchParams, type ReadonlyURLSearchParams } from "next/navigation";
 
 import { type ClientBill } from "@/types";
@@ -147,31 +147,31 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 			<Table.Root size="md" interactive variant="outline">
 				<Table.Header>
 					<Table.Row>
-						<Table.ColumnHeader>ID</Table.ColumnHeader>
 						<Table.ColumnHeader>Description</Table.ColumnHeader>
 						<Table.ColumnHeader>Created</Table.ColumnHeader>
-						<Table.ColumnHeader>Creator</Table.ColumnHeader>
 						<Table.ColumnHeader title="The one who made the payment for the bill">Creditor</Table.ColumnHeader>
-						<Table.ColumnHeader title="The ones who need to pay back the creditor">Debtors</Table.ColumnHeader>
+						<Table.ColumnHeader maxW="400px" title="The ones who need to pay back the creditor">
+							Debtors
+						</Table.ColumnHeader>
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
 					{bills?.map((item) => (
 						<LinkedTableRow key={item.id} href={`/bills/${item.id}`}>
-							<Table.Cell>{item.id.slice(0, 6)}</Table.Cell>
 							<Table.Cell>{item.description}</Table.Cell>
 							<Table.Cell title={formatTime(item.creator.timestamp)}>{formatDistanceTime(item.creator.timestamp)}</Table.Cell>
-							<Table.Cell>{formatUserAmount(item.creator, currentUserId)}</Table.Cell>
 							<Table.Cell>{formatUserAmount(item.creditor, currentUserId)}</Table.Cell>
-							<Table.Cell>
-								{_.sortBy(item.debtors, [(debtor) => debtor.userId !== currentUserId, (billMember) => billMember.userId]).map(
-									(billMember, billMemberIndex) => (
-										<React.Fragment key={billMember.userId}>
-											{formatUserAmount(billMember, currentUserId)}
-											{billMemberIndex !== item.debtors.length - 1 ? ", " : ""}
-										</React.Fragment>
-									)
-								)}
+							<Table.Cell maxW="400px">
+								<Text truncate>
+									{_.sortBy(item.debtors, [(debtor) => debtor.userId !== currentUserId, (billMember) => billMember.userId]).map(
+										(billMember, billMemberIndex) => (
+											<React.Fragment key={billMember.userId}>
+												{formatUserAmount(billMember, currentUserId)}
+												{billMemberIndex !== item.debtors.length - 1 ? ", " : ""}
+											</React.Fragment>
+										)
+									)}
+								</Text>
 							</Table.Cell>
 						</LinkedTableRow>
 					))}
