@@ -24,7 +24,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 			throw new Error("User not found");
 		}
 
-		const { debtors, issuedAt, creditor, description } = parsedBody.data;
+		const { debtors, issuedAt, creditor, description, receiptFile } = parsedBody.data;
 
 		// Members need to be updated first
 		await BillMembersControllers.updateMany(supabase, updater.id, {
@@ -32,7 +32,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 			members: [{ ...creditor, role: "Creditor" }, ...debtors.map((debtor) => ({ ...debtor, role: "Debtor" as const }))]
 		});
 
-		await BillsControllers.updateById(supabase, billId, { issuedAt, description, updaterId: updater.id });
+		await BillsControllers.updateById(supabase, billId, { issuedAt, receiptFile, description, updaterId: updater.id });
 
 		return new Response(JSON.stringify({ success: true, data: { billId } }), { status: 201 });
 	} catch (error) {

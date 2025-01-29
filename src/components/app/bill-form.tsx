@@ -11,6 +11,7 @@ import { Text, Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chak
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { toaster } from "@/components/ui/toaster";
+import { ReceiptUpload } from "@/components/app/receipt-upload";
 import { BillMemberInputs } from "@/components/app/bill-member-inputs";
 import { FormKind, type ClientUser, type ErrorState, type BillFormState, type BillFormTransfer } from "@/types";
 import { formatDate, formatTime, renderError, CLIENT_DATE_FORMAT, formatDistanceTime, SERVER_DATE_FORMAT } from "@/utils";
@@ -74,6 +75,7 @@ type MemberKind = { readonly memberKind: "creditor" } | { readonly debtorIndex: 
 interface FormState {
 	readonly creditor: MemberState;
 	readonly debtors: readonly MemberState[];
+	readonly receiptFile: string | undefined;
 	readonly description: ErrorState & { readonly value: string };
 	readonly issuedAt: ErrorState & {
 		readonly input: string;
@@ -89,19 +91,21 @@ type Action =
 	| { readonly type: "deleteDebtor"; readonly payload: { readonly debtorIndex: number } }
 	| { readonly type: "changeDescription"; readonly payload: { readonly description: string } }
 	| { readonly type: "changeUser"; readonly payload: MemberKind & { readonly userId: string } }
-	| { readonly type: "changeAmount"; readonly payload: MemberKind & { readonly input: string } };
+	| { readonly type: "changeAmount"; readonly payload: MemberKind & { readonly input: string } }
+	| { readonly type: "changeReceipt"; readonly payload: { readonly receiptFileName: string } };
 
 const REQUIRED_MESSAGE = "This field is required";
 
 namespace FormState {
 	export function create(formState: BillFormState): FormState {
-		const { description } = formState;
+		const { description, receiptFile } = formState;
 		const issuedAt = formState.issuedAt ?? format(new Date(), SERVER_DATE_FORMAT);
 
 		const debtors = formState.debtors.map(MemberState.fromBillMemberState);
 
 		return {
 			debtors,
+			receiptFile: receiptFile ?? undefined,
 			creditor: MemberState.fromBillMemberState(formState.creditor),
 			issuedAt: { value: issuedAt, error: undefined, input: formatDate(issuedAt).client },
 			description: { value: description, error: description ? undefined : REQUIRED_MESSAGE }
@@ -109,11 +113,12 @@ namespace FormState {
 	}
 
 	export function toPayload(state: FormState): BillFormTransfer {
-		const { debtors, issuedAt, creditor, description } = state;
+		const { debtors, issuedAt, creditor, description, receiptFile } = state;
 
 		return {
 			description: description.value,
 			issuedAt: issuedAt.value ?? "",
+			receiptFile: receiptFile ?? null,
 			creditor: { userId: creditor.user.userId ?? "", amount: creditor.amount.value ?? 0 },
 			debtors: debtors.map((debtor) => ({ userId: debtor.user.userId ?? "", amount: debtor.amount.value ?? 0 }))
 		};
@@ -217,6 +222,10 @@ const reducer = (state: FormState, action: Action): FormState => {
 		};
 
 		return nextState;
+	}
+
+	if (type === "changeReceipt") {
+		return { ...state, receiptFile: payload.receiptFileName };
 	}
 
 	return state;
@@ -326,28 +335,39 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 				)}
 			</Stack>
 			<SimpleGrid columns={10} gap="{spacing.4}">
-				<GridItem colSpan={{ base: 5 }}>
-					<Field required label="Description" {...renderError(validating, formState.description.error)}>
-						<Input
-							readOnly={!editing}
-							value={formState.description.value}
-							placeholder="Enter bill description"
-							pointerEvents={editing ? undefined : "none"}
-							onChange={(event) => dispatch({ type: "changeDescription", payload: { description: event.target.value } })}
-						/>
-					</Field>
-				</GridItem>
-				<GridItem colSpan={{ base: 3 }}>
-					<Field label="Issued at" {...renderError(validating, formState.issuedAt.error)}>
-						<Input
-							readOnly={!editing}
-							placeholder="20/mm/yy"
-							value={formState.issuedAt.input}
-							pointerEvents={editing ? undefined : "none"}
-							onBlur={() => dispatch({ payload: {}, type: "submitIssuedAt" })}
-							onChange={(event) => dispatch({ type: "changeIssuedAt", payload: { issuedAt: event.target.value } })}
-						/>
-					</Field>
+				<GridItem colSpan={{ base: 10 }}>
+					<SimpleGrid templateRows="repeat(2, 1fr)" templateColumns="repeat(10, 1fr)">
+						<GridItem colSpan={5}>
+							<Field required label="Description" {...renderError(validating, formState.description.error)}>
+								<Input
+									readOnly={!editing}
+									value={formState.description.value}
+									placeholder="Enter bill description"
+									pointerEvents={editing ? undefined : "none"}
+									onChange={(event) => dispatch({ type: "changeDescription", payload: { description: event.target.value } })}
+								/>
+							</Field>
+						</GridItem>
+						<GridItem rowSpan={2} colSpan={3}>
+							<ReceiptUpload
+								editing={editing}
+								receiptFile={formState.receiptFile}
+								onReceiptChange={(receiptFileName) => dispatch({ type: "changeReceipt", payload: { receiptFileName } })}
+							/>
+						</GridItem>
+						<GridItem colSpan={5}>
+							<Field label="Issued at" {...renderError(validating, formState.issuedAt.error)}>
+								<Input
+									readOnly={!editing}
+									placeholder="20/mm/yy"
+									value={formState.issuedAt.input}
+									pointerEvents={editing ? undefined : "none"}
+									onBlur={() => dispatch({ payload: {}, type: "submitIssuedAt" })}
+									onChange={(event) => dispatch({ type: "changeIssuedAt", payload: { issuedAt: event.target.value } })}
+								/>
+							</Field>
+						</GridItem>
+					</SimpleGrid>
 				</GridItem>
 
 				<BillMemberInputs

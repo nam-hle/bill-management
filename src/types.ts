@@ -86,6 +86,7 @@ export type ClientNotification =
 export const BillFormPayloadSchema = z.object({
 	issuedAt: z.string(),
 	description: z.string(),
+	receiptFile: z.string().nullable(),
 	creditor: z.object({ userId: z.string(), amount: z.number() }),
 	debtors: z.array(z.object({ userId: z.string(), amount: z.number() }))
 });
@@ -95,6 +96,7 @@ export type BillFormTransfer = z.infer<typeof BillFormPayloadSchema>;
 export interface BillFormState {
 	description: string;
 	issuedAt: string | null;
+	receiptFile: string | null;
 	debtors: Array<{
 		userId?: string;
 		amount?: number;
@@ -142,6 +144,7 @@ export interface ClientBill {
 	readonly description: string;
 	readonly issuedAt: string | null;
 	readonly creditor: ClientBillMember;
+	readonly receiptFile: string | null;
 	readonly debtors: ClientBillMember[];
 	readonly creator: { userId: string; timestamp: string; fullName: string | null };
 	readonly updater?: { userId: string; timestamp: string; fullName: string | null };

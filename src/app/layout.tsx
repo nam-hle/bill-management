@@ -35,7 +35,7 @@ export default async function RootLayout({
 		const { data: profile } = await supabase.from("profiles").select(`fullName:full_name, avatar_url`).eq("id", currentUser.id).single();
 
 		if (profile) {
-			user = { fullName: profile.fullName, avatarUrl: profile.avatar_url ?? undefined };
+			user = { fullName: profile.fullName ?? "", avatarUrl: profile.avatar_url ?? undefined };
 		}
 	}
 
