@@ -8,6 +8,6 @@ UPDATE storage.buckets
 SET file_size_limit = 512000, allowed_mime_types = '{image/jpeg,image/png}'
 WHERE id = 'receipts';
 
-INSERT INTO "storage"."buckets" ("id", "name",  "public",  "file_size_limit", "allowed_mime_types", "owner_id")
-VALUES
-    ('receipts', 'receipts',  false,  512000, '{image/jpeg,image/png}', NULL),
+UPDATE storage.buckets
+SET file_size_limit = 512000, allowed_mime_types = '{image/jpeg,image/png}', public = true
+WHERE id = 'avatars';
