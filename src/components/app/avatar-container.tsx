@@ -63,7 +63,7 @@ export const AvatarContainer: React.FC<AvatarContainer.Props> = ({ userInfo }) =
 const AsyncAvatar: React.FC<AvatarContainer.Props> = (props) => {
 	const user = props.userInfo ? use(props.userInfo) : undefined;
 
-	return <Avatar size="sm" as="button" cursor="pointer" src={user?.avatarUrl} name={user?.fullName} colorPalette={pickPalette(user?.fullName)} />;
+	return <Avatar size="sm" cursor="pointer" src={user?.avatarUrl} name={user?.fullName} colorPalette={pickPalette(user?.fullName)} />;
 };
 
 const MenuItem: React.FC<{ onClick(): void } & Container> = ({ onClick, children }) => {

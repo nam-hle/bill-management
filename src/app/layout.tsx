@@ -27,10 +27,10 @@ export default async function RootLayout({
 	const supabase = await createSupabaseServer();
 
 	const {
-		data: { user: currentUser }
+		data: { user }
 	} = await supabase.auth.getUser();
 
-	const userInfo = currentUser ? UsersControllers.getUserInfoInternal(currentUser.id) : undefined;
+	const userInfo = user ? UsersControllers.getUserInfo(supabase, user.id) : undefined;
 
 	return (
 		<html lang="en" suppressHydrationWarning>

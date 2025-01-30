@@ -1,6 +1,5 @@
-import { wait } from "@/utils";
+import { type SupabaseInstance } from "@/supabase/server";
 import { type Balance, type UserInfo, type ClientUser } from "@/types";
-import { createSupabaseServer, type SupabaseInstance } from "@/supabase/server";
 
 export namespace UsersControllers {
 	const USERS_SELECT = `
@@ -31,16 +30,13 @@ export namespace UsersControllers {
 		return { sent, received, owed: owed - self_paid, paid: paid - self_paid, net: paid - owed + received - sent };
 	}
 
-	export async function getUserInfoInternal(userId: string): Promise<UserInfo> {
-		const supabase = await createSupabaseServer();
-
+	export async function getUserInfo(supabase: SupabaseInstance, userId: string): Promise<UserInfo> {
 		const { error, data: profile } = await supabase.from("profiles").select(`fullName:full_name, avatar_url`).eq("id", userId).single();
 
 		if (error || !profile) {
 			throw new Error(error?.message || "Profile not found");
 		}
 
-		await wait(2000);
 		let avatarUrl: string | undefined;
 
 		if (profile.avatar_url) {
