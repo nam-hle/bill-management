@@ -223,3 +223,8 @@ export namespace APIPayload {
 		export type CreateTransactionRequestPayload = z.infer<typeof CreateTransactionRequestPayloadSchema>;
 	}
 }
+
+export interface UserInfo {
+	readonly fullName: string;
+	readonly avatarUrl?: string;
+}

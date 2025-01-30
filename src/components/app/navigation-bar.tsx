@@ -8,7 +8,7 @@ import { LinkButton } from "@/components/app/link-button";
 import { AvatarContainer } from "@/components/app/avatar-container";
 import { NotificationContainer } from "@/components/app/notification-container";
 
-export const NavigationBar: React.FC<AvatarContainer.Props> = ({ user }) => {
+export const NavigationBar: React.FC<AvatarContainer.Props> = ({ userInfo }) => {
 	const pathname = usePathname();
 	const pageName = pathname.split("/")[1];
 
@@ -21,7 +21,7 @@ export const NavigationBar: React.FC<AvatarContainer.Props> = ({ user }) => {
 			paddingInline="{spacing.8}"
 			justifyContent="space-between">
 			<Stack direction="row" minHeight="48px" gap="{spacing.2}" alignItems="center">
-				{user && (
+				{userInfo && (
 					<>
 						<LinkButton href="/" active={pageName === ""}>
 							Home
@@ -36,10 +36,10 @@ export const NavigationBar: React.FC<AvatarContainer.Props> = ({ user }) => {
 				)}
 			</Stack>
 			<Stack direction="row" minHeight="48px" gap="{spacing.2}" alignItems="center">
-				{user && (
+				{userInfo && (
 					<>
 						<NotificationContainer />
-						<AvatarContainer user={user} />
+						<AvatarContainer userInfo={userInfo} />
 					</>
 				)}
 			</Stack>

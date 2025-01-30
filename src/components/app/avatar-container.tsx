@@ -1,17 +1,17 @@
-import { PiSignOut } from "react-icons/pi";
-import { FaRegUser } from "react-icons/fa6";
+import { Text } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
-import { IconButton } from "@chakra-ui/react";
-import React, { useState, useEffect } from "react";
+import React, { use, Suspense } from "react";
 
-import { downloadImage } from "@/utils";
-import { type Container } from "@/types";
 import { Avatar } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { type UserInfo, type Container } from "@/types";
 import { PopoverBody, PopoverRoot, PopoverArrow, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const colorPalette = ["red", "blue", "green", "yellow", "purple", "orange"];
-const pickPalette = (name: string) => {
+const pickPalette = (name: string | undefined) => {
+	if (name === undefined) {
+		return "blue";
+	}
+
 	const index = name.charCodeAt(0) % colorPalette.length;
 
 	return colorPalette[index];
@@ -19,19 +19,12 @@ const pickPalette = (name: string) => {
 
 export namespace AvatarContainer {
 	export interface Props {
-		user?: { fullName?: string; avatarUrl?: string };
+		readonly userInfo?: Promise<UserInfo>;
 	}
 }
 
-export const AvatarContainer: React.FC<AvatarContainer.Props> = ({ user }) => {
-	const { fullName } = user ?? {};
+export const AvatarContainer: React.FC<AvatarContainer.Props> = ({ userInfo }) => {
 	const [open, setOpen] = React.useState(false);
-
-	const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
-
-	useEffect(() => {
-		downloadImage("avatars", user?.avatarUrl).then(setAvatarUrl);
-	}, [user?.avatarUrl]);
 
 	const router = useRouter();
 	const signOut = React.useCallback(() => {
@@ -44,16 +37,11 @@ export const AvatarContainer: React.FC<AvatarContainer.Props> = ({ user }) => {
 	return (
 		<PopoverRoot size="lg" open={open} onOpenChange={(e) => setOpen(e.open)} positioning={{ placement: "bottom-end" }}>
 			<PopoverTrigger asChild>
-				<IconButton rounded="full" variant="ghost">
-					<Avatar
-						size="sm"
-						as="button"
-						src={avatarUrl}
-						cursor="pointer"
-						name={fullName ?? undefined}
-						colorPalette={fullName ? pickPalette(fullName) : undefined}
-					/>
-				</IconButton>
+				<div>
+					<Suspense fallback={<Avatar />}>
+						<AsyncAvatar userInfo={userInfo} />
+					</Suspense>
+				</div>
 			</PopoverTrigger>
 			<PopoverContent width="150px">
 				<PopoverArrow />
@@ -63,23 +51,25 @@ export const AvatarContainer: React.FC<AvatarContainer.Props> = ({ user }) => {
 							router.push("/profile");
 							setOpen(false);
 						}}>
-						<FaRegUser />
 						Profile
 					</MenuItem>
-					<MenuItem onClick={signOut}>
-						<PiSignOut />
-						Sign out
-					</MenuItem>
+					<MenuItem onClick={signOut}>Sign out</MenuItem>
 				</PopoverBody>
 			</PopoverContent>
 		</PopoverRoot>
 	);
 };
 
+const AsyncAvatar: React.FC<AvatarContainer.Props> = (props) => {
+	const user = props.userInfo ? use(props.userInfo) : undefined;
+
+	return <Avatar size="sm" as="button" cursor="pointer" src={user?.avatarUrl} name={user?.fullName} colorPalette={pickPalette(user?.fullName)} />;
+};
+
 const MenuItem: React.FC<{ onClick(): void } & Container> = ({ onClick, children }) => {
 	return (
-		<Button size="sm" width="100%" variant="ghost" onClick={onClick} justifyContent="flex-start">
+		<Text width="100%" cursor="pointer" onClick={onClick} _hover={{ bg: "gray.200" }} paddingInline="{spacing.2}" paddingBlock="{spacing.1.5}">
 			{children}
-		</Button>
+		</Text>
 	);
 };
