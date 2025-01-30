@@ -1,5 +1,5 @@
-import { type Balance, type ClientUser } from "@/types";
 import { type SupabaseInstance } from "@/supabase/server";
+import { type Balance, type UserInfo, type ClientUser } from "@/types";
 
 export namespace UsersControllers {
 	const USERS_SELECT = `
@@ -28,5 +28,22 @@ export namespace UsersControllers {
 		const { owed, paid, sent, received, self_paid } = data;
 
 		return { sent, received, owed: owed - self_paid, paid: paid - self_paid, net: paid - owed + received - sent };
+	}
+
+	export async function getUserInfo(supabase: SupabaseInstance, userId: string): Promise<UserInfo> {
+		const { error, data: profile } = await supabase.from("profiles").select(`fullName:full_name, avatar_url`).eq("id", userId).single();
+
+		if (error || !profile) {
+			throw new Error(error?.message || "Profile not found");
+		}
+
+		let avatarUrl: string | undefined;
+
+		if (profile.avatar_url) {
+			const { data } = supabase.storage.from("avatars").getPublicUrl(profile.avatar_url);
+			avatarUrl = data.publicUrl;
+		}
+
+		return { avatarUrl, fullName: profile.fullName ?? "" };
 	}
 }

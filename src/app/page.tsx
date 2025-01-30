@@ -9,9 +9,7 @@ export default async function DashboardPage() {
 	return (
 		<Stack gap={6}>
 			<BalanceReport />
-			{/*<Separator variant="solid" />*/}
 			<RecentBills />
-			{/*<Separator variant="solid" />*/}
 			<RecentTransactions />
 		</Stack>
 	);
