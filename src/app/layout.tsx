@@ -2,11 +2,12 @@ import React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
+import { Provider } from "@/components/ui/provider";
 import { createSupabaseServer } from "@/supabase/server";
 import { ReactQueryClientProvider } from "@/react-query";
 import { Application } from "@/components/app/application";
-import { LayoutProvider } from "@/components/ui/layout-provider";
 import { UsersControllers } from "@/controllers/users.controllers";
+
 const interSans = Inter({
 	subsets: ["latin"],
 	variable: "--font-geist-sans"
@@ -37,9 +38,9 @@ export default async function RootLayout({
 		<ReactQueryClientProvider>
 			<html lang="en" suppressHydrationWarning>
 				<body className={interSans.variable}>
-					<LayoutProvider>
+					<Provider>
 						<Application userInfo={userInfo}>{children}</Application>
-					</LayoutProvider>
+					</Provider>
 				</body>
 			</html>
 		</ReactQueryClientProvider>
