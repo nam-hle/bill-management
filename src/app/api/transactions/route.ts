@@ -1,9 +1,9 @@
 import { type NextRequest } from "next/server";
 
-import { APIPayload, type Pagination } from "@/types";
-import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
+import { DEFAULT_PAGE_NUMBER } from "@/constants";
 import { getCurrentUser, createSupabaseServer } from "@/supabase/server";
 import { TransactionsControllers } from "@/controllers/transactions.controllers";
+import { APIPayload, type DataListResponse, type ClientTransaction } from "@/types";
 
 export async function GET(request: NextRequest) {
 	try {
@@ -12,14 +12,11 @@ export async function GET(request: NextRequest) {
 		const { searchParams } = request.nextUrl;
 		const receiverId = searchParams.get("receiverId") ?? undefined;
 		const senderId = searchParams.get("senderId") ?? undefined;
-		const pagination: Pagination = {
-			pageSize: parseInt(searchParams.get("limit") ?? String(DEFAULT_PAGE_SIZE), 10) ?? DEFAULT_PAGE_SIZE,
-			pageNumber: parseInt(searchParams.get("page") ?? String(DEFAULT_PAGE_NUMBER), 10) ?? DEFAULT_PAGE_NUMBER
-		};
+		const pageNumber = parseInt(searchParams.get("page") ?? String(DEFAULT_PAGE_NUMBER), 10) ?? DEFAULT_PAGE_NUMBER;
 
-		const { fullSize, transactions } = await TransactionsControllers.getMany(supabase, { senderId, receiverId, pagination });
+		const { fullSize, transactions } = await TransactionsControllers.getMany(supabase, { senderId, receiverId, pageNumber });
 
-		return new Response(JSON.stringify({ fullSize, transactions }), { status: 200 });
+		return new Response(JSON.stringify({ fullSize, data: transactions } satisfies DataListResponse<ClientTransaction>), { status: 200 });
 	} catch (error) {
 		return new Response(
 			JSON.stringify({

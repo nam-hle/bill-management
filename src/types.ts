@@ -228,3 +228,8 @@ export interface UserInfo {
 	readonly fullName: string;
 	readonly avatarUrl?: string;
 }
+
+export interface DataListResponse<T> {
+	readonly data: T[];
+	readonly fullSize: number;
+}
