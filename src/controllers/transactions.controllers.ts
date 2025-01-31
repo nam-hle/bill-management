@@ -1,3 +1,4 @@
+import { DEFAULT_PAGE_NUMBER } from "@/constants";
 import { getCurrentUser, type SupabaseInstance } from "@/supabase/server";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
 import { Pagination, type TransactionStatus, type ClientTransaction } from "@/types";
@@ -43,15 +44,15 @@ export namespace TransactionsControllers {
 		supabase: SupabaseInstance,
 		filters?: {
 			senderId?: string;
+			pageNumber?: number;
 			receiverId?: string;
-			pagination?: Pagination;
 		}
 	): Promise<{ fullSize: number; transactions: ClientTransaction[] }> {
 		const finalQuery = supabase.from("transactions").select(TRANSACTIONS_SELECT, { count: "exact" });
 
 		const currentUser = await getCurrentUser();
 
-		const { senderId, receiverId, pagination } = filters ?? {};
+		const { senderId, pageNumber, receiverId } = filters ?? {};
 
 		if (senderId) {
 			finalQuery.eq("sender_id", senderId);
@@ -65,7 +66,9 @@ export namespace TransactionsControllers {
 			count,
 			error,
 			data: transactions
-		} = await finalQuery.order("issued_at", { ascending: false }).range(...Pagination.toRange(pagination ?? Pagination.getDefault()));
+		} = await finalQuery
+			.order("issued_at", { ascending: false })
+			.range(...Pagination.toRange({ ...Pagination.getDefault(), pageNumber: pageNumber ?? DEFAULT_PAGE_NUMBER }));
 
 		if (error) {
 			throw error;

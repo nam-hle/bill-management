@@ -1,38 +1,49 @@
 "use client";
 
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Table, HStack, VStack, Heading } from "@chakra-ui/react";
 
-import { EmptyState } from "@/components/ui/empty-state";
+import { axiosInstance } from "@/axios";
 import { displayDate, displayDateAsTitle } from "@/utils";
 import { FilterButton } from "@/components/app/filter-button";
 import { LinkedTableRow } from "@/components/app/table-body-row";
-import { type Pagination, type ClientTransaction } from "@/types";
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
 import { TransactionAction } from "@/components/app/transaction-action";
+import { type DataListResponse, type ClientTransaction } from "@/types";
+import { TableBodySkeleton } from "@/components/app/table-body-skeleton";
 import { TransactionStatusBadge } from "@/components/app/transaction-status-badge";
 import { PaginationRoot, PaginationItems, PaginationNextTrigger, PaginationPrevTrigger } from "@/components/ui/pagination";
 
 namespace TransactionsTable {
 	export interface Props {
 		readonly title?: string;
-		readonly fullSize: number;
 		readonly showFilters?: boolean;
 		readonly currentUserId: string;
 		readonly action?: React.ReactNode;
 		readonly mode: "basic" | "advance";
-		readonly transactions: ClientTransaction[];
 	}
+}
+export async function fetchTransactions({ page, senderId, receiverId }: { page: number; senderId?: string; receiverId?: string }) {
+	const { data } = await axiosInstance.get<DataListResponse<ClientTransaction>>("/transactions", {
+		params: { page, senderId, receiverId }
+	});
+
+	return data;
 }
 
 export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 	const { mode, title, action, currentUserId } = props;
 
-	const [transactions, setTransactions] = React.useState<ClientTransaction[]>(() => props.transactions);
-	const [fullSize, setFullSize] = React.useState<number>(() => props.fullSize);
-	const [pagination, setPagination] = React.useState<Pagination>({ pageSize: DEFAULT_PAGE_SIZE, pageNumber: DEFAULT_PAGE_NUMBER });
+	const [page, setPage] = React.useState(DEFAULT_PAGE_NUMBER);
 
 	const [filters, setFilters] = React.useState<"toMe" | "byMe" | undefined>(undefined);
+
+	const { data, status, isSuccess, isLoading } = useQuery({
+		queryKey: [page, currentUserId, filters],
+		queryFn: () =>
+			fetchTransactions(filters === "toMe" ? { page, receiverId: currentUserId } : filters === "byMe" ? { page, senderId: currentUserId } : { page })
+	});
 
 	const createOwnerFilter = React.useCallback(
 		(filterKey: "toMe" | "byMe") => {
@@ -45,38 +56,15 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 	);
 
 	const onPageChange = React.useCallback((params: { page: number }) => {
-		setPagination((prev) => ({ ...prev, pageNumber: params.page }));
+		setPage(() => params.page);
 	}, []);
-
-	React.useEffect(() => {
-		const searchParams = new URLSearchParams();
-
-		if (filters === "toMe") {
-			searchParams.append("receiverId", currentUserId);
-		} else if (filters === "byMe") {
-			searchParams.append("senderId", currentUserId);
-		}
-
-		searchParams.append("limit", pagination.pageSize.toString());
-		searchParams.append("page", pagination.pageNumber.toString());
-
-		fetch(`/api/transactions?${searchParams.toString()}`).then((response) => {
-			if (response.ok) {
-				response.json().then((result) => {
-					const { fullSize, transactions } = result;
-					setTransactions(transactions);
-					setFullSize(fullSize);
-				});
-			}
-		});
-	}, [currentUserId, filters, pagination.pageNumber, pagination.pageSize]);
 
 	return (
 		<VStack width="100%" gap="{spacing.4}">
 			<HStack width="100%" justifyContent="space-between">
 				<Heading as="h1">
 					{title ?? "Transactions"}
-					{mode === "advance" ? ` (${fullSize})` : ""}
+					{mode === "advance" && isSuccess ? ` (${data.fullSize})` : ""}
 				</Heading>
 				{action}
 			</HStack>
@@ -87,57 +75,53 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 				</HStack>
 			)}
 
-			{transactions.length === 0 && <EmptyState width="100%" title="You have no transactions yet." />}
+			{/*{transactions.length === 0 && <EmptyState width="100%" title="You have no transactions yet." />}*/}
 
-			{transactions.length > 0 && (
-				<>
-					<Table.Root size="md" interactive variant="outline">
-						<Table.Header>
-							<Table.Row>
-								<Table.ColumnHeader>ID</Table.ColumnHeader>
-								<Table.ColumnHeader>Issued At</Table.ColumnHeader>
-								<Table.ColumnHeader>Sender</Table.ColumnHeader>
-								<Table.ColumnHeader>Receiver</Table.ColumnHeader>
-								<Table.ColumnHeader>Amount</Table.ColumnHeader>
-								<Table.ColumnHeader>Status</Table.ColumnHeader>
-								{mode === "advance" && <Table.ColumnHeader></Table.ColumnHeader>}
-							</Table.Row>
-						</Table.Header>
-						<Table.Body>
-							{transactions.map((transaction) => (
-								<LinkedTableRow key={transaction.id} href={`/transactions/${transaction.id}`}>
-									<Table.Cell>{transaction.id.slice(0, 6)}</Table.Cell>
-									<Table.Cell title={displayDateAsTitle(transaction.issuedAt)}>{displayDate(transaction.issuedAt)}</Table.Cell>
-									<Table.Cell>{formatUser(transaction.sender, currentUserId)}</Table.Cell>
-									<Table.Cell>{formatUser(transaction.receiver, currentUserId)}</Table.Cell>
-									<Table.Cell>{transaction.amount}</Table.Cell>
+			<Table.Root size="md" interactive variant="outline">
+				<Table.Header>
+					<Table.Row>
+						<Table.ColumnHeader>ID</Table.ColumnHeader>
+						<Table.ColumnHeader>Issued At</Table.ColumnHeader>
+						<Table.ColumnHeader>Sender</Table.ColumnHeader>
+						<Table.ColumnHeader>Receiver</Table.ColumnHeader>
+						<Table.ColumnHeader>Amount</Table.ColumnHeader>
+						<Table.ColumnHeader>Status</Table.ColumnHeader>
+						{mode === "advance" && <Table.ColumnHeader></Table.ColumnHeader>}
+					</Table.Row>
+				</Table.Header>
+				<Table.Body>
+					{isLoading || !data ? (
+						<TableBodySkeleton numberOfCols={mode === "advance" ? 7 : 6} />
+					) : (
+						data.data.map((transaction) => (
+							<LinkedTableRow key={transaction.id} href={`/transactions/${transaction.id}`}>
+								<Table.Cell>{transaction.id.slice(0, 6)}</Table.Cell>
+								<Table.Cell title={displayDateAsTitle(transaction.issuedAt)}>{displayDate(transaction.issuedAt)}</Table.Cell>
+								<Table.Cell>{formatUser(transaction.sender, currentUserId)}</Table.Cell>
+								<Table.Cell>{formatUser(transaction.receiver, currentUserId)}</Table.Cell>
+								<Table.Cell>{transaction.amount}</Table.Cell>
+								<Table.Cell>
+									<TransactionStatusBadge status={transaction.status} />
+								</Table.Cell>
+								{mode === "advance" && (
 									<Table.Cell>
-										<TransactionStatusBadge status={transaction.status} />
+										<TransactionAction transaction={transaction} currentUserId={currentUserId} />
 									</Table.Cell>
-									{mode === "advance" && (
-										<Table.Cell>
-											<TransactionAction transaction={transaction} currentUserId={currentUserId} />
-										</Table.Cell>
-									)}
-								</LinkedTableRow>
-							))}
-						</Table.Body>
-					</Table.Root>
-					{mode === "advance" && pagination.pageSize < fullSize && (
-						<HStack w="100%" justifyContent="flex-end">
-							<PaginationRoot
-								siblingCount={1}
-								count={fullSize}
-								onPageChange={onPageChange}
-								page={pagination.pageNumber}
-								pageSize={pagination.pageSize}>
-								<PaginationPrevTrigger />
-								<PaginationItems />
-								<PaginationNextTrigger />
-							</PaginationRoot>
-						</HStack>
+								)}
+							</LinkedTableRow>
+						))
 					)}
-				</>
+				</Table.Body>
+			</Table.Root>
+
+			{mode === "advance" && DEFAULT_PAGE_SIZE < (data?.fullSize ?? 0) && (
+				<HStack w="100%" justifyContent="flex-end">
+					<PaginationRoot page={page} siblingCount={1} count={data?.fullSize ?? 0} onPageChange={onPageChange} pageSize={DEFAULT_PAGE_SIZE}>
+						<PaginationPrevTrigger />
+						<PaginationItems />
+						<PaginationNextTrigger />
+					</PaginationRoot>
+				</HStack>
 			)}
 		</VStack>
 	);

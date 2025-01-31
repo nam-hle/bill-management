@@ -17,6 +17,8 @@
 		"@emotion/react": "^11.14.0",
 		"@supabase/ssr": "^0.5.2",
 		"@supabase/supabase-js": "^2.47.10",
+		"@tanstack/react-query": "^5.66.0",
+		"axios": "^1.7.9",
 		"date-fns": "^4.1.0",
 		"dotenv": "^16.4.7",
 		"lodash": "^4.17.21",
@@ -31,6 +33,7 @@
 	"devDependencies": {
 		"@eslint/eslintrc": "^3",
 		"@stylistic/eslint-plugin-ts": "^2.12.0",
+		"@tanstack/eslint-plugin-query": "^5.66.0",
 		"@types/events": "^3.0.3",
 		"@types/lodash": "^4.17.14",
 		"@types/node": "^20",

@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import { FlatCompat } from "@eslint/eslintrc";
 import reactPlugin from "eslint-plugin-react";
 import functional from "eslint-plugin-functional";
+import query from "@tanstack/eslint-plugin-query";
 import stylistic from "@stylistic/eslint-plugin-ts";
 import perfectionist from "eslint-plugin-perfectionist";
 import unusedImports from "eslint-plugin-unused-imports";
@@ -20,6 +21,7 @@ const compat = new FlatCompat({
 
 const eslintConfig = [
 	...compat.extends("next/core-web-vitals", "next/typescript"),
+	...query.configs["flat/recommended"],
 	{
 		settings: {
 			react: {
