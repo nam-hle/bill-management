@@ -39,7 +39,7 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 
 	const [filters, setFilters] = React.useState<"toMe" | "byMe" | undefined>(undefined);
 
-	const { data, status, isSuccess, isLoading } = useQuery({
+	const { data, isSuccess, isLoading } = useQuery({
 		queryKey: [page, currentUserId, filters],
 		queryFn: () =>
 			fetchTransactions(filters === "toMe" ? { page, receiverId: currentUserId } : filters === "byMe" ? { page, senderId: currentUserId } : { page })
