@@ -1,25 +1,32 @@
+import React, { useState } from "react";
 import { HiUpload } from "react-icons/hi";
 import { BsReceipt } from "react-icons/bs";
-import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Image, Stack, Center } from "@chakra-ui/react";
 
+import { generateUid } from "@/utils";
 import { Button } from "@/components/ui/button";
-import { generateUid, downloadImage } from "@/utils";
 import { createSupabaseClient } from "@/supabase/client";
 import { EmptyState } from "@/components/ui/empty-state";
+import { downloadImage } from "@/components/app/profile-avatar";
 import { DialogRoot, DialogContent } from "@/components/ui/dialog";
 import { FileUploadRoot, FileUploadTrigger, FileUploadDropzone } from "@/components/ui/file-upload";
 
 export const ReceiptUpload: React.FC<{ editing: boolean; receiptFile: string | undefined; onReceiptChange(file: string): void }> = (props) => {
 	const { editing, receiptFile, onReceiptChange } = props;
-	const [receiptUrl, setReceiptUrl] = useState<string | undefined>(undefined);
+	// const [receiptUrl, setReceiptUrl] = useState<string | undefined>(undefined);
 	const [openDialog, setOpenDialog] = useState(false);
 
 	const supabase = createSupabaseClient();
 
-	useEffect(() => {
-		downloadImage("receipts", receiptFile).then(setReceiptUrl);
-	}, [supabase, receiptFile]);
+	// useEffect(() => {
+	// 	downloadImage("receipts", receiptFile).then(setReceiptUrl);
+	// }, [supabase, receiptFile]);
+
+	const { data: receiptUrl } = useQuery({
+		queryKey: [receiptFile],
+		queryFn: () => downloadImage("receipts", receiptFile)
+	});
 
 	const onUpload = async (file: File) => {
 		try {

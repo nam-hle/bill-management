@@ -1,12 +1,33 @@
 import { type SupabaseInstance } from "@/supabase/server";
-import { type Balance, type UserInfo, type ClientUser } from "@/types";
+import { type Balance, type UserInfo, type ClientUser, type ProfileFormPayload } from "@/types";
 
 export namespace UsersControllers {
 	const USERS_SELECT = `
     id,
     username,
-    fullName:full_name
+    fullName:full_name,
+    avatarUrl:avatar_url
   `;
+
+	interface UpdateProfilePayload extends ProfileFormPayload {}
+	export async function updateProfile(supabase: SupabaseInstance, userId: string, payload: UpdateProfilePayload) {
+		const { data, error } = await supabase
+			.from("profiles")
+			.update({ full_name: payload.fullName, avatar_url: payload.avatarUrl })
+			.eq("id", userId)
+			.select(USERS_SELECT)
+			.single();
+
+		if (error) {
+			throw error;
+		}
+
+		if (!data) {
+			throw new Error("Error updating profile");
+		}
+
+		return data;
+	}
 
 	export async function getUsers(supabase: SupabaseInstance): Promise<ClientUser[]> {
 		const { data: users } = await supabase.from("profiles").select(USERS_SELECT);

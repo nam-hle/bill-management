@@ -16,7 +16,10 @@ export async function downloadImage(bucketName: "avatars" | "receipts", path: st
 			throw error;
 		}
 
-		return URL.createObjectURL(data);
+		const result = URL.createObjectURL(data);
+		console.log({ data, result });
+
+		return result;
 	} catch (error) {
 		// eslint-disable-next-line no-console
 		console.error("Error downloading image: ", error);
