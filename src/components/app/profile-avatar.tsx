@@ -26,7 +26,6 @@ interface UploadAvatarPayload {
 }
 
 export const ProfileAvatar: React.FC<ProfileAvatar.Props> = (props) => {
-	console.log(props);
 	const { url, userId, onAvatarChange } = props;
 
 	const { data: avatarUrl } = useQuery({

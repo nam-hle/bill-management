@@ -17,7 +17,6 @@ export async function downloadImage(bucketName: "avatars" | "receipts", path: st
 		}
 
 		const result = URL.createObjectURL(data);
-		console.log({ data, result });
 
 		return result;
 	} catch (error) {

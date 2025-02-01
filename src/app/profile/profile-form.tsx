@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { DevTool } from "@hookform/devtools";
 import { useMutation } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { Input, Stack, HStack, Heading } from "@chakra-ui/react";
@@ -26,8 +25,6 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 		reset,
 		control,
 		register,
-		// setValue,
-		// getValues,
 		handleSubmit,
 		formState: { errors, isDirty, isSubmitting }
 	} = useForm<ProfileFormPayload>({ defaultValues: { fullName: props.fullName, avatarUrl: props.avatarUrl } });
@@ -66,12 +63,10 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 				<Input {...register("fullName", { required: "Full Name is required" })} placeholder="Enter your full name" />
 			</Field>
 			<HStack justifyContent="flex-end">
-				<Button type="submit" disabled={!isDirty} loadingText="Updating..." loading={isSubmitting || isPending}>
+				<Button type="submit" disabled={!isDirty} loadingText="Saving..." loading={isSubmitting || isPending}>
 					Save
 				</Button>
 			</HStack>
-
-			<DevTool control={control} />
 		</Stack>
 	);
 };

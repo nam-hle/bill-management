@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
 			}
 		});
 	} catch (error) {
+		// eslint-disable-next-line no-console
 		console.error("Error downloading image:", error);
 
 		return NextResponse.json({ error: "Failed to download image" }, { status: 500 });
