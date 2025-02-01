@@ -6,13 +6,14 @@ import { useRouter } from "next/navigation";
 import { IoIosAddCircle } from "react-icons/io";
 import { Stack, Group, Input, HStack, Heading, InputAddon } from "@chakra-ui/react";
 
+import { type API } from "@/api";
 import { SERVER_DATE_FORMAT } from "@/utils";
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/app/select";
 import { toaster } from "@/components/ui/toaster";
+import { type ClientUser, type ClientTransaction } from "@/types";
 import { TransactionAction } from "@/components/app/transaction-action";
-import { type APIPayload, type ClientUser, type ClientTransaction } from "@/types";
 import { TransactionStatusBadge } from "@/components/app/transaction-status-badge";
 
 namespace TransactionForm {
@@ -47,7 +48,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 				receiverId: receiverId!,
 				amount: parseInt(amount, 10),
 				issuedAt: format(new Date(), SERVER_DATE_FORMAT)
-			} satisfies APIPayload.Transaction.CreateTransactionRequestPayload)
+			} satisfies API.Transactions.Create.Body)
 		}).then((response) => {
 			if (response.ok) {
 				router.push("/transactions");

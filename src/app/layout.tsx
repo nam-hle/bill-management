@@ -1,6 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { Provider } from "@/components/ui/provider";
 import { createSupabaseServer } from "@/supabase/server";
@@ -41,6 +42,7 @@ export default async function RootLayout({
 					<Provider>
 						<Application userInfo={userInfo}>{children}</Application>
 					</Provider>
+					<ReactQueryDevtools initialIsOpen={false} />
 				</body>
 			</html>
 		</ReactQueryClientProvider>

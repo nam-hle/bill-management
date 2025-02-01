@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type React from "react";
 
+import { type API } from "@/api";
 import { type Database } from "@/database.types";
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
 
@@ -26,9 +27,13 @@ export namespace Pagination {
 	}
 }
 
-export interface ClientUser extends Pick<Database["public"]["Tables"]["profiles"]["Row"], "id" | "username"> {
-	readonly fullName: string;
-}
+export const ClientUserSchema = z.object({
+	id: z.string(),
+	username: z.string(),
+	fullName: z.string()
+});
+
+export type ClientUser = z.infer<typeof ClientUserSchema>;
 export interface ServerNotification extends Pick<Database["public"]["Tables"]["notifications"]["Row"], "metadata"> {
 	readonly id: string;
 	readonly billId: string;
@@ -136,15 +141,7 @@ export interface Balance {
 	readonly received: number;
 }
 
-export interface ClientTransaction {
-	readonly id: string;
-	readonly amount: number;
-	readonly issuedAt: string;
-	readonly createdAt: string;
-	readonly sender: ClientUser;
-	readonly receiver: ClientUser;
-	readonly status: TransactionStatus;
-}
+export type ClientTransaction = z.infer<typeof API.Transactions.ClientTransactionSchema>;
 
 export interface ClientBill {
 	readonly id: string;
@@ -218,16 +215,6 @@ export namespace APIPayload {
 		});
 
 		export type ReadNotificationResponse = z.infer<typeof ReadNotificationResponseSchema>;
-	}
-
-	export namespace Transaction {
-		export const CreateTransactionRequestPayloadSchema = z.object({
-			amount: z.number(),
-			issuedAt: z.string(),
-			receiverId: z.string()
-		});
-
-		export type CreateTransactionRequestPayload = z.infer<typeof CreateTransactionRequestPayloadSchema>;
 	}
 }
 

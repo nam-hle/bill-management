@@ -1,3 +1,4 @@
+import { type API } from "@/api";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
 import { getCurrentUser, type SupabaseInstance } from "@/supabase/server";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
@@ -47,7 +48,7 @@ export namespace TransactionsControllers {
 			pageNumber?: number;
 			receiverId?: string;
 		}
-	): Promise<{ fullSize: number; transactions: ClientTransaction[] }> {
+	): Promise<API.Transactions.List.Response> {
 		const finalQuery = supabase.from("transactions").select(TRANSACTIONS_SELECT, { count: "exact" });
 
 		const currentUser = await getCurrentUser();
@@ -74,7 +75,7 @@ export namespace TransactionsControllers {
 			throw error;
 		}
 
-		return { fullSize: count ?? 0, transactions: transactions?.map(toClientTransaction) ?? [] };
+		return { fullSize: count ?? 0, data: transactions?.map(toClientTransaction) ?? [] };
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
