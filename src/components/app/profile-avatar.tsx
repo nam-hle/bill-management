@@ -80,7 +80,9 @@ async function uploadAvatar(payload: UploadAvatarPayload) {
 }
 
 export async function downloadImage(bucketName: "avatars" | "receipts", path: string | undefined) {
-	if (!path) return;
+	if (!path) {
+		return;
+	}
 
 	try {
 		const response = await axiosInstance.get(`/storage`, {

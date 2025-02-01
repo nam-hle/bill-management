@@ -44,6 +44,7 @@ const eslintConfig = [
 			"react-hooks/exhaustive-deps": "error",
 			"react/jsx-curly-brace-presence": ["error", "never"],
 
+			curly: "error",
 			"sort-keys": "off",
 			"no-console": "error",
 			"max-params": ["error", 4],

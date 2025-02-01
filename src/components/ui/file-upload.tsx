@@ -92,7 +92,9 @@ export const FileUploadList = React.forwardRef<HTMLUListElement, FileUploadListP
 	const fileUpload = useFileUploadContext();
 	const acceptedFiles = files ?? fileUpload.acceptedFiles;
 
-	if (acceptedFiles.length === 0) return null;
+	if (acceptedFiles.length === 0) {
+		return null;
+	}
 
 	return (
 		<ChakraFileUpload.ItemGroup ref={ref} {...rest}>
