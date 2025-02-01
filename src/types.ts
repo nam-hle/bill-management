@@ -201,8 +201,8 @@ export const BillUpdatedNotificationMetadataSchema = z.object({
 export type BillUpdatedNotificationMetadata = z.infer<typeof BillUpdatedNotificationMetadataSchema>;
 
 export const LoginFormPayloadSchema = z.object({
-	email: z.string(),
-	password: z.string()
+	email: z.string().min(1, "Email is required"),
+	password: z.string().min(6, "Password must be at least 6 characters")
 });
 
 export type LoginFormPayload = z.infer<typeof LoginFormPayloadSchema>;
