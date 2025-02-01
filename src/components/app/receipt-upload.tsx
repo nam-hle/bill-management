@@ -14,14 +14,9 @@ import { FileUploadRoot, FileUploadTrigger, FileUploadDropzone } from "@/compone
 
 export const ReceiptUpload: React.FC<{ editing: boolean; receiptFile: string | undefined; onReceiptChange(file: string): void }> = (props) => {
 	const { editing, receiptFile, onReceiptChange } = props;
-	// const [receiptUrl, setReceiptUrl] = useState<string | undefined>(undefined);
 	const [openDialog, setOpenDialog] = useState(false);
 
 	const supabase = createSupabaseClient();
-
-	// useEffect(() => {
-	// 	downloadImage("receipts", receiptFile).then(setReceiptUrl);
-	// }, [supabase, receiptFile]);
 
 	const { data: receiptUrl } = useQuery({
 		queryKey: [receiptFile],

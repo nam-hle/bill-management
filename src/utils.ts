@@ -1,4 +1,4 @@
-import { parse, format, isValid, isToday, isThisWeek, isYesterday, formatDistanceToNow, differenceInCalendarDays } from "date-fns";
+import { parse, format, isToday, isValid, isThisWeek, isYesterday, formatDistanceToNow, differenceInCalendarDays } from "date-fns";
 
 import { createSupabaseClient } from "@/supabase/client";
 
@@ -16,9 +16,7 @@ export async function downloadImage(bucketName: "avatars" | "receipts", path: st
 			throw error;
 		}
 
-		const result = URL.createObjectURL(data);
-
-		return result;
+		return URL.createObjectURL(data);
 	} catch (error) {
 		// eslint-disable-next-line no-console
 		console.error("Error downloading image: ", error);
