@@ -153,9 +153,13 @@ export const PaginationPageText = React.forwardRef<HTMLParagraphElement, PageTex
 	const { format = "compact", ...rest } = props;
 	const { page, count, pageRange, totalPages } = usePaginationContext();
 	const content = React.useMemo(() => {
-		if (format === "short") return `${page} / ${totalPages}`;
+		if (format === "short") {
+			return `${page} / ${totalPages}`;
+		}
 
-		if (format === "compact") return `${page} of ${totalPages}`;
+		if (format === "compact") {
+			return `${page} of ${totalPages}`;
+		}
 
 		return `${pageRange.start + 1} - ${Math.min(pageRange.end, count)} of ${count}`;
 	}, [format, page, totalPages, pageRange, count]);
