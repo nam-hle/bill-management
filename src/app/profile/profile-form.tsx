@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { DevTool } from "@hookform/devtools";
 import { useMutation } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { Input, Stack, HStack, Heading } from "@chakra-ui/react";
@@ -67,6 +68,7 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 					Save
 				</Button>
 			</HStack>
+			<DevTool control={control} />
 		</Stack>
 	);
 };

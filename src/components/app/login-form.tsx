@@ -1,56 +1,41 @@
 "use client";
 
 import React from "react";
+import { useForm } from "react-hook-form";
+import { DevTool } from "@hookform/devtools";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Input, Stack, Alert, HStack, Heading } from "@chakra-ui/react";
 
-import { renderError } from "@/utils";
+import { login } from "@/app/login/actions";
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
-import { login, signup } from "@/app/login/actions";
 import { PasswordInput } from "@/components/ui/password-input";
+import { type LoginFormPayload, LoginFormPayloadSchema } from "@/types";
 
 export const LoginForm = () => {
-	const [email, setEmail] = React.useState("");
-	const [password, setPassword] = React.useState("");
-	const [validating, setValidating] = React.useState(false);
+	const { control, register, formState, handleSubmit } = useForm<LoginFormPayload>({
+		resolver: zodResolver(LoginFormPayloadSchema)
+	});
+	const { errors, isDirty, isValid, isSubmitting } = formState;
+	console.log(formState);
 	const [formError, setFormError] = React.useState<string | undefined>();
 
-	const missingFields = React.useMemo(() => {
-		return email === "" || password === "";
-	}, [email, password]);
+	const onSubmitLogin = async (data: { email: string; password: string }) => {
+		const error = await login(data);
 
-	const emailError = React.useMemo(() => {
-		if (email === "") {
-			return "Email is required";
-		}
+		if (error) setFormError(error);
+	};
+	//
+	// const onSubmitSignup = async (data: { email: string; password: string }) => {
+	// 	const error = await signup(data);
+	//
+	// 	if (error) setFormError(error);
+	// };
 
-		return undefined;
-	}, [email]);
-
-	const passwordError = React.useMemo(() => {
-		if (password === "") {
-			return "Password is required";
-		}
-
-		return undefined;
-	}, [password]);
-
-	const handleLogin = React.useCallback(async () => {
-		if (missingFields) {
-			setValidating(true);
-
-			return;
-		}
-
-		await login({ email, password }).then(setFormError);
-	}, [email, missingFields, password]);
-
-	const handleSignup = React.useCallback(async () => {
-		await signup({ email, password }).then(setFormError);
-	}, [email, password]);
+	const onSubmit = React.useMemo(() => handleSubmit((data) => onSubmitLogin(data)), [handleSubmit]);
 
 	return (
-		<Stack width="30%" gap="{spacing.4}" marginInline="auto">
+		<Stack gap="4" as="form" width="30%" marginInline="auto" onSubmit={onSubmit}>
 			<Heading>Log in</Heading>
 
 			{formError && (
@@ -59,20 +44,24 @@ export const LoginForm = () => {
 					<Alert.Title>{formError}</Alert.Title>
 				</Alert.Root>
 			)}
-			<Field required label="Email" {...renderError(validating, emailError)}>
-				<Input value={email} placeholder="Enter your email" onChange={(e) => setEmail(e.target.value)} />
+
+			<Field label="Email" invalid={!!errors.email} errorText={errors.email?.message}>
+				<Input {...register("email", { required: "Full Name is required" })} placeholder="Enter your full name" />
 			</Field>
-			<Field required label="Password" {...renderError(validating, passwordError)}>
-				<PasswordInput size="md" value={password} placeholder="Enter your password" onChange={(e) => setPassword(e.target.value)} />
+
+			<Field label="Password" invalid={!!errors.password} errorText={errors.password?.message}>
+				<PasswordInput size="md" placeholder="Enter your password" {...register("password", { required: true })} />
 			</Field>
+
 			<HStack justifyContent="space-between">
-				<Button variant="subtle" onClick={handleSignup} disabled={missingFields}>
-					Sign up
-				</Button>
-				<Button onClick={handleLogin} disabled={missingFields}>
+				{/*<Button type="button" variant="subtle" disabled={!isValid} loading={isSubmitting} onClick={handleSubmit(onSubmitSignup)}>*/}
+				{/*	Sign up*/}
+				{/*</Button>*/}
+				<Button type="submit" disabled={!isValid} loading={isSubmitting}>
 					Log in
 				</Button>
 			</HStack>
+			<DevTool control={control} />
 		</Stack>
 	);
 };
