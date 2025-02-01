@@ -93,6 +93,13 @@ export const BillFormPayloadSchema = z.object({
 
 export type BillFormTransfer = z.infer<typeof BillFormPayloadSchema>;
 
+export const ProfileFormPayloadSchema = z.object({
+	fullName: z.string(),
+	avatarUrl: z.string().nullable()
+});
+
+export type ProfileFormPayload = z.infer<typeof ProfileFormPayloadSchema>;
+
 export interface BillFormState {
 	description: string;
 	issuedAt: string | null;

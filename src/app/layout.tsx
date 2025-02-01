@@ -37,7 +37,7 @@ export default async function RootLayout({
 	return (
 		<ReactQueryClientProvider>
 			<html lang="en" suppressHydrationWarning>
-				<body className={interSans.variable}>
+				<body suppressHydrationWarning className={interSans.variable}>
 					<Provider>
 						<Application userInfo={userInfo}>{children}</Application>
 					</Provider>

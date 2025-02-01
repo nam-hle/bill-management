@@ -1,4 +1,4 @@
-import { parse, format, isValid, isToday, isThisWeek, isYesterday, formatDistanceToNow, differenceInCalendarDays } from "date-fns";
+import { parse, format, isToday, isValid, isThisWeek, isYesterday, formatDistanceToNow, differenceInCalendarDays } from "date-fns";
 
 import { createSupabaseClient } from "@/supabase/client";
 

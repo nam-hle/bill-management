@@ -1,111 +1,72 @@
 "use client";
-import { type User } from "@supabase/supabase-js";
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useForm, Controller } from "react-hook-form";
 import { Input, Stack, HStack, Heading } from "@chakra-ui/react";
 
-import Avatar from "@/components/app/avatar";
+import { axiosInstance } from "@/axios";
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
-import { createSupabaseClient } from "@/supabase/client";
+import { type ProfileFormPayload } from "@/types";
+import { toaster } from "@/components/ui/toaster";
+import { ProfileAvatar } from "@/components/app/profile-avatar";
 
-export default function ProfileForm({ user }: { user: User | null }) {
-	const supabase = createSupabaseClient();
-	const [loading, setLoading] = useState(true);
-	const [fullname, setFullname] = useState<string | null>(null);
-	const [username, setUsername] = useState<string | null>(null);
-	const [website, setWebsite] = useState<string | null>(null);
-	const [avatar_url, setAvatarUrl] = useState<string | undefined>(undefined);
-
-	const getProfile = useCallback(async () => {
-		try {
-			setLoading(true);
-
-			const { data, error, status } = await supabase
-				.from("profiles")
-				.select(`fullName:full_name, username, website, avatar_url`)
-				.eq("id", user?.id)
-				.single();
-
-			if (error && status !== 406) {
-				throw error;
-			}
-
-			if (data) {
-				setFullname(data.fullName);
-				setUsername(data.username);
-				setWebsite(data.website);
-				setAvatarUrl(data.avatar_url);
-			}
-		} catch (error) {
-			alert("Error loading user data!");
-		} finally {
-			setLoading(false);
-		}
-	}, [user, supabase]);
-
-	useEffect(() => {
-		getProfile();
-	}, [user, getProfile]);
-
-	async function updateProfile({
-		website,
-		username,
-		avatar_url
-	}: {
-		website: string | null;
-		username: string | null;
-		fullname: string | null;
-		avatar_url: string | undefined;
-	}) {
-		try {
-			setLoading(true);
-
-			const { error } = await supabase.from("profiles").upsert({
-				website,
-				username,
-				avatar_url,
-				full_name: fullname,
-				id: user?.id as string,
-				updated_at: new Date().toISOString()
-			});
-
-			if (error) {
-				throw error;
-			}
-		} catch (error) {
-			// eslint-disable-next-line no-console
-			console.error("Error updating profile: ", error);
-		} finally {
-			setLoading(false);
-		}
+namespace ProfileForm {
+	export interface Props {
+		readonly email: string;
+		readonly userId: string;
+		readonly fullName: string;
+		readonly avatarUrl: string | null;
 	}
+}
+
+export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
+	const {
+		reset,
+		control,
+		register,
+		handleSubmit,
+		formState: { errors, isDirty, isSubmitting }
+	} = useForm<ProfileFormPayload>({ defaultValues: { fullName: props.fullName, avatarUrl: props.avatarUrl } });
+
+	const { mutate, isPending } = useMutation({
+		mutationFn: async (payload: ProfileFormPayload) => {
+			return axiosInstance.post("/profile", payload);
+		},
+		onError: () => {
+			toaster.create({
+				type: "error",
+				title: "Failed to update profile",
+				description: "An error occurred while updating the profile. Please try again."
+			});
+		},
+		onSuccess: (data) => {
+			reset(data.data as unknown as ProfileFormPayload);
+			toaster.create({ type: "success", title: "Profile updated", description: "Your profile has been updated successfully." });
+		}
+	});
+
+	const onSubmit = React.useMemo(() => handleSubmit((data) => mutate(data)), [handleSubmit, mutate]);
 
 	return (
-		<Stack width="30%" gap="{spacing.4}" marginInline="auto">
+		<Stack as="form" width="30%" gap="{spacing.4}" marginInline="auto" onSubmit={onSubmit}>
 			<Heading>Account</Heading>
-			<Avatar
-				size={150}
-				url={avatar_url}
-				uid={user?.id ?? null}
-				onUpload={(url) => {
-					setAvatarUrl(url);
-					updateProfile({ website, fullname, username, avatar_url: url });
-				}}
+			<Controller
+				name="avatarUrl"
+				control={control}
+				render={({ field }) => <ProfileAvatar size={150} userId={props.userId} url={field.value ?? undefined} onAvatarChange={field.onChange} />}
 			/>
-			<Field disabled label="Email">
-				<Input value={user?.email} placeholder="Enter your email" />
+			<Field readOnly label="Email">
+				<Input value={props.email} pointerEvents="none" />
 			</Field>
-			<Field required label="Full Name">
-				<Input value={fullname || ""} placeholder="Enter your password" onChange={(e) => setFullname(e.target.value)} />
-			</Field>
-			<Field required label="Username">
-				<Input value={username || ""} placeholder="Enter your password" onChange={(e) => setUsername(e.target.value)} />
+			<Field label="Full Name*" invalid={!!errors.fullName} errorText={errors.fullName?.message}>
+				<Input {...register("fullName", { required: "Full Name is required" })} placeholder="Enter your full name" />
 			</Field>
 			<HStack justifyContent="flex-end">
-				<Button loading={loading} loadingText="Updating..." onClick={() => updateProfile({ website, fullname, username, avatar_url })}>
-					Save Changes
+				<Button type="submit" disabled={!isDirty} loadingText="Saving..." loading={isSubmitting || isPending}>
+					Save
 				</Button>
 			</HStack>
 		</Stack>
 	);
-}
+};
