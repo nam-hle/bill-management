@@ -7,6 +7,7 @@ export const TransactionStatusBadge: React.FC<{ status: TransactionStatus } & Ba
 	return (
 		<Badge
 			size={size}
+			marginLeft="{spacing.2}"
 			colorPalette={
 				status === TransactionStatusEnumSchema.enum.Waiting ? undefined : status === TransactionStatusEnumSchema.enum.Confirmed ? "green" : "red"
 			}>

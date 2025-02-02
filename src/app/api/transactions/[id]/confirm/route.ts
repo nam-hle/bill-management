@@ -8,7 +8,7 @@ export async function PATCH(_request: Request, { params }: { params: Promise<{ i
 
 		await TransactionsControllers.update(supabase, { id: transactionId, status: "Confirmed" });
 
-		return new Response(JSON.stringify({}), { status: 201 });
+		return new Response(JSON.stringify({}), { status: 200 });
 	} catch (error) {
 		return new Response(
 			JSON.stringify({
