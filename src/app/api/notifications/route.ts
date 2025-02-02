@@ -23,6 +23,8 @@ export async function GET(request: NextRequest) {
 
 		return new Response(JSON.stringify({ count, hasOlder, success: true, notifications }), { status: 200 });
 	} catch (error) {
+		console.log(error);
+
 		return new Response(
 			JSON.stringify({
 				error: "Internal Server Error",

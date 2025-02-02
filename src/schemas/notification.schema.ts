@@ -19,11 +19,9 @@ export type NotificationType = z.infer<typeof NotificationTypeSchema>;
 
 export const ServerNotificationSchema = z.object({
 	id: z.string(),
-	billId: z.string(),
-	metadata: JsonSchema,
-	triggerId: z.string(),
 	createdAt: z.string(),
-	readStatus: z.boolean()
+	readStatus: z.boolean(),
+	metadata: JsonSchema.nullable()
 });
 
 export type ServerNotification = z.infer<typeof ServerNotificationSchema>;
@@ -37,6 +35,10 @@ export const BaseClientNotificationSchema = ServerNotificationSchema.extend({
 
 export interface BaseClientNotification extends z.infer<typeof BaseClientNotificationSchema> {}
 
+const NotificationBillSchema = ClientBillSchema.pick({ id: true, description: true }).extend({
+	creator: z.object({ fullName: z.string() })
+});
+
 export const BillCreatedNotificationMetadataSchema = z.object({
 	previous: z.object({}),
 	current: z.object({ amount: z.number(), role: BillMemberRoleEnumSchema })
@@ -44,7 +46,7 @@ export const BillCreatedNotificationMetadataSchema = z.object({
 export type BillCreatedNotificationMetadata = z.infer<typeof BillCreatedNotificationMetadataSchema>;
 
 export const BillCreatedNotificationSchema = BaseClientNotificationSchema.extend({
-	bill: ClientBillSchema,
+	bill: NotificationBillSchema,
 	type: z.literal("BillCreated"),
 	metadata: BillCreatedNotificationMetadataSchema
 });
@@ -57,7 +59,7 @@ export const BillDeletedNotificationMetadataSchema = z.object({
 export type BillDeletedNotificationMetadata = z.infer<typeof BillDeletedNotificationMetadataSchema>;
 
 export const BillDeletedNotificationSchema = BaseClientNotificationSchema.extend({
-	bill: ClientBillSchema,
+	bill: NotificationBillSchema,
 	type: z.literal("BillDeleted"),
 	metadata: BillDeletedNotificationMetadataSchema
 });
@@ -70,7 +72,7 @@ export const BillUpdatedNotificationMetadataSchema = z.object({
 export type BillUpdatedNotificationMetadata = z.infer<typeof BillUpdatedNotificationMetadataSchema>;
 
 export const BillUpdatedNotificationSchema = BaseClientNotificationSchema.extend({
-	bill: ClientBillSchema,
+	bill: NotificationBillSchema,
 	type: z.literal("BillUpdated"),
 	metadata: BillUpdatedNotificationMetadataSchema
 });

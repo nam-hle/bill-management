@@ -7,7 +7,6 @@ import { Stack, HStack } from "@chakra-ui/react";
 import { LinkButton } from "@/components/app/link-button";
 import { ColorModeButton } from "@/components/ui/color-mode";
 import { AvatarContainer } from "@/components/app/avatar-container";
-import { NotificationContainer } from "@/components/app/notification-container";
 
 export const NavigationBar: React.FC<AvatarContainer.Props> = ({ userInfo }) => {
 	const pathname = usePathname();
@@ -40,7 +39,7 @@ export const NavigationBar: React.FC<AvatarContainer.Props> = ({ userInfo }) => 
 				<ColorModeButton />
 				{userInfo && (
 					<>
-						<NotificationContainer />
+						{/*<NotificationContainer />*/}
 						<AvatarContainer userInfo={userInfo} />
 					</>
 				)}

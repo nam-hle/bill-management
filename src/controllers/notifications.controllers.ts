@@ -3,6 +3,7 @@ import { type BillMemberRole, type TransactionStatus } from "@/types";
 import {
 	type NotificationType,
 	type ClientNotification,
+	ClientNotificationSchema,
 	type TransactionWaitingNotification,
 	type BillCreatedNotificationMetadata,
 	type BillDeletedNotificationMetadata,
@@ -13,27 +14,26 @@ export namespace NotificationsControllers {
 	const NOTIFICATIONS_SELECT = `
 	id, 
 	type,
-	user_id,
-	created_at,
-	read_status,
+	userId:user_id,
+	createdAt:created_at,
+	readStatus:read_status,
 	metadata,
-	trigger:profiles!trigger_id (username, fullName:full_name),
+	trigger:profiles!trigger_id (fullName:full_name),
 	
 	transaction:transaction_id (
 		id,
 		amount,
-		sender:profiles!sender_id (userId:id, username, fullName:full_name),
-    receiver:profiles!receiver_id (userId:id, username, fullName:full_name)
+		status,
+		createdAt:created_at,
+		issuedAt:issued_at,
+		sender:profiles!sender_id (id, fullName:full_name),
+    receiver:profiles!receiver_id (id, fullName:full_name)
 	),
 
 	bill:bill_id (
 		id, 
 		description, 
-		createdAt:created_at, 
-		creator:profiles!creator_id (
-			username,
-			fullName:full_name
-		)
+		creator:profiles!creator_id ( fullName:full_name )
 	)
 	`;
 
@@ -67,10 +67,20 @@ export namespace NotificationsControllers {
 
 		const count = await countUnreadNotifications(supabase, userId);
 
+		const resultNoti = notifications.slice(0, PAGE_SIZE).map(toClientNotification);
+
+		resultNoti.forEach((n) => {
+			try {
+				ClientNotificationSchema.parse(n);
+			} catch (e) {
+				console.log({ n, e });
+			}
+		});
+
 		return {
 			count,
-			hasOlder: timestamp.after ? undefined : notifications.length > PAGE_SIZE,
-			notifications: notifications.slice(0, PAGE_SIZE).map(toClientNotification)
+			notifications: resultNoti,
+			hasOlder: timestamp.after ? undefined : notifications.length > PAGE_SIZE
 		};
 	}
 
