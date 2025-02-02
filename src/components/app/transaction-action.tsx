@@ -1,10 +1,13 @@
 import React from "react";
 import { useRouter } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { axiosInstance } from "@/axios";
 import { Button } from "@/components/ui/button";
 import { toaster } from "@/components/ui/toaster";
 import { capitalize, convertVerb } from "@/utils";
 import { type ClientTransaction, TransactionStatusEnumSchema } from "@/types";
+
 namespace TransactionAction {
 	export interface Props {
 		readonly currentUserId: string;
@@ -14,34 +17,40 @@ namespace TransactionAction {
 
 export const TransactionAction: React.FC<TransactionAction.Props> = ({ transaction, currentUserId }) => {
 	const router = useRouter();
+	const queryClient = useQueryClient();
 
-	const createHandler = React.useCallback(
-		(transactionId: string, status: "confirm" | "decline") => {
-			return async () => {
-				fetch(`/api/transactions/${transactionId}/${status}`, { method: "PATCH" }).then((response) => {
-					if (response.ok) {
-						toaster.create({
-							type: "success",
-							title: `Transaction ${capitalize(convertVerb(status).pastTense)}`,
-							description: `The transaction has been ${convertVerb(status).pastTense} successfully`
-						});
-						router.refresh();
-					} else {
-						toaster.create({
-							type: "error",
-							title: "Error",
-							description: `An error occurred while ${convertVerb(status).vIng} the transaction`
-						});
-					}
-				});
-			};
+	const mutation = useMutation({
+		mutationFn: async ({ action, transactionId }: { transactionId: string; action: "confirm" | "decline" }) => {
+			await axiosInstance.patch(`/transactions/${transactionId}/${action}`);
 		},
-		[router]
-	);
+		onError: (_, { action }) => {
+			toaster.create({
+				type: "error",
+				title: "Error",
+				description: `An error occurred while ${convertVerb(action).vIng} the transaction`
+			});
+		},
+		onSuccess: (_, { action }) => {
+			toaster.create({
+				type: "success",
+				title: `Transaction ${capitalize(convertVerb(action).pastTense)}`,
+				description: `The transaction has been ${convertVerb(action).pastTense} successfully`
+			});
+			queryClient.invalidateQueries({ queryKey: ["transactions"] }).then(() => {
+				router.refresh();
+			});
+		}
+	});
 
 	if (transaction.status === TransactionStatusEnumSchema.enum.Waiting && transaction.receiver.id === currentUserId) {
 		return (
-			<Button variant="solid" onClick={createHandler(transaction.id, "confirm")}>
+			<Button
+				size="xs"
+				variant="solid"
+				onClick={(event) => {
+					event.stopPropagation();
+					mutation.mutate({ action: "confirm", transactionId: transaction.id });
+				}}>
 				Confirm
 			</Button>
 		);
@@ -49,7 +58,14 @@ export const TransactionAction: React.FC<TransactionAction.Props> = ({ transacti
 
 	if (transaction.status === TransactionStatusEnumSchema.enum.Waiting && transaction.sender.id === currentUserId) {
 		return (
-			<Button variant="solid" onClick={createHandler(transaction.id, "decline")}>
+			<Button
+				size="xs"
+				variant="solid"
+				colorPalette="red"
+				onClick={(event) => {
+					event.stopPropagation();
+					mutation.mutate({ action: "decline", transactionId: transaction.id });
+				}}>
 				Decline
 			</Button>
 		);

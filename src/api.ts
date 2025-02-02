@@ -37,7 +37,7 @@ export namespace API {
 			export const BodySchema = z.object({
 				amount: z.number(),
 				issuedAt: z.string(),
-				receiverId: z.string()
+				receiverId: z.string().min(1, "Receiver is required")
 			});
 
 			export type Body = z.infer<typeof BodySchema>;
