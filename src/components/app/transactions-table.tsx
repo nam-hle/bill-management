@@ -6,6 +6,7 @@ import { Table, HStack, VStack, Heading } from "@chakra-ui/react";
 
 import { type API } from "@/api";
 import { axiosInstance } from "@/axios";
+import { EmptyState } from "@/components/ui/empty-state";
 import { displayDate, displayDateAsTitle } from "@/utils";
 import { FilterButton } from "@/components/app/filter-button";
 import { LinkedTableRow } from "@/components/app/table-body-row";
@@ -89,8 +90,14 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
-					{isLoading || !data ? (
+					{isLoading ? (
 						<TableBodySkeleton numberOfCols={mode === "advance" ? 7 : 6} />
+					) : !data?.data.length ? (
+						<Table.Row width="100%">
+							<Table.Cell colSpan={mode === "advance" ? 7 : 6}>
+								<EmptyState title="You have no transactions yet." />
+							</Table.Cell>
+						</Table.Row>
 					) : (
 						data.data.map((transaction) => (
 							<LinkedTableRow key={transaction.id} href={`/transactions/${transaction.id}`}>

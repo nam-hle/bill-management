@@ -1,14 +1,13 @@
 import { type SupabaseInstance } from "@/supabase/server";
+import { type BillMemberRole, type TransactionStatus } from "@/types";
 import {
-	type BillMemberRole,
 	type NotificationType,
-	type TransactionStatus,
 	type ClientNotification,
 	type TransactionWaitingNotification,
-	type BillUpdatedNotificationMetadata,
+	type BillCreatedNotificationMetadata,
 	type BillDeletedNotificationMetadata,
-	type BillCreatedNotificationMetadata
-} from "@/types";
+	type BillUpdatedNotificationMetadata
+} from "@/schemas/notification.schema";
 
 export namespace NotificationsControllers {
 	const NOTIFICATIONS_SELECT = `

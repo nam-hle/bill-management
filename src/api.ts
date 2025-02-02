@@ -10,6 +10,17 @@ export namespace API {
 			fullSize: z.number().int().nonnegative()
 		});
 
+	export namespace Notifications {
+		export namespace List {
+			export const SearchParamsSchema = z.object({
+				after: z.string().optional(),
+				before: z.string().optional()
+			});
+
+			export type SearchParams = z.infer<typeof SearchParamsSchema>;
+		}
+	}
+
 	export namespace Transactions {
 		export const ClientTransactionSchema = z.object({
 			id: z.string(),

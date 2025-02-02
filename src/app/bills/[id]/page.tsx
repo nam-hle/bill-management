@@ -23,5 +23,5 @@ export default async function BillDetailsPage(props: BillDetailsPage.Props) {
 	const users = await UsersControllers.getUsers(supabase);
 	const { updater, creator, ...bill } = await BillsControllers.getById(supabase, billId);
 
-	return <BillForm users={users} formState={bill} kind={FormKind.UPDATE} metadata={{ updater, creator, id: billId }} />;
+	return <BillForm users={users} formState={bill} kind={FormKind.UPDATE} metadata={{ creator, id: billId, updater: updater }} />;
 }

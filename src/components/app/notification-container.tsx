@@ -2,9 +2,10 @@ import React from "react";
 import { FaRegBell } from "react-icons/fa";
 import { Box, Stack, HStack, IconButton } from "@chakra-ui/react";
 
+import { APIPayload } from "@/types";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { APIPayload, type ClientNotification } from "@/types";
+import { type ClientNotification } from "@/schemas/notification.schema";
 import { NotificationMessage } from "@/components/app/notification-message";
 import { PopoverBody, PopoverRoot, PopoverArrow, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
