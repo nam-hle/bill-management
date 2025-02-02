@@ -4,6 +4,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Table, HStack, VStack, Heading } from "@chakra-ui/react";
 
+import { type API } from "@/api";
 import { axiosInstance } from "@/axios";
 import { displayDate, displayDateAsTitle } from "@/utils";
 import { FilterButton } from "@/components/app/filter-button";
@@ -24,10 +25,8 @@ namespace TransactionsTable {
 		readonly mode: "basic" | "advance";
 	}
 }
-export async function fetchTransactions({ page, senderId, receiverId }: { page: number; senderId?: string; receiverId?: string }) {
-	const { data } = await axiosInstance.get<DataListResponse<ClientTransaction>>("/transactions", {
-		params: { page, senderId, receiverId }
-	});
+export async function fetchTransactions(params: API.Transactions.List.SearchParams) {
+	const { data } = await axiosInstance.get<DataListResponse<ClientTransaction>>("/transactions", { params });
 
 	return data;
 }

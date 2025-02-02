@@ -4,15 +4,18 @@ import React from "react";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { IoIosAddCircle } from "react-icons/io";
+import { useMutation } from "@tanstack/react-query";
 import { Stack, Group, Input, HStack, Heading, InputAddon } from "@chakra-ui/react";
 
+import { type API } from "@/api";
+import { axiosInstance } from "@/axios";
 import { SERVER_DATE_FORMAT } from "@/utils";
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/app/select";
 import { toaster } from "@/components/ui/toaster";
+import { type ClientUser, type ClientTransaction } from "@/types";
 import { TransactionAction } from "@/components/app/transaction-action";
-import { type APIPayload, type ClientUser, type ClientTransaction } from "@/types";
 import { TransactionStatusBadge } from "@/components/app/transaction-status-badge";
 
 namespace TransactionForm {
@@ -37,35 +40,25 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 	const [amount, setAmount] = React.useState<string>(() => (kind.type === "update" ? kind.transaction.amount.toString() : ""));
 
 	const router = useRouter();
-	const onSubmit = React.useCallback(async () => {
-		await fetch("/api/transactions", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			},
-			body: JSON.stringify({
-				receiverId: receiverId!,
-				amount: parseInt(amount, 10),
-				issuedAt: format(new Date(), SERVER_DATE_FORMAT)
-			} satisfies APIPayload.Transaction.CreateTransactionRequestPayload)
-		}).then((response) => {
-			if (response.ok) {
-				router.push("/transactions");
+	const mutation = useMutation({
+		mutationFn: (payload: API.Transactions.Create.Body) => axiosInstance.post("/transactions", payload),
+		onError: () => {
+			toaster.create({
+				type: "error",
+				title: "Failed to create transaction",
+				description: "An error occurred while creating the transaction. Please try again."
+			});
+		},
+		onSuccess: () => {
+			router.push("/transactions");
 
-				toaster.create({
-					type: "success",
-					title: "Transaction created successfully",
-					description: "A new transaction has been created and saved successfully."
-				});
-			} else {
-				toaster.create({
-					type: "error",
-					title: "Failed to create transaction",
-					description: "An error occurred while creating the transaction. Please try again."
-				});
-			}
-		});
-	}, [amount, receiverId, router]);
+			toaster.create({
+				type: "success",
+				title: "Transaction created successfully",
+				description: "A new transaction has been created and saved successfully."
+			});
+		}
+	});
 
 	return (
 		<Stack gap="{spacing.4}">
@@ -108,7 +101,15 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 
 			{kind.type === "create" && (
 				<HStack>
-					<Button variant="solid" onClick={onSubmit}>
+					<Button
+						variant="solid"
+						onClick={() =>
+							mutation.mutate({
+								receiverId: receiverId!,
+								amount: parseInt(amount, 10),
+								issuedAt: format(new Date(), SERVER_DATE_FORMAT)
+							})
+						}>
 						<IoIosAddCircle /> Create
 					</Button>
 				</HStack>

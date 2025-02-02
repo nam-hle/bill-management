@@ -1,9 +1,8 @@
 import React from "react";
 import type { Metadata } from "next";
 
+import { ProfileForm } from "@/components/app/profile-form";
 import { getCurrentUser, createSupabaseServer } from "@/supabase/server";
-
-import { ProfileForm } from "./profile-form";
 
 export const metadata: Metadata = {
 	title: "Profile"
