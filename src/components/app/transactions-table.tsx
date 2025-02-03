@@ -6,13 +6,14 @@ import { Table, HStack, VStack, Heading } from "@chakra-ui/react";
 
 import { type API } from "@/api";
 import { axiosInstance } from "@/axios";
+import { type DataListResponse } from "@/types";
 import { EmptyState } from "@/components/ui/empty-state";
 import { displayDate, displayDateAsTitle } from "@/utils";
 import { FilterButton } from "@/components/app/filter-button";
 import { LinkedTableRow } from "@/components/app/table-body-row";
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
+import { type ClientTransaction } from "@/schemas/transactions.schema";
 import { TransactionAction } from "@/components/app/transaction-action";
-import { type DataListResponse, type ClientTransaction } from "@/types";
 import { TableBodySkeleton } from "@/components/app/table-body-skeleton";
 import { TransactionStatusBadge } from "@/components/app/transaction-status-badge";
 import { PaginationRoot, PaginationItems, PaginationNextTrigger, PaginationPrevTrigger } from "@/components/ui/pagination";

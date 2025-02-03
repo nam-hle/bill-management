@@ -1,7 +1,10 @@
 import { z } from "zod";
 
+import { axiosInstance } from "@/axios";
+import type { APIPayload } from "@/types";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
-import { ClientUserSchema, TransactionStatusEnumSchema } from "@/types";
+import { ClientTransactionSchema } from "@/schemas/transactions.schema";
+import { ClientNotificationSchema } from "@/schemas/notification.schema";
 
 export namespace API {
 	export const DataListResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
@@ -18,20 +21,44 @@ export namespace API {
 			});
 
 			export type SearchParams = z.infer<typeof SearchParamsSchema>;
+
+			export const ResponseSchema = z.object({
+				hasOlder: z.boolean().optional(),
+				count: z.number().int().nonnegative(),
+				notifications: z.array(ClientNotificationSchema)
+			});
+			export type Response = z.infer<typeof ResponseSchema>;
+
+			export function request(params: SearchParams) {
+				return async () => {
+					const { data } = await axiosInstance<Response>("/notifications", { params });
+
+					return data;
+				};
+			}
+		}
+
+		export namespace ReadSingle {
+			export const ResponseSchema = z.object({
+				unreadCount: z.number().int().nonnegative()
+			});
+			export type Response = z.infer<typeof ResponseSchema>;
+
+			export async function mutate(payload: { notificationId: string }) {
+				const { data } = await axiosInstance.patch<APIPayload.Notification.ReadNotificationResponse>(`/notifications/${payload.notificationId}/read`);
+
+				return data;
+			}
+		}
+
+		export namespace ReadAll {
+			export async function mutate() {
+				await axiosInstance.patch<APIPayload.Notification.ReadNotificationResponse>(`/notifications/read-all`);
+			}
 		}
 	}
 
 	export namespace Transactions {
-		export const ClientTransactionSchema = z.object({
-			id: z.string(),
-			amount: z.number(),
-			issuedAt: z.string(),
-			createdAt: z.string(),
-			sender: ClientUserSchema,
-			receiver: ClientUserSchema,
-			status: TransactionStatusEnumSchema
-		});
-
 		export namespace List {
 			export const SearchParamsSchema = z.object({
 				senderId: z.string().optional(),

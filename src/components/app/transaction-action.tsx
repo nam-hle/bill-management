@@ -6,7 +6,8 @@ import { axiosInstance } from "@/axios";
 import { Button } from "@/components/ui/button";
 import { toaster } from "@/components/ui/toaster";
 import { capitalize, convertVerb } from "@/utils";
-import { type ClientTransaction, TransactionStatusEnumSchema } from "@/types";
+import { TransactionStatusEnumSchema } from "@/types";
+import { type ClientTransaction } from "@/schemas/transactions.schema";
 
 namespace TransactionAction {
 	export interface Props {

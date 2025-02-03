@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 			userId: currentUser.id
 		});
 
-		return new Response(JSON.stringify({ count, hasOlder, success: true, notifications }), { status: 200 });
+		return new Response(JSON.stringify({ count, hasOlder, notifications }), { status: 200 });
 	} catch (error) {
 		console.log(error);
 

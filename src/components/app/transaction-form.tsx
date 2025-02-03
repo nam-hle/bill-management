@@ -12,12 +12,13 @@ import { Stack, Group, Input, HStack, Heading, InputAddon } from "@chakra-ui/rea
 
 import { API } from "@/api";
 import { axiosInstance } from "@/axios";
+import { type ClientUser } from "@/types";
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/app/select";
 import { toaster } from "@/components/ui/toaster";
 import { CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
-import { type ClientUser, type ClientTransaction } from "@/types";
+import { type ClientTransaction } from "@/schemas/transactions.schema";
 import { TransactionAction } from "@/components/app/transaction-action";
 import { TransactionStatusBadge } from "@/components/app/transaction-status-badge";
 

@@ -1,7 +1,6 @@
 import { z } from "zod";
 import type React from "react";
 
-import { type API } from "@/api";
 import { type Database } from "@/database.types";
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
 
@@ -90,8 +89,6 @@ export interface Balance {
 	readonly sent: number;
 	readonly received: number;
 }
-
-export type ClientTransaction = z.infer<typeof API.Transactions.ClientTransactionSchema>;
 
 export const ClientBillMemberSchema = z.object({
 	userId: z.string(),

@@ -1,3 +1,4 @@
+import { DEFAULT_PAGE_SIZE } from "@/constants";
 import { type SupabaseInstance } from "@/supabase/server";
 import { type BillMemberRole, type TransactionStatus } from "@/types";
 import {
@@ -26,8 +27,8 @@ export namespace NotificationsControllers {
 		status,
 		createdAt:created_at,
 		issuedAt:issued_at,
-		sender:profiles!sender_id (id, fullName:full_name),
-    receiver:profiles!receiver_id (id, fullName:full_name)
+		sender:profiles!sender_id (id, username, fullName:full_name),
+    receiver:profiles!receiver_id (id, username, fullName:full_name)
 	),
 
 	bill:bill_id (
@@ -42,8 +43,6 @@ export namespace NotificationsControllers {
 		readonly timestamp: { after?: string; before?: string };
 	}
 
-	const PAGE_SIZE = 5;
-
 	export async function getByUserId(
 		supabase: SupabaseInstance,
 		payload: QueryPayload
@@ -52,11 +51,11 @@ export namespace NotificationsControllers {
 		let query = supabase.from("notifications").select(NOTIFICATIONS_SELECT).eq("user_id", userId).order("created_at", { ascending: false });
 
 		if (timestamp.before) {
-			query = query.lt("created_at", timestamp.before).limit(PAGE_SIZE + 1);
+			query = query.lt("created_at", timestamp.before).limit(DEFAULT_PAGE_SIZE + 1);
 		} else if (timestamp.after) {
 			query = query.gt("created_at", timestamp.after);
 		} else {
-			query = query.limit(PAGE_SIZE + 1);
+			query = query.limit(DEFAULT_PAGE_SIZE + 1);
 		}
 
 		const { data: notifications, error: notificationsError } = await query;
@@ -67,11 +66,13 @@ export namespace NotificationsControllers {
 
 		const count = await countUnreadNotifications(supabase, userId);
 
-		const resultNoti = notifications.slice(0, PAGE_SIZE).map(toClientNotification);
+		const resultNoti = notifications.slice(0, DEFAULT_PAGE_SIZE).map(toClientNotification);
 
 		resultNoti.forEach((n) => {
 			try {
-				ClientNotificationSchema.parse(n);
+				if (n.id === "78db0e3b-1e67-49b2-b952-cb6619fce5cd") {
+					ClientNotificationSchema.parse(n);
+				}
 			} catch (e) {
 				console.log({ n, e });
 			}
@@ -80,7 +81,7 @@ export namespace NotificationsControllers {
 		return {
 			count,
 			notifications: resultNoti,
-			hasOlder: timestamp.after ? undefined : notifications.length > PAGE_SIZE
+			hasOlder: timestamp.after ? undefined : notifications.length > DEFAULT_PAGE_SIZE
 		};
 	}
 
@@ -229,9 +230,9 @@ export namespace NotificationsControllers {
 		await supabase.from("notifications").update({ read_status: true }).eq("user_id", userId);
 	}
 
-	export async function read(supabase: SupabaseInstance, notificationId: string) {
+	export async function read(supabase: SupabaseInstance, userId: string, notificationId: string) {
 		await supabase.from("notifications").update({ read_status: true }).eq("id", notificationId);
 
-		return countUnreadNotifications(supabase, notificationId);
+		return countUnreadNotifications(supabase, userId);
 	}
 }

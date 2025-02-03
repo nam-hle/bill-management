@@ -1,11 +1,9 @@
 import { z } from "zod";
 
-import { API } from "@/api";
 import type { Database } from "@/database.types";
 import { JsonSchema } from "@/schemas/base.schema";
 import { ClientBillSchema, BillMemberRoleEnumSchema } from "@/types";
-
-import ClientTransactionSchema = API.Transactions.ClientTransactionSchema;
+import { ClientTransactionSchema } from "@/schemas/transactions.schema";
 
 export const NotificationTypeSchema = z.enum([
 	"BillCreated",
