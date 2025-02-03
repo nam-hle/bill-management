@@ -30,7 +30,7 @@ export const ProfileAvatar: React.FC<ProfileAvatar.Props> = (props) => {
 
 	const { data: avatarUrl } = useQuery({
 		enabled: !!url,
-		queryKey: [url],
+		queryKey: ["profileAvatar", url],
 		queryFn: () => downloadImage("avatars", url)
 	});
 
@@ -51,7 +51,7 @@ export const ProfileAvatar: React.FC<ProfileAvatar.Props> = (props) => {
 
 	return (
 		<Stack alignItems="center">
-			<Avatar size="2xl" src={avatarUrl} />
+			<Avatar size="2xl" src={avatarUrl?.url} />
 			<FileUploadRoot
 				maxFiles={1}
 				width="fit-content"
@@ -59,7 +59,7 @@ export const ProfileAvatar: React.FC<ProfileAvatar.Props> = (props) => {
 				onFileAccept={(details) => mutation.mutate({ userId, file: details.files[0] })}>
 				<FileUploadTrigger asChild>
 					<Button size="xs" variant="outline" loadingText="Uploading..." loading={mutation.isPending}>
-						{avatarUrl ? "Change" : "Upload"}
+						{avatarUrl?.url ? "Change" : "Upload"}
 					</Button>
 				</FileUploadTrigger>
 			</FileUploadRoot>
@@ -79,9 +79,9 @@ async function uploadAvatar(payload: UploadAvatarPayload) {
 	return filePath;
 }
 
-export async function downloadImage(bucketName: "avatars" | "receipts", path: string | undefined) {
+export async function downloadImage(bucketName: "avatars" | "receipts", path: string | undefined): Promise<{ url: string | undefined }> {
 	if (!path) {
-		return;
+		return { url: undefined };
 	}
 
 	try {
@@ -90,9 +90,11 @@ export async function downloadImage(bucketName: "avatars" | "receipts", path: st
 			params: { path, bucketName }
 		});
 
-		return URL.createObjectURL(response.data);
+		return { url: URL.createObjectURL(response.data) };
 	} catch (error) {
 		// eslint-disable-next-line no-console
 		console.error("Error downloading image:", error);
 	}
+
+	return { url: undefined };
 }

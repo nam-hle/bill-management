@@ -1,5 +1,6 @@
 import { type NextRequest } from "next/server";
 
+import { API } from "@/api";
 import { getCurrentUser, createSupabaseServer } from "@/supabase/server";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
 
@@ -7,17 +8,17 @@ export async function GET(request: NextRequest) {
 	try {
 		const supabase = await createSupabaseServer();
 
-		const searchParams = request.nextUrl.searchParams;
-		const after = searchParams.get("after") ?? undefined;
-		const before = searchParams.get("before") ?? undefined;
+		const params = API.Notifications.List.SearchParamsSchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
+
+		if (params.error) {
+			return new Response(JSON.stringify({ details: params.error.errors, error: "Invalid request query" }), { status: 400 });
+		}
+
 		const currentUser = await getCurrentUser();
 
-		const { count, hasOlder, notifications } = await NotificationsControllers.getByUserId(supabase, {
-			userId: currentUser.id,
-			timestamp: { after, before }
-		});
+		const result = await NotificationsControllers.getByUserId(supabase, currentUser.id, params.data);
 
-		return new Response(JSON.stringify({ count, hasOlder, success: true, notifications }), { status: 200 });
+		return new Response(JSON.stringify(result), { status: 200 });
 	} catch (error) {
 		return new Response(
 			JSON.stringify({

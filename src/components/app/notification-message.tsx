@@ -13,7 +13,7 @@ import {
 	type TransactionWaitingNotification,
 	type TransactionDeclinedNotification,
 	type TransactionConfirmedNotification
-} from "@/types";
+} from "@/schemas/notification.schema";
 
 namespace NotificationMessage {
 	export interface Props {

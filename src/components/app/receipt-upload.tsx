@@ -19,7 +19,7 @@ export const ReceiptUpload: React.FC<{ editing: boolean; receiptFile: string | u
 	const supabase = createSupabaseClient();
 
 	const { data: receiptUrl } = useQuery({
-		queryKey: [receiptFile],
+		queryKey: ["receipts", receiptFile],
 		queryFn: () => downloadImage("receipts", receiptFile)
 	});
 
@@ -60,12 +60,12 @@ export const ReceiptUpload: React.FC<{ editing: boolean; receiptFile: string | u
 			{openDialog && (
 				<DialogRoot lazyMount open={openDialog} onOpenChange={(e) => setOpenDialog(e.open)}>
 					<DialogContent margin={0} width="100vw" height="100vh" boxShadow="none" justifyContent="center" backgroundColor="transparent">
-						<Center>{receiptUrl && <Image alt="receipt" src={receiptUrl} />}</Center>
+						<Center>{receiptUrl && <Image alt="receipt" src={receiptUrl.url} />}</Center>
 					</DialogContent>
 				</DialogRoot>
 			)}
 			<Stack width="100%" height="100%" alignItems="center" justifyContent="center">
-				{receiptUrl && <Image alt="receipt" src={receiptUrl} cursor="pointer" maxHeight="100px" onClick={() => setOpenDialog(true)} />}
+				{receiptUrl && <Image alt="receipt" cursor="pointer" maxHeight="100px" src={receiptUrl.url} onClick={() => setOpenDialog(true)} />}
 				{editing && (
 					<FileUploadRoot
 						maxFiles={1}

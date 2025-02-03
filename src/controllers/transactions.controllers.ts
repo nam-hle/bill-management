@@ -1,8 +1,9 @@
 import { type API } from "@/api";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
+import { Pagination, type TransactionStatus } from "@/types";
+import { type ClientTransaction } from "@/schemas/transactions.schema";
 import { getCurrentUser, type SupabaseInstance } from "@/supabase/server";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
-import { Pagination, type TransactionStatus, type ClientTransaction } from "@/types";
 
 export namespace TransactionsControllers {
 	const TRANSACTIONS_SELECT = `

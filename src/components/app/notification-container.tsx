@@ -1,126 +1,91 @@
 import React from "react";
 import { FaRegBell } from "react-icons/fa";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Box, Stack, HStack, IconButton } from "@chakra-ui/react";
 
+import { API } from "@/api";
+import { axiosInstance } from "@/axios";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { APIPayload, type ClientNotification } from "@/types";
+import { type ClientNotification } from "@/schemas/notification.schema";
 import { NotificationMessage } from "@/components/app/notification-message";
 import { PopoverBody, PopoverRoot, PopoverArrow, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export const NotificationContainer = () => {
 	const [unreadCount, setUnreadCount] = React.useState(0);
 	const [notifications, setNotifications] = React.useState<ClientNotification[]>([]);
-	const [latestTimestamp, setLatestTimestamp] = React.useState<string | null>(null);
-	const [oldestTimestamp, setOldestTimestamp] = React.useState<string | null>(null);
 	const [hasOlder, setHasOlder] = React.useState(true);
+	const [initialized, setInitialize] = React.useState(false);
 
-	const markAsReadAll = React.useCallback(() => {
-		fetch("/api/notifications/read-all", { method: "PATCH" }).then((response) => {
-			if (response.ok) {
-				setUnreadCount(0);
-				setNotifications((prev) => prev.map((notification) => ({ ...notification, readStatus: true })));
-			}
+	const { mutate: readAll } = useMutation({
+		mutationFn: API.Notifications.ReadAll.mutate,
+		onSuccess() {
+			setUnreadCount(0);
+			setNotifications((prev) => prev.map((notification) => ({ ...notification, readStatus: true })));
+		}
+	});
+	const { mutate: read } = useMutation({
+		mutationFn: API.Notifications.ReadSingle.mutate,
+		onSuccess({ unreadCount }, { notificationId }) {
+			setUnreadCount(() => unreadCount);
+			setNotifications((prev) =>
+				prev.map((notification) => (notification.id === notificationId ? { ...notification, readStatus: true } : notification))
+			);
+		}
+	});
+
+	const updateNotifications = React.useCallback((type: "append" | "prepend", response: API.Notifications.List.Response) => {
+		setHasOlder((prev) => response.hasOlder ?? prev);
+		setUnreadCount(response.unreadCount);
+		setNotifications((prev) => {
+			return type === "append" ? [...prev, ...response.notifications] : [...response.notifications, ...prev];
 		});
 	}, []);
 
-	const markAsRead = React.useCallback((notificationId: string) => {
-		fetch(`/api/notifications/${notificationId}/read`, { method: "PATCH" }).then((response) => {
-			if (response.ok) {
-				response.json().then((result) => {
-					const { unreadCount } = APIPayload.Notification.ReadNotificationResponseSchema.parse(result);
-
-					setUnreadCount(() => unreadCount);
-					setNotifications((prev) =>
-						prev.map((notification) => (notification.id === notificationId ? { ...notification, readStatus: true } : notification))
-					);
-				});
-			}
-		});
-	}, []);
-
-	const loadMore = React.useCallback(() => {
-		try {
-			if (!oldestTimestamp) {
-				return;
-			}
-
-			const searchParams = new URLSearchParams();
-			searchParams.append("before", oldestTimestamp);
-
-			fetch(`/api/notifications?${searchParams.toString()}`).then((response) => {
-				if (response.ok) {
-					response.json().then((result) => {
-						const {
-							count,
-							notifications,
-							hasOlder: hasOlderPayload
-						} = result as { count: number; hasOlder?: boolean; notifications: ClientNotification[] };
-						setUnreadCount(count);
-						setNotifications((prev) => [...prev, ...notifications]);
-
-						if (notifications.length > 0) {
-							setOldestTimestamp(notifications[notifications.length - 1].createdAt);
-						}
-
-						if (hasOlderPayload !== undefined) {
-							setHasOlder(() => hasOlderPayload);
-						}
-					});
-				}
-			});
-		} catch (error) {
-			// eslint-disable-next-line no-console
-			console.error("Error notification data!", error);
+	const { oldestTimestamp, latestTimestamp } = React.useMemo(() => {
+		if (notifications.length === 0) {
+			return { oldestTimestamp: undefined, latestTimestamp: undefined };
 		}
-	}, [oldestTimestamp]);
 
-	const fetchNotifications = React.useCallback(() => {
-		try {
-			const searchParams = new URLSearchParams();
+		return { latestTimestamp: notifications[0].createdAt, oldestTimestamp: notifications[notifications.length - 1].createdAt };
+	}, [notifications]);
 
-			if (latestTimestamp) {
-				searchParams.append("after", latestTimestamp);
-			}
+	const { data: initialData } = useQuery<API.Notifications.List.Response>({
+		queryKey: ["notifications"],
+		queryFn: () => API.Notifications.List.query({})
+	});
 
-			fetch(`/api/notifications?${searchParams.toString()}`).then((response) => {
-				if (response.ok) {
-					response.json().then((result) => {
-						const {
-							count,
-							notifications,
-							hasOlder: hasOlderPayload
-						} = result as { count: number; hasOlder?: boolean; notifications: ClientNotification[] };
-						setUnreadCount(count);
-						setNotifications((prev) => [...notifications, ...prev]);
+	const { data: fetchData } = useQuery({
+		enabled: initialized,
+		refetchOnMount: false,
+		refetchInterval: 10000,
+		queryKey: ["notifications", "refetch", latestTimestamp],
+		queryFn: () => API.Notifications.List.query({ after: latestTimestamp })
+	});
 
-						if (notifications.length > 0) {
-							setLatestTimestamp(notifications[0].createdAt);
+	const { mutate: loadMore, isPending: isLoadingOlderNotifications } = useMutation({
+		onSuccess: (olderData) => {
+			updateNotifications("append", olderData);
+		},
+		mutationFn: async (params: API.Notifications.List.SearchParams) => {
+			const { data } = await axiosInstance<API.Notifications.List.Response>("/notifications", { params });
 
-							if (!latestTimestamp) {
-								setOldestTimestamp(notifications[notifications.length - 1].createdAt);
-							}
-						}
-
-						if (hasOlderPayload !== undefined) {
-							setHasOlder(() => hasOlderPayload);
-						}
-					});
-				}
-			});
-		} catch (error) {
-			// eslint-disable-next-line no-console
-			console.error("Error notification data!", error);
+			return data;
 		}
-	}, [latestTimestamp]);
+	});
 
 	React.useEffect(() => {
-		fetchNotifications();
+		if (initialData) {
+			setInitialize(true);
+			updateNotifications("prepend", initialData);
+		}
+	}, [initialData, updateNotifications]);
 
-		const intervalId = setInterval(fetchNotifications, 10_000);
-
-		return () => clearInterval(intervalId);
-	}, [fetchNotifications]);
+	React.useEffect(() => {
+		if (fetchData) {
+			updateNotifications("prepend", fetchData);
+		}
+	}, [fetchData, initialData, updateNotifications]);
 
 	const [open, setOpen] = React.useState(false);
 
@@ -142,7 +107,7 @@ export const NotificationContainer = () => {
 				{notifications.length > 0 && (
 					<PopoverBody padding={0} display="flex" overflowY="auto" maxHeight="500px" gap="{spacing.2}" margin="{spacing.2}" flexDirection="column">
 						<HStack justifyContent="flex-end">
-							<Button size="xs" variant="ghost" onClick={markAsReadAll} disabled={unreadCount === 0}>
+							<Button size="xs" variant="ghost" onClick={() => readAll()} disabled={unreadCount === 0}>
 								Mark all as read
 							</Button>
 						</HStack>
@@ -154,14 +119,24 @@ export const NotificationContainer = () => {
 										notification={notification}
 										onClick={() => {
 											setOpen(false);
-											markAsRead(notification.id);
+											read({ notificationId: notification.id });
 										}}
 									/>
 								);
 							})}
 						</Stack>
 						<Box w="100%">
-							<Button w="100%" variant="ghost" onClick={loadMore} disabled={!hasOlder} aria-label="Load older notifications">
+							<Button
+								w="100%"
+								variant="ghost"
+								disabled={!hasOlder}
+								aria-label="Load older notifications"
+								loading={isLoadingOlderNotifications}
+								onClick={() => {
+									if (oldestTimestamp) {
+										loadMore({ before: oldestTimestamp });
+									}
+								}}>
 								{hasOlder ? "Load older notifications" : "No more notifications"}
 							</Button>
 						</Box>
