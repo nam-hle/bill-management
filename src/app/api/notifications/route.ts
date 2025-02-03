@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
 	try {
 		const supabase = await createSupabaseServer();
 
+		console.log(Object.fromEntries(request.nextUrl.searchParams));
 		const result = API.Notifications.List.SearchParamsSchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
 
 		if (result.error) {
@@ -16,10 +17,8 @@ export async function GET(request: NextRequest) {
 
 		const currentUser = await getCurrentUser();
 
-		const { count, hasOlder, notifications } = await NotificationsControllers.getByUserId(supabase, {
-			timestamp: result.data,
-			userId: currentUser.id
-		});
+		console.log(result.data);
+		const { count, hasOlder, notifications } = await NotificationsControllers.getByUserId(supabase, currentUser.id, result.data);
 
 		return new Response(JSON.stringify({ count, hasOlder, notifications }), { status: 200 });
 	} catch (error) {

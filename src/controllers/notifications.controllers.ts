@@ -1,3 +1,4 @@
+import { type API } from "@/api";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
 import { type SupabaseInstance } from "@/supabase/server";
 import { type BillMemberRole, type TransactionStatus } from "@/types";
@@ -38,22 +39,23 @@ export namespace NotificationsControllers {
 	)
 	`;
 
-	export interface QueryPayload {
-		readonly userId: string;
-		readonly timestamp: { after?: string; before?: string };
-	}
-
 	export async function getByUserId(
 		supabase: SupabaseInstance,
-		payload: QueryPayload
+		userId: string,
+		payload: API.Notifications.List.SearchParams
 	): Promise<{ count: number; hasOlder?: boolean; notifications: ClientNotification[] }> {
-		const { userId, timestamp } = payload;
 		let query = supabase.from("notifications").select(NOTIFICATIONS_SELECT).eq("user_id", userId).order("created_at", { ascending: false });
+		const before = "page" in payload ? undefined : payload.before;
+		const after = "page" in payload ? undefined : payload.after;
+		const page = "page" in payload ? payload.page : undefined;
+		console.log({ page, after, before });
 
-		if (timestamp.before) {
-			query = query.lt("created_at", timestamp.before).limit(DEFAULT_PAGE_SIZE + 1);
-		} else if (timestamp.after) {
-			query = query.gt("created_at", timestamp.after);
+		if (before) {
+			query = query.lt("created_at", before).limit(DEFAULT_PAGE_SIZE + 1);
+		} else if (after) {
+			query = query.gt("created_at", after);
+		} else if (page !== undefined) {
+			query = query.range((page - 1) * DEFAULT_PAGE_SIZE, (page - 1) * DEFAULT_PAGE_SIZE + DEFAULT_PAGE_SIZE);
 		} else {
 			query = query.limit(DEFAULT_PAGE_SIZE + 1);
 		}
@@ -81,7 +83,7 @@ export namespace NotificationsControllers {
 		return {
 			count,
 			notifications: resultNoti,
-			hasOlder: timestamp.after ? undefined : notifications.length > DEFAULT_PAGE_SIZE
+			hasOlder: after ? undefined : notifications.length > DEFAULT_PAGE_SIZE
 		};
 	}
 

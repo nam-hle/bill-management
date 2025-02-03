@@ -50,15 +50,17 @@ export const NotificationContainer = () => {
 	}, [notifications]);
 
 	const { data: initialData } = useQuery<API.Notifications.List.Response>({
+		enabled: false,
 		refetchInterval: false,
 		queryKey: ["notifications"],
 		queryFn: API.Notifications.List.request({})
 	});
 
 	const { data: fetchData } = useQuery({
+		enabled: false,
 		refetchOnMount: false,
 		refetchInterval: 10000,
-		enabled: !!latestTimestamp,
+
 		queryKey: ["notifications", "refetch"],
 		queryFn: API.Notifications.List.request({ after: latestTimestamp })
 	});
