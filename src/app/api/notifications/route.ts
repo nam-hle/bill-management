@@ -8,22 +8,18 @@ export async function GET(request: NextRequest) {
 	try {
 		const supabase = await createSupabaseServer();
 
-		console.log(Object.fromEntries(request.nextUrl.searchParams));
-		const result = API.Notifications.List.SearchParamsSchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
+		const params = API.Notifications.List.SearchParamsSchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
 
-		if (result.error) {
-			return new Response(JSON.stringify({ details: result.error.errors, error: "Invalid request query" }), { status: 400 });
+		if (params.error) {
+			return new Response(JSON.stringify({ details: params.error.errors, error: "Invalid request query" }), { status: 400 });
 		}
 
 		const currentUser = await getCurrentUser();
 
-		console.log(result.data);
-		const { count, hasOlder, notifications } = await NotificationsControllers.getByUserId(supabase, currentUser.id, result.data);
+		const result = await NotificationsControllers.getByUserId(supabase, currentUser.id, params.data);
 
-		return new Response(JSON.stringify({ count, hasOlder, notifications }), { status: 200 });
+		return new Response(JSON.stringify(result), { status: 200 });
 	} catch (error) {
-		console.log(error);
-
 		return new Response(
 			JSON.stringify({
 				error: "Internal Server Error",

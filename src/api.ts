@@ -15,33 +15,26 @@ export namespace API {
 
 	export namespace Notifications {
 		export namespace List {
-			export const SearchParamsSchema = z.union([
-				z.object({
-					after: z.string().optional(),
-					before: z.string().optional()
-				}),
-				z.object({
-					page: z.coerce.number().int().positive().optional().default(DEFAULT_PAGE_NUMBER)
-				})
-			]);
+			export const SearchParamsSchema = z.object({
+				after: z.string().optional(),
+				before: z.string().optional(),
+				page: z.coerce.number().int().positive().optional()
+			});
 
 			export type SearchParams = z.infer<typeof SearchParamsSchema>;
 
 			export const ResponseSchema = z.object({
 				hasOlder: z.boolean().optional(),
-				count: z.number().int().nonnegative(),
+				fullSize: z.number().int().nonnegative(),
+				unreadCount: z.number().int().nonnegative(),
 				notifications: z.array(ClientNotificationSchema)
 			});
 			export type Response = z.infer<typeof ResponseSchema>;
 
-			export function request(params: SearchParams) {
-				console.log("@", SearchParamsSchema.parse({ page: 1 }));
+			export async function query(params: SearchParams) {
+				const { data } = await axiosInstance<Response>("/notifications", { params });
 
-				return async () => {
-					const { data } = await axiosInstance<Response>("/notifications", { params });
-
-					return data;
-				};
+				return data;
 			}
 		}
 

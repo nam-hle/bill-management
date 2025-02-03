@@ -15,6 +15,7 @@ export const NotificationContainer = () => {
 	const [unreadCount, setUnreadCount] = React.useState(0);
 	const [notifications, setNotifications] = React.useState<ClientNotification[]>([]);
 	const [hasOlder, setHasOlder] = React.useState(true);
+	const [initialized, setInitialize] = React.useState(false);
 
 	const { mutate: readAll } = useMutation({
 		mutationFn: API.Notifications.ReadAll.mutate,
@@ -35,7 +36,7 @@ export const NotificationContainer = () => {
 
 	const updateNotifications = React.useCallback((type: "append" | "prepend", response: API.Notifications.List.Response) => {
 		setHasOlder((prev) => response.hasOlder ?? prev);
-		setUnreadCount(response.count);
+		setUnreadCount(response.unreadCount);
 		setNotifications((prev) => {
 			return type === "append" ? [...prev, ...response.notifications] : [...response.notifications, ...prev];
 		});
@@ -50,19 +51,16 @@ export const NotificationContainer = () => {
 	}, [notifications]);
 
 	const { data: initialData } = useQuery<API.Notifications.List.Response>({
-		enabled: false,
-		refetchInterval: false,
 		queryKey: ["notifications"],
-		queryFn: API.Notifications.List.request({})
+		queryFn: () => API.Notifications.List.query({})
 	});
 
 	const { data: fetchData } = useQuery({
-		enabled: false,
+		enabled: initialized,
 		refetchOnMount: false,
 		refetchInterval: 10000,
-
-		queryKey: ["notifications", "refetch"],
-		queryFn: API.Notifications.List.request({ after: latestTimestamp })
+		queryKey: ["notifications", "refetch", latestTimestamp],
+		queryFn: () => API.Notifications.List.query({ after: latestTimestamp })
 	});
 
 	const { mutate: loadMore, isPending: isLoadingOlderNotifications } = useMutation({
@@ -78,6 +76,7 @@ export const NotificationContainer = () => {
 
 	React.useEffect(() => {
 		if (initialData) {
+			setInitialize(true);
 			updateNotifications("prepend", initialData);
 		}
 	}, [initialData, updateNotifications]);

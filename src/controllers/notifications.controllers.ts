@@ -5,7 +5,6 @@ import { type BillMemberRole, type TransactionStatus } from "@/types";
 import {
 	type NotificationType,
 	type ClientNotification,
-	ClientNotificationSchema,
 	type TransactionWaitingNotification,
 	type BillCreatedNotificationMetadata,
 	type BillDeletedNotificationMetadata,
@@ -43,12 +42,11 @@ export namespace NotificationsControllers {
 		supabase: SupabaseInstance,
 		userId: string,
 		payload: API.Notifications.List.SearchParams
-	): Promise<{ count: number; hasOlder?: boolean; notifications: ClientNotification[] }> {
+	): Promise<API.Notifications.List.Response> {
 		let query = supabase.from("notifications").select(NOTIFICATIONS_SELECT).eq("user_id", userId).order("created_at", { ascending: false });
 		const before = "page" in payload ? undefined : payload.before;
 		const after = "page" in payload ? undefined : payload.after;
 		const page = "page" in payload ? payload.page : undefined;
-		console.log({ page, after, before });
 
 		if (before) {
 			query = query.lt("created_at", before).limit(DEFAULT_PAGE_SIZE + 1);
@@ -66,24 +64,14 @@ export namespace NotificationsControllers {
 			throw notificationsError;
 		}
 
-		const count = await countUnreadNotifications(supabase, userId);
-
-		const resultNoti = notifications.slice(0, DEFAULT_PAGE_SIZE).map(toClientNotification);
-
-		resultNoti.forEach((n) => {
-			try {
-				if (n.id === "78db0e3b-1e67-49b2-b952-cb6619fce5cd") {
-					ClientNotificationSchema.parse(n);
-				}
-			} catch (e) {
-				console.log({ n, e });
-			}
-		});
+		const unreadCount = await count(supabase, userId, { readStatus: false });
+		const fullSizeCount = await count(supabase, userId, { readStatus: undefined });
 
 		return {
-			count,
-			notifications: resultNoti,
-			hasOlder: after ? undefined : notifications.length > DEFAULT_PAGE_SIZE
+			fullSize: fullSizeCount,
+			unreadCount: unreadCount,
+			hasOlder: after ? undefined : notifications.length > DEFAULT_PAGE_SIZE,
+			notifications: notifications.slice(0, DEFAULT_PAGE_SIZE).map(toClientNotification)
 		};
 	}
 
@@ -126,8 +114,14 @@ export namespace NotificationsControllers {
 		}
 	}
 
-	export async function countUnreadNotifications(supabase: SupabaseInstance, userId: string): Promise<number> {
-		const { data, error } = await supabase.from("notifications").select("*", { count: "exact" }).eq("user_id", userId).eq("read_status", false);
+	export async function count(supabase: SupabaseInstance, userId: string, payload: { readStatus: boolean | undefined }): Promise<number> {
+		const query = supabase.from("notifications").select("*", { count: "exact" }).eq("user_id", userId);
+
+		if (payload.readStatus !== undefined) {
+			query.eq("read_status", payload.readStatus);
+		}
+
+		const { data, error } = await query;
 
 		if (error || data === null) {
 			throw error;
@@ -235,6 +229,6 @@ export namespace NotificationsControllers {
 	export async function read(supabase: SupabaseInstance, userId: string, notificationId: string) {
 		await supabase.from("notifications").update({ read_status: true }).eq("id", notificationId);
 
-		return countUnreadNotifications(supabase, userId);
+		return count(supabase, userId, { readStatus: false });
 	}
 }

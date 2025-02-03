@@ -6,53 +6,56 @@ import { Stack, HStack, VStack, Heading } from "@chakra-ui/react";
 
 import { API } from "@/api";
 import { noop } from "@/utils";
-import { axiosInstance } from "@/axios";
-import { type DataListResponse } from "@/types";
 import { Button } from "@/components/ui/button";
-import { DEFAULT_PAGE_NUMBER } from "@/constants";
-import { type ClientTransaction } from "@/schemas/transactions.schema";
-import { type ClientNotification } from "@/schemas/notification.schema";
+import { SkeletonText } from "@/components/ui/skeleton";
+import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
 import { NotificationMessage } from "@/components/app/notification-message";
 
 namespace TransactionsTable {
 	export interface Props {}
 }
-export async function fetchNotifications() {
-	const { data } = await axiosInstance.get<DataListResponse<ClientTransaction>>("/notifications");
-
-	return data as unknown as { notifications: ClientNotification[] };
-}
 
 export const NotificationsTable: React.FC<TransactionsTable.Props> = () => {
 	const [page, setPage] = React.useState(DEFAULT_PAGE_NUMBER);
+	const isFirstPage = React.useMemo(() => page === DEFAULT_PAGE_NUMBER, [page]);
 
-	const { data } = useQuery({
+	const { data, isPending } = useQuery({
 		queryKey: ["notifications", "list", page],
-		queryFn: API.Notifications.List.request({ page })
+		queryFn: () => API.Notifications.List.query({ page })
 	});
 
-	// const onPageChange = React.useCallback((params: { page: number }) => {
-	// 	setPage(() => params.page);
-	// }, []);
+	const maxPage = React.useMemo(() => (data?.fullSize ? Math.ceil(data?.fullSize / DEFAULT_PAGE_SIZE) : 1), [data?.fullSize]);
 
 	return (
-		<VStack>
-			<VStack width="100%" gap="{spacing.4}">
-				<HStack width="100%" justifyContent="space-between">
-					<Heading as="h1">Notifications</Heading>
-				</HStack>
-
-				<Stack gap="0">
-					{data?.notifications.map((notification) => {
-						return <NotificationMessage onClick={noop} key={notification.id} notification={notification} />;
-					})}
-				</Stack>
-			</VStack>
+		<VStack width="60vh" gap="{spacing.4}" marginInline="auto">
 			<HStack width="100%" justifyContent="space-between">
-				<Button onClick={() => setPage(page - 1)}>Previous</Button>
-				<Button onClick={() => setPage(page + 1)}>Next</Button>
+				<Heading as="h1">Notifications</Heading>
 			</HStack>
-			{/*<NotificationContainer />*/}
+			<HStack width="100%" justifyContent={isFirstPage ? "flex-end" : "space-between"}>
+				{!isFirstPage && (
+					<Button variant="subtle" onClick={() => setPage(page - 1)}>
+						Previous
+					</Button>
+				)}
+				{page === maxPage ? undefined : (
+					<Button variant="subtle" onClick={() => setPage(page + 1)}>
+						Next
+					</Button>
+				)}
+			</HStack>
+			<Stack width="60vh" gap="{spacing.2}">
+				{isPending ? (
+					<>
+						{Array.from({ length: DEFAULT_PAGE_SIZE }).map((_, index) => {
+							return <SkeletonText gap="2" key={index} noOfLines={2} />;
+						})}
+					</>
+				) : (
+					data?.notifications.map((notification) => {
+						return <NotificationMessage onClick={noop} key={notification.id} notification={notification} />;
+					})
+				)}
+			</Stack>
 		</VStack>
 	);
 };
