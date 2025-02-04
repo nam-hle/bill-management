@@ -24,14 +24,17 @@ export const NavigationBar: React.FC<AvatarContainer.Props> = ({ userInfo }) => 
 			<Stack direction="row" minHeight="48px" gap="{spacing.2}" alignItems="center">
 				{userInfo && (
 					<>
-						<LinkButton href="/" active={pageName === ""}>
+						<LinkButton href="/" size="sm" active={pageName === ""}>
 							Home
 						</LinkButton>
-						<LinkButton href="/bills" active={pageName === "bills"}>
+						<LinkButton size="sm" href="/bills" active={pageName === "bills"}>
 							Bills
 						</LinkButton>
-						<LinkButton href="/transactions" active={pageName === "transactions"}>
+						<LinkButton size="sm" href="/transactions" active={pageName === "transactions"}>
 							Transactions
+						</LinkButton>
+						<LinkButton size="sm" variant="solid" href="/bills/new">
+							Create
 						</LinkButton>
 					</>
 				)}

@@ -7,6 +7,7 @@ import { SelectItem, SelectRoot, SelectContent, SelectTrigger, SelectValueText }
 
 export const Select: React.FC<{
 	width?: string;
+	disabled?: boolean;
 	readonly?: boolean;
 	value: string | undefined;
 	onValueChange: (value: string) => void;
@@ -19,8 +20,9 @@ export const Select: React.FC<{
 			size="md"
 			width={props.width}
 			collection={collection}
-			readOnly={props.readonly}
+			disabled={props.disabled}
 			value={props.value ? [props.value] : []}
+			readOnly={props.readonly || props.items.length === 0}
 			onValueChange={(e) => {
 				if (e.value.length !== 1) {
 					throw new Error("Expected exactly one value");
@@ -29,7 +31,7 @@ export const Select: React.FC<{
 				props.onValueChange(e.value[0]);
 			}}>
 			<SelectTrigger>
-				<SelectValueText placeholder="Select one" />
+				<SelectValueText placeholder={props.items.length === 0 ? "No available item" : "Select one"} />
 			</SelectTrigger>
 			<SelectContent>
 				{collection.items.map(({ value, label }) => (

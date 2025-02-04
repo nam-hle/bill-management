@@ -16,6 +16,7 @@ export const BankAccountSchema = z.object({
 	providerName: z.string(),
 	accountNumber: z.string(),
 	accountHolder: z.string(),
+	providerNumber: z.number(),
 	type: BankAccountTypeEnumSchema,
 	status: BankAccountStatusEnumSchema
 });

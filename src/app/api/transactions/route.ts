@@ -31,22 +31,23 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: Request) {
 	try {
-		const body = await request.json();
 		const supabase = await createSupabaseServer();
 
+		const body = await request.json();
 		const parsedBody = API.Transactions.Create.BodySchema.safeParse(body);
 
 		if (parsedBody.error) {
 			return new Response(JSON.stringify({ error: "Invalid request body", details: parsedBody.error.errors }), { status: 400 });
 		}
 
-		const { amount, issuedAt, receiverId } = parsedBody.data;
+		const { amount, issuedAt, receiverId, bankAccountId } = parsedBody.data;
 		const sender = await getCurrentUser();
 
 		await TransactionsControllers.create(supabase, {
 			amount,
 			issuedAt,
 			receiverId,
+			bankAccountId,
 			senderId: sender.id
 		});
 

@@ -60,6 +60,25 @@ export namespace API {
 	}
 
 	export namespace Transactions {
+		export namespace Suggestion {
+			export const ResponseSchema = z.object({
+				suggestion: z
+					.object({
+						amount: z.number(),
+						receiverId: z.string(),
+						bankAccountId: z.string()
+					})
+					.optional()
+			});
+
+			export type Response = z.infer<typeof ResponseSchema>;
+
+			export async function query() {
+				const { data } = await axiosInstance.post<Response>("/transactions/suggest");
+
+				return data;
+			}
+		}
 		export namespace List {
 			export const SearchParamsSchema = z.object({
 				senderId: z.string().optional(),
@@ -76,6 +95,7 @@ export namespace API {
 			export const BodySchema = z.object({
 				amount: z.number(),
 				issuedAt: z.string(),
+				bankAccountId: z.string().optional(),
 				receiverId: z.string().min(1, "Receiver is required")
 			});
 
@@ -99,6 +119,17 @@ export namespace API {
 
 				return data;
 			}
+		}
+	}
+
+	export namespace QR {
+		export namespace Get {
+			export const QueryParamsSchema = z.object({
+				amount: z.number(),
+				bankAccountId: z.string()
+			});
+
+			export type QueryParams = z.infer<typeof QueryParamsSchema>;
 		}
 	}
 }
