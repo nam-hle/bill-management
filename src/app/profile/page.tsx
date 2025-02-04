@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 
 import { ProfileForm } from "@/components/app/profile-form";
 import { getCurrentUser, createSupabaseServer } from "@/supabase/server";
+import { BankAccountsTable } from "@/components/app/bank-accounts-table";
 
 export const metadata: Metadata = {
 	title: "Profile"
@@ -22,5 +23,10 @@ export default async function Profile() {
 		throw new Error("Email not found");
 	}
 
-	return <ProfileForm userId={currentUser.id} fullName={data.fullName} email={currentUser.email} avatarUrl={data.avatarUrl} />;
+	return (
+		<>
+			<ProfileForm userId={currentUser.id} fullName={data.fullName} email={currentUser.email} avatarUrl={data.avatarUrl} />
+			<BankAccountsTable currentUserId={currentUser.id} />
+		</>
+	);
 }

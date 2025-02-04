@@ -48,7 +48,9 @@ export type Database = {
 			};
 		};
 		Enums: {
+			BankAccountType: "Bank" | "Wallet";
 			BillMemberRole: "Creditor" | "Debtor";
+			BankAccountStatus: "Active" | "Inactive";
 			TransactionStatus: "Waiting" | "Confirmed" | "Declined";
 			NotificationType: "BillCreated" | "BillUpdated" | "BillDeleted" | "TransactionWaiting" | "TransactionConfirmed" | "TransactionDeclined";
 		};
@@ -217,6 +219,53 @@ export type Database = {
 						foreignKeyName: "bills_updater_id_fkey";
 					}
 				];
+			};
+			bank_accounts: {
+				Relationships: [
+					{
+						isOneToOne: false;
+						columns: ["user_id"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "bank_accounts_user_id_fkey";
+					}
+				];
+				Row: {
+					id: string;
+					user_id: string;
+					created_at: string;
+					is_default: boolean;
+					provider_name: string;
+					account_holder: string;
+					account_number: string;
+					provider_number: number;
+					type: Database["public"]["Enums"]["BankAccountType"];
+					status: Database["public"]["Enums"]["BankAccountStatus"];
+				};
+				Insert: {
+					id?: string;
+					user_id: string;
+					created_at?: string;
+					is_default?: boolean;
+					provider_name: string;
+					account_holder: string;
+					account_number: string;
+					provider_number: number;
+					type: Database["public"]["Enums"]["BankAccountType"];
+					status?: Database["public"]["Enums"]["BankAccountStatus"];
+				};
+				Update: {
+					id?: string;
+					user_id?: string;
+					created_at?: string;
+					is_default?: boolean;
+					provider_name?: string;
+					account_holder?: string;
+					account_number?: string;
+					provider_number?: number;
+					type?: Database["public"]["Enums"]["BankAccountType"];
+					status?: Database["public"]["Enums"]["BankAccountStatus"];
+				};
 			};
 			notifications: {
 				Row: {

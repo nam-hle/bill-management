@@ -3,6 +3,7 @@ import { z } from "zod";
 import { axiosInstance } from "@/axios";
 import type { APIPayload } from "@/types";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
+import { BankAccountSchema } from "@/schemas/bank-accounts.schema";
 import { ClientTransactionSchema } from "@/schemas/transactions.schema";
 import { ClientNotificationSchema } from "@/schemas/notification.schema";
 
@@ -79,6 +80,25 @@ export namespace API {
 			});
 
 			export type Body = z.infer<typeof BodySchema>;
+		}
+	}
+
+	export namespace BankAccounts {
+		export namespace List {
+			export const SearchParamsSchema = z.object({
+				userId: z.string()
+			});
+
+			export type SearchParams = z.infer<typeof SearchParamsSchema>;
+
+			export const ResponseSchema = z.array(BankAccountSchema);
+			export type Response = z.infer<typeof ResponseSchema>;
+
+			export async function query(params: SearchParams) {
+				const { data } = await axiosInstance<Response>("/bank-accounts", { params });
+
+				return data;
+			}
 		}
 	}
 }

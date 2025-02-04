@@ -2,7 +2,7 @@
 import React from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
-import { Input, Stack, HStack, Heading } from "@chakra-ui/react";
+import { Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chakra-ui/react";
 
 import { axiosInstance } from "@/axios";
 import { Field } from "@/components/ui/field";
@@ -49,19 +49,29 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 	const onSubmit = React.useMemo(() => handleSubmit((data) => mutate(data)), [handleSubmit, mutate]);
 
 	return (
-		<Stack as="form" width="30%" gap="{spacing.4}" marginInline="auto" onSubmit={onSubmit}>
-			<Heading>Account</Heading>
-			<Controller
-				name="avatarUrl"
-				control={control}
-				render={({ field }) => <ProfileAvatar size={150} userId={props.userId} url={field.value ?? undefined} onAvatarChange={field.onChange} />}
-			/>
-			<Field readOnly label="Email">
-				<Input value={props.email} pointerEvents="none" />
-			</Field>
-			<Field label="Full Name*" invalid={!!errors.fullName} errorText={errors.fullName?.message}>
-				<Input {...register("fullName", { required: "Full Name is required" })} placeholder="Enter your full name" />
-			</Field>
+		<Stack as="form" width="60%" gap="{spacing.4}" onSubmit={onSubmit} marginInline="auto">
+			<Heading>Profile</Heading>
+			<SimpleGrid gap="{spacing.2}" templateRows="repeat(2, 1fr)" templateColumns="repeat(12, 1fr)">
+				<GridItem rowSpan={2} colSpan={3} alignSelf="center">
+					<Controller
+						name="avatarUrl"
+						control={control}
+						render={({ field }) => <ProfileAvatar size={200} userId={props.userId} url={field.value ?? undefined} onAvatarChange={field.onChange} />}
+					/>
+				</GridItem>
+
+				<GridItem colSpan={9}>
+					<Field readOnly label="Email">
+						<Input value={props.email} pointerEvents="none" />
+					</Field>
+				</GridItem>
+				<GridItem colSpan={9}>
+					<Field label="Full Name*" invalid={!!errors.fullName} errorText={errors.fullName?.message}>
+						<Input {...register("fullName", { required: "Full Name is required" })} placeholder="Enter your full name" />
+					</Field>
+				</GridItem>
+			</SimpleGrid>
+
 			<HStack justifyContent="flex-end">
 				<Button type="submit" disabled={!isDirty} loadingText="Saving..." loading={isSubmitting || isPending}>
 					Save
