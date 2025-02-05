@@ -49,8 +49,6 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ details: data, error: "Failed to generate QR Code" }, { status: 500 });
 		}
 	} catch (error) {
-		console.error("Error generating VietQR:", error);
-
 		return NextResponse.json({ error: "QR Code generation failed" }, { status: 500 });
 	}
 }
