@@ -1,15 +1,19 @@
+"use client";
+
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Stack, HStack, Heading } from "@chakra-ui/react";
 
-import { UsersControllers } from "@/controllers/users.controllers";
-import { getCurrentUser, createSupabaseServer } from "@/supabase/server";
+import { type Balance } from "@/types";
+import { axiosInstance } from "@/axios";
+import { Skeleton } from "@/components/ui/skeleton";
 import { StatRoot, StatLabel, StatValueText } from "@/components/ui/stat";
 
-export async function BalanceReport() {
-	const supabase = await createSupabaseServer();
-	const currentUser = await getCurrentUser();
-
-	const { net, sent, paid, owed, received } = await UsersControllers.report(supabase, currentUser.id);
+export function BalanceReport() {
+	const { data } = useQuery<{ data: Balance }>({
+		queryKey: ["balance-report"],
+		queryFn: () => axiosInstance.get("/profile/balance")
+	});
 
 	return (
 		<Stack gap={2}>
@@ -18,25 +22,33 @@ export async function BalanceReport() {
 			<HStack justify="space-between">
 				<StatRoot>
 					<StatLabel info="The total amount you need to pay back to others">Owed</StatLabel>
-					<StatValueText value={owed} color="green.600" />
+					<ReportSkeleton number={data?.data?.owed} />
 				</StatRoot>
 				<StatRoot>
 					<StatLabel info="The total amount you have received by transactions by others">Received</StatLabel>
-					<StatValueText value={received} color="green.600" />
+					<ReportSkeleton number={data?.data?.received} />
 				</StatRoot>
 				<StatRoot>
 					<StatLabel info="The total amount you have paid on behalf of others">Paid</StatLabel>
-					<StatValueText value={-paid} color="red.600" />
+					<ReportSkeleton number={data?.data?.paid} />
 				</StatRoot>
 				<StatRoot>
 					<StatLabel info="The total amount you sent by transactions to others">Sent</StatLabel>
-					<StatValueText value={-sent} color="red.600" />
+					<ReportSkeleton number={data?.data?.sent} />
 				</StatRoot>
 				<StatRoot>
 					<StatLabel>Net Balance</StatLabel>
-					<StatValueText value={net} color={net >= 0 ? "green.600" : "red:600"} />
+					<ReportSkeleton number={data?.data?.net} />
 				</StatRoot>
 			</HStack>
 		</Stack>
 	);
 }
+
+const ReportSkeleton: React.FC<{ number: number | undefined }> = ({ number }) => {
+	if (number === undefined) {
+		return <Skeleton loading height="6" width="60px" />;
+	}
+
+	return <StatValueText value={number} />;
+};

@@ -1,8 +1,10 @@
 import { type API } from "@/api";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
 import { Pagination, type TransactionStatus } from "@/types";
+import { UsersControllers } from "@/controllers/users.controllers";
 import { type ClientTransaction } from "@/schemas/transactions.schema";
 import { getCurrentUser, type SupabaseInstance } from "@/supabase/server";
+import { BankAccountsController } from "@/controllers/bank-accounts.controller";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
 
 export namespace TransactionsControllers {
@@ -13,14 +15,18 @@ export namespace TransactionsControllers {
     amount,
     status,
     sender:profiles!sender_id (userId:id, username, fullName:full_name),
+    bankAccountId:bank_account_id,
     receiver:profiles!receiver_id (userId:id, username, fullName:full_name)
   `;
 
-	export async function create(supabase: SupabaseInstance, payload: { amount: number; issuedAt: string; senderId: string; receiverId: string }) {
-		const { issuedAt: issued_at, senderId: sender_id, receiverId: receiver_id, ...rest } = payload;
+	export async function create(
+		supabase: SupabaseInstance,
+		payload: { amount: number; issuedAt: string; senderId: string; receiverId: string; bankAccountId: string | undefined }
+	) {
+		const { issuedAt: issued_at, senderId: sender_id, receiverId: receiver_id, bankAccountId: bank_account_id, ...rest } = payload;
 		const { data, error } = await supabase
 			.from("transactions")
-			.insert({ ...rest, issued_at, sender_id, receiver_id })
+			.insert({ ...rest, issued_at, sender_id, receiver_id, bank_account_id })
 			.select("id")
 			.single();
 
@@ -40,6 +46,45 @@ export namespace TransactionsControllers {
 		});
 
 		return data;
+	}
+
+	export async function suggest(supabase: SupabaseInstance, senderId: string): Promise<API.Transactions.Suggestion.Response> {
+		const { error, data: receivers } = await supabase
+			.from("user_financial_summary")
+			.select("*")
+			.lt("balance", 0)
+			.order("balance", { ascending: true });
+
+		if (error) {
+			throw error;
+		}
+
+		if (!receivers?.length) {
+			return { suggestion: undefined };
+		}
+
+		const receiver = receivers[0];
+		const receiverBalance = receiver.balance;
+
+		if (receiverBalance === null) {
+			throw new Error("Amount is null");
+		}
+
+		if (receiver.user_id === null) {
+			throw new Error("User id is null");
+		}
+
+		const bankAccount = await BankAccountsController.getDefaultAccountByUserId(supabase, receiver.user_id);
+
+		if (!bankAccount) {
+			return { suggestion: undefined };
+		}
+
+		const senderBalance = await UsersControllers.reportUsingView(supabase, senderId);
+
+		const amount = Math.min(Math.abs(senderBalance.net), Math.abs(receiverBalance));
+
+		return { suggestion: { amount, receiverId: receiver.user_id, bankAccountId: bankAccount.id } };
 	}
 
 	export async function getMany(
@@ -142,24 +187,6 @@ export namespace TransactionsControllers {
 		}
 
 		return toClientTransaction(data);
-	}
-
-	export async function getByUserId(
-		supabase: SupabaseInstance,
-		payload: { userId: string; pagination: Pagination }
-	): Promise<{ count: number; transactions: ClientTransaction[] }> {
-		const { userId, pagination } = payload;
-		const { data, count } = await supabase
-			.from("transactions")
-			.select(TRANSACTIONS_SELECT, { count: "exact" })
-			.or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
-			.range(...Pagination.toRange(pagination));
-
-		if (!data || count === null) {
-			throw new Error("Error fetching transactions");
-		}
-
-		return { count, transactions: data.map(toClientTransaction) };
 	}
 
 	export async function report(supabase: SupabaseInstance, userId: string): Promise<{ sent: number; received: number }> {

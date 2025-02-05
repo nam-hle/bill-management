@@ -9,6 +9,7 @@ export const ClientTransactionSchema = z.object({
 	createdAt: z.string(),
 	sender: ClientUserSchema,
 	receiver: ClientUserSchema,
-	status: TransactionStatusEnumSchema
+	status: TransactionStatusEnumSchema,
+	bankAccountId: z.string().nullable()
 });
 export type ClientTransaction = z.infer<typeof ClientTransactionSchema>;

@@ -27,9 +27,6 @@ export type Database = {
 		};
 	};
 	public: {
-		Views: {
-			[_ in never]: never;
-		};
 		CompositeTypes: {
 			[_ in never]: never;
 		};
@@ -45,6 +42,19 @@ export type Database = {
 					received: number;
 					self_paid: number;
 				}[];
+			};
+		};
+		Views: {
+			user_financial_summary: {
+				Relationships: [];
+				Row: {
+					owed: number | null;
+					paid: number | null;
+					sent: number | null;
+					balance: number | null;
+					user_id: string | null;
+					received: number | null;
+				};
 			};
 		};
 		Enums: {
@@ -124,51 +134,67 @@ export type Database = {
 						referencedColumns: ["id"];
 						referencedRelation: "profiles";
 						foreignKeyName: "bill_members_user_id_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["user_id"];
+						referencedColumns: ["user_id"];
+						foreignKeyName: "bill_members_user_id_fkey";
+						referencedRelation: "user_financial_summary";
 					}
 				];
 			};
-			transactions: {
+			bank_accounts: {
 				Row: {
 					id: string;
-					amount: number;
-					issued_at: string;
-					sender_id: string;
+					user_id: string;
 					created_at: string;
-					receiver_id: string;
-					status: Database["public"]["Enums"]["TransactionStatus"];
+					is_default: boolean;
+					provider_name: string;
+					account_holder: string;
+					account_number: string;
+					provider_number: number;
+					type: Database["public"]["Enums"]["BankAccountType"];
+					status: Database["public"]["Enums"]["BankAccountStatus"];
 				};
 				Insert: {
 					id?: string;
-					amount: number;
-					issued_at: string;
-					sender_id: string;
+					user_id: string;
 					created_at?: string;
-					receiver_id: string;
-					status?: Database["public"]["Enums"]["TransactionStatus"];
+					is_default?: boolean;
+					provider_name: string;
+					account_holder: string;
+					account_number: string;
+					provider_number: number;
+					type: Database["public"]["Enums"]["BankAccountType"];
+					status?: Database["public"]["Enums"]["BankAccountStatus"];
 				};
 				Update: {
 					id?: string;
-					amount?: number;
-					issued_at?: string;
-					sender_id?: string;
+					user_id?: string;
 					created_at?: string;
-					receiver_id?: string;
-					status?: Database["public"]["Enums"]["TransactionStatus"];
+					is_default?: boolean;
+					provider_name?: string;
+					account_holder?: string;
+					account_number?: string;
+					provider_number?: number;
+					type?: Database["public"]["Enums"]["BankAccountType"];
+					status?: Database["public"]["Enums"]["BankAccountStatus"];
 				};
 				Relationships: [
 					{
 						isOneToOne: false;
-						columns: ["receiver_id"];
+						columns: ["user_id"];
 						referencedColumns: ["id"];
 						referencedRelation: "profiles";
-						foreignKeyName: "transactions_receiver_id_fkey";
+						foreignKeyName: "bank_accounts_user_id_fkey";
 					},
 					{
 						isOneToOne: false;
-						columns: ["sender_id"];
-						referencedColumns: ["id"];
-						referencedRelation: "profiles";
-						foreignKeyName: "transactions_sender_id_fkey";
+						columns: ["user_id"];
+						referencedColumns: ["user_id"];
+						foreignKeyName: "bank_accounts_user_id_fkey";
+						referencedRelation: "user_financial_summary";
 					}
 				];
 			};
@@ -213,59 +239,95 @@ export type Database = {
 					},
 					{
 						isOneToOne: false;
+						columns: ["creator_id"];
+						referencedColumns: ["user_id"];
+						foreignKeyName: "bills_creator_id_fkey";
+						referencedRelation: "user_financial_summary";
+					},
+					{
+						isOneToOne: false;
 						columns: ["updater_id"];
 						referencedColumns: ["id"];
 						referencedRelation: "profiles";
 						foreignKeyName: "bills_updater_id_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["updater_id"];
+						referencedColumns: ["user_id"];
+						foreignKeyName: "bills_updater_id_fkey";
+						referencedRelation: "user_financial_summary";
 					}
 				];
 			};
-			bank_accounts: {
-				Relationships: [
-					{
-						isOneToOne: false;
-						columns: ["user_id"];
-						referencedColumns: ["id"];
-						referencedRelation: "profiles";
-						foreignKeyName: "bank_accounts_user_id_fkey";
-					}
-				];
+			transactions: {
 				Row: {
 					id: string;
-					user_id: string;
+					amount: number;
+					issued_at: string;
+					sender_id: string;
 					created_at: string;
-					is_default: boolean;
-					provider_name: string;
-					account_holder: string;
-					account_number: string;
-					provider_number: number;
-					type: Database["public"]["Enums"]["BankAccountType"];
-					status: Database["public"]["Enums"]["BankAccountStatus"];
+					receiver_id: string;
+					bank_account_id: string | null;
+					status: Database["public"]["Enums"]["TransactionStatus"];
 				};
 				Insert: {
 					id?: string;
-					user_id: string;
+					amount: number;
+					issued_at: string;
+					sender_id: string;
 					created_at?: string;
-					is_default?: boolean;
-					provider_name: string;
-					account_holder: string;
-					account_number: string;
-					provider_number: number;
-					type: Database["public"]["Enums"]["BankAccountType"];
-					status?: Database["public"]["Enums"]["BankAccountStatus"];
+					receiver_id: string;
+					bank_account_id?: string | null;
+					status?: Database["public"]["Enums"]["TransactionStatus"];
 				};
 				Update: {
 					id?: string;
-					user_id?: string;
+					amount?: number;
+					issued_at?: string;
+					sender_id?: string;
 					created_at?: string;
-					is_default?: boolean;
-					provider_name?: string;
-					account_holder?: string;
-					account_number?: string;
-					provider_number?: number;
-					type?: Database["public"]["Enums"]["BankAccountType"];
-					status?: Database["public"]["Enums"]["BankAccountStatus"];
+					receiver_id?: string;
+					bank_account_id?: string | null;
+					status?: Database["public"]["Enums"]["TransactionStatus"];
 				};
+				Relationships: [
+					{
+						isOneToOne: false;
+						referencedColumns: ["id"];
+						columns: ["bank_account_id"];
+						referencedRelation: "bank_accounts";
+						foreignKeyName: "transactions_bank_account_id_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["receiver_id"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "transactions_receiver_id_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["receiver_id"];
+						referencedColumns: ["user_id"];
+						referencedRelation: "user_financial_summary";
+						foreignKeyName: "transactions_receiver_id_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["sender_id"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "transactions_sender_id_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["sender_id"];
+						referencedColumns: ["user_id"];
+						referencedRelation: "user_financial_summary";
+						foreignKeyName: "transactions_sender_id_fkey";
+					}
+				];
 			};
 			notifications: {
 				Row: {
@@ -325,10 +387,24 @@ export type Database = {
 					},
 					{
 						isOneToOne: false;
+						columns: ["trigger_id"];
+						referencedColumns: ["user_id"];
+						referencedRelation: "user_financial_summary";
+						foreignKeyName: "notifications_trigger_id_fkey";
+					},
+					{
+						isOneToOne: false;
 						columns: ["user_id"];
 						referencedColumns: ["id"];
 						referencedRelation: "profiles";
 						foreignKeyName: "notifications_user_id_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["user_id"];
+						referencedColumns: ["user_id"];
+						foreignKeyName: "notifications_user_id_fkey";
+						referencedRelation: "user_financial_summary";
 					}
 				];
 			};

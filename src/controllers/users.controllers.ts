@@ -39,6 +39,16 @@ export namespace UsersControllers {
 		return users;
 	}
 
+	export async function reportUsingView(supabase: SupabaseInstance, userId: string): Promise<Balance> {
+		const { data, error } = await supabase.from("user_financial_summary").select("*").eq("user_id", userId).single();
+
+		if (error) {
+			throw error;
+		}
+
+		return { paid: data.paid ?? 0, sent: data.sent ?? 0, owed: data.owed ?? 0, net: data.balance ?? 0, received: data.received ?? 0 };
+	}
+
 	export async function report(supabase: SupabaseInstance, userId: string): Promise<Balance> {
 		const { data, error } = await supabase.rpc("report", { target_user_id: userId }).single();
 

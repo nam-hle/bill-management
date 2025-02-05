@@ -20,7 +20,7 @@ export default async function TransactionsPage() {
 				mode="advance"
 				currentUserId={currentUser.id}
 				action={
-					<LinkButton variant="solid" href="/transactions/new">
+					<LinkButton size="sm" variant="solid" href="/transactions/new">
 						<IoIosAddCircle /> New
 					</LinkButton>
 				}

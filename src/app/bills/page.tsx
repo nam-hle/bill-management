@@ -85,7 +85,7 @@ export default async function BillsPage(props: Props) {
 				bills={bills ?? []}
 				currentUserId={currentUser.id}
 				action={
-					<LinkButton variant="solid" href="/bills/new">
+					<LinkButton size="sm" variant="solid" href="/bills/new">
 						<IoIosAddCircle /> New
 					</LinkButton>
 				}
