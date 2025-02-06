@@ -3,15 +3,18 @@
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
+		"prepare": "husky",
 		"dev": "next dev",
 		"build": "next build --no-lint",
 		"start": "next start",
 		"watch": "tsc -watch",
 		"lint": "next lint --quiet && prettier --check .",
 		"lint:fix": "next lint --fix && prettier --write .",
-		"generate-types": "supabase gen types typescript --project-id kktfrhtzsgvnecsjoxiu > src/database.types.ts && pnpm lint:fix",
-		"generate-types:local": "supabase gen types typescript --local > src/database.types.ts && pnpm lint:fix",
-		"prepare": "husky"
+		"generate-types": "supabase gen types typescript --local > src/database.types.ts",
+		"postgenerate-types": "pnpm lint:fix",
+		"preplaywright": "pnpm exec playwright install chromium",
+		"playwright": "pnpm exec playwright test",
+		"playwright:ui": "pnpm playwright --ui"
 	},
 	"dependencies": {
 		"@chakra-ui/react": "^3.2.5",
@@ -40,6 +43,7 @@
 	"devDependencies": {
 		"@eslint/eslintrc": "^3",
 		"@hookform/devtools": "^4.3.3",
+		"@playwright/test": "^1.50.1",
 		"@stylistic/eslint-plugin-ts": "^2.12.0",
 		"@tanstack/eslint-plugin-query": "^5.66.0",
 		"@types/events": "^3.0.3",
@@ -58,6 +62,7 @@
 		"lint-staged": "^15.4.3",
 		"prettier": "3.4.2",
 		"supabase": "^2.2.1",
+		"tsx": "^4.19.2",
 		"typescript": "^5"
 	},
 	"packageManager": "pnpm@9.15.1+sha512.1acb565e6193efbebda772702950469150cf12bcc764262e7587e71d19dc98a423dff9536e57ea44c49bdf790ff694e83c27be5faa23d67e0c033b583be4bfcf",
