@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Start" type="CompoundRunConfigurationType">
+  <configuration default="false" name="Start Dev" type="CompoundRunConfigurationType">
     <toRun name="Dev" type="js.build_tools.npm" />
-    <toRun name="Watch" type="js.build_tools.npm" />
+    <toRun name="Watch TS" type="js.build_tools.npm" />
     <method v="2" />
   </configuration>
 </component>

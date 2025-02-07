@@ -13,7 +13,7 @@
 		"generate-types": "supabase gen types typescript --local > src/database.types.ts",
 		"postgenerate-types": "pnpm lint:fix",
 		"preplaywright": "pnpm exec playwright install chromium",
-		"playwright": "pnpm exec playwright test",
+		"playwright": "pnpm exec playwright test --workers=1",
 		"playwright:ui": "pnpm playwright --ui"
 	},
 	"dependencies": {
@@ -51,6 +51,7 @@
 		"@types/node": "^20",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
+		"@types/yargs": "^17.0.33",
 		"eslint": "^9",
 		"eslint-config-next": "15.1.3",
 		"eslint-plugin-functional": "^8.0.0",
@@ -63,7 +64,8 @@
 		"prettier": "3.4.2",
 		"supabase": "^2.2.1",
 		"tsx": "^4.19.2",
-		"typescript": "^5"
+		"typescript": "^5",
+		"yargs": "^17.7.2"
 	},
 	"packageManager": "pnpm@9.15.1+sha512.1acb565e6193efbebda772702950469150cf12bcc764262e7587e71d19dc98a423dff9536e57ea44c49bdf790ff694e83c27be5faa23d67e0c033b583be4bfcf",
 	"lint-staged": {

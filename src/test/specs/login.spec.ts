@@ -1,6 +1,7 @@
-import { test, expect } from "@playwright/test";
+import { expect } from "@playwright/test";
 
-import { deleteUser, createTestUser } from "@/test/seeds/user";
+import { test } from "@/test/setup";
+import { seedUser } from "@/test/functions/seed-user";
 
 test("Login should fail with incorrect credentials", async ({ page }) => {
 	await page.goto("/");
@@ -8,7 +9,7 @@ test("Login should fail with incorrect credentials", async ({ page }) => {
 	await expect(page).toHaveURL("/login");
 
 	await page.fill('input[name="email"]', "harry@example.com");
-	await page.fill('input[name="password"]', "123456");
+	await page.fill('input[name="password"]', DEFAULT_PASSWORD);
 
 	await page.click('button[type="submit"]');
 
@@ -18,7 +19,7 @@ test("Login should fail with incorrect credentials", async ({ page }) => {
 
 	await expect(errorMessage).toHaveText("Invalid login credentials");
 
-	const userId = await createTestUser();
+	await seedUser({ email: "harry", fullName: "Harry Potter" });
 
 	await page.click('button[type="submit"]');
 
@@ -27,6 +28,4 @@ test("Login should fail with incorrect credentials", async ({ page }) => {
 	const balanceHeader = page.locator("h1").first();
 	await expect(balanceHeader).toBeVisible();
 	await expect(balanceHeader).toHaveText("Balance");
-
-	await deleteUser(userId);
 });

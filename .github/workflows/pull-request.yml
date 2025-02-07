@@ -28,7 +28,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: "pnpm"
 
       - name: Install dependencies
@@ -46,8 +46,7 @@ jobs:
 
       - name: Link remote Supabase test instance
         run: supabase link --project-ref $SUPABASE_PROJECT_ID
-      - run: yes | supabase db reset --linked --no-seed
-      - run: supabase db push --linked
+      - run: supabase db reset --linked --no-seed --linked <<< 'y'
 
       - name: Initialize Supabase
         run: |
@@ -57,3 +56,12 @@ jobs:
       - name: Run Playwright
         run: |
           pnpm playwright
+
+      - name: Upload Playwright Videos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-videos
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 3
