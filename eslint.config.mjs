@@ -88,6 +88,14 @@ const eslintConfig = [
 				{ next: "*", prev: "block-like", blankLine: "always" }
 			]
 		}
+	},
+	{
+		files: ["src/test/**"],
+		rules: {
+			"no-console": "off",
+			"@typescript-eslint/no-require-imports": "off",
+			"import/no-extraneous-dependencies": ["error", { devDependencies: true }]
+		}
 	}
 ];
 

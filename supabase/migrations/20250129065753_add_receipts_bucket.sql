@@ -5,4 +5,6 @@ alter table "public"."profiles" alter column "full_name" set not null;
 insert into storage.buckets
 (id, name, public)
 values
-    ('receipts', 'receipts', false);
+    ('receipts', 'receipts', false)
+ON CONFLICT (id)
+DO UPDATE SET name = EXCLUDED.name, public = EXCLUDED.public;;
