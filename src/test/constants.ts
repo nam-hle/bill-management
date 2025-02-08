@@ -1,1 +1,1 @@
-const DEFAULT_PASSWORD = "123456";
+export const DEFAULT_PASSWORD = "123456";

@@ -1,5 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 
+import { DEFAULT_PASSWORD } from "@/test/constants";
+
 export namespace Actions {
 	export async function login(page: Page, emailName: string) {
 		await page.goto("/login");

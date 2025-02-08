@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test";
 
 import { test } from "@/test/setup";
+import { DEFAULT_PASSWORD } from "@/test/constants";
 import { seedUser } from "@/test/functions/seed-user";
 
 test("Login should fail with incorrect credentials", async ({ page }) => {
