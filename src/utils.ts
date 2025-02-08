@@ -1,27 +1,4 @@
-import { parse, format, isToday, isValid, isThisWeek, isYesterday, formatDistanceToNow, differenceInCalendarDays } from "date-fns";
-
-import { createSupabaseClient } from "@/supabase/client";
-
-export async function downloadImage(bucketName: "avatars" | "receipts", path: string | undefined) {
-	try {
-		if (!path) {
-			return;
-		}
-
-		const supabase = createSupabaseClient();
-
-		const { data, error } = await supabase.storage.from(bucketName).download(path);
-
-		if (error) {
-			throw error;
-		}
-
-		return URL.createObjectURL(data);
-	} catch (error) {
-		// eslint-disable-next-line no-console
-		console.error("Error downloading image: ", error);
-	}
-}
+import { format, isToday, isThisWeek, isYesterday, formatDistanceToNow, differenceInCalendarDays } from "date-fns";
 
 export function noop() {}
 
@@ -32,14 +9,6 @@ export function formatDate(date?: string | null) {
 	const value = date ?? new Date();
 
 	return { server: format(value, SERVER_DATE_FORMAT), client: format(value, CLIENT_DATE_FORMAT) };
-}
-
-export function isValidClientDate(dateString: string | null) {
-	if (dateString === null) {
-		return false;
-	}
-
-	return isValid(parse(dateString, CLIENT_DATE_FORMAT, new Date()));
 }
 
 export function formatTime(time: string | undefined | null) {

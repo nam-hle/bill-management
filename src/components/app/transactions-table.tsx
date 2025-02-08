@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Table, HStack, VStack, Heading } from "@chakra-ui/react";
+import { Table, HStack, VStack, Heading, VisuallyHidden } from "@chakra-ui/react";
 
 import { type API } from "@/api";
 import { axiosInstance } from "@/axios";
@@ -87,7 +87,11 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 						<Table.ColumnHeader>Receiver</Table.ColumnHeader>
 						<Table.ColumnHeader>Amount</Table.ColumnHeader>
 						<Table.ColumnHeader>Status</Table.ColumnHeader>
-						{mode === "advance" && <Table.ColumnHeader></Table.ColumnHeader>}
+						{mode === "advance" && (
+							<Table.ColumnHeader>
+								<VisuallyHidden>Action</VisuallyHidden>
+							</Table.ColumnHeader>
+						)}
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
