@@ -14,9 +14,24 @@ export namespace Actions {
 	}
 
 	export async function logout(page: Page) {
-		await page.click(".chakra-avatar__root", { strict: true, timeout: 5000 });
-		await page.getByRole("button", { name: "Sign out" }).click();
+		await page.context().clearCookies();
+		await page.reload();
 
 		await expect(page).toHaveURL("/login");
+	}
+
+	export async function fillTransactionForm(page: Page, params: { amount: string; receiver: string }) {
+		await expect(page).toHaveURL("/transactions");
+
+		await page.getByRole("link", { name: "New" }).click();
+
+		await page.getByRole("combobox", { name: "Receiver" }).click();
+		await page.getByRole("option", { name: params.receiver }).click();
+
+		await page.fill('input[name="amount"]', params.amount);
+
+		await page.getByRole("main").getByRole("button", { name: "Create" }).click();
+
+		await expect(page).toHaveURL("/transactions");
 	}
 }

@@ -1,7 +1,7 @@
 import { devices, defineConfig } from "@playwright/test";
 
 const CI = process.env.CI;
-const port = CI ? 3000 : 3001;
+const port = 3001;
 
 export default defineConfig({
 	forbidOnly: !!CI,
@@ -10,7 +10,7 @@ export default defineConfig({
 	testDir: "./src/test/specs",
 	reporter: CI ? "list" : "html",
 	expect: {
-		timeout: CI ? 30_000 : 5_000
+		// timeout: CI ? 30_000 : 5_000
 	},
 	use: {
 		trace: "on-first-retry",

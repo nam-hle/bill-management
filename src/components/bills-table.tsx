@@ -123,7 +123,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 	);
 
 	return (
-		<VStack width="100%" gap="{spacing.4}">
+		<VStack width="100%" gap="{spacing.4}" data-testid="table-container">
 			<HStack width="100%" justifyContent="space-between">
 				<Heading as="h1">
 					{title ?? "Bills"}

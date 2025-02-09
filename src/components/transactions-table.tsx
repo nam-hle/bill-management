@@ -61,16 +61,16 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 	}, []);
 
 	return (
-		<VStack width="100%" gap="{spacing.4}">
-			<HStack width="100%" justifyContent="space-between">
-				<Heading as="h1">
+		<VStack width="100%" gap="{spacing.4}" data-testid="table-container">
+			<HStack width="100%" data-testid="table-heading" justifyContent="space-between">
+				<Heading as="h1" data-testid="table-title">
 					{title ?? "Transactions"}
 					{mode === "advance" && isSuccess ? ` (${data.fullSize})` : ""}
 				</Heading>
 				{action}
 			</HStack>
 			{mode === "advance" && (
-				<HStack width="100%">
+				<HStack width="100%" data-testid="table-filters">
 					<FilterButton {...createOwnerFilter("toMe")}>To Me</FilterButton>
 					<FilterButton {...createOwnerFilter("byMe")}>By Me</FilterButton>
 				</HStack>
@@ -78,7 +78,7 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 
 			{/*{transactions.length === 0 && <EmptyState width="100%" title="You have no transactions yet." />}*/}
 
-			<Table.Root size="md" interactive variant="outline" aria-label={isLoading ? "Loading" : "Settled"}>
+			<Table.Root size="md" interactive variant="outline" data-testId={`table__${isLoading ? "loading" : "settled"}`}>
 				<Table.Header>
 					<Table.Row>
 						<Table.ColumnHeader>ID</Table.ColumnHeader>

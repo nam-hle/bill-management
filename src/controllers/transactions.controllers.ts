@@ -90,8 +90,8 @@ export namespace TransactionsControllers {
 	export async function getMany(
 		supabase: SupabaseInstance,
 		filters?: {
+			page?: number;
 			senderId?: string;
-			pageNumber?: number;
 			receiverId?: string;
 		}
 	): Promise<API.Transactions.List.Response> {
@@ -99,7 +99,7 @@ export namespace TransactionsControllers {
 
 		const currentUser = await getCurrentUser();
 
-		const { senderId, pageNumber, receiverId } = filters ?? {};
+		const { page, senderId, receiverId } = filters ?? {};
 
 		if (senderId) {
 			finalQuery.eq("sender_id", senderId);
@@ -115,7 +115,7 @@ export namespace TransactionsControllers {
 			data: transactions
 		} = await finalQuery
 			.order("issued_at", { ascending: false })
-			.range(...Pagination.toRange({ ...Pagination.getDefault(), pageNumber: pageNumber ?? DEFAULT_PAGE_NUMBER }));
+			.range(...Pagination.toRange({ ...Pagination.getDefault(), pageNumber: page ?? DEFAULT_PAGE_NUMBER }));
 
 		if (error) {
 			throw error;
