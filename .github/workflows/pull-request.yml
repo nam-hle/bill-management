@@ -37,14 +37,14 @@ jobs:
       #      - name: Lint
       #        run: pnpm lint
 
-      #      - name: Build
-      #        run: pnpm build
+      - name: Build
+        run: pnpm build
 
       - uses: supabase/setup-cli@v1
         with:
           version: latest
 
-      - run: supabase start
+      - run: supabase start --exclude realtime,logflare,vector,studio,inbucket,edge-runtime
 
       - name: Create env file
         run: node scripts.js
