@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 import { test } from "@/test/setup";
 import { Actions } from "@/test/helpers/actions";
 import { Locators } from "@/test/helpers/locators";
@@ -46,21 +48,37 @@ test("basic", async ({ page }) => {
 
 	const transactionsTable = await Locators.locateTable(page, 0);
 
+	const firstRows = [
+		{ sender: RON, amount: "40", receiver: HARRY, status: "Waiting", action: "Confirm", issuedAt: "Today" },
+		{ sender: RON, amount: "41", receiver: HARRY, status: "Waiting", action: "Confirm", issuedAt: "Today" },
+		{ amount: "42", receiver: HARRY, sender: HERMIONE, status: "Waiting", action: "Confirm", issuedAt: "Today" },
+		{ amount: "43", receiver: HARRY, sender: HERMIONE, status: "Waiting", action: "Confirm", issuedAt: "Today" },
+		{ amount: "44", receiver: RON, sender: HARRY, status: "Waiting", action: "Decline", issuedAt: "Today" }
+	];
 	await Assertions.assertTransactionsTable(transactionsTable, {
+		rows: firstRows,
 		heading: "Transactions (6)",
-		rows: [
-			{ sender: RON, amount: "40", receiver: HARRY, status: "Waiting", action: "Confirm", issuedAt: "Today" },
-			{ sender: RON, amount: "41", receiver: HARRY, status: "Waiting", action: "Confirm", issuedAt: "Today" },
-			{ amount: "42", receiver: HARRY, sender: HERMIONE, status: "Waiting", action: "Confirm", issuedAt: "Today" },
-			{ amount: "43", receiver: HARRY, sender: HERMIONE, status: "Waiting", action: "Confirm", issuedAt: "Today" },
-			{ amount: "44", receiver: RON, sender: HARRY, status: "Waiting", action: "Decline", issuedAt: "Today" }
-		]
+		pagination: {
+			totalPages: 2,
+			currentPage: 1
+		}
 	});
 
 	await transactionsTable.nextPageButton.click();
 
 	await Assertions.assertTransactionsTable(transactionsTable, {
 		heading: "Transactions (6)",
+		pagination: {
+			totalPages: 2,
+			currentPage: 2
+		},
 		rows: [{ amount: "45", sender: HARRY, status: "Waiting", action: "Decline", issuedAt: "Today", receiver: HERMIONE }]
 	});
+
+	await Actions.goToHomePage(page);
+
+	await Assertions.assertStats(page, { Sent: "89", Received: "166", "Net Balance": "77" });
+
+	const recentTable = await Locators.locateTable(page, 1);
+	await Assertions.assertTransactionsTable(recentTable, { pagination: null, rows: firstRows.map((row) => _.omit(row, "action")) });
 });

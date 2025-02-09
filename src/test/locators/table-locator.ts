@@ -25,6 +25,14 @@ export class TableLocator {
 		return this;
 	}
 
+	getContainer() {
+		return this.tableContainer;
+	}
+
+	getLocator() {
+		return this.table;
+	}
+
 	getHeading() {
 		return this.page.getByTestId("table-title").nth(this.tableIndex);
 	}

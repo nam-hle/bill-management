@@ -16,18 +16,34 @@ export namespace Assertions {
 
 	export async function assertTransactionsTable(
 		table: TableLocator,
-		expected: { heading?: string; rows: { sender: string; amount: string; status: string; action?: string; receiver: string; issuedAt?: string }[] }
+		params: {
+			heading?: string;
+			pagination?: null | { totalPages: number; currentPage: number };
+			rows: { sender: string; amount: string; status: string; action?: string; receiver: string; issuedAt?: string }[];
+		}
 	) {
 		await table.waitForLoading();
 
 		await test.step("Assert Transactions Table", async () => {
-			if (expected.heading) {
-				await expect(table.getHeading()).toHaveText(expected.heading);
+			if (params.heading) {
+				await expect(table.getHeading()).toHaveText(params.heading);
 			}
 
-			for (let rowIndex = 0; rowIndex < expected.rows.length; rowIndex++) {
+			if (params.pagination !== undefined) {
+				const pagination = table.getContainer().locator(`[aria-label="pagination"]`);
+
+				if (params.pagination === null) {
+					await expect(pagination).not.toBeVisible();
+				} else {
+					await expect(pagination).toBeVisible();
+					await expect(pagination.locator(`[aria-label$="page ${params.pagination.currentPage}"][aria-current="page"]`)).toBeVisible();
+					await expect(pagination.locator(`[aria-label="last page, page ${params.pagination.totalPages}"]`)).toBeVisible();
+				}
+			}
+
+			for (let rowIndex = 0; rowIndex < params.rows.length; rowIndex++) {
 				await test.step(`Assert Transaction row index ${rowIndex}`, async () => {
-					const row = expected.rows[rowIndex];
+					const row = params.rows[rowIndex];
 					await table.getRow(rowIndex).getCell("Sender").assertContent(row.sender);
 					await table.getRow(rowIndex).getCell("Receiver").assertContent(row.receiver);
 					await table.getRow(rowIndex).getCell("Amount").assertContent(row.amount);

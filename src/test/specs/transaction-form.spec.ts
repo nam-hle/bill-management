@@ -16,6 +16,7 @@ test("basic", async ({ page, browser }) => {
 	const transactionsTable = await Locators.locateTable(page, 0);
 
 	await Assertions.assertTransactionsTable(transactionsTable, {
+		pagination: null,
 		rows: [{ amount: "42", status: "Waiting", action: "Decline", issuedAt: "Today", sender: "Harry Potter", receiver: "Ron Weasley" }]
 	});
 
@@ -24,6 +25,7 @@ test("basic", async ({ page, browser }) => {
 
 	const recentTable = await Locators.locateTable(page, 1);
 	await Assertions.assertTransactionsTable(recentTable, {
+		pagination: null,
 		rows: [{ amount: "42", status: "Waiting", issuedAt: "Today", sender: "Harry Potter", receiver: "Ron Weasley" }]
 	});
 
