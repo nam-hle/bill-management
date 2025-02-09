@@ -14,6 +14,18 @@ export namespace Assertions {
 		});
 	}
 
+	export async function assertNotificationsTable(page: Page, params: { messages: string[] }) {
+		await test.step("Assert Notifications Table", async () => {
+			const messages = page.getByTestId("table").getByTestId("notification-text");
+
+			await expect(messages).toHaveCount(params.messages.length);
+
+			for (let i = 0; i < params.messages.length; i++) {
+				await expect(messages.nth(i)).toHaveText(params.messages[i]);
+			}
+		});
+	}
+
 	export async function assertTransactionsTable(
 		table: TableLocator,
 		params: {

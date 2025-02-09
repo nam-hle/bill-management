@@ -10,6 +10,12 @@ export namespace Actions {
 		});
 	}
 
+	export async function goToNotificationsPage(page: Page) {
+		await test.step(`Go to Home page`, async () => {
+			await page.goto("/notifications");
+		});
+	}
+
 	export async function goToTransactionsPage(page: Page) {
 		await test.step(`Go to Transactions page`, async () => {
 			await page.getByRole("button", { name: "Transactions" }).click();

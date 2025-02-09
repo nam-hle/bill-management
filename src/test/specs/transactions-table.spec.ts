@@ -76,9 +76,17 @@ test("basic", async ({ page }) => {
 	});
 
 	await Actions.goToHomePage(page);
-
 	await Assertions.assertStats(page, { Sent: "89", Received: "166", "Net Balance": "77" });
-
 	const recentTable = await Locators.locateTable(page, 1);
 	await Assertions.assertTransactionsTable(recentTable, { pagination: null, rows: firstRows.map((row) => _.omit(row, "action")) });
+
+	await Actions.goToNotificationsPage(page);
+	await Assertions.assertNotificationsTable(page, {
+		messages: [
+			`You have received a new transaction of 43 from Hermione Granger. Please review and confirm it.`,
+			`You have received a new transaction of 42 from Hermione Granger. Please review and confirm it.`,
+			`You have received a new transaction of 41 from Ron Weasley. Please review and confirm it.`,
+			`You have received a new transaction of 40 from Ron Weasley. Please review and confirm it.`
+		]
+	});
 });

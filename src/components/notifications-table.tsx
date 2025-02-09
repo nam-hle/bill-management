@@ -27,7 +27,7 @@ export const NotificationsTable: React.FC<TransactionsTable.Props> = () => {
 	const maxPage = React.useMemo(() => (data?.fullSize ? Math.ceil(data?.fullSize / DEFAULT_PAGE_SIZE) : 1), [data?.fullSize]);
 
 	return (
-		<VStack width="60vh" gap="{spacing.4}" marginInline="auto">
+		<VStack width="60vh" gap="{spacing.4}" marginInline="auto" data-testid="table-container">
 			<HStack width="100%" justifyContent="space-between">
 				<Heading as="h1">Notifications</Heading>
 			</HStack>
@@ -43,7 +43,7 @@ export const NotificationsTable: React.FC<TransactionsTable.Props> = () => {
 					</Button>
 				)}
 			</HStack>
-			<Stack width="60vh" gap="{spacing.2}">
+			<Stack width="60vh" gap="{spacing.2}" data-testid="table">
 				{isPending ? (
 					<>
 						{Array.from({ length: DEFAULT_PAGE_SIZE }).map((_, index) => {
