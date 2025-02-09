@@ -4,10 +4,10 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { Input, Stack, HStack, Heading } from "@chakra-ui/react";
 
+import { Field } from "@/chakra/field";
+import { Button } from "@/chakra/button";
+import { toaster } from "@/chakra/toaster";
 import { type UserFormState } from "@/types";
-import { Field } from "@/components/ui/field";
-import { Button } from "@/components/ui/button";
-import { toaster } from "@/components/ui/toaster";
 
 export const NewUserForm = () => {
 	const [formState, setFormState] = React.useState<UserFormState>({

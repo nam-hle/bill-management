@@ -11,17 +11,17 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Stack, Group, Image, Input, HStack, Center, Heading, InputAddon } from "@chakra-ui/react";
 
 import { API } from "@/api";
-import { axiosInstance } from "@/axios";
+import { Field } from "@/chakra/field";
+import { Button } from "@/chakra/button";
 import { type ClientUser } from "@/types";
-import { Field } from "@/components/ui/field";
-import { Button } from "@/components/ui/button";
-import { Select } from "@/components/app/select";
-import { toaster } from "@/components/ui/toaster";
+import { toaster } from "@/chakra/toaster";
+import { Select } from "@/components/select";
+import { axiosInstance } from "@/services/axios";
+import { DialogRoot, DialogContent } from "@/chakra/dialog";
 import { CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
-import { DialogRoot, DialogContent } from "@/components/ui/dialog";
+import { TransactionAction } from "@/components/transaction-action";
 import { type ClientTransaction } from "@/schemas/transactions.schema";
-import { TransactionAction } from "@/components/app/transaction-action";
-import { TransactionStatusBadge } from "@/components/app/transaction-status-badge";
+import { TransactionStatusBadge } from "@/components/transaction-status-badge";
 
 namespace TransactionForm {
 	export interface Props {

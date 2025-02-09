@@ -2,7 +2,7 @@ import axios from "axios";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { API } from "@/api";
-import { createSupabaseServer } from "@/supabase/server";
+import { createSupabaseServer } from "@/services/supabase/server";
 import { BankAccountsController } from "@/controllers/bank-accounts.controller";
 
 const VIETQR_API = "https://api.vietqr.io/v2/generate";

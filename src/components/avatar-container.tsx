@@ -2,9 +2,9 @@ import { Text } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import React, { use, Suspense } from "react";
 
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar } from "@/chakra/avatar";
 import { type UserInfo, type Container } from "@/types";
-import { PopoverBody, PopoverRoot, PopoverArrow, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { PopoverBody, PopoverRoot, PopoverArrow, PopoverContent, PopoverTrigger } from "@/chakra/popover";
 
 const colorPalette = ["red", "blue", "green", "yellow", "purple", "orange"];
 const pickPalette = (name: string | undefined) => {

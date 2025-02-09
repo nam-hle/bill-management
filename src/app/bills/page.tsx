@@ -3,14 +3,14 @@ import { type Metadata } from "next";
 import { VStack } from "@chakra-ui/react";
 import { IoIosAddCircle } from "react-icons/io";
 
-import { LinkButton } from "@/components/ui/link-button";
-import { BillsTable } from "@/components/app/bills-table";
-import { BalancesTable } from "@/components/app/balances-table";
+import { LinkButton } from "@/chakra/link-button";
+import { BillsTable } from "@/components/bills-table";
+import { BalancesTable } from "@/components/balances-table";
 import { UsersControllers } from "@/controllers/users.controllers";
 import { BillsControllers } from "@/controllers/bills.controllers";
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
-import { getCurrentUser, createSupabaseServer } from "@/supabase/server";
 import { BillMembersControllers } from "@/controllers/bill-members.controllers";
+import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
 export const metadata: Metadata = {
 	title: "Bills"

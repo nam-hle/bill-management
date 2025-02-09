@@ -2,7 +2,7 @@ import React from "react";
 import NextLink from "next/link";
 
 import type { Container } from "@/types";
-import { Button, type ButtonProps } from "@/components/ui/button";
+import { Button, type ButtonProps } from "@/chakra/button";
 
 const StyledButton: React.ForwardRefRenderFunction<HTMLButtonElement, ButtonProps & { active?: boolean }> = (props, ref) => {
 	const { active, children, size = "md", ...rest } = props;

@@ -10,6 +10,9 @@ export namespace Locators {
 	}
 
 	export async function locateTable(page: Page, tableIndex: number = 0) {
-		return new TableLocator(page, tableIndex).init();
+		const table = new TableLocator(page, tableIndex);
+		await table.init();
+
+		return table;
 	}
 }

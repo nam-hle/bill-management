@@ -2,7 +2,7 @@ import React from "react";
 import { MdCheck } from "react-icons/md";
 
 import { type Container } from "@/types";
-import { Button, type ButtonProps } from "@/components/ui/button";
+import { Button, type ButtonProps } from "@/chakra/button";
 
 export const FilterButton: React.FC<Container & ButtonProps & { active: boolean }> = (props) => {
 	const { active, children, ...rest } = props;

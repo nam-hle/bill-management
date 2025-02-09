@@ -1,7 +1,7 @@
 import React from "react";
 import { Table } from "@chakra-ui/react";
 
-import { SkeletonText } from "@/components/ui/skeleton";
+import { SkeletonText } from "@/chakra/skeleton";
 
 export const TableBodySkeleton: React.FC<{ numberOfCols: number; numberOfRows?: number }> = (props) => {
 	const { numberOfCols, numberOfRows = 5 } = props;

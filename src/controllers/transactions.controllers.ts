@@ -3,8 +3,8 @@ import { DEFAULT_PAGE_NUMBER } from "@/constants";
 import { Pagination, type TransactionStatus } from "@/types";
 import { UsersControllers } from "@/controllers/users.controllers";
 import { type ClientTransaction } from "@/schemas/transactions.schema";
-import { getCurrentUser, type SupabaseInstance } from "@/supabase/server";
 import { BankAccountsController } from "@/controllers/bank-accounts.controller";
+import { getCurrentUser, type SupabaseInstance } from "@/services/supabase/server";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
 
 export namespace TransactionsControllers {

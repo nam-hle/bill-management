@@ -6,8 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Table, Badge, HStack, VStack, Heading } from "@chakra-ui/react";
 
 import { API } from "@/api";
-import { EmptyState } from "@/components/ui/empty-state";
-import { TableBodySkeleton } from "@/components/app/table-body-skeleton";
+import { EmptyState } from "@/chakra/empty-state";
+import { TableBodySkeleton } from "@/components/table-body-skeleton";
 import { BankAccountStatusEnumSchema } from "@/schemas/bank-accounts.schema";
 
 namespace BankAccountsTable {
