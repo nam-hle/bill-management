@@ -4,12 +4,12 @@ import { Stack } from "@chakra-ui/react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 
 import { generateUid } from "@/utils";
-import { axiosInstance } from "@/axios";
-import { Button } from "@/components/ui/button";
-import { Avatar } from "@/components/ui/avatar";
-import { toaster } from "@/components/ui/toaster";
-import { createSupabaseClient } from "@/supabase/client";
-import { FileUploadRoot, FileUploadTrigger } from "@/components/ui/file-upload";
+import { Button } from "@/chakra/button";
+import { Avatar } from "@/chakra/avatar";
+import { toaster } from "@/chakra/toaster";
+import { axiosInstance } from "@/services/axios";
+import { createSupabaseClient } from "@/services/supabase/client";
+import { FileUploadRoot, FileUploadTrigger } from "@/chakra/file-upload";
 
 namespace ProfileAvatar {
 	export interface Props {

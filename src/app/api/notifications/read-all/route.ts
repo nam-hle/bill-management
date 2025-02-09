@@ -1,4 +1,4 @@
-import { getCurrentUser, createSupabaseServer } from "@/supabase/server";
+import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
 
 export async function PATCH() {

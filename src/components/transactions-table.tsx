@@ -5,18 +5,18 @@ import { useQuery } from "@tanstack/react-query";
 import { Table, HStack, VStack, Heading, VisuallyHidden } from "@chakra-ui/react";
 
 import { type API } from "@/api";
-import { axiosInstance } from "@/axios";
 import { type DataListResponse } from "@/types";
-import { EmptyState } from "@/components/ui/empty-state";
+import { axiosInstance } from "@/services/axios";
+import { EmptyState } from "@/chakra/empty-state";
 import { displayDate, displayDateAsTitle } from "@/utils";
-import { FilterButton } from "@/components/app/filter-button";
-import { LinkedTableRow } from "@/components/app/table-body-row";
+import { FilterButton } from "@/components/filter-button";
+import { LinkedTableRow } from "@/components/table-body-row";
+import { TransactionAction } from "@/components/transaction-action";
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
+import { TableBodySkeleton } from "@/components/table-body-skeleton";
 import { type ClientTransaction } from "@/schemas/transactions.schema";
-import { TransactionAction } from "@/components/app/transaction-action";
-import { TableBodySkeleton } from "@/components/app/table-body-skeleton";
-import { TransactionStatusBadge } from "@/components/app/transaction-status-badge";
-import { PaginationRoot, PaginationItems, PaginationNextTrigger, PaginationPrevTrigger } from "@/components/ui/pagination";
+import { TransactionStatusBadge } from "@/components/transaction-status-badge";
+import { PaginationRoot, PaginationItems, PaginationNextTrigger, PaginationPrevTrigger } from "@/chakra/pagination";
 
 namespace TransactionsTable {
 	export interface Props {

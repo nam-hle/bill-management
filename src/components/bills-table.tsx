@@ -7,12 +7,12 @@ import { Text, Table, Input, HStack, VStack, Heading } from "@chakra-ui/react";
 import { useRouter, useSearchParams, type ReadonlyURLSearchParams } from "next/navigation";
 
 import { type ClientBill } from "@/types";
-import { InputGroup } from "@/components/ui/input-group";
+import { InputGroup } from "@/chakra/input-group";
 import { formatTime, formatDistanceTime } from "@/utils";
-import { FilterButton } from "@/components/app/filter-button";
-import { LinkedTableRow } from "@/components/app/table-body-row";
+import { FilterButton } from "@/components/filter-button";
+import { LinkedTableRow } from "@/components/table-body-row";
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
-import { PaginationRoot, PaginationItems, PaginationNextTrigger, PaginationPrevTrigger } from "@/components/ui/pagination";
+import { PaginationRoot, PaginationItems, PaginationNextTrigger, PaginationPrevTrigger } from "@/chakra/pagination";
 
 namespace BillsTable {
 	export interface Props {

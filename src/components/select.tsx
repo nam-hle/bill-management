@@ -3,7 +3,7 @@
 import React from "react";
 import { createListCollection } from "@chakra-ui/react";
 
-import { SelectItem, SelectRoot, SelectContent, SelectTrigger, SelectValueText } from "@/components/ui/select";
+import { SelectItem, SelectRoot, SelectContent, SelectTrigger, SelectValueText } from "@/chakra/select";
 
 export const Select: React.FC<{
 	width?: string;

@@ -1,7 +1,7 @@
 import _ from "lodash";
 
 import { Pagination, type ClientBill } from "@/types";
-import { type SupabaseInstance } from "@/supabase/server";
+import { type SupabaseInstance } from "@/services/supabase/server";
 
 export namespace BillsControllers {
 	const BILLS_SELECT = `

@@ -1,10 +1,10 @@
 import React from "react";
 import { MdArrowRightAlt } from "react-icons/md";
 
-import { LinkButton } from "@/components/ui/link-button";
-import { BillsTable } from "@/components/app/bills-table";
+import { LinkButton } from "@/chakra/link-button";
+import { BillsTable } from "@/components/bills-table";
 import { BillsControllers } from "@/controllers/bills.controllers";
-import { getCurrentUser, createSupabaseServer } from "@/supabase/server";
+import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
 export async function RecentBills() {
 	const supabase = await createSupabaseServer();

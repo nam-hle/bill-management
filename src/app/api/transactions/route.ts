@@ -1,8 +1,8 @@
 import { type NextRequest } from "next/server";
 
 import { API } from "@/api";
-import { getCurrentUser, createSupabaseServer } from "@/supabase/server";
 import { TransactionsControllers } from "@/controllers/transactions.controllers";
+import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
 export async function GET(request: NextRequest) {
 	try {

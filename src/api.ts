@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-import { axiosInstance } from "@/axios";
 import type { APIPayload } from "@/types";
+import { axiosInstance } from "@/services/axios";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
 import { BankAccountSchema } from "@/schemas/bank-accounts.schema";
 import { ClientTransactionSchema } from "@/schemas/transactions.schema";

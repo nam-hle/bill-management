@@ -4,12 +4,12 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Box, Stack, HStack, IconButton } from "@chakra-ui/react";
 
 import { API } from "@/api";
-import { axiosInstance } from "@/axios";
-import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/chakra/button";
+import { axiosInstance } from "@/services/axios";
+import { EmptyState } from "@/chakra/empty-state";
 import { type ClientNotification } from "@/schemas/notification.schema";
-import { NotificationMessage } from "@/components/app/notification-message";
-import { PopoverBody, PopoverRoot, PopoverArrow, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { NotificationMessage } from "@/components/notification-message";
+import { PopoverBody, PopoverRoot, PopoverArrow, PopoverContent, PopoverTrigger } from "@/chakra/popover";
 
 export const NotificationContainer = () => {
 	const [unreadCount, setUnreadCount] = React.useState(0);

@@ -6,10 +6,10 @@ import { Stack, HStack, VStack, Heading } from "@chakra-ui/react";
 
 import { API } from "@/api";
 import { noop } from "@/utils";
-import { Button } from "@/components/ui/button";
-import { SkeletonText } from "@/components/ui/skeleton";
+import { Button } from "@/chakra/button";
+import { SkeletonText } from "@/chakra/skeleton";
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
-import { NotificationMessage } from "@/components/app/notification-message";
+import { NotificationMessage } from "@/components/notification-message";
 
 namespace TransactionsTable {
 	export interface Props {}

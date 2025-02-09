@@ -8,11 +8,11 @@ import { parse, format, isValid } from "date-fns";
 import { MdEdit, MdCheck, MdCancel, MdDeleteOutline } from "react-icons/md";
 import { Text, Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chakra-ui/react";
 
-import { Field } from "@/components/ui/field";
-import { Button } from "@/components/ui/button";
-import { toaster } from "@/components/ui/toaster";
-import { ReceiptUpload } from "@/components/app/receipt-upload";
-import { BillMemberInputs } from "@/components/app/bill-member-inputs";
+import { Field } from "@/chakra/field";
+import { Button } from "@/chakra/button";
+import { toaster } from "@/chakra/toaster";
+import { ReceiptUpload } from "@/components/receipt-upload";
+import { BillMemberInputs } from "@/components/bill-member-inputs";
 import { FormKind, type ClientUser, type ErrorState, type BillFormState, type BillFormTransfer } from "@/types";
 import { formatDate, formatTime, renderError, CLIENT_DATE_FORMAT, formatDistanceTime, SERVER_DATE_FORMAT } from "@/utils";
 

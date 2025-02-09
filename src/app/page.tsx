@@ -1,9 +1,9 @@
 import React from "react";
 import { Stack } from "@chakra-ui/react";
 
-import { RecentBills } from "@/components/app/recent-bills";
-import { BalanceReport } from "@/components/app/balance-report";
-import { RecentTransactions } from "@/components/app/recent-transactions";
+import { RecentBills } from "@/components/recent-bills";
+import { BalanceReport } from "@/components/balance-report";
+import { RecentTransactions } from "@/components/recent-transactions";
 
 export default async function DashboardPage() {
 	return (

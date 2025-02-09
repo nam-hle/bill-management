@@ -2,7 +2,7 @@ import React from "react";
 import { type Metadata } from "next";
 import { VStack } from "@chakra-ui/react";
 
-import { NotificationsTable } from "@/components/app/notifications-table";
+import { NotificationsTable } from "@/components/notifications-table";
 
 export const metadata: Metadata = {
 	title: "Notifications"

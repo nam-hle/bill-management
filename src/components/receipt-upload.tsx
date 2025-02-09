@@ -5,12 +5,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Image, Stack, Center } from "@chakra-ui/react";
 
 import { generateUid } from "@/utils";
-import { Button } from "@/components/ui/button";
-import { createSupabaseClient } from "@/supabase/client";
-import { EmptyState } from "@/components/ui/empty-state";
-import { downloadImage } from "@/components/app/profile-avatar";
-import { DialogRoot, DialogContent } from "@/components/ui/dialog";
-import { FileUploadRoot, FileUploadTrigger, FileUploadDropzone } from "@/components/ui/file-upload";
+import { Button } from "@/chakra/button";
+import { EmptyState } from "@/chakra/empty-state";
+import { DialogRoot, DialogContent } from "@/chakra/dialog";
+import { downloadImage } from "@/components/profile-avatar";
+import { createSupabaseClient } from "@/services/supabase/client";
+import { FileUploadRoot, FileUploadTrigger, FileUploadDropzone } from "@/chakra/file-upload";
 
 export const ReceiptUpload: React.FC<{ editing: boolean; receiptFile: string | undefined; onReceiptChange(file: string): void }> = (props) => {
 	const { editing, receiptFile, onReceiptChange } = props;

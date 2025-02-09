@@ -2,7 +2,7 @@ import React from "react";
 import { FaRegBell } from "react-icons/fa";
 import { Box, IconButton } from "@chakra-ui/react";
 
-import { type ButtonProps } from "@/components/ui/button";
+import { type ButtonProps } from "@/chakra/button";
 
 namespace NotificationButton {
 	export interface Props extends ButtonProps {

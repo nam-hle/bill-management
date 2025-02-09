@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 import { type LoginFormPayload } from "@/types";
-import { createSupabaseServer } from "@/supabase/server";
+import { createSupabaseServer } from "@/services/supabase/server";
 
 export async function login(formData: LoginFormPayload) {
 	const supabase = await createSupabaseServer();

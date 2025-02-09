@@ -2,9 +2,9 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { axiosInstance } from "@/axios";
-import { Button } from "@/components/ui/button";
-import { toaster } from "@/components/ui/toaster";
+import { Button } from "@/chakra/button";
+import { toaster } from "@/chakra/toaster";
+import { axiosInstance } from "@/services/axios";
 import { capitalize, convertVerb } from "@/utils";
 import { TransactionStatusEnumSchema } from "@/types";
 import { type ClientTransaction } from "@/schemas/transactions.schema";

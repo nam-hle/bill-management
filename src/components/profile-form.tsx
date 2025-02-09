@@ -4,12 +4,12 @@ import { useMutation } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chakra-ui/react";
 
-import { axiosInstance } from "@/axios";
-import { Field } from "@/components/ui/field";
-import { Button } from "@/components/ui/button";
+import { Field } from "@/chakra/field";
+import { Button } from "@/chakra/button";
+import { toaster } from "@/chakra/toaster";
+import { axiosInstance } from "@/services/axios";
 import { type ProfileFormPayload } from "@/types";
-import { toaster } from "@/components/ui/toaster";
-import { ProfileAvatar } from "@/components/app/profile-avatar";
+import { ProfileAvatar } from "@/components/profile-avatar";
 
 namespace ProfileForm {
 	export interface Props {

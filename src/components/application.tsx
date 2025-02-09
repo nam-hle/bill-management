@@ -2,9 +2,9 @@ import React from "react";
 import { Box } from "@chakra-ui/react";
 
 import { type Container } from "@/types";
-import { Toaster } from "@/components/ui/toaster";
-import { NavigationBar } from "@/components/app/navigation-bar";
-import { type AvatarContainer } from "@/components/app/avatar-container";
+import { Toaster } from "@/chakra/toaster";
+import { NavigationBar } from "@/components/navigation-bar";
+import { type AvatarContainer } from "@/components/avatar-container";
 
 export const Application: React.FC<Container & AvatarContainer.Props> = ({ userInfo, children }) => {
 	return (

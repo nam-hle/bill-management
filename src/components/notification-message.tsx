@@ -3,8 +3,8 @@ import { capitalize } from "lodash";
 import { useRouter } from "next/navigation";
 import { Text, Stack, HStack, Center } from "@chakra-ui/react";
 
+import { Status } from "@/chakra/status";
 import { formatDistanceTime } from "@/utils";
-import { Status } from "@/components/ui/status";
 import {
 	type ClientNotification,
 	type BillDeletedNotification,

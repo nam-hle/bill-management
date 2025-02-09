@@ -5,10 +5,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input, Stack, Alert, HStack, Heading } from "@chakra-ui/react";
 
-import { Field } from "@/components/ui/field";
-import { Button } from "@/components/ui/button";
+import { Field } from "@/chakra/field";
+import { Button } from "@/chakra/button";
 import { login, signup } from "@/app/login/actions";
-import { PasswordInput } from "@/components/ui/password-input";
+import { PasswordInput } from "@/chakra/password-input";
 import { type LoginFormPayload, LoginFormPayloadSchema } from "@/types";
 
 export const LoginForm = () => {

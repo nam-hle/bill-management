@@ -3,9 +3,9 @@ import { type Metadata } from "next";
 import { VStack } from "@chakra-ui/react";
 import { IoIosAddCircle } from "react-icons/io";
 
-import { getCurrentUser } from "@/supabase/server";
-import { LinkButton } from "@/components/ui/link-button";
-import { TransactionsTable } from "@/components/app/transactions-table";
+import { LinkButton } from "@/chakra/link-button";
+import { getCurrentUser } from "@/services/supabase/server";
+import { TransactionsTable } from "@/components/transactions-table";
 
 export const metadata: Metadata = {
 	title: "Transactions"

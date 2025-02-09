@@ -1,4 +1,4 @@
-import { createSupabaseServer } from "@/supabase/server";
+import { createSupabaseServer } from "@/services/supabase/server";
 import { TransactionsControllers } from "@/controllers/transactions.controllers";
 
 export async function PATCH(_request: Request, { params }: { params: Promise<{ id: string }> }) {

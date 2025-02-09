@@ -2,8 +2,8 @@ import React from "react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { LoginForm } from "@/components/app/login-form";
-import { createSupabaseServer } from "@/supabase/server";
+import { LoginForm } from "@/components/login-form";
+import { createSupabaseServer } from "@/services/supabase/server";
 
 export const metadata: Metadata = {
 	title: "Login"

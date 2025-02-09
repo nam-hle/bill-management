@@ -3,10 +3,10 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
-import { Provider } from "@/components/ui/provider";
-import { createSupabaseServer } from "@/supabase/server";
-import { ReactQueryClientProvider } from "@/react-query";
-import { Application } from "@/components/app/application";
+import { Provider } from "@/chakra/provider";
+import { Application } from "@/components/application";
+import { createSupabaseServer } from "@/services/supabase/server";
+import { ReactQueryClientProvider } from "@/services/react-query";
 import { UsersControllers } from "@/controllers/users.controllers";
 
 const interSans = Inter({

@@ -1,9 +1,9 @@
 import React from "react";
 import type { Metadata } from "next";
 
+import { TransactionForm } from "@/components/transaction-form";
 import { UsersControllers } from "@/controllers/users.controllers";
-import { TransactionForm } from "@/components/app/transaction-form";
-import { getCurrentUser, createSupabaseServer } from "@/supabase/server";
+import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
 export const metadata: Metadata = {
 	title: "New Transaction"
