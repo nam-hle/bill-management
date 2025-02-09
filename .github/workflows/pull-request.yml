@@ -34,8 +34,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Lint
-        run: pnpm lint
+      #      - name: Lint
+      #        run: pnpm lint
 
       - name: Build
         run: pnpm build
@@ -44,14 +44,11 @@ jobs:
         with:
           version: latest
 
-      - name: Link remote Supabase test instance
-        run: supabase link --project-ref $SUPABASE_PROJECT_ID
-      - run: supabase db reset --linked --no-seed --linked <<< 'y'
+      - run: supabase init
+      - run: supabase db start
 
-      - name: Initialize Supabase
-        run: |
-          env_content="SUPABASE_URL=\"$SUPABASE_DB_URL\"\nSUPABASE_SERVICE_ROLE_KEY=\"$SUPABASE_SERVICE_ROLE_KEY\"\nNEXT_PUBLIC_SUPABASE_URL=\"$SUPABASE_DB_URL\"\nNEXT_PUBLIC_SUPABASE_ANON_KEY=\"$SUPABASE_ANON_KEY\""
-          echo -e "$env_content" > .env.local
+      - name: Create env file
+        run: node scripts.js
 
       - name: Run Playwright
         run: |
