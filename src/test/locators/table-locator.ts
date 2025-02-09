@@ -14,8 +14,12 @@ export class TableLocator {
 		this.headerCells = [];
 	}
 
-	async init() {
+	async waitForLoading() {
 		await this.tableContainer.getByTestId("table__settled").waitFor({ state: "visible" });
+	}
+
+	async init() {
+		await this.waitForLoading();
 		this.headerCells = await this.table.locator("thead tr th").allInnerTexts();
 
 		return this;
@@ -27,6 +31,10 @@ export class TableLocator {
 
 	getRow(rowIndex: number): Row {
 		return new Row(this.table, rowIndex, this.headerCells);
+	}
+
+	get nextPageButton() {
+		return this.tableContainer.getByRole("button", { name: "Next page" });
 	}
 }
 

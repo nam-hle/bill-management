@@ -58,4 +58,11 @@ test("basic", async ({ page }) => {
 			{ amount: "44", receiver: RON, sender: HARRY, status: "Waiting", action: "Decline", issuedAt: "Today" }
 		]
 	});
+
+	await transactionsTable.nextPageButton.click();
+
+	await Assertions.assertTransactionsTable(transactionsTable, {
+		heading: "Transactions (6)",
+		rows: [{ amount: "45", sender: HARRY, status: "Waiting", action: "Decline", issuedAt: "Today", receiver: HERMIONE }]
+	});
 });
