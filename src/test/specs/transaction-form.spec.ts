@@ -10,38 +10,21 @@ test("basic", async ({ page, browser }) => {
 
 	await Actions.login(page, "harry");
 
-	await page.getByRole("button", { name: "Transactions" }).click();
+	await Actions.goToTransactionsPage(page);
 	await Actions.fillTransactionForm(page, { amount: "42", receiver: "Ron Weasley" });
 
 	const transactionsTable = await Locators.locateTable(page, 0);
 
 	await Assertions.assertTransactionsTable(transactionsTable, {
-		rows: [
-			{
-				amount: "42",
-				status: "Waiting",
-				action: "Decline",
-				issuedAt: "Today",
-				sender: "Harry Potter",
-				receiver: "Ron Weasley"
-			}
-		]
+		rows: [{ amount: "42", status: "Waiting", action: "Decline", issuedAt: "Today", sender: "Harry Potter", receiver: "Ron Weasley" }]
 	});
 
-	await page.goto("/");
+	await Actions.goToHomePage(page);
 	await Assertions.assertStats(page, { Sent: "42", "Net Balance": "-42" });
 
 	const recentTable = await Locators.locateTable(page, 1);
 	await Assertions.assertTransactionsTable(recentTable, {
-		rows: [
-			{
-				amount: "42",
-				status: "Waiting",
-				issuedAt: "Today",
-				sender: "Harry Potter",
-				receiver: "Ron Weasley"
-			}
-		]
+		rows: [{ amount: "42", status: "Waiting", issuedAt: "Today", sender: "Harry Potter", receiver: "Ron Weasley" }]
 	});
 
 	const ronPage = await (await browser.newContext()).newPage();
@@ -51,15 +34,7 @@ test("basic", async ({ page, browser }) => {
 	await Assertions.assertStats(ronPage, { Received: "42", "Net Balance": "42" });
 	const ronRecentTable = await Locators.locateTable(ronPage, 1);
 	await Assertions.assertTransactionsTable(ronRecentTable, {
-		rows: [
-			{
-				amount: "42",
-				status: "Waiting",
-				issuedAt: "Today",
-				sender: "Harry Potter",
-				receiver: "Ron Weasley"
-			}
-		]
+		rows: [{ amount: "42", status: "Waiting", issuedAt: "Today", sender: "Harry Potter", receiver: "Ron Weasley" }]
 	});
 
 	// Assert notifications

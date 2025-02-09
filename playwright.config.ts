@@ -1,7 +1,7 @@
 import { devices, defineConfig } from "@playwright/test";
 
 const CI = process.env.CI;
-const port = 3001;
+const port = CI ? 3000 : 3001;
 
 export default defineConfig({
 	forbidOnly: !!CI,

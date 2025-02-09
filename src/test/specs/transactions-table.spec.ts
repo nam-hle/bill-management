@@ -3,12 +3,10 @@ import { Actions } from "@/test/helpers/actions";
 import { Locators } from "@/test/helpers/locators";
 import { Assertions } from "@/test/helpers/assertions";
 import { RON, HARRY, HERMIONE } from "@/test/constants";
-import { seedRon, seedHarry, seedHermione } from "@/test/functions/seed-user";
+import { seedGroup } from "@/test/functions/seed-group";
 
 test("basic", async ({ page }) => {
-	await seedHarry();
-	await seedRon();
-	await seedHermione();
+	await seedGroup();
 
 	await test.step("Create transactions from Ron to Harry", async () => {
 		await Actions.login(page, "ron");

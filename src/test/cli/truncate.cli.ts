@@ -1,10 +1,10 @@
 #!/usr/bin/env tsx
 
-import { truncateTables } from "@/test/functions/truncate-tables";
+import { truncate } from "@/test/functions/truncate";
 
 async function main() {
 	try {
-		await truncateTables();
+		await truncate();
 		console.log("Truncated tables");
 	} catch (error) {
 		console.error(error);

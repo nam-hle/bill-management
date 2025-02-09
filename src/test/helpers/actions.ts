@@ -4,6 +4,18 @@ import { test } from "@/test/setup";
 import { DEFAULT_PASSWORD } from "@/test/constants";
 
 export namespace Actions {
+	export async function goToHomePage(page: Page) {
+		await test.step(`Go to Home page`, async () => {
+			await page.goto("/");
+		});
+	}
+
+	export async function goToTransactionsPage(page: Page) {
+		await test.step(`Go to Transactions page`, async () => {
+			await page.getByRole("button", { name: "Transactions" }).click();
+		});
+	}
+
 	export async function login(page: Page, emailName: string) {
 		await test.step(`Login as ${emailName}`, async () => {
 			await page.goto("/login");
@@ -17,10 +29,12 @@ export namespace Actions {
 	}
 
 	export async function logout(page: Page) {
-		await page.context().clearCookies();
-		await page.reload();
+		await test.step(`Logout`, async () => {
+			await page.context().clearCookies();
+			await page.reload();
 
-		await expect(page).toHaveURL("/login");
+			await expect(page).toHaveURL("/login");
+		});
 	}
 
 	export async function fillTransactionForm(page: Page, params: { amount: string; receiver: string }) {
