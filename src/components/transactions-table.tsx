@@ -78,7 +78,7 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 
 			{/*{transactions.length === 0 && <EmptyState width="100%" title="You have no transactions yet." />}*/}
 
-			<Table.Root size="md" interactive variant="outline">
+			<Table.Root size="md" interactive variant="outline" aria-label={isLoading ? "Loading" : "Settled"}>
 				<Table.Header>
 					<Table.Row>
 						<Table.ColumnHeader>ID</Table.ColumnHeader>

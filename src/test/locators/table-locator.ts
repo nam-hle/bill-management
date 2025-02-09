@@ -13,8 +13,8 @@ export class TableLocator {
 	}
 
 	async init() {
-		await this.page.locator(`table:nth-of-type(${this.tableIndex}) .chakra-skeleton`).first().waitFor({ state: "visible" });
-		await this.page.locator(`table:nth-of-type(${this.tableIndex}) .chakra-skeleton`).first().waitFor({ state: "detached" });
+		const ariaLabel = await this.table.getAttribute("aria-label");
+		expect(ariaLabel).toBe("Settled");
 		this.headerCells = await this.table.locator("thead tr th").allInnerTexts();
 
 		return this;
