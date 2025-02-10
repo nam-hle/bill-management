@@ -1,7 +1,7 @@
 import { devices, defineConfig } from "@playwright/test";
 
 const CI = process.env.CI;
-const port = CI ? 3000 : 3001;
+const port = CI ? 4000 : 3000;
 
 export default defineConfig({
 	forbidOnly: !!CI,
@@ -12,18 +12,17 @@ export default defineConfig({
 	expect: {
 		timeout: CI ? 30_000 : 5_000
 	},
-	use: {
-		trace: "on-first-retry",
-		baseURL: `http://127.0.0.1:${port}`,
-		video: CI ? "retain-on-failure" : "on"
-	},
-
 	projects: [
 		{
 			name: "chromium",
 			use: { ...devices["Desktop Chrome"] }
 		}
 	],
+	use: {
+		trace: "on-first-retry",
+		baseURL: `http://127.0.0.1:${port}`,
+		video: CI ? "retain-on-failure" : "on"
+	},
 
 	webServer: {
 		port,
