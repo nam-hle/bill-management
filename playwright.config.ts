@@ -10,7 +10,7 @@ export default defineConfig({
 	testDir: "./src/test/specs",
 	reporter: CI ? "list" : "html",
 	expect: {
-		// timeout: CI ? 30_000 : 5_000
+		timeout: CI ? 30_000 : 5_000
 	},
 	use: {
 		trace: "on-first-retry",

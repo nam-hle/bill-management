@@ -25,8 +25,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      #      - name: Lint
-      #        run: pnpm lint
+      - name: Lint
+        run: pnpm lint
 
       - name: Build
         run: pnpm build
@@ -35,8 +35,10 @@ jobs:
         with:
           version: latest
 
-      - run: supabase start --exclude realtime,studio,inbucket,edge-runtime
-      - run: supabase db reset --no-seed <<< 'y'
+      - name: Start supabase
+        run: supabase start --exclude realtime,studio,inbucket,edge-runtime
+      - name: Run migrations
+        run: supabase db reset --no-seed <<< 'y'
 
       - name: Generate env file
         run: pnpm generate:env
@@ -49,7 +51,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-videos
-          path: |
-            .env.local
+          path: test-results/
           if-no-files-found: ignore
           retention-days: 1
