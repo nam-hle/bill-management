@@ -45,20 +45,7 @@ jobs:
           version: latest
 
       - run: supabase start --exclude realtime,studio,inbucket,edge-runtime
-      - name: Wait for Supabase to be ready
-        run: |
-          timeout=180
-          counter=0
-          until curl -s http://localhost:54321/rest/v1/ >/dev/null; do
-            if [ $counter -gt $timeout ]; then
-              echo "Timed out waiting for Supabase"
-              exit 1
-            fi
-            echo "Waiting for Supabase to be ready..."
-            sleep 1
-            counter=$((counter + 1))
-          done
-          echo "Supabase is ready!"
+      - run: supabase db reset --no-seed <<< 'y'
 
       - name: Create env file
         run: node scripts.js
