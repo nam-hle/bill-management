@@ -6,15 +6,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      SUPABASE_PROJECT_ID: ${{ secrets.TEST_SUPABASE_PROJECT_ID }}
-      SUPABASE_ACCESS_TOKEN: ${{ secrets.TEST_SUPABASE_ACCESS_TOKEN }}
-
-      SUPABASE_DB_URL: ${{ secrets.TEST_SUPABASE_DB_URL }}
-      SUPABASE_DB_PASSWORD: ${{ secrets.TEST_SUPABASE_DB_PASSWORD }}
-
-      SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
 
     steps:
       - name: Checkout repository
@@ -59,7 +50,7 @@ jobs:
         with:
           name: playwright-videos
           path: |
-            test-results/
+#            test-results/
             .env.local
           if-no-files-found: ignore
-          retention-days: 3
+          retention-days: 1

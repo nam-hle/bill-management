@@ -30,10 +30,18 @@ runCommand("supabase status", (statusOutput) => {
 		NEXT_PUBLIC_SUPABASE_ANON_KEY: SUPABASE_ANON_KEY
 	};
 
+	for (const [key, value] of Object.entries(environments)) {
+		console.log(`${key}=${value.split("").map((e) => e.charCodeAt(0))}`);
+	}
+
 	fs.writeFileSync(
 		process.env.CI ? ".env.local" : ".env.test.local",
 		Object.entries(environments)
-			.map(([key, value]) => `${key}=${value}`)
+			.map(([key, value]) => {
+				console.log(value.split("").map((e) => e.charCodeAt(0)));
+
+				return `${key}=${value}`;
+			})
 			.join("\n")
 	);
 });
