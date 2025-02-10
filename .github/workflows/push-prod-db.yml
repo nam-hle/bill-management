@@ -1,9 +1,9 @@
-name: Production DB Push Migrations
+name: Push to Production DB
 
 on:
   push:
     branches:
-      - main
+      - prod
   workflow_dispatch:
 
 jobs:

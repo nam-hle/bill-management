@@ -10,7 +10,6 @@ async function writeEnvFile() {
 
 	const envs: Record<string, string> = {};
 
-	envs[`NEXT_PUBLIC_SUPABASE_URL`] = supabaseEnvs["API_URL"];
 	envs[`NEXT_PUBLIC_SUPABASE_ANON_KEY`] = supabaseEnvs["ANON_KEY"];
 	envs[`SUPABASE_SERVICE_ROLE_KEY`] = supabaseEnvs["SERVICE_ROLE_KEY"];
 
