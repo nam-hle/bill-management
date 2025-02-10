@@ -44,14 +44,27 @@ jobs:
         with:
           version: latest
 
-      - run: supabase start --exclude realtime,logflare,vector,studio,inbucket,edge-runtime
+      - run: supabase start
+      - name: Wait for Supabase to be ready
+        run: |
+          timeout=180
+          counter=0
+          until curl -s http://localhost:54321/rest/v1/ >/dev/null; do
+            if [ $counter -gt $timeout ]; then
+              echo "Timed out waiting for Supabase"
+              exit 1
+            fi
+            echo "Waiting for Supabase to be ready..."
+            sleep 1
+            counter=$((counter + 1))
+          done
+          echo "Supabase is ready!"
 
       - name: Create env file
         run: node scripts.js
 
       - name: Run Playwright
-        run: |
-          pnpm playwright
+        run: pnpm playwright
 
       - name: Upload Playwright Videos
         if: always()
