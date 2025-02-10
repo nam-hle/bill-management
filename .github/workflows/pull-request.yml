@@ -58,6 +58,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-videos
-          path: test-results/
+          path: |
+            test-results/
+            .env.local
           if-no-files-found: ignore
           retention-days: 3
