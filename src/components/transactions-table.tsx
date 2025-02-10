@@ -78,7 +78,7 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 
 			{/*{transactions.length === 0 && <EmptyState width="100%" title="You have no transactions yet." />}*/}
 
-			<Table.Root size="md" interactive variant="outline" data-testId={`table__${isLoading ? "loading" : "settled"}`}>
+			<Table.Root size="md" interactive variant="outline" data-testid={`table__${isLoading ? "loading" : "settled"}`}>
 				<Table.Header>
 					<Table.Row>
 						<Table.ColumnHeader>ID</Table.ColumnHeader>

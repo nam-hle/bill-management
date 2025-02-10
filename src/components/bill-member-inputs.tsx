@@ -30,6 +30,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 			<GridItem colSpan={{ base: 5 }}>
 				<Field required label={label} {...renderError(validating, member.user.error)}>
 					<Select
+						name={label}
 						readonly={readonly}
 						value={member.user.userId}
 						onValueChange={onUserChange}
@@ -43,6 +44,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 					<Group attached width="100%">
 						<Input
 							textAlign="right"
+							name={amountLabel}
 							readOnly={readonly}
 							value={member.amount.input}
 							pointerEvents={readonly ? "none" : undefined}

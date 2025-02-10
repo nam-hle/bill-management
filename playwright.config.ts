@@ -13,10 +13,9 @@ const profiles = {
 	CI: {
 		port: 4000,
 		retries: 2,
-		timeout: 30_000,
+		timeout: 20_000,
 		reporter: "list",
 		forbidOnly: true,
-		command: "pnpm start",
 		reuseExistingServer: false,
 		video: "retain-on-failure"
 	}
@@ -26,6 +25,7 @@ const profile = profiles[process.env.CI ? "CI" : "LOCAL"];
 
 export default defineConfig({
 	fullyParallel: false,
+	timeout: profile.timeout,
 	retries: profile.retries,
 	reporter: profile.reporter,
 	testDir: "./src/test/specs",

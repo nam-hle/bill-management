@@ -6,6 +6,7 @@ import { createListCollection } from "@chakra-ui/react";
 import { SelectItem, SelectRoot, SelectContent, SelectTrigger, SelectValueText } from "@/chakra/select";
 
 export const Select: React.FC<{
+	name?: string;
 	width?: string;
 	disabled?: boolean;
 	readonly?: boolean;
@@ -18,6 +19,7 @@ export const Select: React.FC<{
 	return (
 		<SelectRoot
 			size="md"
+			name={props.name}
 			width={props.width}
 			collection={collection}
 			disabled={props.disabled}

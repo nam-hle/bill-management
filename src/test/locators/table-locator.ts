@@ -84,8 +84,13 @@ export class Cell {
 		return this.cell;
 	}
 
-	async assertContent(expected: string) {
+	async assertEqual(expected: string) {
 		const actualText = (await this.cell.innerText()).trim();
 		expect(actualText).toBe(expected);
+	}
+
+	async assertContain(expected: string) {
+		const actualText = (await this.cell.innerText()).trim();
+		expect(actualText).toContain(expected);
 	}
 }

@@ -340,6 +340,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 						<GridItem colSpan={5}>
 							<Field required label="Description" {...renderError(validating, formState.description.error)}>
 								<Input
+									name="description"
 									readOnly={!editing}
 									value={formState.description.value}
 									placeholder="Enter bill description"
@@ -358,6 +359,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 						<GridItem colSpan={5}>
 							<Field label="Issued at" {...renderError(validating, formState.issuedAt.error)}>
 								<Input
+									name="issuedAt"
 									readOnly={!editing}
 									placeholder="20/mm/yy"
 									value={formState.issuedAt.input}
@@ -389,8 +391,8 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 							key={debtorIndex}
 							readonly={!editing}
 							validating={validating}
-							amountLabel="Split Amount"
 							label={`Debtor ${debtorIndex + 1}`}
+							amountLabel={`Split Amount ${debtorIndex + 1}`}
 							onUserChange={(userId) => dispatch({ type: "changeUser", payload: { userId, debtorIndex, memberKind: "debtor" } })}
 							users={users.filter((user) => user.id === debtor.user.userId || !formState.debtors.some((d) => d.user.userId === user.id))}
 							onAmountChange={(amount) => dispatch({ type: "changeAmount", payload: { debtorIndex, input: amount, memberKind: "debtor" } })}

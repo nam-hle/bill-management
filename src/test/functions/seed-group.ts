@@ -1,7 +1,8 @@
-import { seedRon, seedHarry, seedHermione } from "@/test/functions/seed-user";
+import { seedUser } from "@/test/functions/seed-user";
+import { USERNAMES, FULL_NAMES, type USER_KEY } from "@/test/constants";
 
 export async function seedGroup() {
-	await seedHarry();
-	await seedRon();
-	await seedHermione();
+	for (const key of Object.keys(USERNAMES) as USER_KEY[]) {
+		await seedUser({ email: USERNAMES[key], fullName: FULL_NAMES[key] });
+	}
 }

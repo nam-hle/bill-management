@@ -124,15 +124,15 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 
 	return (
 		<VStack width="100%" gap="{spacing.4}" data-testid="table-container">
-			<HStack width="100%" justifyContent="space-between">
-				<Heading as="h1">
+			<HStack width="100%" data-testid="table-heading" justifyContent="space-between">
+				<Heading as="h1" data-testid="table-title">
 					{title ?? "Bills"}
 					{showFullSize ? ` (${fullSize})` : ""}
 				</Heading>
 				{action}
 			</HStack>
 			{mode === "advance" && (
-				<HStack width="100%">
+				<HStack width="100%" data-testid="table-filters">
 					<FilterButton {...createOwnerFilter("creator")}>As creator</FilterButton>
 					<FilterButton {...createOwnerFilter("creditor")}>As creditor</FilterButton>
 					<FilterButton {...createOwnerFilter("debtor")}>As debtor</FilterButton>
@@ -144,7 +144,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 				</HStack>
 			)}
 
-			<Table.Root size="md" interactive variant="outline">
+			<Table.Root size="md" interactive variant="outline" data-testid="table__settled">
 				<Table.Header>
 					<Table.Row>
 						<Table.ColumnHeader>Description</Table.ColumnHeader>
