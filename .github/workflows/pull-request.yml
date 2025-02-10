@@ -50,7 +50,6 @@ jobs:
         with:
           name: playwright-videos
           path: |
-#            test-results/
             .env.local
           if-no-files-found: ignore
           retention-days: 1
