@@ -2,6 +2,7 @@ import axios from "axios";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { API } from "@/api";
+import { Environments } from "@/environments";
 import { createSupabaseServer } from "@/services/supabase/server";
 import { BankAccountsController } from "@/controllers/bank-accounts.controller";
 
@@ -38,8 +39,8 @@ export async function POST(request: NextRequest) {
 		// Call VietQR API
 		const { data } = await axios.post(VIETQR_API, payload, {
 			headers: {
-				"x-api-key": process.env.VIETQR_API_KEY!,
-				"x-client-id": process.env.VIETQR_CLIENT_ID!
+				"x-api-key": Environments.PRIVATE.VIETQR.API_KEY,
+				"x-client-id": Environments.PRIVATE.VIETQR.CLIENT_ID
 			}
 		});
 

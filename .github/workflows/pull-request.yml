@@ -44,7 +44,7 @@ jobs:
         with:
           version: latest
 
-      - run: supabase start
+      - run: supabase start --exclude realtime,studio,inbucket,edge-runtime
       - name: Wait for Supabase to be ready
         run: |
           timeout=180

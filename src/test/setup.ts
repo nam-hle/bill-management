@@ -7,7 +7,7 @@ import { truncate } from "@/test/functions/truncate";
 
 dotenv.config({ path: process.env.CI ? ".env.local" : ".env.test.local" });
 
-export const supabaseTest = createClient<Database>(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+export const supabaseTest = createClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
 export const test = base.extend<{ forEachTest: void }>({
 	forEachTest: [

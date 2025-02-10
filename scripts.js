@@ -25,15 +25,13 @@ runCommand("supabase status", (statusOutput) => {
 	const SUPABASE_ANON_KEY = extractConfig(statusOutput, "Anon key", /anon key:\s*(\S+)/);
 
 	const environments = {
-		SUPABASE_URL,
-		SUPABASE_ANON_KEY,
 		SUPABASE_SERVICE_ROLE_KEY,
 		NEXT_PUBLIC_SUPABASE_URL: SUPABASE_URL,
 		NEXT_PUBLIC_SUPABASE_ANON_KEY: SUPABASE_ANON_KEY
 	};
 
 	fs.writeFileSync(
-		".env.local",
+		process.env.CI ? ".env.local" : ".env.test.local",
 		Object.entries(environments)
 			.map(([key, value]) => `${key}=${value}`)
 			.join("\n")

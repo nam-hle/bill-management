@@ -1,6 +1,7 @@
 import { createBrowserClient } from "@supabase/ssr";
 
+import { Environments } from "@/environments";
+
 export function createSupabaseClient() {
-	// Create a supabase client on the browser with project's credentials
-	return createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+	return createBrowserClient(Environments.PUBLIC.SUPABASE.URL, Environments.PUBLIC.SUPABASE.ANON_KEY);
 }
