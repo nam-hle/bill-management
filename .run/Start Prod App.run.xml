@@ -5,7 +5,6 @@
     <scripts>
       <script value="start" />
     </scripts>
-    <arguments value="--port 3001" />
     <node-interpreter value="project" />
     <envs />
     <method v="2">
