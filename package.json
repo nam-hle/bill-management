@@ -7,6 +7,7 @@
 		"dev": "next dev",
 		"build": "next build --no-lint",
 		"start": "next start",
+		"generate:env": "tsx src/test/cli/generate-env.tsx",
 		"watch": "tsc -watch",
 		"lint": "next lint --quiet && prettier --check .",
 		"lint:fix": "next lint --fix && prettier --write .",

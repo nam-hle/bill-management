@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { type SupabaseClient } from "@supabase/supabase-js";
 
+import { Environments } from "@/environments";
 import { type Database } from "@/database.types";
 
 export type SupabaseInstance = SupabaseClient<Database, "public", Database["public"]>;
@@ -23,7 +24,7 @@ export async function getCurrentUser() {
 export async function createSupabaseServer(): Promise<SupabaseInstance> {
 	const cookieStore = await cookies();
 
-	return createServerClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+	return createServerClient<Database>(Environments.PUBLIC.SUPABASE.URL, Environments.PUBLIC.SUPABASE.ANON_KEY, {
 		cookies: {
 			getAll() {
 				return cookieStore.getAll();

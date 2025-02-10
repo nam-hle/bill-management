@@ -2,26 +2,47 @@ import { expect, type Page, type Locator } from "@playwright/test";
 
 export class TableLocator {
 	private readonly table: Locator;
+	private readonly tableContainer: Locator;
 	private headerCells: string[];
 
 	constructor(
 		private page: Page,
 		private tableIndex: number = 0
 	) {
-		this.table = page.locator(`table`).nth(tableIndex);
+		this.tableContainer = page.getByTestId("table-container").nth(tableIndex);
+		this.table = this.tableContainer.locator("table");
 		this.headerCells = [];
 	}
 
+	async waitForLoading() {
+		await this.tableContainer.getByTestId("table__settled").waitFor({ state: "visible" });
+	}
+
 	async init() {
-		const ariaLabel = await this.table.getAttribute("aria-label");
-		expect(ariaLabel).toBe("Settled");
+		await this.waitForLoading();
 		this.headerCells = await this.table.locator("thead tr th").allInnerTexts();
 
 		return this;
 	}
 
+	getContainer() {
+		return this.tableContainer;
+	}
+
+	getLocator() {
+		return this.table;
+	}
+
+	getHeading() {
+		return this.page.getByTestId("table-title").nth(this.tableIndex);
+	}
+
 	getRow(rowIndex: number): Row {
 		return new Row(this.table, rowIndex, this.headerCells);
+	}
+
+	get nextPageButton() {
+		return this.tableContainer.getByRole("button", { name: "Next page" });
 	}
 }
 

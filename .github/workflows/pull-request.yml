@@ -6,15 +6,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      SUPABASE_PROJECT_ID: ${{ secrets.TEST_SUPABASE_PROJECT_ID }}
-      SUPABASE_ACCESS_TOKEN: ${{ secrets.TEST_SUPABASE_ACCESS_TOKEN }}
-
-      SUPABASE_DB_URL: ${{ secrets.TEST_SUPABASE_DB_URL }}
-      SUPABASE_DB_PASSWORD: ${{ secrets.TEST_SUPABASE_DB_PASSWORD }}
-
-      SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
 
     steps:
       - name: Checkout repository
@@ -44,18 +35,16 @@ jobs:
         with:
           version: latest
 
-      - name: Link remote Supabase test instance
-        run: supabase link --project-ref $SUPABASE_PROJECT_ID
-      - run: supabase db reset --linked --no-seed --linked <<< 'y'
+      - name: Start supabase
+        run: supabase start --exclude realtime,studio,inbucket,edge-runtime
+      - name: Run migrations
+        run: supabase db reset --no-seed <<< 'y'
 
-      - name: Initialize Supabase
-        run: |
-          env_content="SUPABASE_URL=\"$SUPABASE_DB_URL\"\nSUPABASE_SERVICE_ROLE_KEY=\"$SUPABASE_SERVICE_ROLE_KEY\"\nNEXT_PUBLIC_SUPABASE_URL=\"$SUPABASE_DB_URL\"\nNEXT_PUBLIC_SUPABASE_ANON_KEY=\"$SUPABASE_ANON_KEY\""
-          echo -e "$env_content" > .env.local
+      - name: Generate env file
+        run: pnpm generate:env
 
       - name: Run Playwright
-        run: |
-          pnpm playwright
+        run: pnpm playwright
 
       - name: Upload Playwright Videos
         if: always()
@@ -64,4 +53,4 @@ jobs:
           name: playwright-videos
           path: test-results/
           if-no-files-found: ignore
-          retention-days: 3
+          retention-days: 1

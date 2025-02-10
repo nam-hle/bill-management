@@ -2,7 +2,7 @@ import { supabaseTest } from "@/test/setup";
 
 const PUBLIC_TABLES = ["bills", "transactions", "bill_members", "bank_accounts", "profiles", "notifications"] as const;
 
-export async function truncateTables() {
+export async function truncate() {
 	try {
 		for (const table of PUBLIC_TABLES) {
 			const { error } = await supabaseTest.from(table).delete().neq("id", "00000000-0000-0000-0000-000000000000");

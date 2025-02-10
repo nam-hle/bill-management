@@ -1,31 +1,75 @@
 import { expect, type Page } from "@playwright/test";
 
+import { test } from "@/test/setup";
 import { Locators } from "@/test/helpers/locators";
 import { type TableLocator } from "@/test/locators/table-locator";
 
 export namespace Assertions {
 	const StateLabels = ["Owed", "Received", "Paid", "Sent", "Net Balance"] as const;
 	export async function assertStats(page: Page, expected: Partial<Record<(typeof StateLabels)[number], string>>) {
-		for (const label of StateLabels) {
-			await expect(Locators.locateStatValue(page, label)).toHaveText(expected[label] ?? "0");
-		}
+		await test.step("Assert Stats", async () => {
+			for (const label of StateLabels) {
+				await expect(Locators.locateStatValue(page, label)).toHaveText(expected[label] ?? "0");
+			}
+		});
+	}
+
+	export async function assertNotificationsTable(page: Page, params: { messages: string[] }) {
+		await test.step("Assert Notifications Table", async () => {
+			const messages = page.getByTestId("table").getByTestId("notification-text");
+
+			await expect(messages).toHaveCount(params.messages.length);
+
+			for (let i = 0; i < params.messages.length; i++) {
+				await expect(messages.nth(i)).toHaveText(params.messages[i]);
+			}
+		});
 	}
 
 	export async function assertTransactionsTable(
 		table: TableLocator,
-		expected: { sender: string; amount: string; status: string; action?: string; receiver: string; issuedAt?: string }
+		params: {
+			heading?: string;
+			pagination?: null | { totalPages: number; currentPage: number };
+			rows: { sender: string; amount: string; status: string; action?: string; receiver: string; issuedAt?: string }[];
+		}
 	) {
-		await table.getRow(0).getCell("Sender").assertContent(expected.sender);
-		await table.getRow(0).getCell("Receiver").assertContent(expected.receiver);
-		await table.getRow(0).getCell("Amount").assertContent(expected.amount);
-		await table.getRow(0).getCell("Status").assertContent(expected.status);
+		await table.waitForLoading();
 
-		if (expected.issuedAt !== undefined) {
-			await table.getRow(0).getCell("Issued At").assertContent(expected.issuedAt);
-		}
+		await test.step("Assert Transactions Table", async () => {
+			if (params.heading) {
+				await expect(table.getHeading()).toHaveText(params.heading);
+			}
 
-		if (expected.action !== undefined) {
-			await expect(table.getRow(0).getCell("Action").locator.getByRole("button", { name: expected.action })).toBeVisible();
-		}
+			if (params.pagination !== undefined) {
+				const pagination = table.getContainer().locator(`[aria-label="pagination"]`);
+
+				if (params.pagination === null) {
+					await expect(pagination).not.toBeVisible();
+				} else {
+					await expect(pagination).toBeVisible();
+					await expect(pagination.locator(`[aria-label$="page ${params.pagination.currentPage}"][aria-current="page"]`)).toBeVisible();
+					await expect(pagination.locator(`[aria-label="last page, page ${params.pagination.totalPages}"]`)).toBeVisible();
+				}
+			}
+
+			for (let rowIndex = 0; rowIndex < params.rows.length; rowIndex++) {
+				await test.step(`Assert Transaction row index ${rowIndex}`, async () => {
+					const row = params.rows[rowIndex];
+					await table.getRow(rowIndex).getCell("Sender").assertContent(row.sender);
+					await table.getRow(rowIndex).getCell("Receiver").assertContent(row.receiver);
+					await table.getRow(rowIndex).getCell("Amount").assertContent(row.amount);
+					await table.getRow(rowIndex).getCell("Status").assertContent(row.status);
+
+					if (row.issuedAt !== undefined) {
+						await table.getRow(rowIndex).getCell("Issued At").assertContent(row.issuedAt);
+					}
+
+					if (row.action !== undefined) {
+						await expect(table.getRow(rowIndex).getCell("Action").locator.getByRole("button", { name: row.action })).toBeVisible();
+					}
+				});
+			}
+		});
 	}
 }

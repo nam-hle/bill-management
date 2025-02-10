@@ -36,6 +36,7 @@ export const NotificationMessage: React.FC<NotificationMessage.Props> = (props) 
 				<Text
 					width="100%"
 					textStyle="sm"
+					data-testid="notification-text"
 					onClick={() => {
 						if (link) {
 							router.push(link);
