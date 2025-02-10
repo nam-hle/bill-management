@@ -38,8 +38,8 @@ jobs:
       - run: supabase start --exclude realtime,studio,inbucket,edge-runtime
       - run: supabase db reset --no-seed <<< 'y'
 
-      - name: Create env file
-        run: node scripts.js
+      - name: Generate env file
+        run: pnpm generate:env
 
       - name: Run Playwright
         run: pnpm playwright
