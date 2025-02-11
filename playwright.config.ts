@@ -5,17 +5,19 @@ const profiles = {
 		port: 4000,
 		retries: 0,
 		video: "on",
-		timeout: 10_000,
+		timeout: 20_000,
 		reporter: "html",
 		forbidOnly: false,
+		expectTimeout: 10_000,
 		reuseExistingServer: true
 	},
 	CI: {
 		port: 4000,
 		retries: 2,
-		timeout: 40_000,
+		timeout: 60_000,
 		reporter: "list",
 		forbidOnly: true,
+		expectTimeout: 20_000,
 		reuseExistingServer: false,
 		video: "retain-on-failure"
 	}
@@ -31,7 +33,7 @@ export default defineConfig({
 	testDir: "./src/test/specs",
 	forbidOnly: profile.forbidOnly,
 	expect: {
-		timeout: profile.timeout
+		timeout: profile.expectTimeout
 	},
 	projects: [
 		{
