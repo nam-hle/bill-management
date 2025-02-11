@@ -6,6 +6,7 @@ import { type TableLocator } from "@/test/locators/table-locator";
 
 export namespace Assertions {
 	const StateLabels = ["Owed", "Received", "Paid", "Sent", "Net Balance"] as const;
+	export type StatsExpectation = Partial<Record<(typeof StateLabels)[number], string>>;
 	export async function assertStats(page: Page, expected: Partial<Record<(typeof StateLabels)[number], string>>) {
 		await test.step("Assert Stats", async () => {
 			for (const label of StateLabels) {
@@ -73,14 +74,13 @@ export namespace Assertions {
 		});
 	}
 
-	export async function assertBillsTable(
-		table: TableLocator,
-		params: {
-			heading?: string;
-			// pagination?: null | { totalPages: number; currentPage: number };
-			rows: { creditor: string; debtors: string[]; description: string }[];
-		}
-	) {
+	export interface BillsTableExpectation {
+		heading?: string;
+		// pagination?: null | { totalPages: number; currentPage: number };
+		rows: { creditor: string; debtors: string[]; description: string }[];
+	}
+
+	export async function assertBillsTable(table: TableLocator, params: BillsTableExpectation) {
 		await table.waitForLoading();
 
 		await test.step("Assert Bills Table", async () => {
@@ -100,16 +100,20 @@ export namespace Assertions {
 			// 	}
 			// }
 
-			for (let rowIndex = 0; rowIndex < params.rows.length; rowIndex++) {
-				await test.step(`Assert bill row index ${rowIndex}`, async () => {
-					const row = params.rows[rowIndex];
-					await table.getRow(rowIndex).getCell("Description").assertEqual(row.description);
-					await table.getRow(rowIndex).getCell("Creditor").assertEqual(row.creditor);
+			if (params.rows.length === 0) {
+				await expect(table.getContainer().getByText("You have no bills yet")).toBeVisible();
+			} else {
+				for (let rowIndex = 0; rowIndex < params.rows.length; rowIndex++) {
+					await test.step(`Assert bill row index ${rowIndex}`, async () => {
+						const row = params.rows[rowIndex];
+						await table.getRow(rowIndex).getCell("Description").assertEqual(row.description);
+						await table.getRow(rowIndex).getCell("Creditor").assertEqual(row.creditor);
 
-					for (const debtor of row.debtors) {
-						await table.getRow(rowIndex).getCell("Debtors").assertContain(debtor);
-					}
-				});
+						for (const debtor of row.debtors) {
+							await table.getRow(rowIndex).getCell("Debtors").assertContain(debtor);
+						}
+					});
+				}
 			}
 		});
 	}

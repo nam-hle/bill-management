@@ -271,7 +271,6 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 						<Button onClick={() => fetchSuggestion()}>Suggest</Button>
 					</HStack>
 				)}
-				{/*<DevTool control={control}  />*/}
 			</Stack>
 		</>
 	);

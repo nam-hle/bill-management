@@ -8,6 +8,7 @@ import { useRouter, useSearchParams, type ReadonlyURLSearchParams } from "next/n
 
 import { type ClientBill } from "@/types";
 import { InputGroup } from "@/chakra/input-group";
+import { EmptyState } from "@/chakra/empty-state";
 import { formatTime, formatDistanceTime } from "@/utils";
 import { FilterButton } from "@/components/filter-button";
 import { LinkedTableRow } from "@/components/table-body-row";
@@ -156,25 +157,33 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
-					{bills?.map((item) => (
-						<LinkedTableRow key={item.id} href={`/bills/${item.id}`}>
-							<Table.Cell>{item.description}</Table.Cell>
-							<Table.Cell title={formatTime(item.creator.timestamp)}>{formatDistanceTime(item.creator.timestamp)}</Table.Cell>
-							<Table.Cell>{formatUserAmount(item.creditor, currentUserId)}</Table.Cell>
-							<Table.Cell maxW="400px">
-								<Text truncate>
-									{_.sortBy(item.debtors, [(debtor) => debtor.userId !== currentUserId, (billMember) => billMember.userId]).map(
-										(billMember, billMemberIndex) => (
-											<React.Fragment key={billMember.userId}>
-												{formatUserAmount(billMember, currentUserId)}
-												{billMemberIndex !== item.debtors.length - 1 ? ", " : ""}
-											</React.Fragment>
-										)
-									)}
-								</Text>
+					{bills.length === 0 ? (
+						<Table.Row width="100%">
+							<Table.Cell colSpan={4}>
+								<EmptyState title="You have no bills yet" />
 							</Table.Cell>
-						</LinkedTableRow>
-					))}
+						</Table.Row>
+					) : (
+						bills?.map((item) => (
+							<LinkedTableRow key={item.id} href={`/bills/${item.id}`}>
+								<Table.Cell>{item.description}</Table.Cell>
+								<Table.Cell title={formatTime(item.creator.timestamp)}>{formatDistanceTime(item.creator.timestamp)}</Table.Cell>
+								<Table.Cell>{formatUserAmount(item.creditor, currentUserId)}</Table.Cell>
+								<Table.Cell maxW="400px">
+									<Text truncate>
+										{_.sortBy(item.debtors, [(debtor) => debtor.userId !== currentUserId, (billMember) => billMember.userId]).map(
+											(billMember, billMemberIndex) => (
+												<React.Fragment key={billMember.userId}>
+													{formatUserAmount(billMember, currentUserId)}
+													{billMemberIndex !== item.debtors.length - 1 ? ", " : ""}
+												</React.Fragment>
+											)
+										)}
+									</Text>
+								</Table.Cell>
+							</LinkedTableRow>
+						))
+					)}
 				</Table.Body>
 			</Table.Root>
 			{mode === "advance" && pagination.pageSize < fullSize && (

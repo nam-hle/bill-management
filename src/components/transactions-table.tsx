@@ -100,7 +100,7 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 					) : !data?.data.length ? (
 						<Table.Row width="100%">
 							<Table.Cell colSpan={mode === "advance" ? 7 : 6}>
-								<EmptyState title="You have no transactions yet." />
+								<EmptyState title="You have no transactions yet" />
 							</Table.Cell>
 						</Table.Row>
 					) : (

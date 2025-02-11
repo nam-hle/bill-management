@@ -85,6 +85,11 @@ export namespace Actions {
 		});
 	}
 
+	export interface BillFormParams {
+		description: string;
+		creditor: BillMember;
+		debtors: BillMember[];
+	}
 	export async function fillBillForm(page: Page, params: { description: string; creditor: BillMember; debtors: BillMember[] }) {
 		await test.step(`Fill bill form`, async () => {
 			await expect(page).toHaveURL("/bills");
