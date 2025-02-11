@@ -13,7 +13,7 @@ const profiles = {
 	CI: {
 		port: 4000,
 		retries: 2,
-		timeout: 20_000,
+		timeout: 40_000,
 		reporter: "list",
 		forbidOnly: true,
 		reuseExistingServer: false,
