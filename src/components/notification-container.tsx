@@ -7,7 +7,7 @@ import { API } from "@/api";
 import { Button } from "@/chakra/button";
 import { axiosInstance } from "@/services/axios";
 import { EmptyState } from "@/chakra/empty-state";
-import { type ClientNotification } from "@/schemas/notification.schema";
+import { type ClientNotification } from "@/schemas";
 import { NotificationMessage } from "@/components/notification-message";
 import { PopoverBody, PopoverRoot, PopoverArrow, PopoverContent, PopoverTrigger } from "@/chakra/popover";
 

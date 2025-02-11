@@ -1,7 +1,8 @@
 import { type API } from "@/api";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
+import { type BillMemberRole } from "@/schemas";
+import { type TransactionStatus } from "@/schemas";
 import { type SupabaseInstance } from "@/services/supabase/server";
-import { type BillMemberRole, type TransactionStatus } from "@/types";
 import {
 	type NotificationType,
 	type ClientNotification,
@@ -9,7 +10,7 @@ import {
 	type BillCreatedNotificationMetadata,
 	type BillDeletedNotificationMetadata,
 	type BillUpdatedNotificationMetadata
-} from "@/schemas/notification.schema";
+} from "@/schemas";
 
 export namespace NotificationsControllers {
 	const NOTIFICATIONS_SELECT = `

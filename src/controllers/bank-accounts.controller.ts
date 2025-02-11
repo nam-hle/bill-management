@@ -1,4 +1,4 @@
-import { type BankAccount } from "@/schemas/bank-accounts.schema";
+import { type BankAccount } from "@/schemas";
 import { type SupabaseInstance } from "@/services/supabase/server";
 
 export namespace BankAccountsController {

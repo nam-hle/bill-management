@@ -93,6 +93,7 @@ const eslintConfig = [
 		files: ["src/test/**"],
 		rules: {
 			"no-console": "off",
+			"react-hooks/rules-of-hooks": "off",
 			"@typescript-eslint/no-require-imports": "off",
 			"import/no-extraneous-dependencies": ["error", { devDependencies: true }]
 		}

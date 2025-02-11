@@ -1,9 +1,10 @@
 import { z } from "zod";
 
 import type { Database } from "@/database.types";
-import { JsonSchema } from "@/schemas/base.schema";
-import { ClientBillSchema, BillMemberRoleEnumSchema } from "@/types";
-import { ClientTransactionSchema } from "@/schemas/transactions.schema";
+
+import { JsonSchema } from "./base.schema";
+import { ClientTransactionSchema } from "./transactions.schema";
+import { ClientBillSchema, BillMemberRoleEnumSchema } from "./bills.schema";
 
 export const NotificationTypeSchema = z.enum([
 	"BillCreated",

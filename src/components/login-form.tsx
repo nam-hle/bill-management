@@ -9,7 +9,7 @@ import { Field } from "@/chakra/field";
 import { Button } from "@/chakra/button";
 import { login, signup } from "@/app/login/actions";
 import { PasswordInput } from "@/chakra/password-input";
-import { type LoginFormPayload, LoginFormPayloadSchema } from "@/types";
+import { type LoginFormPayload, LoginFormPayloadSchema } from "@/schemas";
 
 export const LoginForm = () => {
 	const {

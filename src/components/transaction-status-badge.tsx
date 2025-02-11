@@ -1,7 +1,7 @@
 import React from "react";
 import { Badge, type BadgeProps } from "@chakra-ui/react";
 
-import { type TransactionStatus, TransactionStatusEnumSchema } from "@/types";
+import { type TransactionStatus, TransactionStatusEnumSchema } from "@/schemas";
 
 export const TransactionStatusBadge: React.FC<{ status: TransactionStatus } & BadgeProps> = ({ status, size = "lg" }) => {
 	return (

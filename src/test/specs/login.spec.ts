@@ -3,7 +3,7 @@ import { expect } from "@playwright/test";
 import { test } from "@/test/setup";
 import { Actions } from "@/test/helpers/actions";
 import { seedUser } from "@/test/functions/seed-user";
-import { FULL_NAMES, DEFAULT_PASSWORD } from "@/test/constants";
+import { FULL_NAMES, DEFAULT_PASSWORD } from "@/test/utils";
 
 test("Login should fail with incorrect credentials", async ({ page }) => {
 	await page.goto("/");

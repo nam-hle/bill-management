@@ -3,27 +3,27 @@
 import _ from "lodash";
 import React from "react";
 import { GoSearch } from "react-icons/go";
+import { useQuery } from "@tanstack/react-query";
+import { useDebounce } from "@uidotdev/usehooks";
 import { Text, Table, Input, HStack, VStack, Heading } from "@chakra-ui/react";
 import { useRouter, useSearchParams, type ReadonlyURLSearchParams } from "next/navigation";
 
-import { type ClientBill } from "@/types";
+import { API } from "@/api";
 import { InputGroup } from "@/chakra/input-group";
 import { EmptyState } from "@/chakra/empty-state";
 import { formatTime, formatDistanceTime } from "@/utils";
 import { FilterButton } from "@/components/filter-button";
 import { LinkedTableRow } from "@/components/table-body-row";
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
+import { TableBodySkeleton } from "@/components/table-body-skeleton";
 import { PaginationRoot, PaginationItems, PaginationNextTrigger, PaginationPrevTrigger } from "@/chakra/pagination";
 
 namespace BillsTable {
 	export interface Props {
 		readonly title?: string;
-		readonly fullSize: number;
-		readonly bills: ClientBill[];
+		readonly advanced?: boolean;
 		readonly currentUserId: string;
-		readonly showFullSize?: boolean;
 		readonly action?: React.ReactNode;
-		readonly mode: "basic" | "advance";
 	}
 }
 
@@ -32,12 +32,15 @@ type TimeFilterKey = (typeof TIME_FILTER_KEYS)[number];
 
 const OWNER_FILTER_KEYS = ["creditor", "creator", "debtor"] as const;
 type OwnerFilterKey = (typeof OWNER_FILTER_KEYS)[number];
-type Filters = Partial<Record<OwnerFilterKey | TimeFilterKey, string>>;
+interface Filters extends Partial<Record<OwnerFilterKey, "me">> {
+	since?: "7d" | "30d";
+}
 
 function toFilters(searchParams: ReadonlyURLSearchParams) {
 	const params: Filters = {};
 	searchParams.forEach((value, key) => {
 		if (OWNER_FILTER_KEYS.includes(key as OwnerFilterKey) || TIME_FILTER_KEYS.includes(key as TimeFilterKey)) {
+			// @ts-expect-error asd asd asd
 			params[key as OwnerFilterKey] = value;
 		}
 	});
@@ -60,7 +63,7 @@ function toTextSearch(searchParams: ReadonlyURLSearchParams) {
 }
 
 export const BillsTable: React.FC<BillsTable.Props> = (props) => {
-	const { mode, bills, title, action, fullSize, showFullSize, currentUserId } = props;
+	const { title, action, advanced, currentUserId } = props;
 	const searchParams = useSearchParams();
 	const [textSearch, setTextSearch] = React.useState(() => toTextSearch(searchParams));
 
@@ -74,6 +77,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 			const updatedFilters = { ...filters };
 
 			if (filterValue !== null) {
+				// @ts-expect-error asd asd asd sa
 				updatedFilters[filterKey] = filterValue;
 			} else {
 				delete updatedFilters[filterKey];
@@ -91,6 +95,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 			delete updatedFilters.search;
 		}
 
+		// @ts-expect-error asdasd asd asdas d
 		router.push(`?${new URLSearchParams(updatedFilters).toString()}`);
 	}, [filters, router, textSearch]);
 
@@ -123,16 +128,32 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 		[filters, onFilterChange]
 	);
 
+	const searchParams2 = useDebounce(
+		{
+			textSearch,
+			since: filters.since,
+			debtorId: filters.debtor,
+			creatorId: filters.creator,
+			page: pagination.pageNumber,
+			creditorId: filters.creditor
+		},
+		500
+	);
+	const { data, isSuccess, isPending } = useQuery({
+		queryKey: ["bills", searchParams2],
+		queryFn: () => API.Bills.List.query(searchParams2)
+	});
+
 	return (
 		<VStack width="100%" gap="{spacing.4}" data-testid="table-container">
 			<HStack width="100%" data-testid="table-heading" justifyContent="space-between">
 				<Heading as="h1" data-testid="table-title">
 					{title ?? "Bills"}
-					{showFullSize ? ` (${fullSize})` : ""}
+					{advanced && isSuccess ? ` (${data.fullSize})` : ""}
 				</Heading>
 				{action}
 			</HStack>
-			{mode === "advance" && (
+			{advanced && (
 				<HStack width="100%" data-testid="table-filters">
 					<FilterButton {...createOwnerFilter("creator")}>As creator</FilterButton>
 					<FilterButton {...createOwnerFilter("creditor")}>As creditor</FilterButton>
@@ -140,12 +161,18 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 					<FilterButton {...createTimeFilter("since", "7d")}>Last 7 days</FilterButton>
 					<FilterButton {...createTimeFilter("since", "30d")}>Last 30 days</FilterButton>
 					<InputGroup w="200px" marginLeft="auto" startElement={<GoSearch />}>
-						<Input onBlur={onSearch} value={textSearch} placeholder="Type to search.." onChange={(e) => setTextSearch(e.target.value)} />
+						<Input
+							onBlur={onSearch}
+							name="search-bar"
+							value={textSearch}
+							placeholder="Type to search.."
+							onChange={(e) => setTextSearch(e.target.value)}
+						/>
 					</InputGroup>
 				</HStack>
 			)}
 
-			<Table.Root size="md" interactive variant="outline" data-testid="table__settled">
+			<Table.Root size="md" interactive variant="outline" data-testid={`table__${isPending ? "loading" : "settled"}`}>
 				<Table.Header>
 					<Table.Row>
 						<Table.ColumnHeader>Description</Table.ColumnHeader>
@@ -157,25 +184,27 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
-					{bills.length === 0 ? (
+					{isPending ? (
+						<TableBodySkeleton numberOfCols={4} />
+					) : !data?.data.length ? (
 						<Table.Row width="100%">
 							<Table.Cell colSpan={4}>
 								<EmptyState title="You have no bills yet" />
 							</Table.Cell>
 						</Table.Row>
 					) : (
-						bills?.map((item) => (
-							<LinkedTableRow key={item.id} href={`/bills/${item.id}`}>
-								<Table.Cell>{item.description}</Table.Cell>
-								<Table.Cell title={formatTime(item.creator.timestamp)}>{formatDistanceTime(item.creator.timestamp)}</Table.Cell>
-								<Table.Cell>{formatUserAmount(item.creditor, currentUserId)}</Table.Cell>
+						data.data?.map((bill) => (
+							<LinkedTableRow key={bill.id} href={`/bills/${bill.id}`}>
+								<Table.Cell>{bill.description}</Table.Cell>
+								<Table.Cell title={formatTime(bill.creator.timestamp)}>{formatDistanceTime(bill.creator.timestamp)}</Table.Cell>
+								<Table.Cell>{formatUserAmount(bill.creditor, currentUserId)}</Table.Cell>
 								<Table.Cell maxW="400px">
 									<Text truncate>
-										{_.sortBy(item.debtors, [(debtor) => debtor.userId !== currentUserId, (billMember) => billMember.userId]).map(
+										{_.sortBy(bill.debtors, [(debtor) => debtor.userId !== currentUserId, (billMember) => billMember.userId]).map(
 											(billMember, billMemberIndex) => (
 												<React.Fragment key={billMember.userId}>
 													{formatUserAmount(billMember, currentUserId)}
-													{billMemberIndex !== item.debtors.length - 1 ? ", " : ""}
+													{billMemberIndex !== bill.debtors.length - 1 ? ", " : ""}
 												</React.Fragment>
 											)
 										)}
@@ -186,9 +215,14 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 					)}
 				</Table.Body>
 			</Table.Root>
-			{mode === "advance" && pagination.pageSize < fullSize && (
+			{advanced && isSuccess && pagination.pageSize < data.fullSize && (
 				<HStack w="100%" justifyContent="flex-end">
-					<PaginationRoot siblingCount={1} count={fullSize} onPageChange={onPageChange} page={pagination.pageNumber} pageSize={pagination.pageSize}>
+					<PaginationRoot
+						siblingCount={1}
+						count={data.fullSize}
+						onPageChange={onPageChange}
+						page={pagination.pageNumber}
+						pageSize={pagination.pageSize}>
 						<PaginationPrevTrigger />
 						<PaginationItems />
 						<PaginationNextTrigger />

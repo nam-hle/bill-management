@@ -8,7 +8,7 @@ import { Field } from "@/chakra/field";
 import { Button } from "@/chakra/button";
 import { toaster } from "@/chakra/toaster";
 import { axiosInstance } from "@/services/axios";
-import { type ProfileFormPayload } from "@/types";
+import { type ProfileFormPayload } from "@/schemas";
 import { ProfileAvatar } from "@/components/profile-avatar";
 
 namespace ProfileForm {

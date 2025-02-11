@@ -1,4 +1,4 @@
-import { BillFormPayloadSchema } from "@/types";
+import { BillCreationPayloadSchema } from "@/schemas";
 import { BillsControllers } from "@/controllers/bills.controllers";
 import { BillMembersControllers } from "@/controllers/bill-members.controllers";
 import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
@@ -8,7 +8,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 		const billId = (await params).id;
 		const body = await request.json();
 
-		const parsedBody = BillFormPayloadSchema.safeParse(body);
+		const parsedBody = BillCreationPayloadSchema.safeParse(body);
 
 		if (parsedBody.error) {
 			return new Response(JSON.stringify({ error: "Invalid request body", details: parsedBody.error.errors }), {
@@ -17,12 +17,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 		}
 
 		const supabase = await createSupabaseServer();
-
 		const updater = await getCurrentUser();
-
-		if (!updater) {
-			throw new Error("User not found");
-		}
 
 		const { debtors, issuedAt, creditor, description, receiptFile } = parsedBody.data;
 

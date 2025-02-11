@@ -1,8 +1,8 @@
 import { type API } from "@/api";
+import { Pagination } from "@/types";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
-import { Pagination, type TransactionStatus } from "@/types";
 import { UsersControllers } from "@/controllers/users.controllers";
-import { type ClientTransaction } from "@/schemas/transactions.schema";
+import { type TransactionStatus, type ClientTransaction } from "@/schemas";
 import { BankAccountsController } from "@/controllers/bank-accounts.controller";
 import { getCurrentUser, type SupabaseInstance } from "@/services/supabase/server";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";

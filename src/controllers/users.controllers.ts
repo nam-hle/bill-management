@@ -1,5 +1,6 @@
+import { type Balance, type UserInfo } from "@/types";
 import { type SupabaseInstance } from "@/services/supabase/server";
-import { type Balance, type UserInfo, type ClientUser, type ProfileFormPayload } from "@/types";
+import { type ClientUser, type ProfileFormPayload } from "@/schemas";
 
 export namespace UsersControllers {
 	const USERS_SELECT = `

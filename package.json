@@ -24,6 +24,7 @@
 		"@supabase/ssr": "^0.5.2",
 		"@supabase/supabase-js": "^2.47.10",
 		"@tanstack/react-query": "^5.66.0",
+		"@uidotdev/usehooks": "^2.4.1",
 		"add": "^2.0.6",
 		"axios": "^1.7.9",
 		"date-fns": "^4.1.0",

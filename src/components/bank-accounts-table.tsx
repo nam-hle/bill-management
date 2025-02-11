@@ -7,8 +7,8 @@ import { Table, Badge, HStack, VStack, Heading } from "@chakra-ui/react";
 
 import { API } from "@/api";
 import { EmptyState } from "@/chakra/empty-state";
+import { BankAccountStatusEnumSchema } from "@/schemas";
 import { TableBodySkeleton } from "@/components/table-body-skeleton";
-import { BankAccountStatusEnumSchema } from "@/schemas/bank-accounts.schema";
 
 namespace BankAccountsTable {
 	export interface Props {

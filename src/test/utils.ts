@@ -1,6 +1,6 @@
 export const DEFAULT_PASSWORD = "123456";
 
-export type USER_KEY = keyof typeof USERNAMES;
+export type UserKey = keyof typeof USERNAMES;
 
 export interface BillMember {
 	name: string;

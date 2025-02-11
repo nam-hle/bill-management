@@ -11,9 +11,11 @@ import { Text, Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chak
 import { Field } from "@/chakra/field";
 import { Button } from "@/chakra/button";
 import { toaster } from "@/chakra/toaster";
+import { type ClientUser } from "@/schemas";
+import { type BillCreationPayload } from "@/schemas";
 import { ReceiptUpload } from "@/components/receipt-upload";
 import { BillMemberInputs } from "@/components/bill-member-inputs";
-import { FormKind, type ClientUser, type ErrorState, type BillFormState, type BillFormTransfer } from "@/types";
+import { FormKind, type ErrorState, type BillFormState } from "@/types";
 import { formatDate, formatTime, renderError, CLIENT_DATE_FORMAT, formatDistanceTime, SERVER_DATE_FORMAT } from "@/utils";
 
 namespace BillForm {
@@ -112,7 +114,7 @@ namespace FormState {
 		};
 	}
 
-	export function toPayload(state: FormState): BillFormTransfer {
+	export function toPayload(state: FormState): BillCreationPayload {
 		const { debtors, issuedAt, creditor, description, receiptFile } = state;
 
 		return {

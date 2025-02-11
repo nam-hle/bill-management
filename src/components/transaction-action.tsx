@@ -6,8 +6,7 @@ import { Button } from "@/chakra/button";
 import { toaster } from "@/chakra/toaster";
 import { axiosInstance } from "@/services/axios";
 import { capitalize, convertVerb } from "@/utils";
-import { TransactionStatusEnumSchema } from "@/types";
-import { type ClientTransaction } from "@/schemas/transactions.schema";
+import { type ClientTransaction, TransactionStatusEnumSchema } from "@/schemas";
 
 namespace TransactionAction {
 	export interface Props {

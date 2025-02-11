@@ -1,9 +1,9 @@
 import { test } from "@/test/setup";
 import { Actions } from "@/test/helpers/actions";
 import { Locators } from "@/test/helpers/locators";
+import { USERNAMES, FULL_NAMES } from "@/test/utils";
 import { Assertions } from "@/test/helpers/assertions";
 import { seedGroup } from "@/test/functions/seed-group";
-import { USERNAMES, FULL_NAMES } from "@/test/constants";
 
 test("basic", async ({ page, browser }) => {
 	await seedGroup();

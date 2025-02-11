@@ -1,14 +1,55 @@
+import type { NextRequest } from "next/server";
+
+import { API } from "@/api";
+import { DEFAULT_PAGE_SIZE } from "@/constants";
 import { BillsControllers } from "@/controllers/bills.controllers";
-import { type BillMemberRole, BillFormPayloadSchema } from "@/types";
+import { type BillMemberRole, BillCreationPayloadSchema } from "@/schemas";
 import { BillMembersControllers } from "@/controllers/bill-members.controllers";
 import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
+
+export async function GET(request: NextRequest) {
+	try {
+		const supabase = await createSupabaseServer();
+
+		const searchParams = API.Bills.List.SearchParamsSchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
+
+		if (searchParams.error || !searchParams.data) {
+			return new Response(JSON.stringify({ error: "Invalid request query", details: searchParams.error.errors }), { status: 400 });
+		}
+
+		const { id: currentUserId } = await getCurrentUser();
+
+		const { debtorId, creatorId, creditorId, ...rest } = searchParams.data;
+
+		const resolvedSearchParams: BillsControllers.GetManyByMemberIdPayload = {
+			...rest,
+			memberId: currentUserId,
+			limit: DEFAULT_PAGE_SIZE,
+			debtorId: debtorId === "me" ? currentUserId : undefined,
+			creatorId: creatorId === "me" ? currentUserId : undefined,
+			creditorId: creditorId === "me" ? currentUserId : undefined
+		};
+
+		const response: API.Bills.List.Response = await BillsControllers.getManyByMemberId(supabase, resolvedSearchParams);
+
+		return new Response(JSON.stringify(response), { status: 200 });
+	} catch (error) {
+		return new Response(
+			JSON.stringify({
+				error: "Internal Server Error",
+				details: (error as any).message
+			}),
+			{ status: 500 }
+		);
+	}
+}
 
 export async function POST(request: Request) {
 	try {
 		const body = await request.json();
 		const supabase = await createSupabaseServer();
 
-		const parsedBody = BillFormPayloadSchema.safeParse(body);
+		const parsedBody = BillCreationPayloadSchema.safeParse(body);
 
 		if (parsedBody.error) {
 			return new Response(JSON.stringify({ error: "Invalid request body", details: parsedBody.error.errors }), {

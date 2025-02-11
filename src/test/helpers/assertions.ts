@@ -76,7 +76,7 @@ export namespace Assertions {
 
 	export interface BillsTableExpectation {
 		heading?: string;
-		// pagination?: null | { totalPages: number; currentPage: number };
+		pagination: null | { totalPages: number; currentPage: number };
 		rows: { creditor: string; debtors: string[]; description: string }[];
 	}
 
@@ -88,17 +88,17 @@ export namespace Assertions {
 				await expect(table.getHeading()).toHaveText(params.heading);
 			}
 
-			// if (params.pagination !== undefined) {
-			// 	const pagination = table.getContainer().locator(`[aria-label="pagination"]`);
-			//
-			// 	if (params.pagination === null) {
-			// 		await expect(pagination).not.toBeVisible();
-			// 	} else {
-			// 		await expect(pagination).toBeVisible();
-			// 		await expect(pagination.locator(`[aria-label$="page ${params.pagination.currentPage}"][aria-current="page"]`)).toBeVisible();
-			// 		await expect(pagination.locator(`[aria-label="last page, page ${params.pagination.totalPages}"]`)).toBeVisible();
-			// 	}
-			// }
+			if (params.pagination !== undefined) {
+				const pagination = table.getContainer().locator(`[aria-label="pagination"]`);
+
+				if (params.pagination === null) {
+					await expect(pagination).not.toBeVisible();
+				} else {
+					await expect(pagination).toBeVisible();
+					await expect(pagination.locator(`[aria-label$="page ${params.pagination.currentPage}"][aria-current="page"]`)).toBeVisible();
+					await expect(pagination.locator(`[aria-label="last page, page ${params.pagination.totalPages}"]`)).toBeVisible();
+				}
+			}
 
 			if (params.rows.length === 0) {
 				await expect(table.getContainer().getByText("You have no bills yet")).toBeVisible();

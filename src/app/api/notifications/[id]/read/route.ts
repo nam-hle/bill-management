@@ -1,4 +1,4 @@
-import { type APIPayload } from "@/types";
+import { type API } from "@/api";
 import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
 
@@ -10,7 +10,7 @@ export async function PATCH(_request: Request, { params }: { params: Promise<{ i
 
 		const unreadCount = await NotificationsControllers.read(supabase, currentUser.id, notificationId);
 
-		return new Response(JSON.stringify({ unreadCount } satisfies APIPayload.Notification.ReadNotificationResponse), { status: 201 });
+		return new Response(JSON.stringify({ unreadCount } satisfies API.Notifications.ReadResponse), { status: 201 });
 	} catch (error) {
 		return new Response(
 			JSON.stringify({

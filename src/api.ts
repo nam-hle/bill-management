@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-import type { APIPayload } from "@/types";
+import { ClientBillSchema } from "@/schemas";
+import { BankAccountSchema } from "@/schemas";
 import { axiosInstance } from "@/services/axios";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
-import { BankAccountSchema } from "@/schemas/bank-accounts.schema";
-import { ClientTransactionSchema } from "@/schemas/transactions.schema";
-import { ClientNotificationSchema } from "@/schemas/notification.schema";
+import { ClientTransactionSchema } from "@/schemas";
+import { ClientNotificationSchema } from "@/schemas";
 
 export namespace API {
 	export const DataListResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
@@ -39,6 +39,12 @@ export namespace API {
 			}
 		}
 
+		export const ReadResponseSchema = z.object({
+			unreadCount: z.number()
+		});
+
+		export type ReadResponse = z.infer<typeof ReadResponseSchema>;
+
 		export namespace ReadSingle {
 			export const ResponseSchema = z.object({
 				unreadCount: z.number().int().nonnegative()
@@ -46,7 +52,7 @@ export namespace API {
 			export type Response = z.infer<typeof ResponseSchema>;
 
 			export async function mutate(payload: { notificationId: string }) {
-				const { data } = await axiosInstance.patch<APIPayload.Notification.ReadNotificationResponse>(`/notifications/${payload.notificationId}/read`);
+				const { data } = await axiosInstance.patch<ReadResponse>(`/notifications/${payload.notificationId}/read`);
 
 				return data;
 			}
@@ -54,7 +60,30 @@ export namespace API {
 
 		export namespace ReadAll {
 			export async function mutate() {
-				await axiosInstance.patch<APIPayload.Notification.ReadNotificationResponse>(`/notifications/read-all`);
+				await axiosInstance.patch<ReadResponse>(`/notifications/read-all`);
+			}
+		}
+	}
+
+	export namespace Bills {
+		export namespace List {
+			export const SearchParamsSchema = z.object({
+				textSearch: z.string().optional(),
+				debtorId: z.literal("me").optional(),
+				creatorId: z.literal("me").optional(),
+				creditorId: z.literal("me").optional(),
+				since: z.enum(["7d", "30d"]).optional(),
+				page: z.coerce.number().int().positive().optional().default(DEFAULT_PAGE_NUMBER)
+			});
+			export type SearchParams = z.infer<typeof SearchParamsSchema>;
+
+			export const ResponseSchema = DataListResponseSchema(ClientBillSchema);
+			export type Response = z.infer<typeof ResponseSchema>;
+
+			export async function query(params: SearchParams) {
+				const { data } = await axiosInstance<Response>("/bills", { params });
+
+				return data;
 			}
 		}
 	}
@@ -89,6 +118,12 @@ export namespace API {
 
 			export const ResponseSchema = DataListResponseSchema(ClientTransactionSchema);
 			export type Response = z.infer<typeof ResponseSchema>;
+
+			export async function query(params: SearchParams) {
+				const { data } = await axiosInstance.get<Response>("/transactions", { params });
+
+				return data;
+			}
 		}
 
 		export namespace Create {

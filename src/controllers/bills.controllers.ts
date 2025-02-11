@@ -1,6 +1,8 @@
 import _ from "lodash";
 
-import { Pagination, type ClientBill } from "@/types";
+import { type API } from "@/api";
+import { Pagination } from "@/types";
+import { type ClientBill } from "@/schemas";
 import { type SupabaseInstance } from "@/services/supabase/server";
 
 export namespace BillsControllers {
@@ -27,19 +29,16 @@ export namespace BillsControllers {
 		return data;
 	}
 
-	export async function getManyByMemberId(
-		supabase: SupabaseInstance,
-		filters: {
-			since?: string;
-			memberId: string;
-			debtorId?: string;
-			creatorId?: string;
-			creditorId?: string;
-			textSearch?: string;
-		},
-		pagination: Pagination
-	): Promise<{ fullSize: number; bills: ClientBill[] }> {
-		const { since, memberId, debtorId, creatorId, creditorId } = filters;
+	export interface GetManyByMemberIdPayload extends Omit<API.Bills.List.SearchParams, "debtorId" | "creatorId" | "creditorId"> {
+		readonly limit: number;
+		readonly memberId: string;
+		readonly debtorId?: string;
+		readonly creatorId?: string;
+		readonly creditorId?: string;
+	}
+
+	export async function getManyByMemberId(supabase: SupabaseInstance, payload: GetManyByMemberIdPayload): Promise<API.Bills.List.Response> {
+		const { page, since, limit, memberId, debtorId, creatorId, creditorId, textSearch } = payload;
 
 		let billMembersQuery = supabase.from("bill_members").select(`billId:bill_id`);
 
@@ -82,13 +81,15 @@ export namespace BillsControllers {
 
 		let finalQuery = supabase.from("bills").select(BILLS_SELECT, { count: "exact" }).in("id", billIDs);
 
-		if (filters.textSearch) {
-			finalQuery = finalQuery.filter("description", "fts", `${filters.textSearch}:*`);
+		if (textSearch) {
+			finalQuery = finalQuery.filter("description", "fts", `${textSearch}:*`);
 		}
 
-		const { count, data: bills } = await finalQuery.order("created_at", { ascending: false }).range(...Pagination.toRange(pagination));
+		const { count, data: bills } = await finalQuery
+			.order("created_at", { ascending: false })
+			.range(...Pagination.toRange({ pageSize: limit, pageNumber: page }));
 
-		return { fullSize: count ?? 0, bills: bills?.map(toClientBill) ?? [] };
+		return { fullSize: count ?? 0, data: bills?.map(toClientBill) ?? [] };
 	}
 
 	function toClientBill(bill: BillSelectResult): ClientBill {
