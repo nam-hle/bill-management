@@ -41,7 +41,7 @@ export default defineConfig({
 	],
 	use: {
 		video: profile.video,
-		trace: "on-first-retry",
+		trace: "retain-on-failure",
 		baseURL: `http://127.0.0.1:${profile.port}`
 	},
 
