@@ -35,13 +35,11 @@ jobs:
         with:
           version: latest
 
-      - name: Start supabase
-        run: supabase start --exclude realtime,studio,inbucket,edge-runtime
-      - name: Run migrations
-        run: supabase db reset --no-seed <<< 'y'
-
-      - name: Generate env file
-        run: pnpm generate:env
+      - name: Start supabase and run migrations
+        run: |
+          supabase start --exclude realtime,studio,inbucket,edge-runtime
+          supabase db reset --no-seed
+          pnpm generate:env
 
       - name: Run Playwright
         run: pnpm playwright

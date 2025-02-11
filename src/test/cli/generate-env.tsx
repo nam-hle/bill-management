@@ -13,11 +13,14 @@ async function writeEnvFile() {
 	envs[`NEXT_PUBLIC_SUPABASE_ANON_KEY`] = supabaseEnvs["ANON_KEY"];
 	envs[`SUPABASE_SERVICE_ROLE_KEY`] = supabaseEnvs["SERVICE_ROLE_KEY"];
 
+	const currentLocalEnv = await Fs.readFile(".env.local", "utf-8");
+
 	await Fs.writeFile(
 		".env.local",
-		Object.entries(envs)
-			.map(([key, value]) => `${key}=${value}`)
-			.join("\n")
+		`${currentLocalEnv}\n` +
+			Object.entries(envs)
+				.map(([key, value]) => `${key}=${value}`)
+				.join("\n")
 	);
 }
 
