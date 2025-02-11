@@ -30,9 +30,6 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Build
-        run: pnpm build
-
       - uses: supabase/setup-cli@v1
         with:
           version: latest
@@ -42,6 +39,9 @@ jobs:
           supabase start --exclude realtime,studio,inbucket,edge-runtime
           supabase db reset --no-seed
           pnpm generate:env
+
+      - name: Build
+        run: pnpm build
 
       - name: Run Playwright
         run: pnpm playwright

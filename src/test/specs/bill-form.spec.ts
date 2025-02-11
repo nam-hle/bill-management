@@ -13,7 +13,7 @@ import { seedGroup } from "@/test/functions/seed-group";
 // TODO: Assert bill metadata
 // TODO: Test bill update
 
-test.describe.skip("basic", () => {
+test.describe("basic", () => {
 	const testCases: {
 		description: string;
 		formParams: Actions.FillBillFormParams;
