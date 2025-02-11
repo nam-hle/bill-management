@@ -1,3 +1,5 @@
+import { expect } from "@playwright/test";
+
 import { test } from "@/test/setup";
 import { FULL_NAMES } from "@/test/constants";
 import { Actions } from "@/test/helpers/actions";
@@ -9,11 +11,12 @@ import { seedGroup } from "@/test/functions/seed-group";
 // TODO: Assert toast notifications
 // TODO: Assert bill form validation
 // TODO: Assert bill metadata
+// TODO: Test bill update
 
 test.describe("basic", () => {
 	const testCases: {
 		description: string;
-		formParams: Actions.BillFormParams;
+		formParams: Actions.FillBillFormParams;
 		statsExpectation: Assertions.StatsExpectation;
 		expectedRecentTable: Assertions.BillsTableExpectation;
 	}[] = [
@@ -28,9 +31,9 @@ test.describe("basic", () => {
 				description: "Dinner",
 				creditor: { amount: "90", name: FULL_NAMES.RON },
 				debtors: [
+					{ amount: "20", name: FULL_NAMES.RON },
 					{ amount: "30", name: FULL_NAMES.HERMIONE },
-					{ amount: "40", name: FULL_NAMES.DUMBLEDORE },
-					{ amount: "20", name: FULL_NAMES.RON }
+					{ amount: "40", name: FULL_NAMES.DUMBLEDORE }
 				]
 			}
 		},
@@ -51,9 +54,9 @@ test.describe("basic", () => {
 				description: "Dinner",
 				creditor: { amount: "90", name: FULL_NAMES.HARRY },
 				debtors: [
+					{ amount: "20", name: FULL_NAMES.RON },
 					{ amount: "30", name: FULL_NAMES.HERMIONE },
-					{ amount: "40", name: FULL_NAMES.DUMBLEDORE },
-					{ amount: "20", name: FULL_NAMES.RON }
+					{ amount: "40", name: FULL_NAMES.DUMBLEDORE }
 				]
 			}
 		},
@@ -97,9 +100,9 @@ test.describe("basic", () => {
 				description: "Dinner",
 				creditor: { amount: "90", name: FULL_NAMES.HARRY },
 				debtors: [
+					{ amount: "20", name: FULL_NAMES.RON },
 					{ amount: "30", name: FULL_NAMES.HARRY },
-					{ amount: "40", name: FULL_NAMES.DUMBLEDORE },
-					{ amount: "20", name: FULL_NAMES.RON }
+					{ amount: "40", name: FULL_NAMES.DUMBLEDORE }
 				]
 			}
 		}
@@ -113,8 +116,9 @@ test.describe("basic", () => {
 
 			await Actions.goToBillsPage(page);
 			await Actions.fillBillForm(page, testCase.formParams);
+			await Actions.submit(page);
 
-			await Actions.submitBillForm(page);
+			await expect(page).toHaveURL("/bills");
 
 			await Actions.goToHomePage(page);
 			const recentBills = await Locators.locateTable(page, 0);

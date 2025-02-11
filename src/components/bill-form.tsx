@@ -433,6 +433,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 						)}
 						{kind === FormKind.CREATE && (
 							<Button
+								type="submit"
 								variant="solid"
 								onClick={() => {
 									if (hasError) {

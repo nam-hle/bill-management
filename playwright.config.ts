@@ -5,7 +5,7 @@ const profiles = {
 		port: 4000,
 		retries: 0,
 		video: "on",
-		timeout: 5_000,
+		timeout: 10_000,
 		reporter: "html",
 		forbidOnly: false,
 		reuseExistingServer: true

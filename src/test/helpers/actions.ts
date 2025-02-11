@@ -32,14 +32,15 @@ export namespace Actions {
 		await test.step(`Login as ${emailName}`, async () => {
 			await page.goto("/login");
 
-			await page.fill('input[name="email"]', `${emailName}@example.com`);
-			await page.fill('input[name="password"]', DEFAULT_PASSWORD);
+			await fillInput(page, "email", `${emailName}@example.com`);
+			await fillInput(page, "password", DEFAULT_PASSWORD);
 
-			await page.click('button[type="submit"]');
+			await submit(page);
 			await expect(page).toHaveURL("/");
 		});
 	}
 
+	// TODO: Use sign out feature
 	export async function logout(page: Page) {
 		await test.step(`Logout`, async () => {
 			await page.context().clearCookies();
@@ -62,6 +63,12 @@ export namespace Actions {
 		});
 	}
 
+	export async function submit(page: Page) {
+		await test.step("Submit", async () => {
+			await page.locator(`button[type="submit"]`).click();
+		});
+	}
+
 	export async function fillTransactionForm(page: Page, params: { amount: string; receiver: string }) {
 		await test.step(`Fill transaction form: receiver=${params.receiver}, amount= ${params.amount}`, async () => {
 			await expect(page).toHaveURL("/transactions");
@@ -69,8 +76,7 @@ export namespace Actions {
 			await page.getByRole("link", { name: "New" }).click();
 
 			await selectOption(page, "Receiver", params.receiver);
-
-			await page.fill('input[name="amount"]', params.amount);
+			await fillInput(page, "amount", params.amount);
 
 			await page.getByRole("main").getByRole("button", { name: "Create" }).click();
 
@@ -78,14 +84,7 @@ export namespace Actions {
 		});
 	}
 
-	export function submitBillForm(page: Page) {
-		return test.step(`Submit bill form`, async () => {
-			await page.getByRole("main").getByRole("button", { name: "Create" }).click();
-			await expect(page).toHaveURL("/bills");
-		});
-	}
-
-	export interface BillFormParams {
+	export interface FillBillFormParams {
 		description: string;
 		creditor: BillMember;
 		debtors: BillMember[];
@@ -97,7 +96,6 @@ export namespace Actions {
 			await page.getByRole("link", { name: "New" }).click();
 
 			await fillInput(page, "description", params.description);
-
 			await selectOption(page, "Creditor", params.creditor.name);
 			await fillInput(page, "Total Amount", params.creditor.amount);
 
