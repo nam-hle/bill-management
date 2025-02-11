@@ -49,7 +49,6 @@ export default defineConfig({
 		stdout: "pipe",
 		stderr: "pipe",
 		timeout: 60_000,
-		port: profile.port,
 		command: "pnpm start",
 		url: `http://127.0.0.1:${profile.port}`,
 		reuseExistingServer: profile.reuseExistingServer

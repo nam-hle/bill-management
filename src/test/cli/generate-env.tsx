@@ -32,7 +32,7 @@ async function writeEnvFile() {
 
 writeEnvFile()
 	.then(() => {
-		console.log("Done!");
+		console.log("Environment variables written to .env.local");
 	})
 	.catch((err) => {
 		console.error(err);
