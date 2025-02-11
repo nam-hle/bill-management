@@ -13,7 +13,13 @@ async function writeEnvFile() {
 	envs[`NEXT_PUBLIC_SUPABASE_ANON_KEY`] = supabaseEnvs["ANON_KEY"];
 	envs[`SUPABASE_SERVICE_ROLE_KEY`] = supabaseEnvs["SERVICE_ROLE_KEY"];
 
-	const currentLocalEnv = await Fs.readFile(".env.local", "utf-8");
+	let currentLocalEnv = "";
+
+	try {
+		currentLocalEnv = await Fs.readFile(".env.local", "utf-8");
+	} catch (error) {
+		console.log("No .env.local file found, creating a new one");
+	}
 
 	await Fs.writeFile(
 		".env.local",
