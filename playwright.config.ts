@@ -15,7 +15,7 @@ const profiles = {
 		retries: 2,
 		timeout: 20_000,
 		reporter: "list",
-		forbidOnly: true,
+		forbidOnly: false,
 		reuseExistingServer: false,
 		video: "retain-on-failure"
 	}
