@@ -1,32 +1,25 @@
 import { expect } from "@playwright/test";
 
 import { test } from "@/test/setup";
-import { DEFAULT_PASSWORD } from "@/test/constants";
+import { Actions } from "@/test/helpers/actions";
 import { seedUser } from "@/test/functions/seed-user";
+import { FULL_NAMES, DEFAULT_PASSWORD } from "@/test/constants";
 
 test("Login should fail with incorrect credentials", async ({ page }) => {
 	await page.goto("/");
 
 	await expect(page).toHaveURL("/login");
 
-	await page.fill('input[name="email"]', "harry@example.com");
-	await page.fill('input[name="password"]', DEFAULT_PASSWORD);
+	await Actions.fillInput(page, "email", "harry@example.com");
+	await Actions.fillInput(page, "password", DEFAULT_PASSWORD);
+	await Actions.submit(page);
 
-	await page.click('button[type="submit"]');
+	await expect(page.locator(".chakra-alert__root")).toHaveText("Invalid login credentials");
 
-	const errorMessage = page.locator(".chakra-alert__root");
+	await seedUser({ email: "harry", fullName: FULL_NAMES.HARRY });
 
-	await expect(errorMessage).toBeVisible();
-
-	await expect(errorMessage).toHaveText("Invalid login credentials");
-
-	await seedUser({ email: "harry", fullName: "Harry Potter" });
-
-	await page.click('button[type="submit"]');
+	await Actions.submit(page);
 
 	await expect(page).toHaveURL("/");
-
-	const balanceHeader = page.locator("h1").first();
-	await expect(balanceHeader).toBeVisible();
-	await expect(balanceHeader).toHaveText("Balance");
+	await expect(page.locator("h1").first()).toHaveText("Balance");
 });

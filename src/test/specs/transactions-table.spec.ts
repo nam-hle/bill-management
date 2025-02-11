@@ -4,44 +4,44 @@ import { test } from "@/test/setup";
 import { Actions } from "@/test/helpers/actions";
 import { Locators } from "@/test/helpers/locators";
 import { Assertions } from "@/test/helpers/assertions";
-import { RON, HARRY, HERMIONE } from "@/test/constants";
 import { seedGroup } from "@/test/functions/seed-group";
+import { USERNAMES, FULL_NAMES } from "@/test/constants";
 
 test("basic", async ({ page }) => {
 	await seedGroup();
 
 	await test.step("Create transactions from Ron to Harry", async () => {
-		await Actions.login(page, "ron");
+		await Actions.login(page, USERNAMES.RON);
 
 		await page.getByRole("button", { name: "Transactions" }).click();
-		await Actions.fillTransactionForm(page, { amount: "40", receiver: HARRY });
+		await Actions.fillTransactionForm(page, { amount: "40", receiver: FULL_NAMES.HARRY });
 
 		await page.getByRole("button", { name: "Transactions" }).click();
-		await Actions.fillTransactionForm(page, { amount: "41", receiver: HARRY });
+		await Actions.fillTransactionForm(page, { amount: "41", receiver: FULL_NAMES.HARRY });
 
 		await Actions.logout(page);
 	});
 
 	await test.step("Create transactions from Hermione to Harry", async () => {
-		await Actions.login(page, "hermione");
+		await Actions.login(page, USERNAMES.HERMIONE);
 
 		await page.getByRole("button", { name: "Transactions" }).click();
-		await Actions.fillTransactionForm(page, { amount: "42", receiver: HARRY });
+		await Actions.fillTransactionForm(page, { amount: "42", receiver: FULL_NAMES.HARRY });
 
 		await page.getByRole("button", { name: "Transactions" }).click();
-		await Actions.fillTransactionForm(page, { amount: "43", receiver: HARRY });
+		await Actions.fillTransactionForm(page, { amount: "43", receiver: FULL_NAMES.HARRY });
 
 		await Actions.logout(page);
 	});
 
 	await test.step("Create transactions from Harry to others", async () => {
-		await Actions.login(page, "harry");
+		await Actions.login(page, USERNAMES.HARRY);
 
 		await page.getByRole("button", { name: "Transactions" }).click();
-		await Actions.fillTransactionForm(page, { amount: "44", receiver: RON });
+		await Actions.fillTransactionForm(page, { amount: "44", receiver: FULL_NAMES.RON });
 
 		await page.getByRole("button", { name: "Transactions" }).click();
-		await Actions.fillTransactionForm(page, { amount: "45", receiver: HERMIONE });
+		await Actions.fillTransactionForm(page, { amount: "45", receiver: FULL_NAMES.HERMIONE });
 
 		await page.getByRole("button", { name: "Transactions" }).click();
 	});
@@ -49,11 +49,11 @@ test("basic", async ({ page }) => {
 	const transactionsTable = await Locators.locateTable(page, 0);
 
 	const firstRows = [
-		{ sender: RON, amount: "40", receiver: HARRY, status: "Waiting", action: "Confirm", issuedAt: "Today" },
-		{ sender: RON, amount: "41", receiver: HARRY, status: "Waiting", action: "Confirm", issuedAt: "Today" },
-		{ amount: "42", receiver: HARRY, sender: HERMIONE, status: "Waiting", action: "Confirm", issuedAt: "Today" },
-		{ amount: "43", receiver: HARRY, sender: HERMIONE, status: "Waiting", action: "Confirm", issuedAt: "Today" },
-		{ amount: "44", receiver: RON, sender: HARRY, status: "Waiting", action: "Decline", issuedAt: "Today" }
+		{ amount: "40", status: "Waiting", action: "Confirm", issuedAt: "Today", sender: FULL_NAMES.RON, receiver: FULL_NAMES.HARRY },
+		{ amount: "41", status: "Waiting", action: "Confirm", issuedAt: "Today", sender: FULL_NAMES.RON, receiver: FULL_NAMES.HARRY },
+		{ amount: "42", status: "Waiting", action: "Confirm", issuedAt: "Today", receiver: FULL_NAMES.HARRY, sender: FULL_NAMES.HERMIONE },
+		{ amount: "43", status: "Waiting", action: "Confirm", issuedAt: "Today", receiver: FULL_NAMES.HARRY, sender: FULL_NAMES.HERMIONE },
+		{ amount: "44", status: "Waiting", action: "Decline", issuedAt: "Today", receiver: FULL_NAMES.RON, sender: FULL_NAMES.HARRY }
 	];
 	await Assertions.assertTransactionsTable(transactionsTable, {
 		rows: firstRows,
@@ -72,7 +72,7 @@ test("basic", async ({ page }) => {
 			totalPages: 2,
 			currentPage: 2
 		},
-		rows: [{ amount: "45", sender: HARRY, status: "Waiting", action: "Decline", issuedAt: "Today", receiver: HERMIONE }]
+		rows: [{ amount: "45", status: "Waiting", action: "Decline", issuedAt: "Today", sender: FULL_NAMES.HARRY, receiver: FULL_NAMES.HERMIONE }]
 	});
 
 	await Actions.goToHomePage(page);

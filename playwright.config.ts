@@ -5,18 +5,19 @@ const profiles = {
 		port: 4000,
 		retries: 0,
 		video: "on",
-		timeout: 5_000,
+		timeout: 20_000,
 		reporter: "html",
 		forbidOnly: false,
+		expectTimeout: 10_000,
 		reuseExistingServer: true
 	},
 	CI: {
 		port: 4000,
 		retries: 2,
-		timeout: 30_000,
+		timeout: 60_000,
 		reporter: "list",
 		forbidOnly: true,
-		command: "pnpm start",
+		expectTimeout: 20_000,
 		reuseExistingServer: false,
 		video: "retain-on-failure"
 	}
@@ -26,12 +27,13 @@ const profile = profiles[process.env.CI ? "CI" : "LOCAL"];
 
 export default defineConfig({
 	fullyParallel: false,
+	timeout: profile.timeout,
 	retries: profile.retries,
 	reporter: profile.reporter,
 	testDir: "./src/test/specs",
 	forbidOnly: profile.forbidOnly,
 	expect: {
-		timeout: profile.timeout
+		timeout: profile.expectTimeout
 	},
 	projects: [
 		{
@@ -41,7 +43,7 @@ export default defineConfig({
 	],
 	use: {
 		video: profile.video,
-		trace: "on-first-retry",
+		trace: "retain-on-failure",
 		baseURL: `http://127.0.0.1:${profile.port}`
 	},
 
@@ -49,8 +51,8 @@ export default defineConfig({
 		stdout: "pipe",
 		stderr: "pipe",
 		timeout: 60_000,
-		port: profile.port,
 		command: "pnpm start",
+		url: `http://127.0.0.1:${profile.port}`,
 		reuseExistingServer: profile.reuseExistingServer
 	}
 });

@@ -1,22 +1,9 @@
 import { supabaseTest } from "@/test/setup";
 import { DEFAULT_PASSWORD } from "@/test/constants";
 
-export async function seedHarry() {
-	await seedUser({ email: "harry", fullName: "Harry Potter" });
-}
-
-export async function seedRon() {
-	await seedUser({ email: "ron", fullName: "Ron Weasley" });
-}
-
-export async function seedHermione() {
-	await seedUser({ email: "hermione", fullName: "Hermione Granger" });
-}
-
 export async function seedUser(params: { email: string; fullName?: string; password?: string }): Promise<string> {
 	const { email, fullName, password = DEFAULT_PASSWORD } = params;
 	const fullEmail = `${email}@example.com`;
-	console.log(`Creating user ${fullEmail} (${fullName})...`);
 
 	const { data, error } = await supabaseTest.auth.admin.createUser({
 		password,

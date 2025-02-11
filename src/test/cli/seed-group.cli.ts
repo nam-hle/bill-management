@@ -1,12 +1,10 @@
 #!/usr/bin/env tsx
 
-import { seedRon, seedHarry, seedHermione } from "@/test/functions/seed-user";
+import { seedGroup } from "@/test/functions/seed-group";
 
 async function main() {
 	try {
-		await seedHarry();
-		await seedRon();
-		await seedHermione();
+		await seedGroup();
 	} catch (error) {
 		console.error("Error creating user:", error);
 	}

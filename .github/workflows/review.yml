@@ -3,9 +3,15 @@ name: Review
 on:
   pull_request:
 
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --no-deprecation
 
     steps:
       - name: Checkout repository
@@ -28,20 +34,18 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Build
-        run: pnpm build
-
       - uses: supabase/setup-cli@v1
         with:
           version: latest
 
-      - name: Start supabase
-        run: supabase start --exclude realtime,studio,inbucket,edge-runtime
-      - name: Run migrations
-        run: supabase db reset --no-seed <<< 'y'
+      - name: Start supabase and run migrations
+        run: |
+          supabase start --exclude realtime,studio,inbucket,edge-runtime
+          supabase db reset --no-seed
+          pnpm generate:env
 
-      - name: Generate env file
-        run: pnpm generate:env
+      - name: Build
+        run: pnpm build
 
       - name: Run Playwright
         run: pnpm playwright

@@ -1,23 +1,23 @@
 import { test } from "@/test/setup";
 import { Actions } from "@/test/helpers/actions";
 import { Locators } from "@/test/helpers/locators";
-import { seedUser } from "@/test/functions/seed-user";
 import { Assertions } from "@/test/helpers/assertions";
+import { seedGroup } from "@/test/functions/seed-group";
+import { USERNAMES, FULL_NAMES } from "@/test/constants";
 
 test("basic", async ({ page, browser }) => {
-	await seedUser({ email: "harry", fullName: "Harry Potter" });
-	await seedUser({ email: "ron", fullName: "Ron Weasley" });
+	await seedGroup();
 
-	await Actions.login(page, "harry");
+	await Actions.login(page, USERNAMES.HARRY);
 
 	await Actions.goToTransactionsPage(page);
-	await Actions.fillTransactionForm(page, { amount: "42", receiver: "Ron Weasley" });
+	await Actions.fillTransactionForm(page, { amount: "42", receiver: FULL_NAMES.RON });
 
 	const transactionsTable = await Locators.locateTable(page, 0);
 
 	await Assertions.assertTransactionsTable(transactionsTable, {
 		pagination: null,
-		rows: [{ amount: "42", status: "Waiting", action: "Decline", issuedAt: "Today", sender: "Harry Potter", receiver: "Ron Weasley" }]
+		rows: [{ amount: "42", status: "Waiting", action: "Decline", issuedAt: "Today", receiver: FULL_NAMES.RON, sender: FULL_NAMES.HARRY }]
 	});
 
 	await Actions.goToHomePage(page);
@@ -26,7 +26,7 @@ test("basic", async ({ page, browser }) => {
 	const recentTable = await Locators.locateTable(page, 1);
 	await Assertions.assertTransactionsTable(recentTable, {
 		pagination: null,
-		rows: [{ amount: "42", status: "Waiting", issuedAt: "Today", sender: "Harry Potter", receiver: "Ron Weasley" }]
+		rows: [{ amount: "42", status: "Waiting", issuedAt: "Today", receiver: FULL_NAMES.RON, sender: FULL_NAMES.HARRY }]
 	});
 
 	const ronPage = await (await browser.newContext()).newPage();
@@ -36,7 +36,7 @@ test("basic", async ({ page, browser }) => {
 	await Assertions.assertStats(ronPage, { Received: "42", "Net Balance": "42" });
 	const ronRecentTable = await Locators.locateTable(ronPage, 1);
 	await Assertions.assertTransactionsTable(ronRecentTable, {
-		rows: [{ amount: "42", status: "Waiting", issuedAt: "Today", sender: "Harry Potter", receiver: "Ron Weasley" }]
+		rows: [{ amount: "42", status: "Waiting", issuedAt: "Today", receiver: FULL_NAMES.RON, sender: FULL_NAMES.HARRY }]
 	});
 
 	// Assert notifications
