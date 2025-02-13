@@ -2,10 +2,9 @@ import type { NextRequest } from "next/server";
 
 import { API } from "@/api";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
-import { BillsControllers } from "@/controllers/bills.controllers";
+import { getCurrentUser, createSupabaseServer } from "@/services";
+import { BillsControllers, BillMembersControllers } from "@/controllers";
 import { type BillMemberRole, BillCreationPayloadSchema } from "@/schemas";
-import { BillMembersControllers } from "@/controllers/bill-members.controllers";
-import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
 export async function GET(request: NextRequest) {
 	try {

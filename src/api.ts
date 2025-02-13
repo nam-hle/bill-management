@@ -1,11 +1,8 @@
 import { z } from "zod";
 
-import { ClientBillSchema } from "@/schemas";
-import { BankAccountSchema } from "@/schemas";
-import { axiosInstance } from "@/services/axios";
+import { axiosInstance } from "@/services";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
-import { ClientTransactionSchema } from "@/schemas";
-import { ClientNotificationSchema } from "@/schemas";
+import { ClientBillSchema, BankAccountSchema, ClientTransactionSchema, ClientNotificationSchema } from "@/schemas";
 
 export namespace API {
 	export const DataListResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>

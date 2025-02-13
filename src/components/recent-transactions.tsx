@@ -1,8 +1,8 @@
 import React from "react";
 import { MdArrowRightAlt } from "react-icons/md";
 
+import { getCurrentUser } from "@/services";
 import { LinkButton } from "@/chakra/link-button";
-import { getCurrentUser } from "@/services/supabase/server";
 import { TransactionsTable } from "@/components/transactions-table";
 
 export async function RecentTransactions() {

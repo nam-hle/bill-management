@@ -3,8 +3,8 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { API } from "@/api";
 import { Environments } from "@/environments";
-import { createSupabaseServer } from "@/services/supabase/server";
-import { BankAccountsController } from "@/controllers/bank-accounts.controller";
+import { createSupabaseServer } from "@/services";
+import { BankAccountsController } from "@/controllers";
 
 const VIETQR_API = "https://api.vietqr.io/v2/generate";
 

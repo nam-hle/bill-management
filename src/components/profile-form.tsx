@@ -7,7 +7,7 @@ import { Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chakra-ui/
 import { Field } from "@/chakra/field";
 import { Button } from "@/chakra/button";
 import { toaster } from "@/chakra/toaster";
-import { axiosInstance } from "@/services/axios";
+import { axiosInstance } from "@/services";
 import { type ProfileFormPayload } from "@/schemas";
 import { ProfileAvatar } from "@/components/profile-avatar";
 

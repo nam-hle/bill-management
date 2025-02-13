@@ -6,9 +6,8 @@ import { IoIosAddCircle } from "react-icons/io";
 import { LinkButton } from "@/chakra/link-button";
 import { BillsTable } from "@/components/bills-table";
 import { BalancesTable } from "@/components/balances-table";
-import { UsersControllers } from "@/controllers/users.controllers";
-import { BillMembersControllers } from "@/controllers/bill-members.controllers";
-import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
+import { getCurrentUser, createSupabaseServer } from "@/services";
+import { UsersControllers, BillMembersControllers } from "@/controllers";
 
 export const metadata: Metadata = {
 	title: "Bills"

@@ -1,8 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { CollectionItem } from "@chakra-ui/react";
-import { Portal, Select as ChakraSelect } from "@chakra-ui/react";
+import { Portal, type CollectionItem, Select as ChakraSelect } from "@chakra-ui/react";
 
 import { CloseButton } from "./close-button";
 

@@ -5,8 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Stack, HStack, Heading } from "@chakra-ui/react";
 
 import { type Balance } from "@/types";
+import { axiosInstance } from "@/services";
 import { Skeleton } from "@/chakra/skeleton";
-import { axiosInstance } from "@/services/axios";
 import { StatRoot, StatLabel, StatValueText } from "@/chakra/stat";
 
 export function BalanceReport() {

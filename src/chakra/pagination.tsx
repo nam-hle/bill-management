@@ -1,9 +1,17 @@
 "use client";
 
 import * as React from "react";
-import type { TextProps, ButtonProps } from "@chakra-ui/react";
 import { HiChevronLeft, HiChevronRight, HiMiniEllipsisHorizontal } from "react-icons/hi2";
-import { Text, Button, IconButton, createContext, usePaginationContext, Pagination as ChakraPagination } from "@chakra-ui/react";
+import {
+	Text,
+	Button,
+	IconButton,
+	createContext,
+	type TextProps,
+	type ButtonProps,
+	usePaginationContext,
+	Pagination as ChakraPagination
+} from "@chakra-ui/react";
 
 import { LinkButton } from "./link-button";
 

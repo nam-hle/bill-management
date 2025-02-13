@@ -1,6 +1,6 @@
 import { type API } from "@/api";
-import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
-import { NotificationsControllers } from "@/controllers/notifications.controllers";
+import { NotificationsControllers } from "@/controllers";
+import { getCurrentUser, createSupabaseServer } from "@/services";
 
 export async function PATCH(_request: Request, { params }: { params: Promise<{ id: string }> }) {
 	try {

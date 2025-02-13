@@ -7,8 +7,7 @@ import { generateUid } from "@/utils";
 import { Button } from "@/chakra/button";
 import { Avatar } from "@/chakra/avatar";
 import { toaster } from "@/chakra/toaster";
-import { axiosInstance } from "@/services/axios";
-import { createSupabaseClient } from "@/services/supabase/client";
+import { axiosInstance, createSupabaseClient } from "@/services";
 import { FileUploadRoot, FileUploadTrigger } from "@/chakra/file-upload";
 
 namespace ProfileAvatar {

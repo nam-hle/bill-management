@@ -2,10 +2,8 @@
 
 import * as React from "react";
 import { LuSun, LuMoon } from "react-icons/lu";
-import { useTheme, ThemeProvider } from "next-themes";
-import type { ThemeProviderProps } from "next-themes";
-import type { IconButtonProps } from "@chakra-ui/react";
-import { Skeleton, ClientOnly, IconButton } from "@chakra-ui/react";
+import { useTheme, ThemeProvider, type ThemeProviderProps } from "next-themes";
+import { Skeleton, ClientOnly, IconButton, type IconButtonProps } from "@chakra-ui/react";
 
 export interface ColorModeProviderProps extends ThemeProviderProps {}
 

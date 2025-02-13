@@ -1,5 +1,5 @@
 import { type BankAccount } from "@/schemas";
-import { type SupabaseInstance } from "@/services/supabase/server";
+import { type SupabaseInstance } from "@/services";
 
 export namespace BankAccountsController {
 	const BANK_ACCOUNT_SELECT = `

@@ -1,9 +1,8 @@
 import { pick } from "lodash";
 
+import { type SupabaseInstance } from "@/services";
 import { ClientBillMember, type BillMemberRole } from "@/schemas";
-import { type SupabaseInstance } from "@/services/supabase/server";
-import { BillsControllers } from "@/controllers/bills.controllers";
-import { NotificationsControllers } from "@/controllers/notifications.controllers";
+import { BillsControllers, NotificationsControllers } from "@/controllers";
 
 export namespace BillMembersControllers {
 	export interface CreatePayload {

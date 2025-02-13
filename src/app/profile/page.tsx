@@ -2,8 +2,8 @@ import React from "react";
 import type { Metadata } from "next";
 
 import { ProfileForm } from "@/components/profile-form";
+import { getCurrentUser, createSupabaseServer } from "@/services";
 import { BankAccountsTable } from "@/components/bank-accounts-table";
-import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
 export const metadata: Metadata = {
 	title: "Profile"
