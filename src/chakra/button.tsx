@@ -1,6 +1,5 @@
 import * as React from "react";
-import type { ButtonProps as ChakraButtonProps } from "@chakra-ui/react";
-import { Span, Spinner, AbsoluteCenter, Button as ChakraButton } from "@chakra-ui/react";
+import { Span, Spinner, AbsoluteCenter, Button as ChakraButton, type ButtonProps as ChakraButtonProps } from "@chakra-ui/react";
 
 interface ButtonLoadingProps {
 	loading?: boolean;

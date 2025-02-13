@@ -2,8 +2,19 @@
 
 import * as React from "react";
 import { LuEye, LuEyeOff } from "react-icons/lu";
-import type { GroupProps, InputProps, StackProps, ButtonProps } from "@chakra-ui/react";
-import { Box, Input, Stack, HStack, mergeRefs, IconButton, useControllableState } from "@chakra-ui/react";
+import {
+	Box,
+	Input,
+	Stack,
+	HStack,
+	mergeRefs,
+	IconButton,
+	type GroupProps,
+	type InputProps,
+	type StackProps,
+	type ButtonProps,
+	useControllableState
+} from "@chakra-ui/react";
 
 import { InputGroup } from "./input-group";
 

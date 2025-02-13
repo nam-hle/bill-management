@@ -1,4 +1,4 @@
-import { TransactionsControllers } from "@/controllers/transactions.controllers";
+import { TransactionsControllers } from "@/controllers";
 import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
 export async function POST() {

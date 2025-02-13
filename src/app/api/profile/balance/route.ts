@@ -1,4 +1,4 @@
-import { UsersControllers } from "@/controllers/users.controllers";
+import { UsersControllers } from "@/controllers";
 import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
 export async function GET() {

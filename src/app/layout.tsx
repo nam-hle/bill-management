@@ -4,10 +4,10 @@ import { Inter } from "next/font/google";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { Provider } from "@/chakra/provider";
+import { UsersControllers } from "@/controllers";
+import { ReactQueryClientProvider } from "@/services";
 import { Application } from "@/components/application";
 import { createSupabaseServer } from "@/services/supabase/server";
-import { ReactQueryClientProvider } from "@/services/react-query";
-import { UsersControllers } from "@/controllers/users.controllers";
 
 const interSans = Inter({
 	subsets: ["latin"],

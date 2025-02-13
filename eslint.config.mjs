@@ -63,6 +63,8 @@ const eslintConfig = [
 				}
 			],
 
+			"import/no-duplicates": ["error", { "prefer-inline": true }],
+
 			"perfectionist/sort-jsx-props": ["error", { type: "line-length" }],
 			"perfectionist/sort-named-imports": ["error", { type: "line-length" }],
 			"perfectionist/sort-objects": ["error", { type: "line-length", partitionByNewLine: true }],

@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/chakra/button";
 import { toaster } from "@/chakra/toaster";
-import { axiosInstance } from "@/services/axios";
+import { axiosInstance } from "@/services";
 import { capitalize, convertVerb } from "@/utils";
 import { type ClientTransaction, TransactionStatusEnumSchema } from "@/schemas";
 

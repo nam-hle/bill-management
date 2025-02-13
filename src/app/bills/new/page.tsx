@@ -2,9 +2,9 @@ import React from "react";
 import type { Metadata } from "next";
 
 import { FormKind } from "@/types";
+import { UsersControllers } from "@/controllers";
 import { BillForm } from "@/components/bill-form";
 import { createSupabaseServer } from "@/services/supabase/server";
-import { UsersControllers } from "@/controllers/users.controllers";
 
 export const metadata: Metadata = {
 	title: "New Bill"

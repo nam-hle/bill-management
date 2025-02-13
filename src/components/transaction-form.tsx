@@ -14,13 +14,12 @@ import { API } from "@/api";
 import { Field } from "@/chakra/field";
 import { Button } from "@/chakra/button";
 import { toaster } from "@/chakra/toaster";
-import { type ClientUser } from "@/schemas";
+import { axiosInstance } from "@/services";
 import { Select } from "@/components/select";
-import { axiosInstance } from "@/services/axios";
-import { type ClientTransaction } from "@/schemas";
 import { DialogRoot, DialogContent } from "@/chakra/dialog";
 import { CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
 import { TransactionAction } from "@/components/transaction-action";
+import { type ClientUser, type ClientTransaction } from "@/schemas";
 import { TransactionStatusBadge } from "@/components/transaction-status-badge";
 
 namespace TransactionForm {

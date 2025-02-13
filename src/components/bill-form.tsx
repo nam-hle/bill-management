@@ -11,10 +11,9 @@ import { Text, Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chak
 import { Field } from "@/chakra/field";
 import { Button } from "@/chakra/button";
 import { toaster } from "@/chakra/toaster";
-import { type ClientUser } from "@/schemas";
-import { type BillCreationPayload } from "@/schemas";
 import { ReceiptUpload } from "@/components/receipt-upload";
 import { BillMemberInputs } from "@/components/bill-member-inputs";
+import { type ClientUser, type BillCreationPayload } from "@/schemas";
 import { FormKind, type ErrorState, type BillFormState } from "@/types";
 import { formatDate, formatTime, renderError, CLIENT_DATE_FORMAT, formatDistanceTime, SERVER_DATE_FORMAT } from "@/utils";
 

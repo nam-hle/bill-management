@@ -1,10 +1,10 @@
 import { type API } from "@/api";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
-import { type BillMemberRole } from "@/schemas";
-import { type TransactionStatus } from "@/schemas";
 import { type SupabaseInstance } from "@/services/supabase/server";
 import {
+	type BillMemberRole,
 	type NotificationType,
+	type TransactionStatus,
 	type ClientNotification,
 	type TransactionWaitingNotification,
 	type BillCreatedNotificationMetadata,
