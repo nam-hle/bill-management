@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { FormKind } from "@/types";
 import { UsersControllers } from "@/controllers";
 import { BillForm } from "@/components/bill-form";
-import { createSupabaseServer } from "@/services";
+import { createSupabaseServer } from "@/services/supabase/server";
 
 export const metadata: Metadata = {
 	title: "New Bill"

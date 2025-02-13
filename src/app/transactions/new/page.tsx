@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 import { UsersControllers } from "@/controllers";
 import { TransactionForm } from "@/components/transaction-form";
-import { getCurrentUser, createSupabaseServer } from "@/services";
+import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
 export const metadata: Metadata = {
 	title: "New Transaction"

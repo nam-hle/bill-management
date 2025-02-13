@@ -1,8 +1,8 @@
 import type { NextRequest } from "next/server";
 
 import { API } from "@/api";
-import { createSupabaseServer } from "@/services";
 import { BankAccountsController } from "@/controllers";
+import { createSupabaseServer } from "@/services/supabase/server";
 
 export async function GET(request: NextRequest) {
 	try {

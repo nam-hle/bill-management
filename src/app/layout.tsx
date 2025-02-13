@@ -5,8 +5,9 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { Provider } from "@/chakra/provider";
 import { UsersControllers } from "@/controllers";
+import { ReactQueryClientProvider } from "@/services";
 import { Application } from "@/components/application";
-import { createSupabaseServer, ReactQueryClientProvider } from "@/services";
+import { createSupabaseServer } from "@/services/supabase/server";
 
 const interSans = Inter({
 	subsets: ["latin"],

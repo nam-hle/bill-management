@@ -1,8 +1,8 @@
 import React from "react";
 import type { Metadata } from "next";
 
-import { createSupabaseServer } from "@/services";
 import { TransactionForm } from "@/components/transaction-form";
+import { createSupabaseServer } from "@/services/supabase/server";
 import { UsersControllers, TransactionsControllers } from "@/controllers";
 
 export const metadata: Metadata = {

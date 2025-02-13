@@ -2,7 +2,7 @@ import { revalidatePath } from "next/cache";
 
 import { UsersControllers } from "@/controllers";
 import { ProfileFormPayloadSchema } from "@/schemas";
-import { getCurrentUser, createSupabaseServer } from "@/services";
+import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
 export async function POST(request: Request) {
 	try {

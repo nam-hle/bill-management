@@ -7,9 +7,9 @@ import { Image, Stack, Center } from "@chakra-ui/react";
 import { generateUid } from "@/utils";
 import { Button } from "@/chakra/button";
 import { EmptyState } from "@/chakra/empty-state";
-import { createSupabaseClient } from "@/services";
 import { DialogRoot, DialogContent } from "@/chakra/dialog";
 import { downloadImage } from "@/components/profile-avatar";
+import { createSupabaseClient } from "@/services/supabase/client";
 import { FileUploadRoot, FileUploadTrigger, FileUploadDropzone } from "@/chakra/file-upload";
 
 export const ReceiptUpload: React.FC<{ editing: boolean; receiptFile: string | undefined; onReceiptChange(file: string): void }> = (props) => {

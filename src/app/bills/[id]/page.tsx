@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 import { FormKind } from "@/types";
 import { BillForm } from "@/components/bill-form";
-import { createSupabaseServer } from "@/services";
+import { createSupabaseServer } from "@/services/supabase/server";
 import { UsersControllers, BillsControllers } from "@/controllers";
 
 export const metadata: Metadata = {

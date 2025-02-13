@@ -1,6 +1,6 @@
 import { BillCreationPayloadSchema } from "@/schemas";
-import { getCurrentUser, createSupabaseServer } from "@/services";
 import { BillsControllers, BillMembersControllers } from "@/controllers";
+import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
 	try {
