@@ -1,7 +1,7 @@
 import { pick } from "lodash";
 
-import { type SupabaseInstance } from "@/services";
 import { ClientBillMember, type BillMemberRole } from "@/schemas";
+import { type SupabaseInstance } from "@/services/supabase/server";
 import { BillsControllers, NotificationsControllers } from "@/controllers";
 
 export namespace BillMembersControllers {

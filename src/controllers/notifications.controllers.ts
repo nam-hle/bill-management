@@ -1,6 +1,6 @@
 import { type API } from "@/api";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
-import { type SupabaseInstance } from "@/services";
+import { type SupabaseInstance } from "@/services/supabase/server";
 import {
 	type BillMemberRole,
 	type NotificationType,

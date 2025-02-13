@@ -3,7 +3,7 @@ import _ from "lodash";
 import { type API } from "@/api";
 import { Pagination } from "@/types";
 import { type ClientBill } from "@/schemas";
-import { type SupabaseInstance } from "@/services";
+import { type SupabaseInstance } from "@/services/supabase/server";
 
 export namespace BillsControllers {
 	const BILLS_SELECT = `
