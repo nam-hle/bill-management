@@ -1,7 +1,7 @@
 import React from "react";
 import { Table, Heading } from "@chakra-ui/react";
 
-import type { ClientUser } from "@/types";
+import { type ClientUser } from "@/schemas";
 
 namespace BalancesTable {
 	export interface Props {

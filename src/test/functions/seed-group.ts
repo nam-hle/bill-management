@@ -1,8 +1,12 @@
 import { seedUser } from "@/test/functions/seed-user";
-import { USERNAMES, FULL_NAMES, type USER_KEY } from "@/test/constants";
+import { USERNAMES, FULL_NAMES, type UserKey } from "@/test/utils";
 
 export async function seedGroup() {
-	for (const key of Object.keys(USERNAMES) as USER_KEY[]) {
-		await seedUser({ email: USERNAMES[key], fullName: FULL_NAMES[key] });
+	const userIds: Record<string, string> = {};
+
+	for (const username of Object.keys(USERNAMES) as UserKey[]) {
+		userIds[username] = await seedUser({ email: USERNAMES[username], fullName: FULL_NAMES[username] });
 	}
+
+	return userIds as Record<UserKey, string>;
 }

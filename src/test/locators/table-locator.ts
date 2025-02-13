@@ -44,6 +44,9 @@ export class TableLocator {
 	get nextPageButton() {
 		return this.tableContainer.getByRole("button", { name: "Next page" });
 	}
+	get previousPageButton() {
+		return this.tableContainer.getByRole("button", { name: "Previous page" });
+	}
 }
 
 export class Row {

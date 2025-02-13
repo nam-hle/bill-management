@@ -1,6 +1,6 @@
 import { pick } from "lodash";
 
-import { ClientBillMember, type BillMemberRole } from "@/types";
+import { ClientBillMember, type BillMemberRole } from "@/schemas";
 import { type SupabaseInstance } from "@/services/supabase/server";
 import { BillsControllers } from "@/controllers/bills.controllers";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";

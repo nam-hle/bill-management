@@ -4,9 +4,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Table, HStack, VStack, Heading, VisuallyHidden } from "@chakra-ui/react";
 
-import { type API } from "@/api";
-import { type DataListResponse } from "@/types";
-import { axiosInstance } from "@/services/axios";
+import { API } from "@/api";
 import { EmptyState } from "@/chakra/empty-state";
 import { displayDate, displayDateAsTitle } from "@/utils";
 import { FilterButton } from "@/components/filter-button";
@@ -14,7 +12,6 @@ import { LinkedTableRow } from "@/components/table-body-row";
 import { TransactionAction } from "@/components/transaction-action";
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
 import { TableBodySkeleton } from "@/components/table-body-skeleton";
-import { type ClientTransaction } from "@/schemas/transactions.schema";
 import { TransactionStatusBadge } from "@/components/transaction-status-badge";
 import { PaginationRoot, PaginationItems, PaginationNextTrigger, PaginationPrevTrigger } from "@/chakra/pagination";
 
@@ -27,11 +24,6 @@ namespace TransactionsTable {
 		readonly mode: "basic" | "advance";
 	}
 }
-export async function fetchTransactions(params: API.Transactions.List.SearchParams) {
-	const { data } = await axiosInstance.get<DataListResponse<ClientTransaction>>("/transactions", { params });
-
-	return data;
-}
 
 export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 	const { mode, title, action, currentUserId } = props;
@@ -43,7 +35,9 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 	const { data, isSuccess, isLoading } = useQuery({
 		queryKey: ["transactions", page, currentUserId, filters],
 		queryFn: () =>
-			fetchTransactions(filters === "toMe" ? { page, receiverId: currentUserId } : filters === "byMe" ? { page, senderId: currentUserId } : { page })
+			API.Transactions.List.query(
+				filters === "toMe" ? { page, receiverId: currentUserId } : filters === "byMe" ? { page, senderId: currentUserId } : { page }
+			)
 	});
 
 	const createOwnerFilter = React.useCallback(

@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
-import { type LoginFormPayload } from "@/types";
+import { type LoginFormPayload } from "@/schemas";
 import { createSupabaseServer } from "@/services/supabase/server";
 
 export async function login(formData: LoginFormPayload) {

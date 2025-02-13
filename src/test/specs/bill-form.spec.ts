@@ -1,7 +1,7 @@
 import { expect } from "@playwright/test";
 
 import { test } from "@/test/setup";
-import { FULL_NAMES } from "@/test/constants";
+import { FULL_NAMES } from "@/test/utils";
 import { Actions } from "@/test/helpers/actions";
 import { Locators } from "@/test/helpers/locators";
 import { Assertions } from "@/test/helpers/assertions";
@@ -25,6 +25,7 @@ test.describe("basic", () => {
 			description: "As creator only",
 			expectedRecentTable: {
 				rows: [],
+				pagination: null,
 				heading: "Recent bills"
 			},
 			formParams: {
@@ -40,16 +41,6 @@ test.describe("basic", () => {
 		{
 			description: "As creditor only",
 			statsExpectation: { Paid: "90", "Net Balance": "90" },
-			expectedRecentTable: {
-				heading: "Recent bills",
-				rows: [
-					{
-						description: "Dinner",
-						creditor: `${FULL_NAMES.HARRY} (90)`,
-						debtors: [`${FULL_NAMES.HERMIONE} (30)`, `${FULL_NAMES.DUMBLEDORE} (40)`, `${FULL_NAMES.RON} (20)`]
-					}
-				]
-			},
 			formParams: {
 				description: "Dinner",
 				creditor: { amount: "90", name: FULL_NAMES.HARRY },
@@ -58,21 +49,22 @@ test.describe("basic", () => {
 					{ amount: "30", name: FULL_NAMES.HERMIONE },
 					{ amount: "40", name: FULL_NAMES.DUMBLEDORE }
 				]
+			},
+			expectedRecentTable: {
+				pagination: null,
+				heading: "Recent bills",
+				rows: [
+					{
+						description: "Dinner",
+						creditor: `${FULL_NAMES.HARRY} (90)`,
+						debtors: [`${FULL_NAMES.HERMIONE} (30)`, `${FULL_NAMES.DUMBLEDORE} (40)`, `${FULL_NAMES.RON} (20)`]
+					}
+				]
 			}
 		},
 		{
 			description: "As debtor only",
 			statsExpectation: { Owed: "20", "Net Balance": "-20" },
-			expectedRecentTable: {
-				heading: "Recent bills",
-				rows: [
-					{
-						description: "Dinner",
-						creditor: `${FULL_NAMES.RON} (100)`,
-						debtors: [`${FULL_NAMES.HARRY} (20)`, `${FULL_NAMES.HERMIONE} (35)`, `${FULL_NAMES.DUMBLEDORE} (45)`]
-					}
-				]
-			},
 			formParams: {
 				description: "Dinner",
 				creditor: { amount: "100", name: FULL_NAMES.RON },
@@ -81,21 +73,22 @@ test.describe("basic", () => {
 					{ amount: "35", name: FULL_NAMES.HERMIONE },
 					{ amount: "45", name: FULL_NAMES.DUMBLEDORE }
 				]
+			},
+			expectedRecentTable: {
+				pagination: null,
+				heading: "Recent bills",
+				rows: [
+					{
+						description: "Dinner",
+						creditor: `${FULL_NAMES.RON} (100)`,
+						debtors: [`${FULL_NAMES.HARRY} (20)`, `${FULL_NAMES.HERMIONE} (35)`, `${FULL_NAMES.DUMBLEDORE} (45)`]
+					}
+				]
 			}
 		},
 		{
 			description: "As creditor and debtor",
 			statsExpectation: { Paid: "60", "Net Balance": "60" },
-			expectedRecentTable: {
-				heading: "Recent bills",
-				rows: [
-					{
-						description: "Dinner",
-						creditor: `${FULL_NAMES.HARRY} (90)`,
-						debtors: [`${FULL_NAMES.HARRY} (30)`, `${FULL_NAMES.DUMBLEDORE} (40)`, `${FULL_NAMES.RON} (20)`]
-					}
-				]
-			},
 			formParams: {
 				description: "Dinner",
 				creditor: { amount: "90", name: FULL_NAMES.HARRY },
@@ -103,6 +96,17 @@ test.describe("basic", () => {
 					{ amount: "20", name: FULL_NAMES.RON },
 					{ amount: "30", name: FULL_NAMES.HARRY },
 					{ amount: "40", name: FULL_NAMES.DUMBLEDORE }
+				]
+			},
+			expectedRecentTable: {
+				pagination: null,
+				heading: "Recent bills",
+				rows: [
+					{
+						description: "Dinner",
+						creditor: `${FULL_NAMES.HARRY} (90)`,
+						debtors: [`${FULL_NAMES.HARRY} (30)`, `${FULL_NAMES.DUMBLEDORE} (40)`, `${FULL_NAMES.RON} (20)`]
+					}
 				]
 			}
 		}

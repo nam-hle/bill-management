@@ -3,7 +3,7 @@ import { Input, Group, GridItem, InputAddon } from "@chakra-ui/react";
 
 import { renderError } from "@/utils";
 import { Field } from "@/chakra/field";
-import type { ClientUser } from "@/types";
+import { type ClientUser } from "@/schemas";
 import { Select } from "@/components/select";
 import { type MemberState } from "@/components/bill-form";
 

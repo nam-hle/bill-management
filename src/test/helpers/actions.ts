@@ -1,7 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 
 import { test } from "@/test/setup";
-import { type BillMember, DEFAULT_PASSWORD } from "@/test/constants";
+import { type BillMember, DEFAULT_PASSWORD } from "@/test/utils";
 
 export namespace Actions {
 	export async function goToHomePage(page: Page) {
@@ -57,9 +57,9 @@ export namespace Actions {
 		});
 	}
 
-	export async function fillInput(page: Page, label: string, value: string) {
-		await test.step(`Fill ${label} with ${value}`, async () => {
-			await page.fill(`input[name="${label}"]`, value);
+	export async function fillInput(page: Page, name: string, value: string) {
+		await test.step(`Fill ${name} with ${value}`, async () => {
+			await page.fill(`input[name="${name}"]`, value);
 		});
 	}
 
