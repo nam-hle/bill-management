@@ -21,7 +21,7 @@ import { CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
 import { TransactionAction } from "@/components/transaction-action";
 import { type ClientUser, type ClientTransaction } from "@/schemas";
 import { TransactionStatusBadge } from "@/components/transaction-status-badge";
-import { FormIssuedDateField, FormAmountFieldSchema } from "@/schemas/form.schema";
+import { FormIssuedDateField, DateFieldTransformer, FormAmountFieldSchema } from "@/schemas/form.schema";
 
 namespace TransactionForm {
 	export interface Props {
@@ -109,10 +109,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 		defaultValues: {
 			amount: kind.type === "update" ? String(kind.transaction.amount) : "",
 			receiverId: kind.type === "update" ? kind.transaction.receiver.id : "",
-			issuedAt:
-				kind.type === "update"
-					? format(parse(kind.transaction.issuedAt, SERVER_DATE_FORMAT, new Date()), CLIENT_DATE_FORMAT)
-					: format(new Date(), CLIENT_DATE_FORMAT)
+			issuedAt: DateFieldTransformer.fromServer(kind.type === "update" ? kind.transaction.issuedAt : undefined)
 		}
 	});
 
@@ -148,7 +145,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 				generateQR({
 					...data,
 					amount: data.amount === "" ? 0 : Number(data.amount),
-					issuedAt: format(parse(data.issuedAt, CLIENT_DATE_FORMAT, new Date()), SERVER_DATE_FORMAT)
+					issuedAt: DateFieldTransformer.toServer(data.issuedAt)
 				});
 			}),
 		[generateQR, handleSubmit]

@@ -2,7 +2,6 @@ import { z } from "zod";
 
 import { axiosInstance } from "@/services";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
-import { BillFormStateSchema } from "@/schemas/form.schema";
 import { ClientBillSchema, BankAccountSchema, ClientTransactionSchema, ClientNotificationSchema } from "@/schemas";
 
 export namespace API {
@@ -65,12 +64,20 @@ export namespace API {
 
 	export namespace Bills {
 		export namespace Create {
-			export const BodySchema = BillFormStateSchema;
+			export const BillFormSchema = z.object({ userId: z.string(), amount: z.number() });
+
+			export const BodySchema = z.object({
+				issuedAt: z.string(),
+				description: z.string(),
+				creditor: BillFormSchema,
+				debtors: z.array(BillFormSchema),
+				receiptFile: z.string().nullable()
+			});
 
 			export type Body = z.infer<typeof BodySchema>;
 
 			export async function mutate(body: Body) {
-				await axiosInstance.post<Body>(`/bills`, { body });
+				await axiosInstance.post<Body>(`/bills`, body);
 			}
 		}
 

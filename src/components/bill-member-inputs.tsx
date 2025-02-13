@@ -23,30 +23,43 @@ namespace BillMemberInputs {
 					type: "debtor";
 					debtorIndex: number;
 			  };
-
-		onUserChange(userId: string): void;
-		onAmountChange(string: string): void;
 	}
 }
 
 export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
-	const { users, label, action, readonly, amountLabel } = props;
+	const { users, label, action, readonly, coordinate, amountLabel } = props;
 	const {
 		control,
 		register,
 		formState: { errors }
-	} = useFormContext<NewFormState>(); // retrieve those props
+	} = useFormContext<NewFormState>();
+
+	const fieldKey = React.useMemo(() => {
+		if (coordinate.type === "creditor") {
+			return "creditor" as const;
+		}
+
+		return `debtors.${coordinate.debtorIndex}` as const;
+	}, [coordinate]);
+
+	const fieldError = React.useMemo(() => {
+		if (coordinate.type === "creditor") {
+			return errors["creditor"];
+		}
+
+		return errors["debtors"]?.[coordinate.debtorIndex];
+	}, [coordinate, errors]);
 
 	return (
 		<>
 			<GridItem colSpan={{ base: 5 }}>
-				<Field required label={label} invalid={!!errors.creditor?.userId} errorText={errors.creditor?.userId?.message}>
+				<Field required label={label} invalid={!!fieldError?.userId} errorText={fieldError?.userId?.message}>
 					<Controller
 						control={control}
-						name="creditor.userId"
+						name={`${fieldKey}.userId`}
 						render={({ field }) => (
 							<Select
-								name={label}
+								{...register(`${fieldKey}.userId`)}
 								readonly={readonly}
 								value={field.value}
 								onValueChange={field.onChange}
@@ -58,9 +71,9 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 			</GridItem>
 
 			<GridItem colSpan={{ base: 3 }}>
-				<Field required label={amountLabel} invalid={!!errors.creditor?.amount} errorText={errors.creditor?.amount?.message}>
+				<Field required label={amountLabel} invalid={!!fieldError?.amount} errorText={fieldError?.amount?.message}>
 					<Group attached width="100%">
-						<Input {...register("creditor.amount")} textAlign="right" readOnly={readonly} pointerEvents={readonly ? "none" : undefined} />
+						<Input {...register(`${fieldKey}.amount`)} textAlign="right" readOnly={readonly} pointerEvents={readonly ? "none" : undefined} />
 						<InputAddon>.000 VND</InputAddon>
 					</Group>
 				</Field>

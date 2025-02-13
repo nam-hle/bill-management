@@ -1,4 +1,4 @@
-import { BillCreationPayloadSchema } from "@/schemas";
+import { API } from "@/api";
 import { BillsControllers, BillMembersControllers } from "@/controllers";
 import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
@@ -7,7 +7,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 		const billId = (await params).id;
 		const body = await request.json();
 
-		const parsedBody = BillCreationPayloadSchema.safeParse(body);
+		const parsedBody = API.Bills.Create.BodySchema.safeParse(body);
 
 		if (parsedBody.error) {
 			return new Response(JSON.stringify({ error: "Invalid request body", details: parsedBody.error.errors }), {

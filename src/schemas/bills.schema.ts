@@ -29,12 +29,3 @@ export const ClientBillSchema = z.object({
 	updater: z.object({ userId: z.string(), timestamp: z.string(), fullName: z.string().nullable() }).optional()
 });
 export type ClientBill = z.infer<typeof ClientBillSchema>;
-
-export const BillCreationPayloadSchema = z.object({
-	issuedAt: z.string(),
-	description: z.string(),
-	receiptFile: z.string().nullable(),
-	creditor: z.object({ userId: z.string(), amount: z.number() }),
-	debtors: z.array(z.object({ userId: z.string(), amount: z.number() }))
-});
-export type BillCreationPayload = z.infer<typeof BillCreationPayloadSchema>;

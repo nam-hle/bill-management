@@ -2,8 +2,8 @@ import type { NextRequest } from "next/server";
 
 import { API } from "@/api";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
+import { type BillMemberRole } from "@/schemas";
 import { BillsControllers, BillMembersControllers } from "@/controllers";
-import { type BillMemberRole, BillCreationPayloadSchema } from "@/schemas";
 import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
 export async function GET(request: NextRequest) {
@@ -47,14 +47,16 @@ export async function POST(request: Request) {
 	try {
 		const body = await request.json();
 		const supabase = await createSupabaseServer();
-
-		const parsedBody = BillCreationPayloadSchema.safeParse(body);
+		console.log({ body });
+		const parsedBody = API.Bills.Create.BodySchema.safeParse(body);
 
 		if (parsedBody.error) {
 			return new Response(JSON.stringify({ error: "Invalid request body", details: parsedBody.error.errors }), {
 				status: 400
 			});
 		}
+
+		console.log(parsedBody.data);
 
 		const { debtors, issuedAt, creditor, description } = parsedBody.data;
 		const creator = await getCurrentUser();
