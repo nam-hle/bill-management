@@ -1,10 +1,10 @@
 "use client";
 
-import { z } from "zod";
+import { type z } from "zod";
 import React, { useState } from "react";
+import { parse, format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { IoIosAddCircle } from "react-icons/io";
-import { parse, format, isValid } from "date-fns";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -21,6 +21,7 @@ import { CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
 import { TransactionAction } from "@/components/transaction-action";
 import { type ClientUser, type ClientTransaction } from "@/schemas";
 import { TransactionStatusBadge } from "@/components/transaction-status-badge";
+import { FormIssuedDateField, FormAmountFieldSchema } from "@/schemas/form.schema";
 
 namespace TransactionForm {
 	export interface Props {
@@ -38,20 +39,8 @@ namespace TransactionForm {
 }
 
 const FormStateSchema = API.Transactions.Create.BodySchema.omit({ amount: true, issuedAt: true }).extend({
-	amount: z
-		.string()
-		.refine((val) => val !== "", "Amount is required")
-		.refine((val) => /^[1-9]\d*$/.test(val), "Amount must be a number greater than zero"),
-	issuedAt: z
-		.string()
-		.min(1, "Issued date is required")
-		.refine((val) => {
-			try {
-				return isValid(parse(val, CLIENT_DATE_FORMAT, new Date()));
-			} catch {
-				return false;
-			}
-		}, `Issued date must be a valid date and in ${CLIENT_DATE_FORMAT} format`)
+	amount: FormAmountFieldSchema,
+	issuedAt: FormIssuedDateField
 });
 
 type FormState = z.infer<typeof FormStateSchema>;

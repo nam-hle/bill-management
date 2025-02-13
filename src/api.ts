@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { axiosInstance } from "@/services";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
+import { BillFormStateSchema } from "@/schemas/form.schema";
 import { ClientBillSchema, BankAccountSchema, ClientTransactionSchema, ClientNotificationSchema } from "@/schemas";
 
 export namespace API {
@@ -63,6 +64,16 @@ export namespace API {
 	}
 
 	export namespace Bills {
+		export namespace Create {
+			export const BodySchema = BillFormStateSchema;
+
+			export type Body = z.infer<typeof BodySchema>;
+
+			export async function mutate(body: Body) {
+				await axiosInstance.post<Body>(`/bills`, { body });
+			}
+		}
+
 		export namespace List {
 			export const SearchParamsSchema = z.object({
 				textSearch: z.string().optional(),

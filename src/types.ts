@@ -28,15 +28,8 @@ export interface BillFormState {
 	description: string;
 	issuedAt: string | null;
 	receiptFile: string | null;
-	debtors: Array<{
-		userId?: string;
-		amount?: number;
-	}>;
-	creditor: {
-		userId?: string;
-		amount?: number;
-		fullName?: string | null;
-	};
+	debtors: Array<{ userId?: string; amount?: number }>;
+	creditor: { userId?: string; amount?: number; fullName?: string | null };
 }
 
 export interface ErrorState {

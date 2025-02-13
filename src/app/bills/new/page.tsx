@@ -19,6 +19,7 @@ export default async function NewBillPage() {
 			metadata={{}}
 			users={users}
 			kind={FormKind.CREATE}
+			newKind={{ type: "create" }}
 			formState={{
 				creditor: {},
 				issuedAt: null,

@@ -20,11 +20,11 @@ export namespace ClientBillMember {
 
 export const ClientBillSchema = z.object({
 	id: z.string(),
-	description: z.string(),
 	issuedAt: z.string().nullable(),
 	creditor: ClientBillMemberSchema,
 	receiptFile: z.string().nullable(),
 	debtors: z.array(ClientBillMemberSchema),
+	description: z.string().max(50, "Description is too long").min(1, "Description is required"),
 	creator: z.object({ userId: z.string(), timestamp: z.string(), fullName: z.string().nullable() }),
 	updater: z.object({ userId: z.string(), timestamp: z.string(), fullName: z.string().nullable() }).optional()
 });

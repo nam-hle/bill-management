@@ -2,26 +2,39 @@
 
 import React from "react";
 import { sumBy } from "lodash";
+import { MdEdit } from "react-icons/md";
 import { useRouter } from "next/navigation";
+import { DevTool } from "@hookform/devtools";
 import { IoIosAddCircle } from "react-icons/io";
 import { parse, format, isValid } from "date-fns";
-import { MdEdit, MdCheck, MdCancel, MdDeleteOutline } from "react-icons/md";
+import { useMutation } from "@tanstack/react-query";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, FormProvider } from "react-hook-form";
 import { Text, Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chakra-ui/react";
 
+import { API } from "@/api";
 import { Field } from "@/chakra/field";
 import { Button } from "@/chakra/button";
 import { toaster } from "@/chakra/toaster";
-import { ReceiptUpload } from "@/components/receipt-upload";
 import { BillMemberInputs } from "@/components/bill-member-inputs";
 import { type ClientUser, type BillCreationPayload } from "@/schemas";
 import { FormKind, type ErrorState, type BillFormState } from "@/types";
-import { formatDate, formatTime, renderError, CLIENT_DATE_FORMAT, formatDistanceTime, SERVER_DATE_FORMAT } from "@/utils";
+import { type NewFormState, BillFormStateSchema } from "@/schemas/form.schema";
+import { formatDate, formatTime, CLIENT_DATE_FORMAT, formatDistanceTime, SERVER_DATE_FORMAT } from "@/utils";
 
 namespace BillForm {
 	export interface Props {
 		readonly kind: FormKind;
 		readonly formState: BillFormState;
 		readonly users: readonly ClientUser[];
+		readonly newKind:
+			| {
+					readonly type: "create";
+			  }
+			| {
+					readonly type: "update";
+					readonly bill: BillFormState;
+			  };
 		readonly metadata: {
 			readonly id?: string;
 			readonly creator?: { readonly userId: string; readonly timestamp: string; readonly fullName: string | null };
@@ -233,227 +246,262 @@ const reducer = (state: FormState, action: Action): FormState => {
 };
 
 export const BillForm: React.FC<BillForm.Props> = (props) => {
-	const { kind, users, metadata } = props;
-	const [formState, dispatch] = React.useReducer(reducer, FormState.create(props.formState));
-	const [editing, setEditing] = React.useState(() => kind === FormKind.CREATE);
-	const [validating, setValidating] = React.useState(() => kind === FormKind.UPDATE);
+	const { kind, users, newKind, metadata } = props;
+	const [_formState, dispatch] = React.useReducer(reducer, FormState.create(props.formState));
+	const [editing, setEditing] = React.useState(() => newKind.type === "create");
 
-	const errors = React.useMemo(
-		() => [
-			formState.description.error,
-			formState.issuedAt.error,
-			formState.creditor.amount.error,
-			...formState.debtors.map((debtor) => debtor.amount.error),
-			...formState.debtors.map((debtor) => debtor.user.error)
-		],
-		[formState.creditor.amount.error, formState.debtors, formState.description.error, formState.issuedAt.error]
-	);
+	// const errors = React.useMemo(
+	// 	() => [
+	// 		formState.description.error,
+	// 		formState.issuedAt.error,
+	// 		formState.creditor.amount.error,
+	// 		...formState.debtors.map((debtor) => debtor.amount.error),
+	// 		...formState.debtors.map((debtor) => debtor.user.error)
+	// 	],
+	// 	[formState.creditor.amount.error, formState.debtors, formState.description.error, formState.issuedAt.error]
+	// );
 
-	const hasError = React.useMemo(() => {
-		return errors.filter((e) => e !== undefined).length > 0;
-	}, [errors]);
+	// const hasError = React.useMemo(() => {
+	// 	return errors.filter((e) => e !== undefined).length > 0;
+	// }, [errors]);
 
 	const router = useRouter();
-	const onSubmit = React.useCallback(async () => {
-		if (kind === FormKind.CREATE) {
-			await fetch("/api/bills", {
-				method: "POST",
-				body: JSON.stringify(FormState.toPayload(formState)),
-				headers: {
-					"Content-Type": "application/json"
-				}
-			}).then((response) => {
-				if (response.ok) {
-					router.push("/bills");
+	// const onSubmit = React.useCallback(async () => {
+	// 	if (kind === FormKind.CREATE) {
+	// 		await fetch("/api/bills", {
+	// 			method: "POST",
+	// 			body: JSON.stringify(FormState.toPayload(formState)),
+	// 			headers: {
+	// 				"Content-Type": "application/json"
+	// 			}
+	// 		}).then((response) => {
+	// 			if (response.ok) {
+	// 				router.push("/bills");
+	//
+	// 				toaster.create({
+	// 					type: "success",
+	// 					title: "Bill created successfully",
+	// 					description: "A new bill has been created and saved successfully."
+	// 				});
+	// 			} else {
+	// 				toaster.create({
+	// 					type: "error",
+	// 					title: "Failed to create bill",
+	// 					description: "An error occurred while creating the bill. Please try again."
+	// 				});
+	// 			}
+	// 		});
+	//
+	// 		return;
+	// 	}
+	//
+	// 	// if (kind === FormKind.UPDATE) {
+	// 	// 	if (!metadata.id) {
+	// 	// 		toaster.create({
+	// 	// 			type: "error",
+	// 	// 			title: "Invalid bill ID",
+	// 	// 			description: "The bill ID is invalid. Please try again."
+	// 	// 		});
+	// 	//
+	// 	// 		return;
+	// 	// 	}
+	// 	//
+	// 	// 	await fetch(`/api/bills/${metadata.id}`, {
+	// 	// 		method: "PUT",
+	// 	// 		headers: { "Content-Type": "application/json" },
+	// 	// 		body: JSON.stringify(FormState.toPayload(formState))
+	// 	// 	}).then((response) => {
+	// 	// 		if (response.ok) {
+	// 	// 			toaster.create({
+	// 	// 				type: "success",
+	// 	// 				title: "Bill updated successfully",
+	// 	// 				description: "The bill details have been updated successfully."
+	// 	// 			});
+	// 	// 			setEditing(() => false);
+	// 	// 		} else {
+	// 	// 			toaster.create({
+	// 	// 				type: "error",
+	// 	// 				title: "Failed to update bill",
+	// 	// 				description: "Unable to update the bill. Please verify your input and retry."
+	// 	// 			});
+	// 	// 		}
+	// 	// 	});
+	// 	// }
+	// }, [formState, kind, metadata.id, router]);
 
-					toaster.create({
-						type: "success",
-						title: "Bill created successfully",
-						description: "A new bill has been created and saved successfully."
-					});
-				} else {
-					toaster.create({
-						type: "error",
-						title: "Failed to create bill",
-						description: "An error occurred while creating the bill. Please try again."
-					});
-				}
+	const { mutate } = useMutation({
+		mutationFn: (payload: API.Bills.Create.Body) => API.Bills.Create.mutate(payload),
+		onError: () => {
+			toaster.create({
+				type: "error",
+				title: "Failed to create bill",
+				description: "An error occurred while creating the bill. Please try again."
+			});
+		},
+		onSuccess: () => {
+			toaster.create({
+				type: "success",
+				title: "Bill created successfully",
+				description: "A new bill has been created and saved successfully."
 			});
 
-			return;
+			router.push("/transactions");
 		}
+	});
+	const methods = useForm<NewFormState>({
+		resolver: zodResolver(BillFormStateSchema),
+		defaultValues:
+			newKind.type === "create"
+				? { description: "" }
+				: {
+						description: newKind.bill.description
+					}
+	});
+	const {
+		control,
+		register,
+		handleSubmit,
+		formState: { errors }
+	} = methods;
 
-		if (kind === FormKind.UPDATE) {
-			if (!metadata.id) {
-				toaster.create({
-					type: "error",
-					title: "Invalid bill ID",
-					description: "The bill ID is invalid. Please try again."
+	const onSubmit = React.useMemo(
+		() =>
+			handleSubmit((data) => {
+				mutate({
+					...data
+					// amount: data.amount === "" ? 0 : Number(data.amount),
+					// issuedAt: format(parse(data.issuedAt, CLIENT_DATE_FORMAT, new Date()), SERVER_DATE_FORMAT)
 				});
-
-				return;
-			}
-
-			await fetch(`/api/bills/${metadata.id}`, {
-				method: "PUT",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(FormState.toPayload(formState))
-			}).then((response) => {
-				if (response.ok) {
-					toaster.create({
-						type: "success",
-						title: "Bill updated successfully",
-						description: "The bill details have been updated successfully."
-					});
-					setEditing(() => false);
-				} else {
-					toaster.create({
-						type: "error",
-						title: "Failed to update bill",
-						description: "Unable to update the bill. Please verify your input and retry."
-					});
-				}
-			});
-		}
-	}, [formState, kind, metadata.id, router]);
+			}),
+		[handleSubmit, mutate]
+	);
 
 	return (
-		<Stack gap="{spacing.4}">
-			<Stack gap={0}>
-				<Heading>{kind === FormKind.UPDATE ? "Bill Details" : "New Bill"}</Heading>
-				{kind === FormKind.UPDATE && (
-					<Text color="grey" textStyle="xs" fontStyle="italic">
-						Created <span title={formatTime(metadata.creator?.timestamp)}>{formatDistanceTime(metadata.creator?.timestamp)}</span> by{" "}
-						{metadata.creator?.fullName ?? "someone"}
-						{metadata.updater?.timestamp && (
-							<>
-								{" "}
-								• Last updated <span title={formatTime(metadata.updater?.timestamp)}>{formatDistanceTime(metadata.updater?.timestamp)}</span> by{" "}
-								{metadata.updater?.fullName ?? "someone"}
-							</>
-						)}
-					</Text>
-				)}
+		<FormProvider {...methods}>
+			<Stack gap="{spacing.4}">
+				<DevTool control={control} />
+				<Stack gap={0}>
+					<Heading>{kind === FormKind.UPDATE ? "Bill Details" : "New Bill"}</Heading>
+					{kind === FormKind.UPDATE && (
+						<Text color="grey" textStyle="xs" fontStyle="italic">
+							Created <span title={formatTime(metadata.creator?.timestamp)}>{formatDistanceTime(metadata.creator?.timestamp)}</span> by{" "}
+							{metadata.creator?.fullName ?? "someone"}
+							{metadata.updater?.timestamp && (
+								<>
+									{" "}
+									• Last updated <span title={formatTime(metadata.updater?.timestamp)}>
+										{formatDistanceTime(metadata.updater?.timestamp)}
+									</span> by {metadata.updater?.fullName ?? "someone"}
+								</>
+							)}
+						</Text>
+					)}
+				</Stack>
+				<SimpleGrid columns={10} gap="{spacing.4}">
+					<GridItem colSpan={{ base: 10 }}>
+						<SimpleGrid templateRows="repeat(2, 1fr)" templateColumns="repeat(10, 1fr)">
+							<GridItem colSpan={5}>
+								<Field required label="Description" invalid={!!errors.description} errorText={errors.description?.message}>
+									<Input
+										{...register("description")}
+										readOnly={!editing}
+										placeholder="Enter bill description"
+										pointerEvents={editing ? undefined : "none"}
+									/>
+								</Field>
+							</GridItem>
+							{/*<GridItem rowSpan={2} colSpan={3}>*/}
+							{/*	<ReceiptUpload*/}
+							{/*		editing={editing}*/}
+							{/*		receiptFile={formState.receiptFile}*/}
+							{/*		onReceiptChange={(receiptFileName) => dispatch({ type: "changeReceipt", payload: { receiptFileName } })}*/}
+							{/*	/>*/}
+							{/*</GridItem>*/}
+							<GridItem colSpan={5}>
+								<Field required label="Issued at" invalid={!!errors.issuedAt} errorText={errors.issuedAt?.message}>
+									<Input
+										{...register("issuedAt")}
+										readOnly={!editing}
+										placeholder={CLIENT_DATE_FORMAT}
+										pointerEvents={editing ? undefined : "none"}
+									/>
+								</Field>
+							</GridItem>
+						</SimpleGrid>
+					</GridItem>
+
+					<BillMemberInputs
+						users={users}
+						label="Creditor"
+						readonly={!editing}
+						amountLabel="Total Amount"
+						coordinate={{ type: "creditor" }}
+						onUserChange={(userId) => dispatch({ type: "changeUser", payload: { userId, memberKind: "creditor" } })}
+						onAmountChange={(amount) => {
+							dispatch({ type: "changeAmount", payload: { input: amount, memberKind: "creditor" } });
+						}}
+					/>
+					{/*{formState.debtors.map((debtor, debtorIndex) => {*/}
+					{/*	return (*/}
+					{/*		<BillMemberInputs*/}
+					{/*			member={debtor}*/}
+					{/*			key={debtorIndex}*/}
+					{/*			readonly={!editing}*/}
+					{/*			validating={validating}*/}
+					{/*			label={`Debtor ${debtorIndex + 1}`}*/}
+					{/*			amountLabel={`Split Amount ${debtorIndex + 1}`}*/}
+					{/*			onUserChange={(userId) => dispatch({ type: "changeUser", payload: { userId, debtorIndex, memberKind: "debtor" } })}*/}
+					{/*			users={users.filter((user) => user.id === debtor.user.userId || !formState.debtors.some((d) => d.user.userId === user.id))}*/}
+					{/*			onAmountChange={(amount) => dispatch({ type: "changeAmount", payload: { debtorIndex, input: amount, memberKind: "debtor" } })}*/}
+					{/*			action={*/}
+					{/*				editing && (*/}
+					{/*					<Button variant="subtle" colorPalette="red" onClick={() => dispatch({ type: "deleteDebtor", payload: { debtorIndex } })}>*/}
+					{/*						<MdDeleteOutline /> Delete*/}
+					{/*					</Button>*/}
+					{/*				)*/}
+					{/*			}*/}
+					{/*		/>*/}
+					{/*	);*/}
+					{/*})}*/}
+				</SimpleGrid>
+
+				<HStack justifyContent="flex-start">
+					{editing && (
+						<Button variant="subtle" onClick={() => dispatch({ payload: {}, type: "addDebtor" })}>
+							Add debtor
+						</Button>
+					)}
+					{editing && (
+						<HStack>
+							{/*{kind === FormKind.UPDATE && (*/}
+							{/*	<>*/}
+							{/*		<Button*/}
+							{/*			variant="subtle"*/}
+							{/*			onClick={() => {*/}
+							{/*				setEditing(() => false);*/}
+							{/*				dispatch({ type: "reset", payload: props.formState });*/}
+							{/*			}}>*/}
+							{/*			<MdCancel /> Cancel*/}
+							{/*		</Button>*/}
+							{/*		<Button variant="solid" onClick={onSubmit} disabled={hasError}>*/}
+							{/*			<MdCheck /> Done*/}
+							{/*		</Button>*/}
+							{/*	</>*/}
+							{/*)}*/}
+							{kind === FormKind.CREATE && (
+								<Button type="submit" variant="solid" onClick={onSubmit}>
+									<IoIosAddCircle /> Create
+								</Button>
+							)}
+						</HStack>
+					)}
+					{!editing && (
+						<Button variant="solid" onClick={() => setEditing(() => true)}>
+							<MdEdit /> Edit
+						</Button>
+					)}
+				</HStack>
 			</Stack>
-			<SimpleGrid columns={10} gap="{spacing.4}">
-				<GridItem colSpan={{ base: 10 }}>
-					<SimpleGrid templateRows="repeat(2, 1fr)" templateColumns="repeat(10, 1fr)">
-						<GridItem colSpan={5}>
-							<Field required label="Description" {...renderError(validating, formState.description.error)}>
-								<Input
-									name="description"
-									readOnly={!editing}
-									value={formState.description.value}
-									placeholder="Enter bill description"
-									pointerEvents={editing ? undefined : "none"}
-									onChange={(event) => dispatch({ type: "changeDescription", payload: { description: event.target.value } })}
-								/>
-							</Field>
-						</GridItem>
-						<GridItem rowSpan={2} colSpan={3}>
-							<ReceiptUpload
-								editing={editing}
-								receiptFile={formState.receiptFile}
-								onReceiptChange={(receiptFileName) => dispatch({ type: "changeReceipt", payload: { receiptFileName } })}
-							/>
-						</GridItem>
-						<GridItem colSpan={5}>
-							<Field label="Issued at" {...renderError(validating, formState.issuedAt.error)}>
-								<Input
-									name="issuedAt"
-									readOnly={!editing}
-									placeholder="20/mm/yy"
-									value={formState.issuedAt.input}
-									pointerEvents={editing ? undefined : "none"}
-									onBlur={() => dispatch({ payload: {}, type: "submitIssuedAt" })}
-									onChange={(event) => dispatch({ type: "changeIssuedAt", payload: { issuedAt: event.target.value } })}
-								/>
-							</Field>
-						</GridItem>
-					</SimpleGrid>
-				</GridItem>
-
-				<BillMemberInputs
-					users={users}
-					label="Creditor"
-					readonly={!editing}
-					validating={validating}
-					amountLabel="Total Amount"
-					member={formState.creditor}
-					onUserChange={(userId) => dispatch({ type: "changeUser", payload: { userId, memberKind: "creditor" } })}
-					onAmountChange={(amount) => {
-						dispatch({ type: "changeAmount", payload: { input: amount, memberKind: "creditor" } });
-					}}
-				/>
-				{formState.debtors.map((debtor, debtorIndex) => {
-					return (
-						<BillMemberInputs
-							member={debtor}
-							key={debtorIndex}
-							readonly={!editing}
-							validating={validating}
-							label={`Debtor ${debtorIndex + 1}`}
-							amountLabel={`Split Amount ${debtorIndex + 1}`}
-							onUserChange={(userId) => dispatch({ type: "changeUser", payload: { userId, debtorIndex, memberKind: "debtor" } })}
-							users={users.filter((user) => user.id === debtor.user.userId || !formState.debtors.some((d) => d.user.userId === user.id))}
-							onAmountChange={(amount) => dispatch({ type: "changeAmount", payload: { debtorIndex, input: amount, memberKind: "debtor" } })}
-							action={
-								editing && (
-									<Button variant="subtle" colorPalette="red" onClick={() => dispatch({ type: "deleteDebtor", payload: { debtorIndex } })}>
-										<MdDeleteOutline /> Delete
-									</Button>
-								)
-							}
-						/>
-					);
-				})}
-			</SimpleGrid>
-
-			<HStack justifyContent={editing ? "space-between" : "flex-end"}>
-				{editing && (
-					<Button variant="subtle" onClick={() => dispatch({ payload: {}, type: "addDebtor" })}>
-						Add debtor
-					</Button>
-				)}
-				{editing && (
-					<HStack>
-						{kind === FormKind.UPDATE && (
-							<>
-								<Button
-									variant="subtle"
-									onClick={() => {
-										setEditing(() => false);
-										dispatch({ type: "reset", payload: props.formState });
-									}}>
-									<MdCancel /> Cancel
-								</Button>
-								<Button variant="solid" onClick={onSubmit} disabled={hasError}>
-									<MdCheck /> Done
-								</Button>
-							</>
-						)}
-						{kind === FormKind.CREATE && (
-							<Button
-								type="submit"
-								variant="solid"
-								onClick={() => {
-									if (hasError) {
-										setValidating(() => true);
-									} else {
-										onSubmit();
-									}
-								}}>
-								<IoIosAddCircle /> Create
-							</Button>
-						)}
-					</HStack>
-				)}
-				{!editing && (
-					<Button variant="solid" onClick={() => setEditing(() => true)}>
-						<MdEdit /> Edit
-					</Button>
-				)}
-			</HStack>
-		</Stack>
+		</FormProvider>
 	);
 };
