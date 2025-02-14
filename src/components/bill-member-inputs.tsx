@@ -1,34 +1,25 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Controller, useFormContext } from "react-hook-form";
+import { MdDeleteOutline } from "react-icons/md";
 import { Input, Group, GridItem, InputAddon } from "@chakra-ui/react";
+import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 
 import { API } from "@/api";
 import { Field } from "@/chakra/field";
+import { Button } from "@/chakra/button";
 import { Select } from "@/components/select";
 import { Skeleton } from "@/chakra/skeleton";
 import { type NewFormState } from "@/schemas/form.schema";
 
 namespace BillMemberInputs {
 	export interface Props {
-		readonly label: string;
-		readonly readonly?: boolean;
-		readonly amountLabel: string;
-		readonly action?: React.ReactNode;
-
-		readonly coordinate:
-			| {
-					type: "creditor";
-			  }
-			| {
-					type: "debtor";
-					debtorIndex: number;
-			  };
+		readonly editing?: boolean;
+		readonly coordinate: { type: "creditor" } | { type: "debtor"; debtorIndex: number };
 	}
 }
 
 export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
-	const { label, action, readonly, coordinate, amountLabel } = props;
+	const { editing, coordinate } = props;
 	const {
 		watch,
 		control,
@@ -62,9 +53,11 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 		return errors["debtors"]?.[coordinate.debtorIndex];
 	}, [coordinate, errors]);
 
+	const { remove: removeDebtor } = useFieldArray({ control, name: "debtors" });
+
 	watch("debtors");
 
-	const users = React.useMemo(() => {
+	const members = React.useMemo(() => {
 		if (!isSuccess) {
 			return [];
 		}
@@ -84,10 +77,18 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 		});
 	}, [getValues, coordinate, isSuccess, usersResponse]);
 
+	const { selectLabel, amountLabel } = React.useMemo(() => {
+		if (coordinate.type === "creditor") {
+			return { selectLabel: "Creditor", amountLabel: "Total Amount" };
+		}
+
+		return { selectLabel: `Debtor ${coordinate.debtorIndex + 1}`, amountLabel: `Split Amount ${coordinate.debtorIndex + 1}` };
+	}, [coordinate]);
+
 	return (
 		<>
 			<GridItem colSpan={{ base: 5 }}>
-				<Field required label={label} invalid={!!fieldError?.userId} errorText={fieldError?.userId?.message}>
+				<Field required label={selectLabel} invalid={!!fieldError?.userId} errorText={fieldError?.userId?.message}>
 					<Controller
 						control={control}
 						name={`${fieldKey}.userId`}
@@ -97,10 +98,10 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 							) : (
 								<Select
 									{...register(`${fieldKey}.userId`)}
-									readonly={readonly}
+									readonly={editing}
 									onValueChange={field.onChange}
 									value={isPending ? "" : field.value}
-									items={users.map(({ id: value, fullName: label }) => ({ label, value }))}
+									items={members.map(({ id: value, fullName: label }) => ({ label, value }))}
 								/>
 							)
 						}
@@ -111,14 +112,18 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 			<GridItem colSpan={{ base: 3 }}>
 				<Field required label={amountLabel} invalid={!!fieldError?.amount} errorText={fieldError?.amount?.message}>
 					<Group attached width="100%">
-						<Input {...register(`${fieldKey}.amount`)} textAlign="right" readOnly={readonly} pointerEvents={readonly ? "none" : undefined} />
+						<Input {...register(`${fieldKey}.amount`)} textAlign="right" readOnly={editing} pointerEvents={editing ? "none" : undefined} />
 						<InputAddon>.000 VND</InputAddon>
 					</Group>
 				</Field>
 			</GridItem>
 
 			<GridItem alignSelf="flex-end" colSpan={{ base: 2 }} justifySelf="flex-end">
-				{action}
+				{editing && coordinate.type === "debtor" && (
+					<Button variant="subtle" colorPalette="red" onClick={() => removeDebtor(coordinate.debtorIndex)}>
+						<MdDeleteOutline /> Delete
+					</Button>
+				)}
 			</GridItem>
 		</>
 	);

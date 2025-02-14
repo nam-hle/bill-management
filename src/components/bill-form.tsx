@@ -102,7 +102,7 @@ namespace FormState {
 }
 
 export const BillForm: React.FC<BillForm.Props> = (props) => {
-	const { kind, users, newKind, metadata } = props;
+	const { kind, newKind, metadata } = props;
 	const [editing, setEditing] = React.useState(() => newKind.type === "create");
 
 	// const errors = React.useMemo(
@@ -302,16 +302,13 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 							</SimpleGrid>
 						</GridItem>
 
-						<BillMemberInputs label="Creditor" readonly={!editing} amountLabel="Total Amount" coordinate={{ type: "creditor" }} />
-						{debtorFields.map((debtor, debtorIndex) => {
+						<BillMemberInputs editing={!editing} coordinate={{ type: "creditor" }} />
+						{debtorFields.map((_, debtorIndex) => {
 							return (
 								<BillMemberInputs
-									// users={users.filter((user) => user.id === debtor.userId || !getValues("debtors").some((d) => d.userId === user.id))}
 									key={debtorIndex}
-									readonly={!editing}
-									label={`Debtor ${debtorIndex + 1}`}
+									editing={!editing}
 									coordinate={{ debtorIndex, type: "debtor" }}
-									amountLabel={`Split Amount ${debtorIndex + 1}`}
 									action={
 										editing && (
 											<Button variant="subtle" colorPalette="red" onClick={() => removeDebtor(debtorIndex)}>
