@@ -1,47 +1,47 @@
 import React, { useState } from "react";
 import { HiUpload } from "react-icons/hi";
 import { BsReceipt } from "react-icons/bs";
-import { useQuery } from "@tanstack/react-query";
 import { Image, Stack, Center } from "@chakra-ui/react";
+import { Controller, useFormContext } from "react-hook-form";
+import { useQuery, useMutation } from "@tanstack/react-query";
 
-import { generateUid } from "@/utils";
 import { Button } from "@/chakra/button";
+import { toaster } from "@/chakra/toaster";
 import { EmptyState } from "@/chakra/empty-state";
+import type { NewFormState } from "@/schemas/form.schema";
 import { DialogRoot, DialogContent } from "@/chakra/dialog";
-import { downloadImage } from "@/components/profile-avatar";
-import { createSupabaseClient } from "@/services/supabase/client";
+import { uploadImage, downloadImage } from "@/components/profile-avatar";
 import { FileUploadRoot, FileUploadTrigger, FileUploadDropzone } from "@/chakra/file-upload";
 
-export const ReceiptUpload: React.FC<{ editing: boolean; receiptFile: string | undefined; onReceiptChange(file: string): void }> = (props) => {
-	const { editing, receiptFile, onReceiptChange } = props;
+export const ReceiptUpload: React.FC<{ editing: boolean; billId: string | undefined }> = (props) => {
+	const { billId, editing } = props;
 	const [openDialog, setOpenDialog] = useState(false);
 
-	const supabase = createSupabaseClient();
+	const { watch, control } = useFormContext<NewFormState>();
+	const receiptFile = watch("receiptFile");
 
 	const { data: receiptUrl } = useQuery({
 		queryKey: ["receipts", receiptFile],
-		queryFn: () => downloadImage("receipts", receiptFile)
+		queryFn: () => downloadImage("receipts", receiptFile ?? undefined)
 	});
 
-	const onUpload = async (file: File) => {
-		try {
-			const extension = file.name.split(".").pop();
-			const receiptFile = `${generateUid()}.${extension}`;
-
-			const { error: uploadError } = await supabase.storage.from("receipts").upload(receiptFile, file);
-
-			if (uploadError) {
-				throw uploadError;
-			}
-
-			onReceiptChange(receiptFile);
-		} catch (error) {
-			// eslint-disable-next-line no-console
-			console.error("Error uploading file: ", error);
+	const mutation = useMutation({
+		mutationFn: uploadImage,
+		onSuccess: () => {
+			toaster.create({ type: "success", title: "Receipt uploaded", description: "The receipt has been uploaded successfully." });
+		},
+		onError: () => {
+			toaster.create({
+				type: "error",
+				title: "Failed to upload receipt",
+				description: "An error occurred while uploading the receupt. Please try again."
+			});
 		}
-	};
+	});
 
-	if (!editing && !receiptUrl) {
+	console.log({ editing, receiptUrl, receiptFile });
+
+	if (!editing && !receiptUrl?.url) {
 		return (
 			<EmptyState
 				height="100%"
@@ -60,29 +60,35 @@ export const ReceiptUpload: React.FC<{ editing: boolean; receiptFile: string | u
 			{openDialog && (
 				<DialogRoot lazyMount open={openDialog} onOpenChange={(e) => setOpenDialog(e.open)}>
 					<DialogContent margin={0} width="100vw" height="100vh" boxShadow="none" justifyContent="center" backgroundColor="transparent">
-						<Center>{receiptUrl && <Image alt="receipt" src={receiptUrl.url} />}</Center>
+						<Center>{receiptUrl?.url && <Image alt="receipt" src={receiptUrl.url} />}</Center>
 					</DialogContent>
 				</DialogRoot>
 			)}
 			<Stack width="100%" height="100%" alignItems="center" justifyContent="center">
-				{receiptUrl && <Image alt="receipt" cursor="pointer" maxHeight="100px" src={receiptUrl.url} onClick={() => setOpenDialog(true)} />}
+				{receiptUrl?.url && <Image alt="receipt" cursor="pointer" maxHeight="100px" src={receiptUrl.url} onClick={() => setOpenDialog(true)} />}
 				{editing && (
-					<FileUploadRoot
-						maxFiles={1}
-						height="100%"
-						alignItems="center"
-						paddingInline="{spacing.4}"
-						accept={["image/png", "image/jpeg"]}
-						onFileAccept={(details) => onUpload(details.files[0])}>
-						{!receiptUrl && <FileUploadDropzone width="100%" height="100%" minHeight="120px" label="Upload the receipt" />}
-						{receiptUrl && (
-							<FileUploadTrigger asChild>
-								<Button size="sm" variant="outline">
-									<HiUpload /> Change receipt
-								</Button>
-							</FileUploadTrigger>
+					<Controller
+						control={control}
+						name="receiptFile"
+						render={() => (
+							<FileUploadRoot
+								maxFiles={1}
+								height="100%"
+								alignItems="center"
+								paddingInline="{spacing.4}"
+								accept={["image/png", "image/jpeg"]}
+								onFileAccept={(details) => mutation.mutate({ objectId: billId, bucketName: "avatars", image: details.files[0] })}>
+								{!receiptUrl?.url && <FileUploadDropzone width="100%" height="100%" minHeight="120px" label="Upload the receipt" />}
+								{receiptUrl?.url && (
+									<FileUploadTrigger asChild>
+										<Button size="sm" variant="outline">
+											<HiUpload /> Change receipt
+										</Button>
+									</FileUploadTrigger>
+								)}
+							</FileUploadRoot>
 						)}
-					</FileUploadRoot>
+					/>
 				)}
 			</Stack>
 		</>

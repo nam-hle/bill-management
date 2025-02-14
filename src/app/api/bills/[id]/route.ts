@@ -26,7 +26,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 		const billId = (await params).id;
 		const body = await request.json();
 
-		const parsedBody = API.Bills.Create.BodySchema.safeParse(body);
+		const parsedBody = API.Bills.BodySchema.safeParse(body);
 
 		if (parsedBody.error) {
 			return new Response(JSON.stringify({ error: "Invalid request body", details: parsedBody.error.errors }), {

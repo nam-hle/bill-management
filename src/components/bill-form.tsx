@@ -14,6 +14,7 @@ import { API } from "@/api";
 import { Field } from "@/chakra/field";
 import { Button } from "@/chakra/button";
 import { toaster } from "@/chakra/toaster";
+import { ReceiptUpload } from "@/components/receipt-upload";
 import { type ErrorState, type BillFormState } from "@/types";
 import { BillMemberInputs } from "@/components/bill-member-inputs";
 import { formatDate, formatTime, CLIENT_DATE_FORMAT, formatDistanceTime, SERVER_DATE_FORMAT } from "@/utils";
@@ -89,86 +90,28 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 	const { newKind } = props;
 	const [editing, setEditing] = React.useState(() => newKind.type === "create");
 
-	// const errors = React.useMemo(
-	// 	() => [
-	// 		formState.description.error,
-	// 		formState.issuedAt.error,
-	// 		formState.creditor.amount.error,
-	// 		...formState.debtors.map((debtor) => debtor.amount.error),
-	// 		...formState.debtors.map((debtor) => debtor.user.error)
-	// 	],
-	// 	[formState.creditor.amount.error, formState.debtors, formState.description.error, formState.issuedAt.error]
-	// );
+	const { mutate: updateBill } = useMutation({
+		mutationFn: (payload: API.Bills.Update.Payload) => {
+			return API.Bills.Update.mutate(payload);
+		},
+		onError: () => {
+			toaster.create({
+				type: "error",
+				title: "Failed to update bill",
+				description: "Unable to update the bill. Please verify your input and retry."
+			});
+		},
+		onSuccess: () => {
+			toaster.create({
+				type: "success",
+				title: "Bill updated successfully",
+				description: "The bill details have been updated successfully."
+			});
+			// 			setEditing(() => false);
+		}
+	});
 
-	// const hasError = React.useMemo(() => {
-	// 	return errors.filter((e) => e !== undefined).length > 0;
-	// }, [errors]);
-
-	// const router = useRouter();
-	// const onSubmit = React.useCallback(async () => {
-	// 	if (kind === FormKind.CREATE) {
-	// 		await fetch("/api/bills", {
-	// 			method: "POST",
-	// 			body: JSON.stringify(FormState.toPayload(formState)),
-	// 			headers: {
-	// 				"Content-Type": "application/json"
-	// 			}
-	// 		}).then((response) => {
-	// 			if (response.ok) {
-	// 				router.push("/bills");
-	//
-	// 				toaster.create({
-	// 					type: "success",
-	// 					title: "Bill created successfully",
-	// 					description: "A new bill has been created and saved successfully."
-	// 				});
-	// 			} else {
-	// 				toaster.create({
-	// 					type: "error",
-	// 					title: "Failed to create bill",
-	// 					description: "An error occurred while creating the bill. Please try again."
-	// 				});
-	// 			}
-	// 		});
-	//
-	// 		return;
-	// 	}
-	//
-	// 	// if (kind === FormKind.UPDATE) {
-	// 	// 	if (!metadata.id) {
-	// 	// 		toaster.create({
-	// 	// 			type: "error",
-	// 	// 			title: "Invalid bill ID",
-	// 	// 			description: "The bill ID is invalid. Please try again."
-	// 	// 		});
-	// 	//
-	// 	// 		return;
-	// 	// 	}
-	// 	//
-	// 	// 	await fetch(`/api/bills/${metadata.id}`, {
-	// 	// 		method: "PUT",
-	// 	// 		headers: { "Content-Type": "application/json" },
-	// 	// 		body: JSON.stringify(FormState.toPayload(formState))
-	// 	// 	}).then((response) => {
-	// 	// 		if (response.ok) {
-	// 	// 			toaster.create({
-	// 	// 				type: "success",
-	// 	// 				title: "Bill updated successfully",
-	// 	// 				description: "The bill details have been updated successfully."
-	// 	// 			});
-	// 	// 			setEditing(() => false);
-	// 	// 		} else {
-	// 	// 			toaster.create({
-	// 	// 				type: "error",
-	// 	// 				title: "Failed to update bill",
-	// 	// 				description: "Unable to update the bill. Please verify your input and retry."
-	// 	// 			});
-	// 	// 		}
-	// 	// 	});
-	// 	// }
-	// }, [formState, kind, metadata.id, router]);
-
-	const { mutate } = useMutation({
+	const { mutate: createBill } = useMutation({
 		mutationFn: (payload: API.Bills.Create.Body) => {
 			return API.Bills.Create.mutate(payload);
 		},
@@ -207,16 +150,6 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 						]
 					}
 				: undefined
-		// {
-		// 		description: newKind.bill.description,
-		// 		creditor: BillFormMemberSchemaTransformer.fromServer({
-		// 			userId: newKind.bill.creditor.userId as string,
-		// 			amount: newKind.bill.creditor.amount as number
-		// 		}),
-		// 		debtors: newKind.bill.debtors.map((debtor) => {
-		// 			return BillFormMemberSchemaTransformer.fromServer({ userId: debtor.userId as string, amount: debtor.amount as number });
-		// 		})
-		// 	}
 	});
 	const {
 		reset,
@@ -241,15 +174,23 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 
 	const onSubmit = React.useMemo(() => {
 		return handleSubmit((data) => {
-			mutate({
+			const transformedData = {
 				...data,
 				receiptFile: null,
 				issuedAt: DateFieldTransformer.toServer(data.issuedAt),
 				creditor: BillFormMemberSchemaTransformer.toServer(data.creditor),
 				debtors: data.debtors.map(BillFormMemberSchemaTransformer.toServer)
-			});
+			};
+
+			if (newKind.type === "create") {
+				createBill(transformedData);
+			} else if (newKind.type === "update") {
+				updateBill({ body: transformedData, billId: newKind.billId });
+			} else {
+				throw new Error("Invalid form type");
+			}
 		});
-	}, [handleSubmit, mutate]);
+	}, [handleSubmit, newKind, createBill, updateBill]);
 
 	return (
 		<>
@@ -285,13 +226,9 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 										/>
 									</Field>
 								</GridItem>
-								{/*<GridItem rowSpan={2} colSpan={3}>*/}
-								{/*	<ReceiptUpload*/}
-								{/*		editing={editing}*/}
-								{/*		receiptFile={formState.receiptFile}*/}
-								{/*		onReceiptChange={(receiptFileName) => dispatch({ type: "changeReceipt", payload: { receiptFileName } })}*/}
-								{/*	/>*/}
-								{/*</GridItem>*/}
+								<GridItem rowSpan={2} colSpan={3}>
+									<ReceiptUpload editing={editing} billId={newKind.type === "update" ? newKind.billId : undefined} />
+								</GridItem>
 								<GridItem colSpan={5}>
 									<Field required label="Issued at" invalid={!!errors.issuedAt} errorText={errors.issuedAt?.message}>
 										<Input
@@ -325,7 +262,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 											variant="subtle"
 											onClick={() => {
 												setEditing(() => false);
-												// dispatch({ type: "reset", payload: props.formState });
+												reset();
 											}}>
 											<MdCancel /> Cancel
 										</Button>

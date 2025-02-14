@@ -76,6 +76,16 @@ export namespace API {
 	}
 
 	export namespace Bills {
+		export const BillMemberSchema = z.object({ userId: z.string(), amount: z.number() });
+
+		export const BodySchema = z.object({
+			issuedAt: z.string(),
+			description: z.string(),
+			creditor: BillMemberSchema,
+			receiptFile: z.string().nullable(),
+			debtors: z.array(BillMemberSchema)
+		});
+
 		export namespace Get {
 			export type Response = ClientBill;
 			export async function query(params: { billId: string }) {
@@ -86,20 +96,22 @@ export namespace API {
 		}
 
 		export namespace Create {
-			export const BillFormSchema = z.object({ userId: z.string(), amount: z.number() });
-
-			export const BodySchema = z.object({
-				issuedAt: z.string(),
-				description: z.string(),
-				creditor: BillFormSchema,
-				debtors: z.array(BillFormSchema),
-				receiptFile: z.string().nullable()
-			});
-
 			export type Body = z.infer<typeof BodySchema>;
 
 			export async function mutate(body: Body) {
 				await axiosInstance.post<Body>(`/bills`, body);
+			}
+		}
+
+		export namespace Update {
+			export type Body = z.infer<typeof BodySchema>;
+			export interface Payload {
+				readonly body: Body;
+				readonly billId: string;
+			}
+
+			export async function mutate(payload: Payload) {
+				await axiosInstance.put<Body>(`/bills/${payload.billId}`, payload.body);
 			}
 		}
 

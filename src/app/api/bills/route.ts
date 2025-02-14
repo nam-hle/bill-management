@@ -47,16 +47,13 @@ export async function POST(request: Request) {
 	try {
 		const body = await request.json();
 		const supabase = await createSupabaseServer();
-		console.log({ body });
-		const parsedBody = API.Bills.Create.BodySchema.safeParse(body);
+		const parsedBody = API.Bills.BodySchema.safeParse(body);
 
 		if (parsedBody.error) {
 			return new Response(JSON.stringify({ error: "Invalid request body", details: parsedBody.error.errors }), {
 				status: 400
 			});
 		}
-
-		console.log(parsedBody.data);
 
 		const { debtors, issuedAt, creditor, description } = parsedBody.data;
 		const creator = await getCurrentUser();

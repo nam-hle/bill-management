@@ -61,7 +61,7 @@ export namespace BillFormMemberSchemaTransformer {
 export const BillFormStateSchema = z.object({
 	issuedAt: FormIssuedDateField,
 	creditor: BillFormMemberSchema,
-	// receiptFile: z.string().nullable(),
+	receiptFile: z.string().nullable(),
 	debtors: z.array(BillFormMemberSchema),
 	description: z.string().max(50, "Description is too long").min(1, "Description is required")
 });

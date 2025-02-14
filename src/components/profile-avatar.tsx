@@ -20,11 +20,6 @@ namespace ProfileAvatar {
 	}
 }
 
-interface UploadAvatarPayload {
-	file: File;
-	userId: string;
-}
-
 export const ProfileAvatar: React.FC<ProfileAvatar.Props> = (props) => {
 	const { url, userId, onAvatarChange } = props;
 
@@ -35,7 +30,7 @@ export const ProfileAvatar: React.FC<ProfileAvatar.Props> = (props) => {
 	});
 
 	const mutation = useMutation({
-		mutationFn: uploadAvatar,
+		mutationFn: uploadImage,
 		onSuccess: (filePath) => {
 			toaster.create({ type: "success", title: "Image uploaded", description: "The image has been uploaded successfully." });
 			onAvatarChange(filePath);
@@ -56,7 +51,7 @@ export const ProfileAvatar: React.FC<ProfileAvatar.Props> = (props) => {
 				maxFiles={1}
 				width="fit-content"
 				accept={["image/png", "image/jpeg"]}
-				onFileAccept={(details) => mutation.mutate({ userId, file: details.files[0] })}>
+				onFileAccept={(details) => mutation.mutate({ objectId: userId, bucketName: "avatars", image: details.files[0] })}>
 				<FileUploadTrigger asChild>
 					<Button size="xs" variant="outline" loadingText="Uploading..." loading={mutation.isPending}>
 						{avatarUrl?.url ? "Change" : "Upload"}
@@ -67,10 +62,17 @@ export const ProfileAvatar: React.FC<ProfileAvatar.Props> = (props) => {
 	);
 };
 
-async function uploadAvatar(payload: UploadAvatarPayload) {
-	const { file, userId } = payload;
-	const filePath = `${userId}-${generateUid()}.${file.name.split(".").pop()}`;
-	const { error: uploadError } = await createSupabaseClient().storage.from("avatars").upload(filePath, file);
+interface UploadImagePayload {
+	readonly image: File;
+	readonly objectId?: string;
+	readonly bucketName: "avatars" | "receipts";
+}
+
+export async function uploadImage(payload: UploadImagePayload) {
+	const { image, objectId, bucketName } = payload;
+	const extension = image.name.split(".").pop();
+	const filePath = [objectId, generateUid()].filter(Boolean).join("-") + `.${extension}`;
+	const { error: uploadError } = await createSupabaseClient().storage.from(bucketName).upload(filePath, image);
 
 	if (uploadError) {
 		throw uploadError;
