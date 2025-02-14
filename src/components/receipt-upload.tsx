@@ -1,19 +1,25 @@
 import React, { useState } from "react";
 import { HiUpload } from "react-icons/hi";
 import { BsReceipt } from "react-icons/bs";
+import { useQuery } from "@tanstack/react-query";
 import { Image, Stack, Center } from "@chakra-ui/react";
 import { Controller, useFormContext } from "react-hook-form";
-import { useQuery, useMutation } from "@tanstack/react-query";
 
 import { Button } from "@/chakra/button";
-import { toaster } from "@/chakra/toaster";
 import { EmptyState } from "@/chakra/empty-state";
 import type { NewFormState } from "@/schemas/form.schema";
 import { DialogRoot, DialogContent } from "@/chakra/dialog";
-import { uploadImage, downloadImage } from "@/components/profile-avatar";
+import { downloadImage, useFileUploader } from "@/services/file-uploader";
 import { FileUploadRoot, FileUploadTrigger, FileUploadDropzone } from "@/chakra/file-upload";
 
-export const ReceiptUpload: React.FC<{ editing: boolean; billId: string | undefined }> = (props) => {
+namespace ReceiptUpload {
+	export interface Props {
+		readonly editing: boolean;
+		readonly billId: string | undefined;
+	}
+}
+
+export const ReceiptUpload: React.FC<ReceiptUpload.Props> = (props) => {
 	const { billId, editing } = props;
 	const [openDialog, setOpenDialog] = useState(false);
 
@@ -25,24 +31,9 @@ export const ReceiptUpload: React.FC<{ editing: boolean; billId: string | undefi
 		queryFn: () => downloadImage("receipts", receiptFile ?? undefined)
 	});
 
-	const mutation = useMutation({
-		mutationFn: uploadImage,
-		onError: () => {
-			toaster.create({
-				type: "error",
-				title: "Failed to upload receipt",
-				description: "An error occurred while uploading the receipt. Please try again."
-			});
-		},
-		onSuccess: (filePath) => {
-			toaster.create({ type: "success", title: "Receipt uploaded", description: "The receipt has been uploaded successfully." });
-			setValue("receiptFile", filePath);
-		}
-	});
+	const { uploadFile } = useFileUploader((filePath) => setValue("receiptFile", filePath));
 
-	console.log({ editing, receiptUrl, receiptFile });
-
-	if (!editing && !receiptUrl?.url) {
+	if (!editing && !receiptUrl) {
 		return (
 			<EmptyState
 				height="100%"
@@ -61,12 +52,12 @@ export const ReceiptUpload: React.FC<{ editing: boolean; billId: string | undefi
 			{openDialog && (
 				<DialogRoot lazyMount open={openDialog} onOpenChange={(e) => setOpenDialog(e.open)}>
 					<DialogContent margin={0} width="100vw" height="100vh" boxShadow="none" justifyContent="center" backgroundColor="transparent">
-						<Center>{receiptUrl?.url && <Image alt="receipt" src={receiptUrl.url} />}</Center>
+						<Center>{receiptUrl && <Image alt="receipt" src={receiptUrl} />}</Center>
 					</DialogContent>
 				</DialogRoot>
 			)}
 			<Stack width="100%" height="100%" alignItems="center" justifyContent="center">
-				{receiptUrl?.url && <Image alt="receipt" cursor="pointer" maxHeight="100px" src={receiptUrl.url} onClick={() => setOpenDialog(true)} />}
+				{receiptUrl && <Image alt="receipt" cursor="pointer" src={receiptUrl} maxHeight="100px" onClick={() => setOpenDialog(true)} />}
 				{editing && (
 					<Controller
 						control={control}
@@ -78,9 +69,9 @@ export const ReceiptUpload: React.FC<{ editing: boolean; billId: string | undefi
 								alignItems="center"
 								paddingInline="{spacing.4}"
 								accept={["image/png", "image/jpeg"]}
-								onFileAccept={(details) => mutation.mutate({ objectId: billId, bucketName: "receipts", image: details.files[0] })}>
-								{!receiptUrl?.url && <FileUploadDropzone width="100%" height="100%" minHeight="120px" label="Upload the receipt" />}
-								{receiptUrl?.url && (
+								onFileAccept={(details) => uploadFile({ objectId: billId, bucketName: "receipts", image: details.files[0] })}>
+								{!receiptUrl && <FileUploadDropzone width="100%" height="100%" minHeight="120px" label="Upload the receipt" />}
+								{receiptUrl && (
 									<FileUploadTrigger asChild>
 										<Button size="sm" variant="outline">
 											<HiUpload /> Change receipt

@@ -16,5 +16,5 @@ namespace BillDetailsPage {
 export default async function BillDetailsPage(props: BillDetailsPage.Props) {
 	const billId = (await props.params).id;
 
-	return <BillForm newKind={{ billId, type: "update" }} />;
+	return <BillForm kind={{ billId, type: "update" }} />;
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { DevTool } from "@hookform/devtools";
 import { IoIosAddCircle } from "react-icons/io";
@@ -16,108 +15,22 @@ import { Field } from "@/chakra/field";
 import { Button } from "@/chakra/button";
 import { toaster } from "@/chakra/toaster";
 import { ReceiptUpload } from "@/components/receipt-upload";
-import { type ErrorState, type BillFormState } from "@/types";
 import { BillMemberInputs } from "@/components/bill-member-inputs";
-import { formatDate, formatTime, CLIENT_DATE_FORMAT, formatDistanceTime, SERVER_DATE_FORMAT } from "@/utils";
+import { formatTime, CLIENT_DATE_FORMAT, formatDistanceTime } from "@/utils";
 import { type NewFormState, BillFormStateSchema, DateFieldTransformer, BillFormMemberSchemaTransformer } from "@/schemas/form.schema";
 
 namespace BillForm {
 	export interface Props {
-		readonly newKind: { readonly type: "create" } | { readonly type: "update"; readonly billId: string };
+		readonly kind: { readonly type: "create" } | { readonly type: "update"; readonly billId: string };
 	}
 }
 
-export interface MemberState {
-	readonly user: ErrorState & { readonly userId: string | undefined };
-	readonly amount: ErrorState & { readonly input: string; readonly value?: number };
-}
-namespace MemberState {
-	export function fromBillMemberState(memberState: BillFormState["creditor"]): MemberState {
-		const { userId, amount } = memberState;
-
-		return {
-			user: { userId, error: userId === undefined ? "This field is required" : undefined },
-			amount: { value: amount, error: undefined, input: amount === undefined ? "" : String(amount) }
-		};
-	}
-
-	export function select(state: FormState, memberKind: MemberKind): MemberState {
-		if (memberKind.memberKind === "creditor") {
-			return state.creditor;
-		}
-
-		if (memberKind.memberKind === "debtor") {
-			return state.debtors[memberKind.debtorIndex];
-		}
-
-		// @ts-expect-error Invalid member kind
-		throw new Error(`Unhandled member kind: ${memberKind.memberKind}`);
-	}
-}
-
-type MemberKind = { readonly memberKind: "creditor" } | { readonly debtorIndex: number; readonly memberKind: "debtor" };
-
-interface FormState {
-	readonly creditor: MemberState;
-	readonly debtors: readonly MemberState[];
-	readonly receiptFile: string | undefined;
-	readonly description: ErrorState & { readonly value: string };
-	readonly issuedAt: ErrorState & {
-		readonly input: string;
-		readonly value: string | null;
-	};
-}
-
-const REQUIRED_MESSAGE = "This field is required";
-
-namespace FormState {
-	export function create(formState: BillFormState): FormState {
-		const { description, receiptFile } = formState;
-		const issuedAt = formState.issuedAt ?? format(new Date(), SERVER_DATE_FORMAT);
-
-		const debtors = formState.debtors.map(MemberState.fromBillMemberState);
-
-		return {
-			debtors,
-			receiptFile: receiptFile ?? undefined,
-			creditor: MemberState.fromBillMemberState(formState.creditor),
-			issuedAt: { value: issuedAt, error: undefined, input: formatDate(issuedAt).client },
-			description: { value: description, error: description ? undefined : REQUIRED_MESSAGE }
-		};
-	}
-}
-
-export const BillForm: React.FC<BillForm.Props> = (props) => {
-	const { newKind } = props;
-	const [editing, setEditing] = React.useState(() => newKind.type === "create");
-
-	const { mutate: updateBill } = useMutation({
-		mutationFn: (payload: API.Bills.Update.Payload) => {
-			return API.Bills.Update.mutate(payload);
-		},
-		onError: () => {
-			toaster.create({
-				type: "error",
-				title: "Failed to update bill",
-				description: "Unable to update the bill. Please verify your input and retry."
-			});
-		},
-		onSuccess: () => {
-			toaster.create({
-				type: "success",
-				title: "Bill updated successfully",
-				description: "The bill details have been updated successfully."
-			});
-			setEditing(() => false);
-		}
-	});
-
+function useCreateBill() {
 	const queryClient = useQueryClient();
 	const router = useRouter();
-	const { mutate: createBill } = useMutation({
-		mutationFn: (payload: API.Bills.Create.Body) => {
-			return API.Bills.Create.mutate(payload);
-		},
+
+	const { mutate } = useMutation({
+		mutationFn: API.Bills.Create.mutate,
 		onError: () => {
 			toaster.create({
 				type: "error",
@@ -136,17 +49,51 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 		}
 	});
 
+	return mutate;
+}
+
+function useUpdateBill(onSuccess: () => void) {
+	const { mutate } = useMutation({
+		mutationFn: API.Bills.Update.mutate,
+		onError: () => {
+			toaster.create({
+				type: "error",
+				title: "Failed to update bill",
+				description: "Unable to update the bill. Please verify your input and retry."
+			});
+		},
+		onSuccess: () => {
+			toaster.create({
+				type: "success",
+				title: "Bill updated successfully",
+				description: "The bill details have been updated successfully."
+			});
+			onSuccess();
+		}
+	});
+
+	return mutate;
+}
+
+export const BillForm: React.FC<BillForm.Props> = (props) => {
+	const { kind } = props;
+	const [editing, setEditing] = React.useState(() => kind.type === "create");
+
+	const createBill = useCreateBill();
+	const updateBill = useUpdateBill(() => setEditing(() => false));
+
 	const { data: currentBill, isSuccess: isSuccessLoadBill } = useQuery({
-		queryKey: ["bill", newKind],
-		enabled: newKind.type === "update",
-		queryFn: () => API.Bills.Get.query({ billId: newKind.type === "update" ? newKind.billId : "" })
+		queryKey: ["bill", kind],
+		enabled: kind.type === "update",
+		queryFn: () => API.Bills.Get.query({ billId: kind.type === "update" ? kind.billId : "" })
 	});
 
 	const methods = useForm<NewFormState>({
 		resolver: zodResolver(BillFormStateSchema),
 		defaultValues:
-			newKind.type === "create"
+			kind.type === "create"
 				? {
+						receiptFile: null,
 						debtors: [
 							{ userId: "", amount: "" },
 							{ userId: "", amount: "" }
@@ -184,22 +131,22 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 				debtors: data.debtors.map(BillFormMemberSchemaTransformer.toServer)
 			};
 
-			if (newKind.type === "create") {
+			if (kind.type === "create") {
 				createBill(transformedData);
-			} else if (newKind.type === "update") {
-				updateBill({ body: transformedData, billId: newKind.billId });
+			} else if (kind.type === "update") {
+				updateBill({ billId: kind.billId, body: transformedData });
 			} else {
 				throw new Error("Invalid form type");
 			}
 		});
-	}, [handleSubmit, newKind, createBill, updateBill]);
+	}, [handleSubmit, kind, createBill, updateBill]);
 
 	return (
 		<>
 			<FormProvider {...methods}>
 				<Stack gap="{spacing.4}">
 					<Stack gap={0}>
-						<Heading>{newKind.type === "update" ? "Bill Details" : "New Bill"}</Heading>
+						<Heading>{kind.type === "update" ? "Bill Details" : "New Bill"}</Heading>
 						{isSuccessLoadBill && (
 							<Text color="grey" textStyle="xs" fontStyle="italic">
 								Created <span title={formatTime(currentBill.creator.timestamp)}>{formatDistanceTime(currentBill.creator.timestamp)}</span> by{" "}
@@ -229,7 +176,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 									</Field>
 								</GridItem>
 								<GridItem rowSpan={2} colSpan={3}>
-									<ReceiptUpload editing={editing} billId={newKind.type === "update" ? newKind.billId : undefined} />
+									<ReceiptUpload editing={editing} billId={kind.type === "update" ? kind.billId : undefined} />
 								</GridItem>
 								<GridItem colSpan={5}>
 									<Field required label="Issued at" invalid={!!errors.issuedAt} errorText={errors.issuedAt?.message}>
@@ -258,7 +205,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 						)}
 						{editing && (
 							<HStack>
-								{newKind.type === "update" && (
+								{kind.type === "update" && (
 									<>
 										<Button
 											variant="subtle"
@@ -273,7 +220,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 										</Button>
 									</>
 								)}
-								{newKind.type === "create" && (
+								{kind.type === "create" && (
 									<Button type="submit" variant="solid" onClick={onSubmit}>
 										<IoIosAddCircle /> Create
 									</Button>

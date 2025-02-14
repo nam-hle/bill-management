@@ -1,15 +1,12 @@
 "use client";
 import React from "react";
 import { Stack } from "@chakra-ui/react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
-import { generateUid } from "@/utils";
 import { Button } from "@/chakra/button";
 import { Avatar } from "@/chakra/avatar";
-import { toaster } from "@/chakra/toaster";
-import { axiosInstance } from "@/services";
-import { createSupabaseClient } from "@/services/supabase/client";
 import { FileUploadRoot, FileUploadTrigger } from "@/chakra/file-upload";
+import { downloadImage, useFileUploader } from "@/services/file-uploader";
 
 namespace ProfileAvatar {
 	export interface Props {
@@ -29,74 +26,22 @@ export const ProfileAvatar: React.FC<ProfileAvatar.Props> = (props) => {
 		queryFn: () => downloadImage("avatars", url)
 	});
 
-	const mutation = useMutation({
-		mutationFn: uploadImage,
-		onSuccess: (filePath) => {
-			toaster.create({ type: "success", title: "Image uploaded", description: "The image has been uploaded successfully." });
-			onAvatarChange(filePath);
-		},
-		onError: () => {
-			toaster.create({
-				type: "error",
-				title: "Failed to upload avatar",
-				description: "An error occurred while uploading the avatar. Please try again."
-			});
-		}
-	});
+	const { uploadFile, isUploading } = useFileUploader(onAvatarChange);
 
 	return (
 		<Stack alignItems="center">
-			<Avatar size="2xl" src={avatarUrl?.url} />
+			<Avatar size="2xl" src={avatarUrl} />
 			<FileUploadRoot
 				maxFiles={1}
 				width="fit-content"
 				accept={["image/png", "image/jpeg"]}
-				onFileAccept={(details) => mutation.mutate({ objectId: userId, bucketName: "avatars", image: details.files[0] })}>
+				onFileAccept={(details) => uploadFile({ objectId: userId, bucketName: "avatars", image: details.files[0] })}>
 				<FileUploadTrigger asChild>
-					<Button size="xs" variant="outline" loadingText="Uploading..." loading={mutation.isPending}>
-						{avatarUrl?.url ? "Change" : "Upload"}
+					<Button size="xs" variant="outline" loading={isUploading} loadingText="Uploading...">
+						{avatarUrl ? "Change" : "Upload"}
 					</Button>
 				</FileUploadTrigger>
 			</FileUploadRoot>
 		</Stack>
 	);
 };
-
-interface UploadImagePayload {
-	readonly image: File;
-	readonly objectId?: string;
-	readonly bucketName: "avatars" | "receipts";
-}
-
-export async function uploadImage(payload: UploadImagePayload) {
-	const { image, objectId, bucketName } = payload;
-	const extension = image.name.split(".").pop();
-	const filePath = [objectId, generateUid()].filter(Boolean).join("-") + `.${extension}`;
-	const { error: uploadError } = await createSupabaseClient().storage.from(bucketName).upload(filePath, image);
-
-	if (uploadError) {
-		throw uploadError;
-	}
-
-	return filePath;
-}
-
-export async function downloadImage(bucketName: "avatars" | "receipts", path: string | undefined): Promise<{ url: string | undefined }> {
-	if (!path) {
-		return { url: undefined };
-	}
-
-	try {
-		const response = await axiosInstance.get(`/storage`, {
-			responseType: "blob",
-			params: { path, bucketName }
-		});
-
-		return { url: URL.createObjectURL(response.data) };
-	} catch (error) {
-		// eslint-disable-next-line no-console
-		console.error("Error downloading image:", error);
-	}
-
-	return { url: undefined };
-}

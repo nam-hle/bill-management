@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default async function NewBillPage() {
-	return <BillForm newKind={{ type: "create" }} />;
+	return <BillForm kind={{ type: "create" }} />;
 }
