@@ -2,12 +2,13 @@
 
 import React from "react";
 import { format } from "date-fns";
+import { useRouter } from "next/navigation";
 import { DevTool } from "@hookform/devtools";
 import { IoIosAddCircle } from "react-icons/io";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MdEdit, MdCheck, MdCancel } from "react-icons/md";
-import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm, FormProvider, useFieldArray } from "react-hook-form";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Text, Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chakra-ui/react";
 
 import { API } from "@/api";
@@ -107,10 +108,12 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 				title: "Bill updated successfully",
 				description: "The bill details have been updated successfully."
 			});
-			// 			setEditing(() => false);
+			setEditing(() => false);
 		}
 	});
 
+	const queryClient = useQueryClient();
+	const router = useRouter();
 	const { mutate: createBill } = useMutation({
 		mutationFn: (payload: API.Bills.Create.Body) => {
 			return API.Bills.Create.mutate(payload);
@@ -129,12 +132,12 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 				description: "A new bill has been created and saved successfully."
 			});
 
-			// router.push("/bills");
+			queryClient.invalidateQueries({ queryKey: ["bills"] }).then(() => router.push("/bills"));
 		}
 	});
 
 	const { data: currentBill, isSuccess: isSuccessLoadBill } = useQuery({
-		queryKey: ["bills", newKind],
+		queryKey: ["bill", newKind],
 		enabled: newKind.type === "update",
 		queryFn: () => API.Bills.Get.query({ billId: newKind.type === "update" ? newKind.billId : "" })
 	});
@@ -174,9 +177,8 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 
 	const onSubmit = React.useMemo(() => {
 		return handleSubmit((data) => {
-			const transformedData = {
+			const transformedData: API.Bills.UpsertBill = {
 				...data,
-				receiptFile: null,
 				issuedAt: DateFieldTransformer.toServer(data.issuedAt),
 				creditor: BillFormMemberSchemaTransformer.toServer(data.creditor),
 				debtors: data.debtors.map(BillFormMemberSchemaTransformer.toServer)

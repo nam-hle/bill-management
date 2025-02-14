@@ -47,7 +47,7 @@ export async function POST(request: Request) {
 	try {
 		const body = await request.json();
 		const supabase = await createSupabaseServer();
-		const parsedBody = API.Bills.BodySchema.safeParse(body);
+		const parsedBody = API.Bills.UpsertBillSchema.safeParse(body);
 
 		if (parsedBody.error) {
 			return new Response(JSON.stringify({ error: "Invalid request body", details: parsedBody.error.errors }), {

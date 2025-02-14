@@ -17,7 +17,7 @@ export const ReceiptUpload: React.FC<{ editing: boolean; billId: string | undefi
 	const { billId, editing } = props;
 	const [openDialog, setOpenDialog] = useState(false);
 
-	const { watch, control } = useFormContext<NewFormState>();
+	const { watch, control, setValue } = useFormContext<NewFormState>();
 	const receiptFile = watch("receiptFile");
 
 	const { data: receiptUrl } = useQuery({
@@ -27,15 +27,16 @@ export const ReceiptUpload: React.FC<{ editing: boolean; billId: string | undefi
 
 	const mutation = useMutation({
 		mutationFn: uploadImage,
-		onSuccess: () => {
-			toaster.create({ type: "success", title: "Receipt uploaded", description: "The receipt has been uploaded successfully." });
-		},
 		onError: () => {
 			toaster.create({
 				type: "error",
 				title: "Failed to upload receipt",
-				description: "An error occurred while uploading the receupt. Please try again."
+				description: "An error occurred while uploading the receipt. Please try again."
 			});
+		},
+		onSuccess: (filePath) => {
+			toaster.create({ type: "success", title: "Receipt uploaded", description: "The receipt has been uploaded successfully." });
+			setValue("receiptFile", filePath);
 		}
 	});
 
@@ -77,7 +78,7 @@ export const ReceiptUpload: React.FC<{ editing: boolean; billId: string | undefi
 								alignItems="center"
 								paddingInline="{spacing.4}"
 								accept={["image/png", "image/jpeg"]}
-								onFileAccept={(details) => mutation.mutate({ objectId: billId, bucketName: "avatars", image: details.files[0] })}>
+								onFileAccept={(details) => mutation.mutate({ objectId: billId, bucketName: "receipts", image: details.files[0] })}>
 								{!receiptUrl?.url && <FileUploadDropzone width="100%" height="100%" minHeight="120px" label="Upload the receipt" />}
 								{receiptUrl?.url && (
 									<FileUploadTrigger asChild>

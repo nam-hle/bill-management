@@ -76,15 +76,17 @@ export namespace API {
 	}
 
 	export namespace Bills {
-		export const BillMemberSchema = z.object({ userId: z.string(), amount: z.number() });
+		export const UpsertBillMemberSchema = z.object({ userId: z.string(), amount: z.number() });
 
-		export const BodySchema = z.object({
+		export const UpsertBillSchema = z.object({
 			issuedAt: z.string(),
 			description: z.string(),
-			creditor: BillMemberSchema,
+			creditor: UpsertBillMemberSchema,
 			receiptFile: z.string().nullable(),
-			debtors: z.array(BillMemberSchema)
+			debtors: z.array(UpsertBillMemberSchema)
 		});
+
+		export type UpsertBill = z.infer<typeof UpsertBillSchema>;
 
 		export namespace Get {
 			export type Response = ClientBill;
@@ -96,7 +98,7 @@ export namespace API {
 		}
 
 		export namespace Create {
-			export type Body = z.infer<typeof BodySchema>;
+			export type Body = UpsertBill;
 
 			export async function mutate(body: Body) {
 				await axiosInstance.post<Body>(`/bills`, body);
@@ -104,7 +106,7 @@ export namespace API {
 		}
 
 		export namespace Update {
-			export type Body = z.infer<typeof BodySchema>;
+			export type Body = UpsertBill;
 			export interface Payload {
 				readonly body: Body;
 				readonly billId: string;
