@@ -2,6 +2,25 @@ import { API } from "@/api";
 import { BillsControllers, BillMembersControllers } from "@/controllers";
 import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+	try {
+		const billId = (await params).id;
+		const supabase = await createSupabaseServer();
+
+		const bill = await BillsControllers.getById(supabase, billId);
+
+		return new Response(JSON.stringify(bill), { status: 201 });
+	} catch (error) {
+		return new Response(
+			JSON.stringify({
+				error: "Internal Server Error",
+				details: (error as any).message
+			}),
+			{ status: 500 }
+		);
+	}
+}
+
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const billId = (await params).id;

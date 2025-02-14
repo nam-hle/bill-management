@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { axiosInstance } from "@/services";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
-import { ClientBillSchema, ClientUserSchema, BankAccountSchema, ClientTransactionSchema, ClientNotificationSchema } from "@/schemas";
+import { type ClientBill, ClientBillSchema, ClientUserSchema, BankAccountSchema, ClientTransactionSchema, ClientNotificationSchema } from "@/schemas";
 
 export namespace API {
 	export const DataListResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
@@ -76,6 +76,15 @@ export namespace API {
 	}
 
 	export namespace Bills {
+		export namespace Get {
+			export type Response = ClientBill;
+			export async function query(params: { billId: string }) {
+				const { data } = await axiosInstance<Response>(`/bills/${params.billId}`);
+
+				return data;
+			}
+		}
+
 		export namespace Create {
 			export const BillFormSchema = z.object({ userId: z.string(), amount: z.number() });
 

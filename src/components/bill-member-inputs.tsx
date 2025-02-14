@@ -28,14 +28,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 		formState: { errors }
 	} = useFormContext<NewFormState>();
 
-	const {
-		isSuccess,
-		isPending,
-		data: usersResponse
-	} = useQuery({
-		queryKey: ["users"],
-		queryFn: () => API.Users.List.query()
-	});
+	const { isSuccess, isPending, data: usersResponse } = useQuery({ queryKey: ["users"], queryFn: API.Users.List.query });
 
 	const fieldKey = React.useMemo(() => {
 		if (coordinate.type === "creditor") {
@@ -98,7 +91,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 							) : (
 								<Select
 									{...register(`${fieldKey}.userId`)}
-									readonly={editing}
+									readonly={!editing}
 									onValueChange={field.onChange}
 									value={isPending ? "" : field.value}
 									items={members.map(({ id: value, fullName: label }) => ({ label, value }))}
@@ -112,7 +105,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 			<GridItem colSpan={{ base: 3 }}>
 				<Field required label={amountLabel} invalid={!!fieldError?.amount} errorText={fieldError?.amount?.message}>
 					<Group attached width="100%">
-						<Input {...register(`${fieldKey}.amount`)} textAlign="right" readOnly={editing} pointerEvents={editing ? "none" : undefined} />
+						<Input {...register(`${fieldKey}.amount`)} textAlign="right" readOnly={!editing} pointerEvents={editing ? undefined : "none"} />
 						<InputAddon>.000 VND</InputAddon>
 					</Group>
 				</Field>

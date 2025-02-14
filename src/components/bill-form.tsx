@@ -4,9 +4,9 @@ import React from "react";
 import { format } from "date-fns";
 import { DevTool } from "@hookform/devtools";
 import { IoIosAddCircle } from "react-icons/io";
-import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MdEdit, MdDeleteOutline } from "react-icons/md";
+import { MdEdit, MdCheck, MdCancel } from "react-icons/md";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { Text, Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chakra-ui/react";
 
@@ -14,30 +14,14 @@ import { API } from "@/api";
 import { Field } from "@/chakra/field";
 import { Button } from "@/chakra/button";
 import { toaster } from "@/chakra/toaster";
-import { type ClientUser } from "@/schemas";
+import { type ErrorState, type BillFormState } from "@/types";
 import { BillMemberInputs } from "@/components/bill-member-inputs";
-import { FormKind, type ErrorState, type BillFormState } from "@/types";
 import { formatDate, formatTime, CLIENT_DATE_FORMAT, formatDistanceTime, SERVER_DATE_FORMAT } from "@/utils";
 import { type NewFormState, BillFormStateSchema, DateFieldTransformer, BillFormMemberSchemaTransformer } from "@/schemas/form.schema";
 
 namespace BillForm {
 	export interface Props {
-		readonly kind: FormKind;
-		readonly formState: BillFormState;
-		readonly users: readonly ClientUser[];
-		readonly newKind:
-			| {
-					readonly type: "create";
-			  }
-			| {
-					readonly type: "update";
-					readonly bill: BillFormState;
-			  };
-		readonly metadata: {
-			readonly id?: string;
-			readonly creator?: { readonly userId: string; readonly timestamp: string; readonly fullName: string | null };
-			readonly updater?: { readonly userId: string; readonly timestamp: string; readonly fullName: string | null };
-		};
+		readonly newKind: { readonly type: "create" } | { readonly type: "update"; readonly billId: string };
 	}
 }
 
@@ -102,7 +86,7 @@ namespace FormState {
 }
 
 export const BillForm: React.FC<BillForm.Props> = (props) => {
-	const { kind, newKind, metadata } = props;
+	const { newKind } = props;
 	const [editing, setEditing] = React.useState(() => newKind.type === "create");
 
 	// const errors = React.useMemo(
@@ -206,6 +190,12 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 		}
 	});
 
+	const { data: currentBill, isSuccess: isSuccessLoadBill } = useQuery({
+		queryKey: ["bills", newKind],
+		enabled: newKind.type === "update",
+		queryFn: () => API.Bills.Get.query({ billId: newKind.type === "update" ? newKind.billId : "" })
+	});
+
 	const methods = useForm<NewFormState>({
 		resolver: zodResolver(BillFormStateSchema),
 		defaultValues:
@@ -216,25 +206,38 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 							{ userId: "", amount: "" }
 						]
 					}
-				: {
-						description: newKind.bill.description,
-						creditor: BillFormMemberSchemaTransformer.fromServer({
-							userId: newKind.bill.creditor.userId as string,
-							amount: newKind.bill.creditor.amount as number
-						}),
-						debtors: newKind.bill.debtors.map((debtor) => {
-							return BillFormMemberSchemaTransformer.fromServer({ userId: debtor.userId as string, amount: debtor.amount as number });
-						})
-					}
+				: undefined
+		// {
+		// 		description: newKind.bill.description,
+		// 		creditor: BillFormMemberSchemaTransformer.fromServer({
+		// 			userId: newKind.bill.creditor.userId as string,
+		// 			amount: newKind.bill.creditor.amount as number
+		// 		}),
+		// 		debtors: newKind.bill.debtors.map((debtor) => {
+		// 			return BillFormMemberSchemaTransformer.fromServer({ userId: debtor.userId as string, amount: debtor.amount as number });
+		// 		})
+		// 	}
 	});
 	const {
+		reset,
 		control,
 		register,
 		handleSubmit,
 		formState: { errors }
 	} = methods;
 
-	const { fields: debtorFields, remove: removeDebtor, append: appendDebtor } = useFieldArray({ control, name: "debtors" });
+	React.useEffect(() => {
+		if (currentBill) {
+			reset({
+				...currentBill,
+				creditor: BillFormMemberSchemaTransformer.fromServer(currentBill.creditor),
+				issuedAt: DateFieldTransformer.fromServer(currentBill.issuedAt ?? undefined),
+				debtors: currentBill.debtors.map(BillFormMemberSchemaTransformer.fromServer)
+			});
+		}
+	}, [currentBill, reset]);
+
+	const { fields: debtorFields, append: appendDebtor } = useFieldArray({ control, name: "debtors" });
 
 	const onSubmit = React.useMemo(() => {
 		return handleSubmit((data) => {
@@ -253,17 +256,17 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 			<FormProvider {...methods}>
 				<Stack gap="{spacing.4}">
 					<Stack gap={0}>
-						<Heading>{kind === FormKind.UPDATE ? "Bill Details" : "New Bill"}</Heading>
-						{kind === FormKind.UPDATE && (
+						<Heading>{newKind.type === "update" ? "Bill Details" : "New Bill"}</Heading>
+						{isSuccessLoadBill && (
 							<Text color="grey" textStyle="xs" fontStyle="italic">
-								Created <span title={formatTime(metadata.creator?.timestamp)}>{formatDistanceTime(metadata.creator?.timestamp)}</span> by{" "}
-								{metadata.creator?.fullName ?? "someone"}
-								{metadata.updater?.timestamp && (
+								Created <span title={formatTime(currentBill.creator.timestamp)}>{formatDistanceTime(currentBill.creator.timestamp)}</span> by{" "}
+								{currentBill.creator.fullName}
+								{currentBill.updater?.timestamp && (
 									<>
 										{" "}
-										• Last updated <span title={formatTime(metadata.updater?.timestamp)}>
-											{formatDistanceTime(metadata.updater?.timestamp)}
-										</span> by {metadata.updater?.fullName ?? "someone"}
+										• Last updated{" "}
+										<span title={formatTime(currentBill.updater?.timestamp)}>{formatDistanceTime(currentBill.updater?.timestamp)}</span> by{" "}
+										{currentBill.updater?.fullName ?? "someone"}
 									</>
 								)}
 							</Text>
@@ -302,22 +305,9 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 							</SimpleGrid>
 						</GridItem>
 
-						<BillMemberInputs editing={!editing} coordinate={{ type: "creditor" }} />
+						<BillMemberInputs editing={editing} coordinate={{ type: "creditor" }} />
 						{debtorFields.map((_, debtorIndex) => {
-							return (
-								<BillMemberInputs
-									key={debtorIndex}
-									editing={!editing}
-									coordinate={{ debtorIndex, type: "debtor" }}
-									action={
-										editing && (
-											<Button variant="subtle" colorPalette="red" onClick={() => removeDebtor(debtorIndex)}>
-												<MdDeleteOutline /> Delete
-											</Button>
-										)
-									}
-								/>
-							);
+							return <BillMemberInputs key={debtorIndex} editing={editing} coordinate={{ debtorIndex, type: "debtor" }} />;
 						})}
 					</SimpleGrid>
 
@@ -329,22 +319,22 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 						)}
 						{editing && (
 							<HStack>
-								{/*{kind === FormKind.UPDATE && (*/}
-								{/*	<>*/}
-								{/*		<Button*/}
-								{/*			variant="subtle"*/}
-								{/*			onClick={() => {*/}
-								{/*				setEditing(() => false);*/}
-								{/*				dispatch({ type: "reset", payload: props.formState });*/}
-								{/*			}}>*/}
-								{/*			<MdCancel /> Cancel*/}
-								{/*		</Button>*/}
-								{/*		<Button variant="solid" onClick={onSubmit} disabled={hasError}>*/}
-								{/*			<MdCheck /> Done*/}
-								{/*		</Button>*/}
-								{/*	</>*/}
-								{/*)}*/}
-								{kind === FormKind.CREATE && (
+								{newKind.type === "update" && (
+									<>
+										<Button
+											variant="subtle"
+											onClick={() => {
+												setEditing(() => false);
+												// dispatch({ type: "reset", payload: props.formState });
+											}}>
+											<MdCancel /> Cancel
+										</Button>
+										<Button variant="solid" onClick={onSubmit}>
+											<MdCheck /> Done
+										</Button>
+									</>
+								)}
+								{newKind.type === "create" && (
 									<Button type="submit" variant="solid" onClick={onSubmit}>
 										<IoIosAddCircle /> Create
 									</Button>
