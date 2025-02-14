@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { axiosInstance } from "@/services";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
-import { ClientBillSchema, BankAccountSchema, ClientTransactionSchema, ClientNotificationSchema } from "@/schemas";
+import { ClientBillSchema, ClientUserSchema, BankAccountSchema, ClientTransactionSchema, ClientNotificationSchema } from "@/schemas";
 
 export namespace API {
 	export const DataListResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
@@ -58,6 +58,19 @@ export namespace API {
 		export namespace ReadAll {
 			export async function mutate() {
 				await axiosInstance.patch<ReadResponse>(`/notifications/read-all`);
+			}
+		}
+	}
+
+	export namespace Users {
+		export namespace List {
+			export const ResponseSchema = DataListResponseSchema(ClientUserSchema);
+			export type Response = z.infer<typeof ResponseSchema>;
+
+			export async function query() {
+				const { data } = await axiosInstance<Response>("/users");
+
+				return data;
 			}
 		}
 	}

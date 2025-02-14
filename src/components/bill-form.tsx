@@ -2,7 +2,6 @@
 
 import React from "react";
 import { format } from "date-fns";
-import { useRouter } from "next/navigation";
 import { DevTool } from "@hookform/devtools";
 import { IoIosAddCircle } from "react-icons/io";
 import { useMutation } from "@tanstack/react-query";
@@ -68,19 +67,6 @@ namespace MemberState {
 		// @ts-expect-error Invalid member kind
 		throw new Error(`Unhandled member kind: ${memberKind.memberKind}`);
 	}
-
-	export function reduce(state: FormState, memberKind: MemberKind, memberState: MemberState): FormState {
-		if (memberKind.memberKind === "creditor") {
-			return { ...state, creditor: memberState };
-		}
-
-		if (memberKind.memberKind === "debtor") {
-			return { ...state, debtors: state.debtors.map((debtor, index) => (index === memberKind.debtorIndex ? memberState : debtor)) };
-		}
-
-		// @ts-expect-error Invalid member kind
-		throw new Error(`Unhandled member kind: ${memberKind.member}`);
-	}
 }
 
 type MemberKind = { readonly memberKind: "creditor" } | { readonly debtorIndex: number; readonly memberKind: "debtor" };
@@ -134,7 +120,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 	// 	return errors.filter((e) => e !== undefined).length > 0;
 	// }, [errors]);
 
-	const router = useRouter();
+	// const router = useRouter();
 	// const onSubmit = React.useCallback(async () => {
 	// 	if (kind === FormKind.CREATE) {
 	// 		await fetch("/api/bills", {
@@ -200,8 +186,6 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 
 	const { mutate } = useMutation({
 		mutationFn: (payload: API.Bills.Create.Body) => {
-			console.log({ payload });
-
 			return API.Bills.Create.mutate(payload);
 		},
 		onError: () => {
@@ -218,7 +202,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 				description: "A new bill has been created and saved successfully."
 			});
 
-			router.push("/transactions");
+			// router.push("/bills");
 		}
 	});
 
@@ -226,7 +210,12 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 		resolver: zodResolver(BillFormStateSchema),
 		defaultValues:
 			newKind.type === "create"
-				? { description: "", creditor: { amount: "", userId: "" }, debtors: [{ amount: "", userId: "" }] }
+				? {
+						debtors: [
+							{ userId: "", amount: "" },
+							{ userId: "", amount: "" }
+						]
+					}
 				: {
 						description: newKind.bill.description,
 						creditor: BillFormMemberSchemaTransformer.fromServer({
@@ -241,7 +230,6 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 	const {
 		control,
 		register,
-		getValues,
 		handleSubmit,
 		formState: { errors }
 	} = methods;
@@ -249,10 +237,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 	const { fields: debtorFields, remove: removeDebtor, append: appendDebtor } = useFieldArray({ control, name: "debtors" });
 
 	const onSubmit = React.useMemo(() => {
-		console.log("onSubmit");
-
 		return handleSubmit((data) => {
-			console.log(data);
 			mutate({
 				...data,
 				receiptFile: null,
@@ -262,7 +247,6 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 			});
 		});
 	}, [handleSubmit, mutate]);
-	console.log(errors);
 
 	return (
 		<>
@@ -318,16 +302,16 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 							</SimpleGrid>
 						</GridItem>
 
-						<BillMemberInputs users={users} label="Creditor" readonly={!editing} amountLabel="Total Amount" coordinate={{ type: "creditor" }} />
+						<BillMemberInputs label="Creditor" readonly={!editing} amountLabel="Total Amount" coordinate={{ type: "creditor" }} />
 						{debtorFields.map((debtor, debtorIndex) => {
 							return (
 								<BillMemberInputs
+									// users={users.filter((user) => user.id === debtor.userId || !getValues("debtors").some((d) => d.userId === user.id))}
 									key={debtorIndex}
 									readonly={!editing}
 									label={`Debtor ${debtorIndex + 1}`}
 									coordinate={{ debtorIndex, type: "debtor" }}
 									amountLabel={`Split Amount ${debtorIndex + 1}`}
-									users={users.filter((user) => user.id === debtor.userId || !getValues("debtors").some((d) => d.userId === user.id))}
 									action={
 										editing && (
 											<Button variant="subtle" colorPalette="red" onClick={() => removeDebtor(debtorIndex)}>

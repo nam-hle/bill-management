@@ -1,10 +1,12 @@
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Controller, useFormContext } from "react-hook-form";
 import { Input, Group, GridItem, InputAddon } from "@chakra-ui/react";
 
+import { API } from "@/api";
 import { Field } from "@/chakra/field";
-import { type ClientUser } from "@/schemas";
 import { Select } from "@/components/select";
+import { Skeleton } from "@/chakra/skeleton";
 import { type NewFormState } from "@/schemas/form.schema";
 
 namespace BillMemberInputs {
@@ -13,7 +15,6 @@ namespace BillMemberInputs {
 		readonly readonly?: boolean;
 		readonly amountLabel: string;
 		readonly action?: React.ReactNode;
-		readonly users: readonly ClientUser[];
 
 		readonly coordinate:
 			| {
@@ -27,12 +28,23 @@ namespace BillMemberInputs {
 }
 
 export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
-	const { users, label, action, readonly, coordinate, amountLabel } = props;
+	const { label, action, readonly, coordinate, amountLabel } = props;
 	const {
+		watch,
 		control,
 		register,
+		getValues,
 		formState: { errors }
 	} = useFormContext<NewFormState>();
+
+	const {
+		isSuccess,
+		isPending,
+		data: usersResponse
+	} = useQuery({
+		queryKey: ["users"],
+		queryFn: () => API.Users.List.query()
+	});
 
 	const fieldKey = React.useMemo(() => {
 		if (coordinate.type === "creditor") {
@@ -50,6 +62,28 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 		return errors["debtors"]?.[coordinate.debtorIndex];
 	}, [coordinate, errors]);
 
+	watch("debtors");
+
+	const users = React.useMemo(() => {
+		if (!isSuccess) {
+			return [];
+		}
+
+		if (coordinate.type === "creditor") {
+			return usersResponse.data;
+		}
+
+		const debtors = getValues("debtors");
+
+		return usersResponse.data.filter((user) => {
+			if (user.id === debtors[coordinate.debtorIndex].userId) {
+				return true;
+			}
+
+			return !debtors.some(({ userId }) => userId === user.id);
+		});
+	}, [getValues, coordinate, isSuccess, usersResponse]);
+
 	return (
 		<>
 			<GridItem colSpan={{ base: 5 }}>
@@ -57,15 +91,19 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 					<Controller
 						control={control}
 						name={`${fieldKey}.userId`}
-						render={({ field }) => (
-							<Select
-								{...register(`${fieldKey}.userId`)}
-								readonly={readonly}
-								value={field.value}
-								onValueChange={field.onChange}
-								items={users.map((user) => ({ value: user.id, label: user.fullName }))}
-							/>
-						)}
+						render={({ field }) =>
+							isPending ? (
+								<Skeleton width="100%" height="40px" />
+							) : (
+								<Select
+									{...register(`${fieldKey}.userId`)}
+									readonly={readonly}
+									onValueChange={field.onChange}
+									value={isPending ? "" : field.value}
+									items={users.map(({ id: value, fullName: label }) => ({ label, value }))}
+								/>
+							)
+						}
 					/>
 				</Field>
 			</GridItem>
