@@ -15,7 +15,9 @@ import { Field } from "@/chakra/field";
 import { Button } from "@/chakra/button";
 import { toaster } from "@/chakra/toaster";
 import { type ClientBill } from "@/schemas";
+import { Skeleton, SkeletonText } from "@/chakra/skeleton";
 import { ReceiptUpload } from "@/components/receipt-upload";
+import { SkeletonWrapper } from "@/components/skeleton-wrapper";
 import { BillMemberInputs } from "@/components/bill-member-inputs";
 import { formatTime, CLIENT_DATE_FORMAT, formatDistanceTime } from "@/utils";
 import { type NewFormState, BillFormStateSchema, DateFieldTransformer, BillFormMemberSchemaTransformer } from "@/schemas/form.schema";
@@ -88,23 +90,38 @@ const FormHeading = ({ kind, currentBill }: FormHeading.Props) => {
 	return (
 		<Stack gap={0}>
 			<Heading>{kind.type === "update" ? "Bill Details" : "New Bill"}</Heading>
-			{currentBill && (
-				<Text color="grey" textStyle="xs" fontStyle="italic">
-					Created <span title={formatTime(currentBill.creator.timestamp)}>{formatDistanceTime(currentBill.creator.timestamp)}</span> by{" "}
-					{currentBill.creator.fullName}
-					{currentBill.updater?.timestamp && (
-						<>
-							{" "}
-							• Last updated <span title={formatTime(currentBill.updater?.timestamp)}>
-								{formatDistanceTime(currentBill.updater?.timestamp)}
-							</span> by {currentBill.updater?.fullName ?? "someone"}
-						</>
+			{kind.type === "create" ? null : (
+				<SkeletonWrapper loading={!currentBill} skeleton={<SkeletonText gap="4" width="md" noOfLines={1} />}>
+					{currentBill && (
+						<Text color="grey" textStyle="xs" fontStyle="italic">
+							Created <span title={formatTime(currentBill.creator.timestamp)}>{formatDistanceTime(currentBill.creator.timestamp)}</span> by{" "}
+							{currentBill.creator.fullName}
+							{currentBill.updater?.timestamp && (
+								<>
+									{" "}
+									• Last updated <span title={formatTime(currentBill.updater?.timestamp)}>
+										{formatDistanceTime(currentBill.updater?.timestamp)}
+									</span>{" "}
+									by {currentBill.updater?.fullName ?? "someone"}
+								</>
+							)}
+						</Text>
 					)}
-				</Text>
+				</SkeletonWrapper>
 			)}
 		</Stack>
 	);
 };
+
+function useBillForm() {
+	return useForm<NewFormState>({
+		resolver: zodResolver(BillFormStateSchema),
+		defaultValues: {
+			receiptFile: null,
+			debtors: Array.from({ length: 3 }, () => ({ amount: "", userId: "" }))
+		}
+	});
+}
 
 export const BillForm: React.FC<BillForm.Props> = (props) => {
 	const { kind } = props;
@@ -119,19 +136,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 		queryFn: () => API.Bills.Get.query({ billId: kind.type === "update" ? kind.billId : "" })
 	});
 
-	const methods = useForm<NewFormState>({
-		resolver: zodResolver(BillFormStateSchema),
-		defaultValues:
-			kind.type === "create"
-				? {
-						receiptFile: null,
-						debtors: [
-							{ userId: "", amount: "" },
-							{ userId: "", amount: "" }
-						]
-					}
-				: undefined
-	});
+	const methods = useBillForm();
 	const { reset, control, register, formState, handleSubmit } = methods;
 	const { errors } = formState;
 
@@ -167,6 +172,10 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 		});
 	}, [handleSubmit, kind, createBill, updateBill]);
 
+	const isLoadingBill = React.useMemo(() => {
+		return kind.type === "update" && !bill;
+	}, [bill, kind.type]);
+
 	return (
 		<FormProvider {...methods}>
 			<Stack gap="{spacing.4}">
@@ -176,12 +185,14 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 						<SimpleGrid templateRows="repeat(2, 1fr)" templateColumns="repeat(10, 1fr)">
 							<GridItem colSpan={5}>
 								<Field required label="Description" invalid={!!errors.description} errorText={errors.description?.message}>
-									<Input
-										{...register("description")}
-										readOnly={!editing}
-										placeholder="Enter bill description"
-										pointerEvents={editing ? undefined : "none"}
-									/>
+									<SkeletonWrapper loading={isLoadingBill} skeleton={<Skeleton width="100%" height="40px" />}>
+										<Input
+											{...register("description")}
+											readOnly={!editing}
+											placeholder="Enter bill description"
+											pointerEvents={editing ? undefined : "none"}
+										/>
+									</SkeletonWrapper>
 								</Field>
 							</GridItem>
 							<GridItem rowSpan={2} colSpan={3}>
@@ -189,20 +200,22 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 							</GridItem>
 							<GridItem colSpan={5}>
 								<Field required label="Issued at" invalid={!!errors.issuedAt} errorText={errors.issuedAt?.message}>
-									<Input
-										{...register("issuedAt")}
-										readOnly={!editing}
-										placeholder={CLIENT_DATE_FORMAT}
-										pointerEvents={editing ? undefined : "none"}
-									/>
+									<SkeletonWrapper loading={isLoadingBill} skeleton={<Skeleton width="100%" height="40px" />}>
+										<Input
+											{...register("issuedAt")}
+											readOnly={!editing}
+											placeholder={CLIENT_DATE_FORMAT}
+											pointerEvents={editing ? undefined : "none"}
+										/>
+									</SkeletonWrapper>
 								</Field>
 							</GridItem>
 						</SimpleGrid>
 					</GridItem>
 
-					<BillMemberInputs editing={editing} coordinate={{ type: "creditor" }} />
+					<BillMemberInputs editing={editing} loading={isLoadingBill} coordinate={{ type: "creditor" }} />
 					{debtors.map((_, debtorIndex) => {
-						return <BillMemberInputs key={debtorIndex} editing={editing} coordinate={{ debtorIndex, type: "debtor" }} />;
+						return <BillMemberInputs key={debtorIndex} editing={editing} loading={isLoadingBill} coordinate={{ debtorIndex, type: "debtor" }} />;
 					})}
 				</SimpleGrid>
 
@@ -214,7 +227,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					)}
 					{editing && (
 						<HStack>
-							{kind.type === "update" && (
+							{kind.type === "update" ? (
 								<>
 									<Button
 										variant="subtle"
@@ -228,8 +241,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 										<MdCheck /> Done
 									</Button>
 								</>
-							)}
-							{kind.type === "create" && (
+							) : (
 								<Button type="submit" variant="solid" onClick={onSubmit}>
 									<IoIosAddCircle /> Create
 								</Button>

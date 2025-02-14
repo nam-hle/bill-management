@@ -10,10 +10,12 @@ import { Button } from "@/chakra/button";
 import { Select } from "@/components/select";
 import { Skeleton } from "@/chakra/skeleton";
 import { type NewFormState } from "@/schemas/form.schema";
+import { SkeletonWrapper } from "@/components/skeleton-wrapper";
 
 namespace BillMemberInputs {
 	export interface Props {
 		readonly editing?: boolean;
+		readonly loading: boolean | undefined;
 		readonly coordinate: { type: "creditor" } | { type: "debtor"; debtorIndex: number };
 	}
 }
@@ -28,7 +30,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 		formState: { errors }
 	} = useFormContext<NewFormState>();
 
-	const { isSuccess, isPending, data: usersResponse } = useQuery({ queryKey: ["users"], queryFn: API.Users.List.query });
+	const { isSuccess, data: usersResponse, isPending: loadingUsers } = useQuery({ queryKey: ["users"], queryFn: API.Users.List.query });
 
 	const fieldKey = React.useMemo(() => {
 		if (coordinate.type === "creditor") {
@@ -78,6 +80,10 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 		return { selectLabel: `Debtor ${coordinate.debtorIndex + 1}`, amountLabel: `Split Amount ${coordinate.debtorIndex + 1}` };
 	}, [coordinate]);
 
+	const loading = React.useMemo(() => {
+		return props.loading || loadingUsers;
+	}, [loadingUsers, props.loading]);
+
 	return (
 		<>
 			<GridItem colSpan={{ base: 5 }}>
@@ -85,19 +91,17 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 					<Controller
 						control={control}
 						name={`${fieldKey}.userId`}
-						render={({ field }) =>
-							isPending ? (
-								<Skeleton width="100%" height="40px" />
-							) : (
+						render={({ field }) => (
+							<SkeletonWrapper loading={loading} skeleton={<Skeleton width="100%" height="40px" />}>
 								<Select
 									{...register(`${fieldKey}.userId`)}
 									readonly={!editing}
 									onValueChange={field.onChange}
-									value={isPending ? "" : field.value}
+									value={loading ? "" : field.value}
 									items={members.map(({ id: value, fullName: label }) => ({ label, value }))}
 								/>
-							)
-						}
+							</SkeletonWrapper>
+						)}
 					/>
 				</Field>
 			</GridItem>
@@ -105,7 +109,9 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 			<GridItem colSpan={{ base: 3 }}>
 				<Field required label={amountLabel} invalid={!!fieldError?.amount} errorText={fieldError?.amount?.message}>
 					<Group attached width="100%">
-						<Input {...register(`${fieldKey}.amount`)} textAlign="right" readOnly={!editing} pointerEvents={editing ? undefined : "none"} />
+						<SkeletonWrapper loading={loading} skeleton={<Skeleton width="100%" height="40px" />}>
+							<Input {...register(`${fieldKey}.amount`)} textAlign="right" readOnly={!editing} pointerEvents={editing ? undefined : "none"} />
+						</SkeletonWrapper>
 						<InputAddon>.000 VND</InputAddon>
 					</Group>
 				</Field>

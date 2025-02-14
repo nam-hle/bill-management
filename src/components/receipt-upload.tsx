@@ -27,6 +27,7 @@ export const ReceiptUpload: React.FC<ReceiptUpload.Props> = (props) => {
 	const receiptFile = watch("receiptFile");
 
 	const { data: receiptUrl } = useQuery({
+		enabled: !!receiptFile,
 		queryKey: ["receipts", receiptFile],
 		queryFn: () => downloadImage("receipts", receiptFile ?? undefined)
 	});
