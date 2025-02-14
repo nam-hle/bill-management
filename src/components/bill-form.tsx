@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { DevTool } from "@hookform/devtools";
 import { IoIosAddCircle } from "react-icons/io";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MdEdit, MdCheck, MdCancel } from "react-icons/md";
@@ -11,17 +10,21 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Text, Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chakra-ui/react";
 
 import { API } from "@/api";
+import { useBoolean } from "@/hooks";
 import { Field } from "@/chakra/field";
 import { Button } from "@/chakra/button";
 import { toaster } from "@/chakra/toaster";
+import { type ClientBill } from "@/schemas";
 import { ReceiptUpload } from "@/components/receipt-upload";
 import { BillMemberInputs } from "@/components/bill-member-inputs";
 import { formatTime, CLIENT_DATE_FORMAT, formatDistanceTime } from "@/utils";
 import { type NewFormState, BillFormStateSchema, DateFieldTransformer, BillFormMemberSchemaTransformer } from "@/schemas/form.schema";
 
 namespace BillForm {
+	export type Kind = { readonly type: "create" } | { readonly type: "update"; readonly billId: string };
+
 	export interface Props {
-		readonly kind: { readonly type: "create" } | { readonly type: "update"; readonly billId: string };
+		readonly kind: Kind;
 	}
 }
 
@@ -75,14 +78,42 @@ function useUpdateBill(onSuccess: () => void) {
 	return mutate;
 }
 
+namespace FormHeading {
+	export interface Props extends BillForm.Props {
+		readonly currentBill: ClientBill | undefined;
+	}
+}
+
+const FormHeading = ({ kind, currentBill }: FormHeading.Props) => {
+	return (
+		<Stack gap={0}>
+			<Heading>{kind.type === "update" ? "Bill Details" : "New Bill"}</Heading>
+			{currentBill && (
+				<Text color="grey" textStyle="xs" fontStyle="italic">
+					Created <span title={formatTime(currentBill.creator.timestamp)}>{formatDistanceTime(currentBill.creator.timestamp)}</span> by{" "}
+					{currentBill.creator.fullName}
+					{currentBill.updater?.timestamp && (
+						<>
+							{" "}
+							• Last updated <span title={formatTime(currentBill.updater?.timestamp)}>
+								{formatDistanceTime(currentBill.updater?.timestamp)}
+							</span> by {currentBill.updater?.fullName ?? "someone"}
+						</>
+					)}
+				</Text>
+			)}
+		</Stack>
+	);
+};
+
 export const BillForm: React.FC<BillForm.Props> = (props) => {
 	const { kind } = props;
-	const [editing, setEditing] = React.useState(() => kind.type === "create");
+	const [editing, { setFalse: endEditing, setTrue: startEditing }] = useBoolean(() => kind.type === "create");
 
 	const createBill = useCreateBill();
-	const updateBill = useUpdateBill(() => setEditing(() => false));
+	const updateBill = useUpdateBill(endEditing);
 
-	const { data: currentBill, isSuccess: isSuccessLoadBill } = useQuery({
+	const { data: bill } = useQuery<ClientBill>({
 		queryKey: ["bill", kind],
 		enabled: kind.type === "update",
 		queryFn: () => API.Bills.Get.query({ billId: kind.type === "update" ? kind.billId : "" })
@@ -101,26 +132,21 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					}
 				: undefined
 	});
-	const {
-		reset,
-		control,
-		register,
-		handleSubmit,
-		formState: { errors }
-	} = methods;
+	const { reset, control, register, formState, handleSubmit } = methods;
+	const { errors } = formState;
 
 	React.useEffect(() => {
-		if (currentBill) {
+		if (bill) {
 			reset({
-				...currentBill,
-				creditor: BillFormMemberSchemaTransformer.fromServer(currentBill.creditor),
-				issuedAt: DateFieldTransformer.fromServer(currentBill.issuedAt ?? undefined),
-				debtors: currentBill.debtors.map(BillFormMemberSchemaTransformer.fromServer)
+				...bill,
+				creditor: BillFormMemberSchemaTransformer.fromServer(bill.creditor),
+				issuedAt: DateFieldTransformer.fromServer(bill.issuedAt ?? undefined),
+				debtors: bill.debtors.map(BillFormMemberSchemaTransformer.fromServer)
 			});
 		}
-	}, [currentBill, reset]);
+	}, [bill, reset]);
 
-	const { fields: debtorFields, append: appendDebtor } = useFieldArray({ control, name: "debtors" });
+	const { fields: debtors, append: appendDebtor } = useFieldArray({ control, name: "debtors" });
 
 	const onSubmit = React.useMemo(() => {
 		return handleSubmit((data) => {
@@ -142,100 +168,81 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 	}, [handleSubmit, kind, createBill, updateBill]);
 
 	return (
-		<>
-			<FormProvider {...methods}>
-				<Stack gap="{spacing.4}">
-					<Stack gap={0}>
-						<Heading>{kind.type === "update" ? "Bill Details" : "New Bill"}</Heading>
-						{isSuccessLoadBill && (
-							<Text color="grey" textStyle="xs" fontStyle="italic">
-								Created <span title={formatTime(currentBill.creator.timestamp)}>{formatDistanceTime(currentBill.creator.timestamp)}</span> by{" "}
-								{currentBill.creator.fullName}
-								{currentBill.updater?.timestamp && (
-									<>
-										{" "}
-										• Last updated{" "}
-										<span title={formatTime(currentBill.updater?.timestamp)}>{formatDistanceTime(currentBill.updater?.timestamp)}</span> by{" "}
-										{currentBill.updater?.fullName ?? "someone"}
-									</>
-								)}
-							</Text>
-						)}
-					</Stack>
-					<SimpleGrid columns={10} gap="{spacing.4}">
-						<GridItem colSpan={{ base: 10 }}>
-							<SimpleGrid templateRows="repeat(2, 1fr)" templateColumns="repeat(10, 1fr)">
-								<GridItem colSpan={5}>
-									<Field required label="Description" invalid={!!errors.description} errorText={errors.description?.message}>
-										<Input
-											{...register("description")}
-											readOnly={!editing}
-											placeholder="Enter bill description"
-											pointerEvents={editing ? undefined : "none"}
-										/>
-									</Field>
-								</GridItem>
-								<GridItem rowSpan={2} colSpan={3}>
-									<ReceiptUpload editing={editing} billId={kind.type === "update" ? kind.billId : undefined} />
-								</GridItem>
-								<GridItem colSpan={5}>
-									<Field required label="Issued at" invalid={!!errors.issuedAt} errorText={errors.issuedAt?.message}>
-										<Input
-											{...register("issuedAt")}
-											readOnly={!editing}
-											placeholder={CLIENT_DATE_FORMAT}
-											pointerEvents={editing ? undefined : "none"}
-										/>
-									</Field>
-								</GridItem>
-							</SimpleGrid>
-						</GridItem>
+		<FormProvider {...methods}>
+			<Stack gap="{spacing.4}">
+				<FormHeading kind={kind} currentBill={bill} />
+				<SimpleGrid columns={10} gap="{spacing.4}">
+					<GridItem colSpan={{ base: 10 }}>
+						<SimpleGrid templateRows="repeat(2, 1fr)" templateColumns="repeat(10, 1fr)">
+							<GridItem colSpan={5}>
+								<Field required label="Description" invalid={!!errors.description} errorText={errors.description?.message}>
+									<Input
+										{...register("description")}
+										readOnly={!editing}
+										placeholder="Enter bill description"
+										pointerEvents={editing ? undefined : "none"}
+									/>
+								</Field>
+							</GridItem>
+							<GridItem rowSpan={2} colSpan={3}>
+								<ReceiptUpload editing={editing} billId={kind.type === "update" ? kind.billId : undefined} />
+							</GridItem>
+							<GridItem colSpan={5}>
+								<Field required label="Issued at" invalid={!!errors.issuedAt} errorText={errors.issuedAt?.message}>
+									<Input
+										{...register("issuedAt")}
+										readOnly={!editing}
+										placeholder={CLIENT_DATE_FORMAT}
+										pointerEvents={editing ? undefined : "none"}
+									/>
+								</Field>
+							</GridItem>
+						</SimpleGrid>
+					</GridItem>
 
-						<BillMemberInputs editing={editing} coordinate={{ type: "creditor" }} />
-						{debtorFields.map((_, debtorIndex) => {
-							return <BillMemberInputs key={debtorIndex} editing={editing} coordinate={{ debtorIndex, type: "debtor" }} />;
-						})}
-					</SimpleGrid>
+					<BillMemberInputs editing={editing} coordinate={{ type: "creditor" }} />
+					{debtors.map((_, debtorIndex) => {
+						return <BillMemberInputs key={debtorIndex} editing={editing} coordinate={{ debtorIndex, type: "debtor" }} />;
+					})}
+				</SimpleGrid>
 
-					<HStack justifyContent="flex-start">
-						{editing && (
-							<Button variant="subtle" onClick={() => appendDebtor({ amount: "", userId: "" })}>
-								Add debtor
-							</Button>
-						)}
-						{editing && (
-							<HStack>
-								{kind.type === "update" && (
-									<>
-										<Button
-											variant="subtle"
-											onClick={() => {
-												setEditing(() => false);
-												reset();
-											}}>
-											<MdCancel /> Cancel
-										</Button>
-										<Button variant="solid" onClick={onSubmit}>
-											<MdCheck /> Done
-										</Button>
-									</>
-								)}
-								{kind.type === "create" && (
-									<Button type="submit" variant="solid" onClick={onSubmit}>
-										<IoIosAddCircle /> Create
+				<HStack justifyContent="flex-start">
+					{editing && (
+						<Button variant="subtle" onClick={() => appendDebtor({ amount: "", userId: "" })}>
+							Add debtor
+						</Button>
+					)}
+					{editing && (
+						<HStack>
+							{kind.type === "update" && (
+								<>
+									<Button
+										variant="subtle"
+										onClick={() => {
+											endEditing();
+											reset();
+										}}>
+										<MdCancel /> Cancel
 									</Button>
-								)}
-							</HStack>
-						)}
-						{!editing && (
-							<Button variant="solid" onClick={() => setEditing(() => true)}>
-								<MdEdit /> Edit
-							</Button>
-						)}
-					</HStack>
-				</Stack>
-			</FormProvider>
-			<DevTool control={control} />
-		</>
+									<Button variant="solid" onClick={onSubmit}>
+										<MdCheck /> Done
+									</Button>
+								</>
+							)}
+							{kind.type === "create" && (
+								<Button type="submit" variant="solid" onClick={onSubmit}>
+									<IoIosAddCircle /> Create
+								</Button>
+							)}
+						</HStack>
+					)}
+					{!editing && (
+						<Button variant="solid" onClick={startEditing}>
+							<MdEdit /> Edit
+						</Button>
+					)}
+				</HStack>
+			</Stack>
+		</FormProvider>
 	);
 };
