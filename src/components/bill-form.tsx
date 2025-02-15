@@ -30,63 +30,15 @@ namespace BillForm {
 	}
 }
 
-function useCreateBill() {
-	const queryClient = useQueryClient();
-	const router = useRouter();
-
-	const { mutate } = useMutation({
-		mutationFn: API.Bills.Create.mutate,
-		onError: () => {
-			toaster.create({
-				type: "error",
-				title: "Failed to create bill",
-				description: "An error occurred while creating the bill. Please try again."
-			});
-		},
-		onSuccess: () => {
-			toaster.create({
-				type: "success",
-				title: "Bill created successfully",
-				description: "A new bill has been created and saved successfully."
-			});
-
-			queryClient.invalidateQueries({ queryKey: ["bills"] }).then(() => router.push("/bills"));
-		}
-	});
-
-	return mutate;
-}
-
-function useUpdateBill(onSuccess: () => void) {
-	const { mutate } = useMutation({
-		mutationFn: API.Bills.Update.mutate,
-		onError: () => {
-			toaster.create({
-				type: "error",
-				title: "Failed to update bill",
-				description: "Unable to update the bill. Please verify your input and retry."
-			});
-		},
-		onSuccess: () => {
-			toaster.create({
-				type: "success",
-				title: "Bill updated successfully",
-				description: "The bill details have been updated successfully."
-			});
-			onSuccess();
-		}
-	});
-
-	return mutate;
-}
-
 namespace FormHeading {
 	export interface Props extends BillForm.Props {
 		readonly currentBill: ClientBill | undefined;
 	}
 }
 
-const FormHeading = ({ kind, currentBill }: FormHeading.Props) => {
+const FormHeading: React.FC<FormHeading.Props> = (props) => {
+	const { kind, currentBill } = props;
+
 	return (
 		<Stack gap={0}>
 			<Heading>{kind.type === "update" ? "Bill Details" : "New Bill"}</Heading>
@@ -236,7 +188,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					})}
 				</SimpleGrid>
 
-				<HStack justifyContent="flex-start">
+				<HStack justifyContent={editing ? "space-between" : "flex-end"}>
 					{editing && (
 						<Button variant="subtle" onClick={() => appendDebtor({ amount: "", userId: "" })}>
 							Add debtor
@@ -275,3 +227,53 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 		</FormProvider>
 	);
 };
+
+function useCreateBill() {
+	const queryClient = useQueryClient();
+	const router = useRouter();
+
+	const { mutate } = useMutation({
+		mutationFn: API.Bills.Create.mutate,
+		onError: () => {
+			toaster.create({
+				type: "error",
+				title: "Failed to create bill",
+				description: "An error occurred while creating the bill. Please try again."
+			});
+		},
+		onSuccess: () => {
+			toaster.create({
+				type: "success",
+				title: "Bill created successfully",
+				description: "A new bill has been created and saved successfully."
+			});
+
+			queryClient.invalidateQueries({ queryKey: ["bills"] }).then(() => router.push("/bills"));
+		}
+	});
+
+	return mutate;
+}
+
+function useUpdateBill(onSuccess: () => void) {
+	const { mutate } = useMutation({
+		mutationFn: API.Bills.Update.mutate,
+		onError: () => {
+			toaster.create({
+				type: "error",
+				title: "Failed to update bill",
+				description: "Unable to update the bill. Please verify your input and retry."
+			});
+		},
+		onSuccess: () => {
+			toaster.create({
+				type: "success",
+				title: "Bill updated successfully",
+				description: "The bill details have been updated successfully."
+			});
+			onSuccess();
+		}
+	});
+
+	return mutate;
+}
