@@ -4,8 +4,8 @@ import { VStack } from "@chakra-ui/react";
 import { IoIosAddCircle } from "react-icons/io";
 
 import { LinkButton } from "@/chakra/link-button";
+import { TransactionsTable } from "@/components/tables";
 import { getCurrentUser } from "@/services/supabase/server";
-import { TransactionsTable } from "@/components/transactions-table";
 
 export const metadata: Metadata = {
 	title: "Transactions"

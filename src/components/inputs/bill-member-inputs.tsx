@@ -7,9 +7,9 @@ import { Input, Group, GridItem, InputAddon } from "@chakra-ui/react";
 import { API } from "@/api";
 import { Field } from "@/chakra/field";
 import { Button } from "@/chakra/button";
-import { Select } from "@/components/select";
 import { Skeleton } from "@/chakra/skeleton";
-import { type BillFormState } from "@/components/bill-form";
+import { Select } from "@/components/inputs";
+import { type BillFormState } from "@/components/forms";
 import { SkeletonWrapper } from "@/components/skeleton-wrapper";
 
 namespace BillMemberInputs {

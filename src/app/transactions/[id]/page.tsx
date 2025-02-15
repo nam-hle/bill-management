@@ -1,7 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 
-import { TransactionForm } from "@/components/transaction-form";
+import { TransactionForm } from "@/components/forms";
 import { createSupabaseServer } from "@/services/supabase/server";
 import { UsersControllers, TransactionsControllers } from "@/controllers";
 

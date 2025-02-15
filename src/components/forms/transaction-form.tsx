@@ -15,7 +15,7 @@ import { Field } from "@/chakra/field";
 import { Button } from "@/chakra/button";
 import { toaster } from "@/chakra/toaster";
 import { axiosInstance } from "@/services";
-import { Select } from "@/components/select";
+import { Select } from "@/components/inputs";
 import { DialogRoot, DialogContent } from "@/chakra/dialog";
 import { CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
 import { TransactionAction } from "@/components/transaction-action";

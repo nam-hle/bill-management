@@ -1,7 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 
-import { BillForm } from "@/components/bill-form";
+import { BillForm } from "@/components/forms";
 
 export const metadata: Metadata = {
 	title: "New Bill"

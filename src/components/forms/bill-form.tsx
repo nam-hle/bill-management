@@ -17,11 +17,10 @@ import { Button } from "@/chakra/button";
 import { toaster } from "@/chakra/toaster";
 import { Skeleton } from "@/chakra/skeleton";
 import { CLIENT_DATE_FORMAT } from "@/utils";
-import { ReceiptUpload } from "@/components/receipt-upload";
 import { SkeletonWrapper } from "@/components/skeleton-wrapper";
 import { BillFormHeading } from "@/components/bill-form-heading";
 import { type ClientBill, type ClientBillMember } from "@/schemas";
-import { BillMemberInputs } from "@/components/bill-member-inputs";
+import { ReceiptUpload, BillMemberInputs } from "@/components/inputs";
 import { IssuedAtField, IssuedAtFieldTransformer, OptionalAmountFieldSchema, OptionalAmountFieldTransformer } from "@/schemas/form.schema";
 
 export namespace BillForm {
