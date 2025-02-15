@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/chakra/button";
 import { Avatar } from "@/chakra/avatar";
 import { FileUploadRoot, FileUploadTrigger } from "@/chakra/file-upload";
-import { downloadImage, useFileUploader } from "@/services/file-uploader";
+import { downloadFile, useFileUploader } from "@/services/file-uploader";
 
 namespace ProfileAvatar {
 	export interface Props {
@@ -22,7 +22,7 @@ export const ProfileAvatar: React.FC<ProfileAvatar.Props> = (props) => {
 	const { data: url } = useQuery({
 		enabled: !!fileId,
 		queryKey: ["profileAvatar", fileId],
-		queryFn: () => downloadImage("avatars", fileId)
+		queryFn: () => downloadFile("avatars", fileId)
 	});
 
 	const { uploadFile, isUploading } = useFileUploader(onChange);
@@ -34,7 +34,7 @@ export const ProfileAvatar: React.FC<ProfileAvatar.Props> = (props) => {
 				maxFiles={1}
 				width="fit-content"
 				accept={["image/png", "image/jpeg"]}
-				onFileAccept={(details) => uploadFile({ objectId: ownerId, bucketName: "avatars", image: details.files[0] })}>
+				onFileAccept={(details) => uploadFile({ ownerId, bucketName: "avatars", file: details.files[0] })}>
 				<FileUploadTrigger asChild>
 					<Button size="xs" variant="outline" loading={isUploading} loadingText="Uploading...">
 						{url ? "Change" : "Upload"}

@@ -126,7 +126,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 				<BillFormHeading kind={kind} bill={bill} />
 				<SimpleGrid columns={10} gap="{spacing.4}">
 					<GridItem colSpan={{ base: 10 }}>
-						<SimpleGrid templateRows="repeat(2, 1fr)" templateColumns="repeat(10, 1fr)">
+						<SimpleGrid gap="{spacing.4}" templateRows="repeat(2, 1fr)" templateColumns="repeat(10, 1fr)">
 							<GridItem colSpan={5}>
 								<Field required label="Description" invalid={!!errors.description} errorText={errors.description?.message}>
 									<SkeletonWrapper loading={loading} skeleton={<Skeleton width="100%" height="40px" />}>
@@ -145,6 +145,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 									name="receiptFile"
 									render={({ field }) => (
 										<ReceiptUpload
+											loading={loading}
 											editing={editing}
 											onChange={field.onChange}
 											fileId={field.value ?? undefined}

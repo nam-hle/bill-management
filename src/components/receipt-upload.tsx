@@ -1,18 +1,22 @@
-import React, { useState } from "react";
+import React from "react";
 import { HiUpload } from "react-icons/hi";
 import { BsReceipt } from "react-icons/bs";
 import { useQuery } from "@tanstack/react-query";
 import { Image, Stack, Center } from "@chakra-ui/react";
 
+import { useBoolean } from "@/hooks";
 import { Button } from "@/chakra/button";
+import { Skeleton } from "@/chakra/skeleton";
 import { EmptyState } from "@/chakra/empty-state";
 import { DialogRoot, DialogContent } from "@/chakra/dialog";
-import { downloadImage, useFileUploader } from "@/services/file-uploader";
+import { SkeletonWrapper } from "@/components/skeleton-wrapper";
+import { downloadFile, useFileUploader } from "@/services/file-uploader";
 import { FileUploadRoot, FileUploadTrigger, FileUploadDropzone } from "@/chakra/file-upload";
 
 namespace ReceiptUpload {
 	export interface Props {
 		readonly editing: boolean;
+		readonly loading: boolean;
 		readonly fileId: string | undefined;
 		readonly ownerId: string | undefined;
 		readonly onChange: (fileId: string) => void;
@@ -20,18 +24,18 @@ namespace ReceiptUpload {
 }
 
 export const ReceiptUpload: React.FC<ReceiptUpload.Props> = (props) => {
-	const { fileId, ownerId, editing, onChange } = props;
-	const [openDialog, setOpenDialog] = useState(false);
+	const { fileId, ownerId, editing, loading, onChange } = props;
+	const [dialog, { setValue: setDialog, setTrue: openDialog }] = useBoolean(false);
 
-	const { data: url } = useQuery({
+	const { data: url, isPending: loadingImage } = useQuery({
 		enabled: !!fileId,
 		queryKey: ["receipts", fileId],
-		queryFn: () => downloadImage("receipts", fileId)
+		queryFn: () => downloadFile("receipts", fileId)
 	});
 
 	const { uploadFile } = useFileUploader(onChange);
 
-	if (!editing && !url) {
+	if (!editing && !fileId && !loading) {
 		return (
 			<EmptyState
 				height="100%"
@@ -47,15 +51,15 @@ export const ReceiptUpload: React.FC<ReceiptUpload.Props> = (props) => {
 
 	return (
 		<>
-			{openDialog && (
-				<DialogRoot lazyMount open={openDialog} onOpenChange={(e) => setOpenDialog(e.open)}>
-					<DialogContent margin={0} width="100vw" height="100vh" boxShadow="none" justifyContent="center" backgroundColor="transparent">
-						<Center>{url && <Image src={url} alt="receipt" />}</Center>
-					</DialogContent>
-				</DialogRoot>
-			)}
+			<DialogRoot lazyMount open={dialog} onOpenChange={(e) => setDialog(e.open)}>
+				<DialogContent margin={0} width="100vw" height="100vh" boxShadow="none" justifyContent="center" backgroundColor="transparent">
+					<Center>{url && <Image src={url} alt="receipt" />}</Center>
+				</DialogContent>
+			</DialogRoot>
 			<Stack width="100%" height="100%" alignItems="center" justifyContent="center">
-				{url && <Image src={url} alt="receipt" cursor="pointer" maxHeight="100px" onClick={() => setOpenDialog(true)} />}
+				<SkeletonWrapper loading={loading || loadingImage} skeleton={<Skeleton width="full" height="full" />}>
+					{url && <Image src={url} alt="receipt" cursor="pointer" maxHeight="100px" onClick={openDialog} />}
+				</SkeletonWrapper>
 				{editing && (
 					<FileUploadRoot
 						maxFiles={1}
@@ -63,7 +67,7 @@ export const ReceiptUpload: React.FC<ReceiptUpload.Props> = (props) => {
 						alignItems="center"
 						paddingInline="{spacing.4}"
 						accept={["image/png", "image/jpeg"]}
-						onFileAccept={(details) => uploadFile({ objectId: ownerId, bucketName: "receipts", image: details.files[0] })}>
+						onFileAccept={(details) => uploadFile({ ownerId, bucketName: "receipts", file: details.files[0] })}>
 						{url ? (
 							<FileUploadTrigger asChild>
 								<Button size="sm" variant="outline">
