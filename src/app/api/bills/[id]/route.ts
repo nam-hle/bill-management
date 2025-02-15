@@ -23,14 +23,14 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 		const body = await RouteUtils.parseRequestBody(request, API.Bills.UpsertBillSchema);
 
-		if (body.error) {
+		if (!body) {
 			return RouteUtils.BadRequest;
 		}
 
 		const supabase = await createSupabaseServer();
 		const updater = await getCurrentUser();
 
-		const { debtors, issuedAt, creditor, description, receiptFile } = body.data;
+		const { debtors, issuedAt, creditor, description, receiptFile } = body;
 
 		// Members need to be updated first
 		await BillMembersControllers.updateMany(supabase, updater.id, {

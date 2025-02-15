@@ -2,8 +2,8 @@ import type { NextRequest } from "next/server";
 
 import { API } from "@/api";
 import { RouteUtils } from "@/route.utils";
-import { DEFAULT_PAGE_SIZE } from "@/constants";
 import { type BillMemberRole } from "@/schemas";
+import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
 import { BillsControllers, BillMembersControllers } from "@/controllers";
 import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
 			...rest,
 			memberId: currentUserId,
 			limit: DEFAULT_PAGE_SIZE,
+			page: DEFAULT_PAGE_NUMBER,
 			debtorId: debtorId === "me" ? currentUserId : undefined,
 			creatorId: creatorId === "me" ? currentUserId : undefined,
 			creditorId: creditorId === "me" ? currentUserId : undefined
@@ -43,11 +44,11 @@ export async function POST(request: Request) {
 		const supabase = await createSupabaseServer();
 		const body = await RouteUtils.parseRequestBody(request, API.Bills.UpsertBillSchema);
 
-		if (body.error) {
+		if (!body) {
 			return RouteUtils.BadRequest;
 		}
 
-		const { debtors, issuedAt, creditor, description } = body.data;
+		const { debtors, issuedAt, creditor, description } = body;
 		const creator = await getCurrentUser();
 
 		// Step 1: Insert bill

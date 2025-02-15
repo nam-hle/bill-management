@@ -1,4 +1,5 @@
 import { type API } from "@/api";
+import { RouteUtils } from "@/route.utils";
 import { NotificationsControllers } from "@/controllers";
 import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
@@ -12,12 +13,6 @@ export async function PATCH(_request: Request, { params }: { params: Promise<{ i
 
 		return new Response(JSON.stringify({ unreadCount } satisfies API.Notifications.ReadResponse), { status: 201 });
 	} catch (error) {
-		return new Response(
-			JSON.stringify({
-				error: "Internal Server Error",
-				details: (error as any).message
-			}),
-			{ status: 500 }
-		);
+		return RouteUtils.ServerError;
 	}
 }

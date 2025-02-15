@@ -18,15 +18,15 @@ export namespace RouteUtils {
 		return result.data;
 	}
 
-	export async function parseRequestBody<T>(request: Request, schema: ZodSchema<T>): Promise<{ error: true } | { data: T; error: false }> {
+	export async function parseRequestBody<T>(request: Request, schema: ZodSchema<T>): Promise<T | null> {
 		const body = await request.json();
 		const result = schema.safeParse(body);
 
 		if (!result.success) {
-			return { error: true };
+			return null;
 		}
 
-		return { error: false, data: result.data };
+		return result.data;
 	}
 
 	export function createResponse<T>(schema: ZodSchema<T>, data: unknown): Response {

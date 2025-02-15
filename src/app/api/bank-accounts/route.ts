@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 
 import { API } from "@/api";
+import { RouteUtils } from "@/route.utils";
 import { BankAccountsController } from "@/controllers";
 import { createSupabaseServer } from "@/services/supabase/server";
 
@@ -8,23 +9,16 @@ export async function GET(request: NextRequest) {
 	try {
 		const supabase = await createSupabaseServer();
 
-		const { searchParams } = request.nextUrl;
-		const result = API.BankAccounts.List.SearchParamsSchema.safeParse(Object.fromEntries(searchParams));
+		const searchParams = await RouteUtils.parseRequestSearchParams(request, API.BankAccounts.List.SearchParamsSchema);
 
-		if (result.error) {
-			return new Response(JSON.stringify({ details: result.error.errors, error: "Invalid request query" }), { status: 400 });
+		if (!searchParams) {
+			return RouteUtils.BadRequest;
 		}
 
-		const response = await BankAccountsController.getByUserId(supabase, result.data.userId);
+		const response = await BankAccountsController.getByUserId(supabase, searchParams.userId);
 
 		return new Response(JSON.stringify(response), { status: 200 });
 	} catch (error) {
-		return new Response(
-			JSON.stringify({
-				error: "Internal Server Error",
-				details: (error as any).message
-			}),
-			{ status: 500 }
-		);
+		return RouteUtils.ServerError;
 	}
 }
