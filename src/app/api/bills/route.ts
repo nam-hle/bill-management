@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 
 import { API } from "@/api";
+import { RouteUtils } from "@/route.utils";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
 import { type BillMemberRole } from "@/schemas";
 import { BillsControllers, BillMembersControllers } from "@/controllers";
@@ -10,15 +11,15 @@ export async function GET(request: NextRequest) {
 	try {
 		const supabase = await createSupabaseServer();
 
-		const searchParams = API.Bills.List.SearchParamsSchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
+		const searchParams = await RouteUtils.parseRequestSearchParams(request, API.Bills.List.SearchParamsSchema);
 
-		if (searchParams.error || !searchParams.data) {
-			return new Response(JSON.stringify({ error: "Invalid request query", details: searchParams.error.errors }), { status: 400 });
+		if (!searchParams) {
+			return RouteUtils.BadRequest;
 		}
 
 		const { id: currentUserId } = await getCurrentUser();
 
-		const { debtorId, creatorId, creditorId, ...rest } = searchParams.data;
+		const { debtorId, creatorId, creditorId, ...rest } = searchParams;
 
 		const resolvedSearchParams: BillsControllers.GetManyByMemberIdPayload = {
 			...rest,
@@ -33,29 +34,20 @@ export async function GET(request: NextRequest) {
 
 		return new Response(JSON.stringify(response), { status: 200 });
 	} catch (error) {
-		return new Response(
-			JSON.stringify({
-				error: "Internal Server Error",
-				details: (error as any).message
-			}),
-			{ status: 500 }
-		);
+		return RouteUtils.ServerError;
 	}
 }
 
 export async function POST(request: Request) {
 	try {
-		const body = await request.json();
 		const supabase = await createSupabaseServer();
-		const parsedBody = API.Bills.UpsertBillSchema.safeParse(body);
+		const body = await RouteUtils.parseRequestBody(request, API.Bills.UpsertBillSchema);
 
-		if (parsedBody.error) {
-			return new Response(JSON.stringify({ error: "Invalid request body", details: parsedBody.error.errors }), {
-				status: 400
-			});
+		if (body.error) {
+			return RouteUtils.BadRequest;
 		}
 
-		const { debtors, issuedAt, creditor, description } = parsedBody.data;
+		const { debtors, issuedAt, creditor, description } = body.data;
 		const creator = await getCurrentUser();
 
 		// Step 1: Insert bill
@@ -88,12 +80,6 @@ export async function POST(request: Request) {
 			status: 201
 		});
 	} catch (error) {
-		return new Response(
-			JSON.stringify({
-				error: "Internal Server Error",
-				details: (error as any).message
-			}),
-			{ status: 500 }
-		);
+		return RouteUtils.ServerError;
 	}
 }
