@@ -9,45 +9,45 @@ import { Field } from "@/chakra/field";
 import { Button } from "@/chakra/button";
 import { Select } from "@/components/select";
 import { Skeleton } from "@/chakra/skeleton";
-import { type NewFormState } from "@/schemas/form.schema";
+import { type BillFormState } from "@/components/bill-form";
 import { SkeletonWrapper } from "@/components/skeleton-wrapper";
 
 namespace BillMemberInputs {
 	export interface Props {
-		readonly editing?: boolean;
+		readonly loading: boolean;
+		readonly editing: boolean;
 		readonly onRemove?: () => void;
-		readonly loading: boolean | undefined;
-		readonly coordinate: { type: "creditor" } | { type: "debtor"; debtorIndex: number };
+		readonly member: { type: "creditor" } | { type: "debtor"; debtorIndex: number };
 	}
 }
 
 export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
-	const { editing, onRemove, coordinate } = props;
+	const { member, editing, onRemove } = props;
 	const {
 		watch,
 		control,
 		register,
 		getValues,
 		formState: { errors }
-	} = useFormContext<NewFormState>();
+	} = useFormContext<BillFormState>();
 
 	const { isSuccess, data: usersResponse, isPending: isPendingUsers } = useQuery({ queryKey: ["users"], queryFn: API.Users.List.query });
 
 	const fieldKey = React.useMemo(() => {
-		if (coordinate.type === "creditor") {
+		if (member.type === "creditor") {
 			return "creditor" as const;
 		}
 
-		return `debtors.${coordinate.debtorIndex}` as const;
-	}, [coordinate]);
+		return `debtors.${member.debtorIndex}` as const;
+	}, [member]);
 
 	const fieldError = React.useMemo(() => {
-		if (coordinate.type === "creditor") {
+		if (member.type === "creditor") {
 			return errors["creditor"];
 		}
 
-		return errors["debtors"]?.[coordinate.debtorIndex];
-	}, [coordinate, errors]);
+		return errors["debtors"]?.[member.debtorIndex];
+	}, [member, errors]);
 
 	watch("debtors");
 
@@ -56,28 +56,28 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 			return [];
 		}
 
-		if (coordinate.type === "creditor") {
+		if (member.type === "creditor") {
 			return usersResponse.data;
 		}
 
 		const debtors = getValues("debtors");
 
 		return usersResponse.data.filter((user) => {
-			if (user.id === debtors[coordinate.debtorIndex]?.userId) {
+			if (user.id === debtors[member.debtorIndex]?.userId) {
 				return true;
 			}
 
 			return !debtors.some(({ userId }) => userId === user.id);
 		});
-	}, [getValues, coordinate, isSuccess, usersResponse]);
+	}, [getValues, member, isSuccess, usersResponse]);
 
 	const { selectLabel, amountLabel } = React.useMemo(() => {
-		if (coordinate.type === "creditor") {
+		if (member.type === "creditor") {
 			return { selectLabel: "Creditor", amountLabel: "Total Amount" };
 		}
 
-		return { selectLabel: `Debtor ${coordinate.debtorIndex + 1}`, amountLabel: `Split Amount ${coordinate.debtorIndex + 1}` };
-	}, [coordinate]);
+		return { selectLabel: `Debtor ${member.debtorIndex + 1}`, amountLabel: `Split Amount ${member.debtorIndex + 1}` };
+	}, [member]);
 
 	const loadingUsers = React.useMemo(() => {
 		return props.loading || isPendingUsers;
@@ -108,7 +108,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 			</GridItem>
 
 			<GridItem colSpan={{ base: 3 }}>
-				<Field required label={amountLabel} invalid={!!fieldError?.amount} errorText={fieldError?.amount?.message}>
+				<Field label={amountLabel} invalid={!!fieldError?.amount} required={member.type === "creditor"} errorText={fieldError?.amount?.message}>
 					<Group attached width="100%">
 						<SkeletonWrapper loading={!!loadingAmount} skeleton={<Skeleton width="100%" height="40px" />}>
 							<Input {...register(`${fieldKey}.amount`)} textAlign="right" readOnly={!editing} pointerEvents={editing ? undefined : "none"} />

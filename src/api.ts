@@ -76,44 +76,41 @@ export namespace API {
 	}
 
 	export namespace Bills {
-		export const UpsertBillMemberSchema = z.object({ userId: z.string(), amount: z.number() });
-
-		export const UpsertBillSchema = z.object({
-			issuedAt: z.string(),
-			description: z.string(),
-			creditor: UpsertBillMemberSchema,
-			receiptFile: z.string().nullable(),
-			debtors: z.array(UpsertBillMemberSchema)
-		});
-
-		export type UpsertBill = z.infer<typeof UpsertBillSchema>;
-
 		export namespace Get {
-			export type Response = ClientBill;
 			export async function query(params: { billId: string }) {
-				const { data } = await axiosInstance<Response>(`/bills/${params.billId}`);
+				const { data } = await axiosInstance<ClientBill>(`/bills/${params.billId}`);
 
 				return data;
 			}
 		}
 
-		export namespace Create {
-			export type Body = UpsertBill;
+		export const UpsertBillMemberSchema = z.object({ userId: z.string(), amount: z.number() });
 
-			export async function mutate(body: Body) {
-				await axiosInstance.post<Body>(`/bills`, body);
+		export const UpsertBillSchema = z.object({
+			// TODO: Validate
+			issuedAt: z.string(),
+			creditor: UpsertBillMemberSchema,
+			receiptFile: z.string().nullable(),
+			debtors: z.array(UpsertBillMemberSchema),
+			description: z.string().max(50, "Description is too long").min(1, "Description is required")
+		});
+
+		export type UpsertBill = z.infer<typeof UpsertBillSchema>;
+
+		export namespace Create {
+			export async function mutate(params: { bill: UpsertBill }) {
+				await axiosInstance.post<Body>(`/bills`, params.bill);
 			}
 		}
 
 		export namespace Update {
-			export type Body = UpsertBill;
 			export interface Payload {
-				readonly body: Body;
-				readonly billId: string;
+				readonly id: string;
+				readonly bill: UpsertBill;
 			}
 
 			export async function mutate(payload: Payload) {
-				await axiosInstance.put<Body>(`/bills/${payload.billId}`, payload.body);
+				await axiosInstance.put<UpsertBill>(`/bills/${payload.id}`, payload.bill);
 			}
 		}
 

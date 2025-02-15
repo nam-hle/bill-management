@@ -4,7 +4,7 @@ import type { Database } from "@/database.types";
 
 import { JsonSchema } from "./base.schema";
 import { ClientTransactionSchema } from "./transactions.schema";
-import { ClientBillSchema, BillMemberRoleEnumSchema } from "./bills.schema";
+import { ClientBillSchema, BillMemberRoleSchema } from "./bills.schema";
 
 export const NotificationTypeSchema = z.enum([
 	"BillCreated",
@@ -40,7 +40,7 @@ const NotificationBillSchema = ClientBillSchema.pick({ id: true, description: tr
 
 export const BillCreatedNotificationMetadataSchema = z.object({
 	previous: z.object({}),
-	current: z.object({ amount: z.number(), role: BillMemberRoleEnumSchema })
+	current: z.object({ amount: z.number(), role: BillMemberRoleSchema })
 });
 export type BillCreatedNotificationMetadata = z.infer<typeof BillCreatedNotificationMetadataSchema>;
 
@@ -53,7 +53,7 @@ export type BillCreatedNotification = z.infer<typeof BillCreatedNotificationSche
 
 export const BillDeletedNotificationMetadataSchema = z.object({
 	current: z.object({}),
-	previous: z.object({ role: BillMemberRoleEnumSchema })
+	previous: z.object({ role: BillMemberRoleSchema })
 });
 export type BillDeletedNotificationMetadata = z.infer<typeof BillDeletedNotificationMetadataSchema>;
 

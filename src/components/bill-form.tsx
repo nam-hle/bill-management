@@ -1,28 +1,30 @@
 "use client";
 
+import { z } from "zod";
 import React from "react";
 import { useRouter } from "next/navigation";
 import { IoIosAddCircle } from "react-icons/io";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MdEdit, MdCheck, MdCancel } from "react-icons/md";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Input, Stack, HStack, GridItem, SimpleGrid } from "@chakra-ui/react";
 import { useForm, Controller, FormProvider, useFieldArray } from "react-hook-form";
-import { Text, Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chakra-ui/react";
 
 import { API } from "@/api";
 import { useBoolean } from "@/hooks";
 import { Field } from "@/chakra/field";
 import { Button } from "@/chakra/button";
 import { toaster } from "@/chakra/toaster";
-import { type ClientBill } from "@/schemas";
-import { Skeleton, SkeletonText } from "@/chakra/skeleton";
+import { Skeleton } from "@/chakra/skeleton";
+import { CLIENT_DATE_FORMAT } from "@/utils";
 import { ReceiptUpload } from "@/components/receipt-upload";
 import { SkeletonWrapper } from "@/components/skeleton-wrapper";
+import { BillFormHeading } from "@/components/bill-form-heading";
+import { type ClientBill, type ClientBillMember } from "@/schemas";
 import { BillMemberInputs } from "@/components/bill-member-inputs";
-import { formatTime, CLIENT_DATE_FORMAT, formatDistanceTime } from "@/utils";
-import { type NewFormState, BillFormStateSchema, DateFieldTransformer, BillFormMemberSchemaTransformer } from "@/schemas/form.schema";
+import { IssuedAtField, IssuedAtFieldTransformer, OptionalAmountFieldSchema, OptionalAmountFieldTransformer } from "@/schemas/form.schema";
 
-namespace BillForm {
+export namespace BillForm {
 	export type Kind = { readonly type: "create" } | { readonly type: "update"; readonly billId: string };
 
 	export interface Props {
@@ -30,43 +32,47 @@ namespace BillForm {
 	}
 }
 
-namespace FormHeading {
-	export interface Props extends BillForm.Props {
-		readonly currentBill: ClientBill | undefined;
+export const BillFormMemberSchema = z.object({ userId: z.string(), amount: OptionalAmountFieldSchema });
+export type BillFormMember = z.infer<typeof BillFormMemberSchema>;
+export namespace BillFormMemberTransformer {
+	export function toServer(member: BillFormMember) {
+		return { ...member, amount: OptionalAmountFieldTransformer.toServer(member.amount) };
+	}
+
+	export function fromServer(member: ClientBillMember): BillFormMember {
+		return { ...member, amount: OptionalAmountFieldTransformer.fromServer(member.amount) };
 	}
 }
 
-const FormHeading: React.FC<FormHeading.Props> = (props) => {
-	const { kind, currentBill } = props;
+export const BillFormStateSchema = API.Bills.UpsertBillSchema.extend({
+	issuedAt: IssuedAtField,
+	creditor: BillFormMemberSchema,
+	debtors: z.array(BillFormMemberSchema)
+});
 
-	return (
-		<Stack gap={0}>
-			<Heading>{kind.type === "update" ? "Bill Details" : "New Bill"}</Heading>
-			{kind.type === "create" ? null : (
-				<SkeletonWrapper loading={!currentBill} skeleton={<SkeletonText gap="4" width="md" noOfLines={1} />}>
-					{currentBill && (
-						<Text color="grey" textStyle="xs" fontStyle="italic">
-							Created <span title={formatTime(currentBill.creator.timestamp)}>{formatDistanceTime(currentBill.creator.timestamp)}</span> by{" "}
-							{currentBill.creator.fullName}
-							{currentBill.updater?.timestamp && (
-								<>
-									{" "}
-									• Last updated <span title={formatTime(currentBill.updater?.timestamp)}>
-										{formatDistanceTime(currentBill.updater?.timestamp)}
-									</span>{" "}
-									by {currentBill.updater?.fullName ?? "someone"}
-								</>
-							)}
-						</Text>
-					)}
-				</SkeletonWrapper>
-			)}
-		</Stack>
-	);
-};
+export type BillFormState = z.infer<typeof BillFormStateSchema>;
+namespace BillFormStateTransformer {
+	export function fromServer(bill: ClientBill): BillFormState {
+		return {
+			...bill,
+			issuedAt: IssuedAtFieldTransformer.fromServer(bill.issuedAt),
+			creditor: BillFormMemberTransformer.fromServer(bill.creditor),
+			debtors: bill.debtors.map(BillFormMemberTransformer.fromServer)
+		};
+	}
+
+	export function toServer(formState: BillFormState): API.Bills.UpsertBill {
+		return {
+			...formState,
+			issuedAt: IssuedAtFieldTransformer.toServer(formState.issuedAt),
+			creditor: BillFormMemberTransformer.toServer(formState.creditor),
+			debtors: formState.debtors.map(BillFormMemberTransformer.toServer)
+		};
+	}
+}
 
 function useBillForm() {
-	return useForm<NewFormState>({
+	return useForm<BillFormState>({
 		resolver: zodResolver(BillFormStateSchema),
 		defaultValues: { receiptFile: null, debtors: [{ amount: "", userId: "" }] }
 	});
@@ -79,11 +85,13 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 	const createBill = useCreateBill();
 	const updateBill = useUpdateBill(endEditing);
 
-	const { data: bill } = useQuery<ClientBill>({
+	const { data: bill, isPending: loadingBill } = useQuery<ClientBill>({
 		queryKey: ["bill", kind],
 		enabled: kind.type === "update",
 		queryFn: () => API.Bills.Get.query({ billId: kind.type === "update" ? kind.billId : "" })
 	});
+
+	const loading = React.useMemo(() => kind.type === "update" && loadingBill, [kind.type, loadingBill]);
 
 	const methods = useBillForm();
 	const { watch, reset, control, register, getValues, formState, handleSubmit } = methods;
@@ -91,51 +99,37 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 
 	React.useEffect(() => {
 		if (bill) {
-			reset({
-				...bill,
-				creditor: BillFormMemberSchemaTransformer.fromServer(bill.creditor),
-				issuedAt: DateFieldTransformer.fromServer(bill.issuedAt ?? undefined),
-				debtors: bill.debtors.map(BillFormMemberSchemaTransformer.fromServer)
-			});
+			reset(BillFormStateTransformer.fromServer(bill));
 		}
 	}, [bill, reset, getValues]);
 
 	watch("debtors");
 	const { fields: debtors, append: appendDebtor, remove: removeDebtors } = useFieldArray({ control, name: "debtors" });
 
-	const onSubmit = React.useMemo(
-		() =>
-			handleSubmit((data) => {
-				const transformedData: API.Bills.UpsertBill = {
-					...data,
-					issuedAt: DateFieldTransformer.toServer(data.issuedAt),
-					creditor: BillFormMemberSchemaTransformer.toServer(data.creditor),
-					debtors: data.debtors.map(BillFormMemberSchemaTransformer.toServer)
-				};
+	const onSubmit = React.useMemo(() => {
+		return handleSubmit((data) => {
+			const bill = BillFormStateTransformer.toServer(data);
 
-				if (kind.type === "create") {
-					createBill(transformedData);
-				} else if (kind.type === "update") {
-					updateBill({ billId: kind.billId, body: transformedData });
-				} else {
-					throw new Error("Invalid form type");
-				}
-			}),
-		[createBill, handleSubmit, kind, updateBill]
-	);
-
-	const loadingBill = React.useMemo(() => kind.type === "update" && !bill, [bill, kind.type]);
+			if (kind.type === "create") {
+				createBill({ bill });
+			} else if (kind.type === "update") {
+				updateBill({ bill, id: kind.billId });
+			} else {
+				throw new Error("Invalid form type");
+			}
+		});
+	}, [createBill, handleSubmit, kind, updateBill]);
 
 	return (
 		<FormProvider {...methods}>
 			<Stack gap="{spacing.4}">
-				<FormHeading kind={kind} currentBill={bill} />
+				<BillFormHeading kind={kind} bill={bill} />
 				<SimpleGrid columns={10} gap="{spacing.4}">
 					<GridItem colSpan={{ base: 10 }}>
 						<SimpleGrid templateRows="repeat(2, 1fr)" templateColumns="repeat(10, 1fr)">
 							<GridItem colSpan={5}>
 								<Field required label="Description" invalid={!!errors.description} errorText={errors.description?.message}>
-									<SkeletonWrapper loading={loadingBill} skeleton={<Skeleton width="100%" height="40px" />}>
+									<SkeletonWrapper loading={loading} skeleton={<Skeleton width="100%" height="40px" />}>
 										<Input
 											{...register("description")}
 											readOnly={!editing}
@@ -161,7 +155,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 							</GridItem>
 							<GridItem colSpan={5}>
 								<Field required label="Issued at" invalid={!!errors.issuedAt} errorText={errors.issuedAt?.message}>
-									<SkeletonWrapper loading={loadingBill} skeleton={<Skeleton width="100%" height="40px" />}>
+									<SkeletonWrapper loading={loading} skeleton={<Skeleton width="100%" height="40px" />}>
 										<Input
 											{...register("issuedAt")}
 											readOnly={!editing}
@@ -174,15 +168,15 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 						</SimpleGrid>
 					</GridItem>
 
-					<BillMemberInputs editing={editing} loading={loadingBill} coordinate={{ type: "creditor" }} />
+					<BillMemberInputs editing={editing} loading={loading} member={{ type: "creditor" }} />
 					{debtors.map((debtor, debtorIndex) => {
 						return (
 							<BillMemberInputs
 								key={debtor.id}
 								editing={editing}
-								loading={loadingBill}
+								loading={loading}
+								member={{ debtorIndex, type: "debtor" }}
 								onRemove={() => removeDebtors(debtorIndex)}
-								coordinate={{ debtorIndex, type: "debtor" }}
 							/>
 						);
 					})}
