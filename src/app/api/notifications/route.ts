@@ -1,31 +1,25 @@
 import { type NextRequest } from "next/server";
 
 import { API } from "@/api";
+import { RouteUtils } from "@/route.utils";
 import { NotificationsControllers } from "@/controllers";
 import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
 export async function GET(request: NextRequest) {
 	try {
 		const supabase = await createSupabaseServer();
+		const searchParams = await RouteUtils.parseRequestSearchParams(request, API.Bills.List.SearchParamsSchema);
 
-		const params = API.Notifications.List.SearchParamsSchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
-
-		if (params.error) {
-			return new Response(JSON.stringify({ details: params.error.errors, error: "Invalid request query" }), { status: 400 });
+		if (!searchParams) {
+			return RouteUtils.BadRequest;
 		}
 
 		const currentUser = await getCurrentUser();
 
-		const result = await NotificationsControllers.getByUserId(supabase, currentUser.id, params.data);
+		const result = await NotificationsControllers.getByUserId(supabase, currentUser.id, searchParams);
 
 		return new Response(JSON.stringify(result), { status: 200 });
 	} catch (error) {
-		return new Response(
-			JSON.stringify({
-				error: "Internal Server Error",
-				details: (error as any).message
-			}),
-			{ status: 500 }
-		);
+		return RouteUtils.ServerError;
 	}
 }

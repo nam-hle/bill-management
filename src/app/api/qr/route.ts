@@ -2,6 +2,7 @@ import axios from "axios";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { API } from "@/api";
+import { RouteUtils } from "@/route.utils";
 import { Environments } from "@/environments";
 import { BankAccountsController } from "@/controllers";
 import { createSupabaseServer } from "@/services/supabase/server";
@@ -11,15 +12,13 @@ const VIETQR_API = "https://api.vietqr.io/v2/generate";
 export async function POST(request: NextRequest) {
 	try {
 		const supabase = await createSupabaseServer();
-		const body = await request.json();
+		const body = await RouteUtils.parseRequestBody(request, API.QR.Create.BodySchema);
 
-		const parsedBody = API.QR.Get.QueryParamsSchema.safeParse(body);
-
-		if (parsedBody.error) {
-			return new Response(JSON.stringify({ error: "Invalid request body", details: parsedBody.error.errors }), { status: 400 });
+		if (!body) {
+			return RouteUtils.BadRequest;
 		}
 
-		const account = await BankAccountsController.getById(supabase, parsedBody.data.bankAccountId);
+		const account = await BankAccountsController.getById(supabase, body.bankAccountId);
 
 		if (!account) {
 			return NextResponse.json({ error: "Bank account not found" }, { status: 404 });
@@ -30,8 +29,8 @@ export async function POST(request: NextRequest) {
 			addInfo: "ck",
 			format: "svg",
 			template: "print",
+			amount: body.amount,
 			acqId: account.providerNumber,
-			amount: parsedBody.data.amount,
 			accountNo: account.accountNumber,
 			accountName: account.accountHolder
 		};
@@ -45,7 +44,7 @@ export async function POST(request: NextRequest) {
 		});
 
 		if (data.code === "00") {
-			return NextResponse.json({ qrCode: data.data.qrDataURL });
+			return NextResponse.json({ url: data.data.qrDataURL });
 		} else {
 			return NextResponse.json({ details: data, error: "Failed to generate QR Code" }, { status: 500 });
 		}

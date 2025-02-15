@@ -1,6 +1,7 @@
 import { type NextRequest } from "next/server";
 
 import { API } from "@/api";
+import { RouteUtils } from "@/route.utils";
 import { TransactionsControllers } from "@/controllers";
 import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
@@ -8,24 +9,17 @@ export async function GET(request: NextRequest) {
 	try {
 		const supabase = await createSupabaseServer();
 
-		const { searchParams } = request.nextUrl;
-		const result = API.Transactions.List.SearchParamsSchema.safeParse(Object.fromEntries(searchParams));
+		const searchParams = await RouteUtils.parseRequestSearchParams(request, API.Bills.List.SearchParamsSchema);
 
-		if (result.error) {
-			return new Response(JSON.stringify({ details: result.error.errors, error: "Invalid request query" }), { status: 400 });
+		if (!searchParams) {
+			return RouteUtils.BadRequest;
 		}
 
-		const response = await TransactionsControllers.getMany(supabase, result.data);
+		const response = await TransactionsControllers.getMany(supabase, searchParams);
 
 		return new Response(JSON.stringify(response), { status: 200 });
 	} catch (error) {
-		return new Response(
-			JSON.stringify({
-				error: "Internal Server Error",
-				details: (error as any).message
-			}),
-			{ status: 500 }
-		);
+		return RouteUtils.ServerError;
 	}
 }
 
@@ -53,12 +47,6 @@ export async function POST(request: Request) {
 
 		return new Response(JSON.stringify({}), { status: 201 });
 	} catch (error) {
-		return new Response(
-			JSON.stringify({
-				error: "Internal Server Error",
-				details: (error as any).message
-			}),
-			{ status: 500 }
-		);
+		return RouteUtils.ServerError;
 	}
 }

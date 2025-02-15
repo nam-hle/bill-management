@@ -24,30 +24,6 @@ export namespace Pagination {
 	}
 }
 
-export interface BillFormState {
-	description: string;
-	issuedAt: string | null;
-	receiptFile: string | null;
-	debtors: Array<{
-		userId?: string;
-		amount?: number;
-	}>;
-	creditor: {
-		userId?: string;
-		amount?: number;
-		fullName?: string | null;
-	};
-}
-
-export interface ErrorState {
-	readonly error: string | undefined;
-}
-
-export enum FormKind {
-	CREATE = "create",
-	UPDATE = "update"
-}
-
 export interface UserFormState {
 	username?: string;
 }

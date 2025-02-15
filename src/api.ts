@@ -2,7 +2,15 @@ import { z } from "zod";
 
 import { axiosInstance } from "@/services";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
-import { ClientBillSchema, BankAccountSchema, ClientTransactionSchema, ClientNotificationSchema } from "@/schemas";
+import {
+	type ClientBill,
+	ClientBillSchema,
+	ClientUserSchema,
+	BankAccountSchema,
+	ClientTransactionSchema,
+	type ProfileFormPayload,
+	ClientNotificationSchema
+} from "@/schemas";
 
 export namespace API {
 	export const DataListResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
@@ -62,7 +70,58 @@ export namespace API {
 		}
 	}
 
+	export namespace Users {
+		export namespace List {
+			export const ResponseSchema = DataListResponseSchema(ClientUserSchema);
+			export type Response = z.infer<typeof ResponseSchema>;
+
+			export async function query() {
+				const { data } = await axiosInstance<Response>("/users");
+
+				return data;
+			}
+		}
+	}
+
 	export namespace Bills {
+		export namespace Get {
+			export async function query(params: { billId: string }) {
+				const { data } = await axiosInstance<ClientBill>(`/bills/${params.billId}`);
+
+				return data;
+			}
+		}
+
+		export const UpsertBillMemberSchema = z.object({ userId: z.string(), amount: z.number() });
+
+		export const UpsertBillSchema = z.object({
+			// TODO: Validate
+			issuedAt: z.string(),
+			creditor: UpsertBillMemberSchema,
+			receiptFile: z.string().nullable(),
+			debtors: z.array(UpsertBillMemberSchema),
+			description: z.string().max(50, "Description is too long").min(1, "Description is required")
+		});
+
+		export type UpsertBill = z.infer<typeof UpsertBillSchema>;
+
+		export namespace Create {
+			export async function mutate(params: { bill: UpsertBill }) {
+				await axiosInstance.post<Body>(`/bills`, params.bill);
+			}
+		}
+
+		export namespace Update {
+			export interface Payload {
+				readonly id: string;
+				readonly bill: UpsertBill;
+			}
+
+			export async function mutate(payload: Payload) {
+				await axiosInstance.put<UpsertBill>(`/bills/${payload.id}`, payload.bill);
+			}
+		}
+
 		export namespace List {
 			export const SearchParamsSchema = z.object({
 				textSearch: z.string().optional(),
@@ -132,6 +191,16 @@ export namespace API {
 			});
 
 			export type Body = z.infer<typeof BodySchema>;
+
+			export async function mutation(payload: Body) {
+				await axiosInstance.post("/transactions", payload);
+			}
+		}
+
+		export namespace Update {
+			export async function mutate(payload: { transactionId: string; action: "confirm" | "decline" }) {
+				await axiosInstance.patch(`/transactions/${payload.transactionId}/${payload.action}`);
+			}
 		}
 	}
 
@@ -155,13 +224,50 @@ export namespace API {
 	}
 
 	export namespace QR {
-		export namespace Get {
-			export const QueryParamsSchema = z.object({
+		export namespace Create {
+			export const BodySchema = z.object({
 				amount: z.number(),
 				bankAccountId: z.string()
 			});
 
-			export type QueryParams = z.infer<typeof QueryParamsSchema>;
+			export type Body = z.infer<typeof BodySchema>;
+
+			export async function mutate(payload: Body) {
+				const { data } = await axiosInstance.post("/qr", payload);
+
+				return data as { url: string };
+			}
+		}
+	}
+
+	export namespace Profile {
+		export namespace Update {
+			export async function mutate(payload: ProfileFormPayload): Promise<ProfileFormPayload> {
+				const { data } = await axiosInstance.post("/profile", payload);
+
+				return data;
+			}
+		}
+	}
+
+	export namespace Storage {
+		export type BucketName = "avatars" | "receipts";
+
+		export async function downloadFile(bucketName: BucketName, path: string | undefined): Promise<string | undefined> {
+			if (!path) {
+				return undefined;
+			}
+
+			try {
+				const response = await axiosInstance.get(`/storage`, { responseType: "blob", params: { path, bucketName } });
+
+				return URL.createObjectURL(response.data);
+			} catch (error) {
+				// eslint-disable-next-line no-console
+				console.error("Error downloading image:", error);
+			}
+
+			return undefined;
 		}
 	}
 }

@@ -5,7 +5,6 @@ import { Box, Stack, HStack, IconButton } from "@chakra-ui/react";
 
 import { API } from "@/api";
 import { Button } from "@/chakra/button";
-import { axiosInstance } from "@/services";
 import { EmptyState } from "@/chakra/empty-state";
 import { type ClientNotification } from "@/schemas";
 import { NotificationMessage } from "@/components/notification-message";
@@ -64,13 +63,9 @@ export const NotificationContainer = () => {
 	});
 
 	const { mutate: loadMore, isPending: isLoadingOlderNotifications } = useMutation({
+		mutationFn: API.Notifications.List.query,
 		onSuccess: (olderData) => {
 			updateNotifications("append", olderData);
-		},
-		mutationFn: async (params: API.Notifications.List.SearchParams) => {
-			const { data } = await axiosInstance<API.Notifications.List.Response>("/notifications", { params });
-
-			return data;
 		}
 	});
 

@@ -1,3 +1,4 @@
+import { RouteUtils } from "@/route.utils";
 import { UsersControllers } from "@/controllers";
 import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
@@ -10,12 +11,6 @@ export async function GET() {
 
 		return new Response(JSON.stringify(report), { status: 200 });
 	} catch (error) {
-		return new Response(
-			JSON.stringify({
-				error: "Internal Server Error",
-				details: (error as any).message
-			}),
-			{ status: 500 }
-		);
+		return RouteUtils.ServerError;
 	}
 }

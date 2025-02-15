@@ -2,14 +2,14 @@ import { z } from "zod";
 
 import type { Database } from "@/database.types";
 
-export const BillMemberRoleEnumSchema = z.enum(["Creditor", "Debtor"] as const satisfies Database["public"]["Enums"]["BillMemberRole"][]);
-export type BillMemberRole = z.infer<typeof BillMemberRoleEnumSchema>;
+export const BillMemberRoleSchema = z.enum(["Creditor", "Debtor"] as const satisfies Database["public"]["Enums"]["BillMemberRole"][]);
+export type BillMemberRole = z.infer<typeof BillMemberRoleSchema>;
 
 export const ClientBillMemberSchema = z.object({
 	userId: z.string(),
 	amount: z.number(),
-	role: BillMemberRoleEnumSchema,
-	fullName: z.string().nullable()
+	fullName: z.string(),
+	role: BillMemberRoleSchema
 });
 export type ClientBillMember = z.infer<typeof ClientBillMemberSchema>;
 export namespace ClientBillMember {
@@ -20,21 +20,12 @@ export namespace ClientBillMember {
 
 export const ClientBillSchema = z.object({
 	id: z.string(),
-	description: z.string(),
-	issuedAt: z.string().nullable(),
+	issuedAt: z.string(),
 	creditor: ClientBillMemberSchema,
 	receiptFile: z.string().nullable(),
 	debtors: z.array(ClientBillMemberSchema),
+	description: z.string().max(50, "Description is too long").min(1, "Description is required"),
 	creator: z.object({ userId: z.string(), timestamp: z.string(), fullName: z.string().nullable() }),
 	updater: z.object({ userId: z.string(), timestamp: z.string(), fullName: z.string().nullable() }).optional()
 });
 export type ClientBill = z.infer<typeof ClientBillSchema>;
-
-export const BillCreationPayloadSchema = z.object({
-	issuedAt: z.string(),
-	description: z.string(),
-	receiptFile: z.string().nullable(),
-	creditor: z.object({ userId: z.string(), amount: z.number() }),
-	debtors: z.array(z.object({ userId: z.string(), amount: z.number() }))
-});
-export type BillCreationPayload = z.infer<typeof BillCreationPayloadSchema>;

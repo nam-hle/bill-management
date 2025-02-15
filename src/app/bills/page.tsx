@@ -4,8 +4,7 @@ import { VStack } from "@chakra-ui/react";
 import { IoIosAddCircle } from "react-icons/io";
 
 import { LinkButton } from "@/chakra/link-button";
-import { BillsTable } from "@/components/bills-table";
-import { BalancesTable } from "@/components/balances-table";
+import { BillsTable, BalancesTable } from "@/components/tables";
 import { UsersControllers, BillMembersControllers } from "@/controllers";
 import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
