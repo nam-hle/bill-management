@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
 			...rest,
 			memberId: currentUserId,
 			limit: DEFAULT_PAGE_SIZE,
-			page: DEFAULT_PAGE_NUMBER,
+			page: rest.page ?? DEFAULT_PAGE_NUMBER,
 			debtorId: debtorId === "me" ? currentUserId : undefined,
 			creatorId: creatorId === "me" ? currentUserId : undefined,
 			creditorId: creditorId === "me" ? currentUserId : undefined

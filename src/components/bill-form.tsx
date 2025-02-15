@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import React from "react";
+import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { IoIosAddCircle } from "react-icons/io";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,11 +17,11 @@ import { Field } from "@/chakra/field";
 import { Button } from "@/chakra/button";
 import { toaster } from "@/chakra/toaster";
 import { Skeleton } from "@/chakra/skeleton";
-import { CLIENT_DATE_FORMAT } from "@/utils";
 import { SkeletonWrapper } from "@/components/skeleton-wrapper";
 import { BillFormHeading } from "@/components/bill-form-heading";
 import { type ClientBill, type ClientBillMember } from "@/schemas";
 import { ReceiptUpload, BillMemberInputs } from "@/components/inputs";
+import { formatDate, CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
 import { IssuedAtField, IssuedAtFieldTransformer, OptionalAmountFieldSchema, OptionalAmountFieldTransformer } from "@/schemas/form.schema";
 
 export namespace BillForm {
@@ -73,7 +74,7 @@ namespace BillFormStateTransformer {
 function useBillForm() {
 	return useForm<BillFormState>({
 		resolver: zodResolver(BillFormStateSchema),
-		defaultValues: { receiptFile: null, debtors: [{ amount: "", userId: "" }] }
+		defaultValues: { receiptFile: null, debtors: [{ amount: "", userId: "" }], issuedAt: formatDate(format(new Date(), SERVER_DATE_FORMAT)).client }
 	});
 }
 

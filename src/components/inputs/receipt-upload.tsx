@@ -28,7 +28,7 @@ export const ReceiptUpload: React.FC<ReceiptUpload.Props> = (props) => {
 	const { fileId, ownerId, editing, loading, onChange } = props;
 	const [dialog, { setValue: setDialog, setTrue: openDialog }] = useBoolean(false);
 
-	const { data: url, isPending: loadingImage } = useQuery({
+	const { data: url, isLoading: loadingImage } = useQuery({
 		enabled: !!fileId,
 		queryKey: ["receipts", fileId],
 		queryFn: () => API.Storage.downloadFile("receipts", fileId)

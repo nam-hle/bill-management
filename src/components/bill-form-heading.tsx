@@ -3,7 +3,7 @@ import { Text, Stack, Heading } from "@chakra-ui/react";
 
 import type { ClientBill } from "@/schemas";
 import { SkeletonText } from "@/chakra/skeleton";
-import { type BillForm } from "@/components/forms";
+import { type BillForm } from "@/components/bill-form";
 import { formatTime, formatDistanceTime } from "@/utils";
 import { SkeletonWrapper } from "@/components/skeleton-wrapper";
 

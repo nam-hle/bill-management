@@ -9,7 +9,7 @@ import { Field } from "@/chakra/field";
 import { Button } from "@/chakra/button";
 import { Skeleton } from "@/chakra/skeleton";
 import { Select } from "@/components/inputs";
-import { type BillFormState } from "@/components/forms";
+import { type BillFormState } from "@/components/bill-form";
 import { SkeletonWrapper } from "@/components/skeleton-wrapper";
 
 namespace BillMemberInputs {

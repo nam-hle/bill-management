@@ -97,7 +97,7 @@ export namespace Actions {
 
 			await fillInput(page, "description", params.description);
 			await selectOption(page, "Creditor", params.creditor.name);
-			await fillInput(page, "Total Amount", params.creditor.amount);
+			await fillInput(page, "creditor.amount", params.creditor.amount);
 
 			for (let debtorIndex = 0; debtorIndex < params.debtors.length; debtorIndex++) {
 				if (debtorIndex > 0) {
@@ -106,7 +106,7 @@ export namespace Actions {
 
 				const debtor = params.debtors[debtorIndex];
 				await selectOption(page, `Debtor ${debtorIndex + 1}`, debtor.name);
-				await fillInput(page, `Split Amount ${debtorIndex + 1}`, debtor.amount);
+				await fillInput(page, `debtors.${debtorIndex}.amount`, debtor.amount);
 			}
 		});
 	}
