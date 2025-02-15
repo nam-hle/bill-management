@@ -9,14 +9,13 @@ import { seedGroup } from "@/test/functions/seed-group";
 
 // TODO: Assert bill tables as well
 // TODO: Assert toast notifications
-// TODO: Assert bill form validation
 // TODO: Assert bill metadata
 // TODO: Test bill update
 
 test.describe("basic", () => {
 	const testCases: {
 		description: string;
-		formParams: Actions.FillBillFormParams;
+		formParams: Actions.BillForm.FillParams;
 		statsExpectation: Assertions.StatsExpectation;
 		expectedRecentTable: Assertions.BillsTableExpectation;
 	}[] = [
@@ -119,7 +118,7 @@ test.describe("basic", () => {
 			await Actions.login(page, "harry");
 
 			await Actions.goToBillsPage(page);
-			await Actions.fillBillForm(page, testCase.formParams);
+			await Actions.BillForm.fill(page, testCase.formParams);
 			await Actions.submit(page);
 
 			await expect(page).toHaveURL("/bills");

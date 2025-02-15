@@ -2,13 +2,13 @@ import { devices, defineConfig } from "@playwright/test";
 
 const profiles = {
 	LOCAL: {
-		port: 4000,
+		port: 3000,
 		retries: 0,
 		video: "on",
-		timeout: 20_000,
+		timeout: 30_000,
 		reporter: "html",
 		forbidOnly: false,
-		expectTimeout: 10_000,
+		expectTimeout: 30_000,
 		reuseExistingServer: true
 	},
 	CI: {
