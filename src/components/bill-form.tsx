@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { IoIosAddCircle } from "react-icons/io";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MdEdit, MdCheck, MdCancel } from "react-icons/md";
-import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm, Controller, FormProvider, useFieldArray } from "react-hook-form";
 import { Text, Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chakra-ui/react";
 
 import { API } from "@/api";
@@ -118,7 +118,7 @@ function useBillForm() {
 		resolver: zodResolver(BillFormStateSchema),
 		defaultValues: {
 			receiptFile: null,
-			debtors: Array.from({ length: 3 }, () => ({ amount: "", userId: "" }))
+			debtors: Array.from({ length: 2 }).map(() => ({ amount: "", userId: "" }))
 		}
 	});
 }
@@ -137,21 +137,25 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 	});
 
 	const methods = useBillForm();
-	const { reset, control, register, formState, handleSubmit } = methods;
+	const { watch, reset, control, register, getValues, formState, handleSubmit } = methods;
 	const { errors } = formState;
 
 	React.useEffect(() => {
 		if (bill) {
-			reset({
-				...bill,
-				creditor: BillFormMemberSchemaTransformer.fromServer(bill.creditor),
-				issuedAt: DateFieldTransformer.fromServer(bill.issuedAt ?? undefined),
-				debtors: bill.debtors.map(BillFormMemberSchemaTransformer.fromServer)
-			});
+			reset(
+				{
+					...bill,
+					creditor: BillFormMemberSchemaTransformer.fromServer(bill.creditor),
+					issuedAt: DateFieldTransformer.fromServer(bill.issuedAt ?? undefined),
+					debtors: bill.debtors.map(BillFormMemberSchemaTransformer.fromServer)
+				},
+				{ keepDefaultValues: false }
+			);
 		}
-	}, [bill, reset]);
+	}, [bill, reset, getValues]);
 
-	const { fields: debtors, append: appendDebtor } = useFieldArray({ control, name: "debtors" });
+	watch("debtors");
+	const { fields: debtors, append: appendDebtor, remove: removeDebtors } = useFieldArray({ control, name: "debtors" });
 
 	const onSubmit = React.useMemo(() => {
 		return handleSubmit((data) => {
@@ -172,9 +176,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 		});
 	}, [handleSubmit, kind, createBill, updateBill]);
 
-	const isLoadingBill = React.useMemo(() => {
-		return kind.type === "update" && !bill;
-	}, [bill, kind.type]);
+	const isLoadingBill = React.useMemo(() => kind.type === "update" && !bill, [bill, kind.type]);
 
 	return (
 		<FormProvider {...methods}>
@@ -196,7 +198,18 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 								</Field>
 							</GridItem>
 							<GridItem rowSpan={2} colSpan={3}>
-								<ReceiptUpload editing={editing} billId={kind.type === "update" ? kind.billId : undefined} />
+								<Controller
+									control={control}
+									name="receiptFile"
+									render={({ field }) => (
+										<ReceiptUpload
+											editing={editing}
+											onChange={field.onChange}
+											fileId={field.value ?? undefined}
+											ownerId={kind.type === "update" ? kind.billId : undefined}
+										/>
+									)}
+								/>
 							</GridItem>
 							<GridItem colSpan={5}>
 								<Field required label="Issued at" invalid={!!errors.issuedAt} errorText={errors.issuedAt?.message}>
@@ -214,8 +227,16 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					</GridItem>
 
 					<BillMemberInputs editing={editing} loading={isLoadingBill} coordinate={{ type: "creditor" }} />
-					{debtors.map((_, debtorIndex) => {
-						return <BillMemberInputs key={debtorIndex} editing={editing} loading={isLoadingBill} coordinate={{ debtorIndex, type: "debtor" }} />;
+					{debtors.map((debtor, debtorIndex) => {
+						return (
+							<BillMemberInputs
+								key={debtor.id}
+								editing={editing}
+								loading={isLoadingBill}
+								onRemove={() => removeDebtors(debtorIndex)}
+								coordinate={{ debtorIndex, type: "debtor" }}
+							/>
+						);
 					})}
 				</SimpleGrid>
 
@@ -255,6 +276,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					)}
 				</HStack>
 			</Stack>
+			{/*<DevTool control={control} />*/}
 		</FormProvider>
 	);
 };

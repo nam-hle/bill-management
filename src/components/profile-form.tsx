@@ -56,7 +56,7 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 					<Controller
 						name="avatarUrl"
 						control={control}
-						render={({ field }) => <ProfileAvatar size={200} userId={props.userId} url={field.value ?? undefined} onAvatarChange={field.onChange} />}
+						render={({ field }) => <ProfileAvatar ownerId={props.userId} onChange={field.onChange} fileId={field.value ?? undefined} />}
 					/>
 				</GridItem>
 

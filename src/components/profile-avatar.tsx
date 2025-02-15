@@ -10,35 +10,34 @@ import { downloadImage, useFileUploader } from "@/services/file-uploader";
 
 namespace ProfileAvatar {
 	export interface Props {
-		readonly size: number;
-		readonly userId: string;
-		readonly url: string | undefined;
-		onAvatarChange: (url: string) => void;
+		readonly ownerId: string;
+		readonly fileId: string | undefined;
+		readonly onChange: (fileId: string) => void;
 	}
 }
 
 export const ProfileAvatar: React.FC<ProfileAvatar.Props> = (props) => {
-	const { url, userId, onAvatarChange } = props;
+	const { fileId, ownerId, onChange } = props;
 
-	const { data: avatarUrl } = useQuery({
-		enabled: !!url,
-		queryKey: ["profileAvatar", url],
-		queryFn: () => downloadImage("avatars", url)
+	const { data: url } = useQuery({
+		enabled: !!fileId,
+		queryKey: ["profileAvatar", fileId],
+		queryFn: () => downloadImage("avatars", fileId)
 	});
 
-	const { uploadFile, isUploading } = useFileUploader(onAvatarChange);
+	const { uploadFile, isUploading } = useFileUploader(onChange);
 
 	return (
 		<Stack alignItems="center">
-			<Avatar size="2xl" src={avatarUrl} />
+			<Avatar src={url} size="2xl" />
 			<FileUploadRoot
 				maxFiles={1}
 				width="fit-content"
 				accept={["image/png", "image/jpeg"]}
-				onFileAccept={(details) => uploadFile({ objectId: userId, bucketName: "avatars", image: details.files[0] })}>
+				onFileAccept={(details) => uploadFile({ objectId: ownerId, bucketName: "avatars", image: details.files[0] })}>
 				<FileUploadTrigger asChild>
 					<Button size="xs" variant="outline" loading={isUploading} loadingText="Uploading...">
-						{avatarUrl ? "Change" : "Upload"}
+						{url ? "Change" : "Upload"}
 					</Button>
 				</FileUploadTrigger>
 			</FileUploadRoot>
