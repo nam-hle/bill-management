@@ -21,9 +21,7 @@ export async function POST(request: Request) {
 
 		const { fullName, avatarUrl } = await UsersControllers.updateProfile(supabase, user.id, body);
 
-		return new Response(JSON.stringify({ fullName, avatarUrl }), {
-			status: 201
-		});
+		return new Response(JSON.stringify({ fullName, avatarUrl }), { status: 201 });
 	} catch (error) {
 		return RouteUtils.ServerError;
 	}

@@ -3,7 +3,6 @@ import { useMutation } from "@tanstack/react-query";
 
 import { generateUid } from "@/utils";
 import { toaster } from "@/chakra/toaster";
-import { axiosInstance } from "@/services/axios";
 import { createSupabaseClient } from "@/services/supabase/client";
 
 type BucketName = "avatars" | "receipts";
@@ -44,21 +43,4 @@ export async function uploadFile(payload: UploadImagePayload) {
 	}
 
 	return filePath;
-}
-
-export async function downloadFile(bucketName: BucketName, path: string | undefined): Promise<string | undefined> {
-	if (!path) {
-		return undefined;
-	}
-
-	try {
-		const response = await axiosInstance.get(`/storage`, { responseType: "blob", params: { path, bucketName } });
-
-		return URL.createObjectURL(response.data);
-	} catch (error) {
-		// eslint-disable-next-line no-console
-		console.error("Error downloading image:", error);
-	}
-
-	return undefined;
 }

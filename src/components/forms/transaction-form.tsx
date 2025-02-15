@@ -14,7 +14,6 @@ import { API } from "@/api";
 import { Field } from "@/chakra/field";
 import { Button } from "@/chakra/button";
 import { toaster } from "@/chakra/toaster";
-import { axiosInstance } from "@/services";
 import { Select } from "@/components/inputs";
 import { DialogRoot, DialogContent } from "@/chakra/dialog";
 import { CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
@@ -52,11 +51,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 
 	const router = useRouter();
 	const { mutate: generateQR } = useMutation({
-		mutationFn: (payload: API.Transactions.Create.Body) =>
-			axiosInstance.post("/qr", {
-				amount: payload.amount,
-				bankAccountId: payload.bankAccountId
-			}),
+		mutationFn: API.QR.Create.mutate,
 		onError: () => {
 			toaster.create({
 				type: "error",
@@ -71,13 +66,13 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 				description: "A new QR code has been generated successfully."
 			});
 
-			setQrImage(response.data.qrCode);
+			setQrImage(response.url);
 			setOpenDialog(true);
 		}
 	});
 
 	const { mutate } = useMutation({
-		mutationFn: (payload: API.Transactions.Create.Body) => axiosInstance.post("/transactions", payload),
+		mutationFn: API.Transactions.Create.mutation,
 		onError: () => {
 			toaster.create({
 				type: "error",
@@ -144,8 +139,8 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 			handleSubmit((data) => {
 				generateQR({
 					...data,
-					amount: data.amount === "" ? 0 : Number(data.amount),
-					issuedAt: IssuedAtFieldTransformer.toServer(data.issuedAt)
+					bankAccountId: data.bankAccountId ?? "",
+					amount: data.amount === "" ? 0 : Number(data.amount)
 				});
 			}),
 		[generateQR, handleSubmit]

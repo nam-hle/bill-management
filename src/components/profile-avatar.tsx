@@ -3,10 +3,11 @@ import React from "react";
 import { Stack } from "@chakra-ui/react";
 import { useQuery } from "@tanstack/react-query";
 
+import { API } from "@/api";
 import { Button } from "@/chakra/button";
 import { Avatar } from "@/chakra/avatar";
+import { useFileUploader } from "@/services/file-uploader";
 import { FileUploadRoot, FileUploadTrigger } from "@/chakra/file-upload";
-import { downloadFile, useFileUploader } from "@/services/file-uploader";
 
 namespace ProfileAvatar {
 	export interface Props {
@@ -22,7 +23,7 @@ export const ProfileAvatar: React.FC<ProfileAvatar.Props> = (props) => {
 	const { data: url } = useQuery({
 		enabled: !!fileId,
 		queryKey: ["profileAvatar", fileId],
-		queryFn: () => downloadFile("avatars", fileId)
+		queryFn: () => API.Storage.downloadFile("avatars", fileId)
 	});
 
 	const { uploadFile, isUploading } = useFileUploader(onChange);

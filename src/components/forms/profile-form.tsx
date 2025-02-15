@@ -4,10 +4,10 @@ import { useMutation } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chakra-ui/react";
 
+import { API } from "@/api";
 import { Field } from "@/chakra/field";
 import { Button } from "@/chakra/button";
 import { toaster } from "@/chakra/toaster";
-import { axiosInstance } from "@/services";
 import { type ProfileFormPayload } from "@/schemas";
 import { ProfileAvatar } from "@/components/profile-avatar";
 
@@ -30,8 +30,10 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 	} = useForm<ProfileFormPayload>({ defaultValues: { fullName: props.fullName, avatarUrl: props.avatarUrl } });
 
 	const { mutate, isPending } = useMutation({
-		mutationFn: async (payload: ProfileFormPayload) => {
-			return axiosInstance.post("/profile", payload);
+		mutationFn: API.Profile.Update.mutate,
+		onSuccess: (data) => {
+			reset(data);
+			toaster.create({ type: "success", title: "Profile updated", description: "Your profile has been updated successfully." });
 		},
 		onError: () => {
 			toaster.create({
@@ -39,10 +41,6 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 				title: "Failed to update profile",
 				description: "An error occurred while updating the profile. Please try again."
 			});
-		},
-		onSuccess: (data) => {
-			reset(data.data as unknown as ProfileFormPayload);
-			toaster.create({ type: "success", title: "Profile updated", description: "Your profile has been updated successfully." });
 		}
 	});
 

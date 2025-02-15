@@ -2,9 +2,9 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { API } from "@/api";
 import { Button } from "@/chakra/button";
 import { toaster } from "@/chakra/toaster";
-import { axiosInstance } from "@/services";
 import { capitalize, convertVerb } from "@/utils";
 import { type ClientTransaction, TransactionStatusEnumSchema } from "@/schemas";
 
@@ -20,9 +20,7 @@ export const TransactionAction: React.FC<TransactionAction.Props> = ({ transacti
 	const queryClient = useQueryClient();
 
 	const mutation = useMutation({
-		mutationFn: async ({ action, transactionId }: { transactionId: string; action: "confirm" | "decline" }) => {
-			await axiosInstance.patch(`/transactions/${transactionId}/${action}`);
-		},
+		mutationFn: API.Transactions.Update.mutate,
 		onError: (_, { action }) => {
 			toaster.create({
 				type: "error",

@@ -12,7 +12,7 @@ const VIETQR_API = "https://api.vietqr.io/v2/generate";
 export async function POST(request: NextRequest) {
 	try {
 		const supabase = await createSupabaseServer();
-		const body = await RouteUtils.parseRequestBody(request, API.QR.Get.QueryParamsSchema);
+		const body = await RouteUtils.parseRequestBody(request, API.QR.Create.BodySchema);
 
 		if (!body) {
 			return RouteUtils.BadRequest;
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 		});
 
 		if (data.code === "00") {
-			return NextResponse.json({ qrCode: data.data.qrDataURL });
+			return NextResponse.json({ url: data.data.qrDataURL });
 		} else {
 			return NextResponse.json({ details: data, error: "Failed to generate QR Code" }, { status: 500 });
 		}

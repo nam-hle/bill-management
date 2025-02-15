@@ -4,13 +4,14 @@ import { BsReceipt } from "react-icons/bs";
 import { useQuery } from "@tanstack/react-query";
 import { Image, Stack, Center } from "@chakra-ui/react";
 
+import { API } from "@/api";
 import { useBoolean } from "@/hooks";
 import { Button } from "@/chakra/button";
 import { Skeleton } from "@/chakra/skeleton";
 import { EmptyState } from "@/chakra/empty-state";
+import { useFileUploader } from "@/services/file-uploader";
 import { DialogRoot, DialogContent } from "@/chakra/dialog";
 import { SkeletonWrapper } from "@/components/skeleton-wrapper";
-import { downloadFile, useFileUploader } from "@/services/file-uploader";
 import { FileUploadRoot, FileUploadTrigger, FileUploadDropzone } from "@/chakra/file-upload";
 
 namespace ReceiptUpload {
@@ -30,7 +31,7 @@ export const ReceiptUpload: React.FC<ReceiptUpload.Props> = (props) => {
 	const { data: url, isPending: loadingImage } = useQuery({
 		enabled: !!fileId,
 		queryKey: ["receipts", fileId],
-		queryFn: () => downloadFile("receipts", fileId)
+		queryFn: () => API.Storage.downloadFile("receipts", fileId)
 	});
 
 	const { uploadFile } = useFileUploader(onChange);
