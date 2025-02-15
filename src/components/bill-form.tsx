@@ -116,10 +116,7 @@ const FormHeading = ({ kind, currentBill }: FormHeading.Props) => {
 function useBillForm() {
 	return useForm<NewFormState>({
 		resolver: zodResolver(BillFormStateSchema),
-		defaultValues: {
-			receiptFile: null,
-			debtors: Array.from({ length: 2 }).map(() => ({ amount: "", userId: "" }))
-		}
+		defaultValues: { receiptFile: null, debtors: [{ amount: "", userId: "" }] }
 	});
 }
 
@@ -142,41 +139,40 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 
 	React.useEffect(() => {
 		if (bill) {
-			reset(
-				{
-					...bill,
-					creditor: BillFormMemberSchemaTransformer.fromServer(bill.creditor),
-					issuedAt: DateFieldTransformer.fromServer(bill.issuedAt ?? undefined),
-					debtors: bill.debtors.map(BillFormMemberSchemaTransformer.fromServer)
-				},
-				{ keepDefaultValues: false }
-			);
+			reset({
+				...bill,
+				creditor: BillFormMemberSchemaTransformer.fromServer(bill.creditor),
+				issuedAt: DateFieldTransformer.fromServer(bill.issuedAt ?? undefined),
+				debtors: bill.debtors.map(BillFormMemberSchemaTransformer.fromServer)
+			});
 		}
 	}, [bill, reset, getValues]);
 
 	watch("debtors");
 	const { fields: debtors, append: appendDebtor, remove: removeDebtors } = useFieldArray({ control, name: "debtors" });
 
-	const onSubmit = React.useMemo(() => {
-		return handleSubmit((data) => {
-			const transformedData: API.Bills.UpsertBill = {
-				...data,
-				issuedAt: DateFieldTransformer.toServer(data.issuedAt),
-				creditor: BillFormMemberSchemaTransformer.toServer(data.creditor),
-				debtors: data.debtors.map(BillFormMemberSchemaTransformer.toServer)
-			};
+	const onSubmit = React.useMemo(
+		() =>
+			handleSubmit((data) => {
+				const transformedData: API.Bills.UpsertBill = {
+					...data,
+					issuedAt: DateFieldTransformer.toServer(data.issuedAt),
+					creditor: BillFormMemberSchemaTransformer.toServer(data.creditor),
+					debtors: data.debtors.map(BillFormMemberSchemaTransformer.toServer)
+				};
 
-			if (kind.type === "create") {
-				createBill(transformedData);
-			} else if (kind.type === "update") {
-				updateBill({ billId: kind.billId, body: transformedData });
-			} else {
-				throw new Error("Invalid form type");
-			}
-		});
-	}, [handleSubmit, kind, createBill, updateBill]);
+				if (kind.type === "create") {
+					createBill(transformedData);
+				} else if (kind.type === "update") {
+					updateBill({ billId: kind.billId, body: transformedData });
+				} else {
+					throw new Error("Invalid form type");
+				}
+			}),
+		[createBill, handleSubmit, kind, updateBill]
+	);
 
-	const isLoadingBill = React.useMemo(() => kind.type === "update" && !bill, [bill, kind.type]);
+	const loadingBill = React.useMemo(() => kind.type === "update" && !bill, [bill, kind.type]);
 
 	return (
 		<FormProvider {...methods}>
@@ -187,7 +183,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 						<SimpleGrid templateRows="repeat(2, 1fr)" templateColumns="repeat(10, 1fr)">
 							<GridItem colSpan={5}>
 								<Field required label="Description" invalid={!!errors.description} errorText={errors.description?.message}>
-									<SkeletonWrapper loading={isLoadingBill} skeleton={<Skeleton width="100%" height="40px" />}>
+									<SkeletonWrapper loading={loadingBill} skeleton={<Skeleton width="100%" height="40px" />}>
 										<Input
 											{...register("description")}
 											readOnly={!editing}
@@ -213,7 +209,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 							</GridItem>
 							<GridItem colSpan={5}>
 								<Field required label="Issued at" invalid={!!errors.issuedAt} errorText={errors.issuedAt?.message}>
-									<SkeletonWrapper loading={isLoadingBill} skeleton={<Skeleton width="100%" height="40px" />}>
+									<SkeletonWrapper loading={loadingBill} skeleton={<Skeleton width="100%" height="40px" />}>
 										<Input
 											{...register("issuedAt")}
 											readOnly={!editing}
@@ -226,13 +222,13 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 						</SimpleGrid>
 					</GridItem>
 
-					<BillMemberInputs editing={editing} loading={isLoadingBill} coordinate={{ type: "creditor" }} />
+					<BillMemberInputs editing={editing} loading={loadingBill} coordinate={{ type: "creditor" }} />
 					{debtors.map((debtor, debtorIndex) => {
 						return (
 							<BillMemberInputs
 								key={debtor.id}
 								editing={editing}
-								loading={isLoadingBill}
+								loading={loadingBill}
 								onRemove={() => removeDebtors(debtorIndex)}
 								coordinate={{ debtorIndex, type: "debtor" }}
 							/>
@@ -276,7 +272,6 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					)}
 				</HStack>
 			</Stack>
-			{/*<DevTool control={control} />*/}
 		</FormProvider>
 	);
 };
