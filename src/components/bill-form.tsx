@@ -22,7 +22,14 @@ import { BillFormHeading } from "@/components/bill-form-heading";
 import { type ClientBill, type ClientBillMember } from "@/schemas";
 import { ReceiptUpload, BillMemberInputs } from "@/components/inputs";
 import { formatDate, CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
-import { IssuedAtField, IssuedAtFieldTransformer, OptionalAmountFieldSchema, OptionalAmountFieldTransformer } from "@/schemas/form.schema";
+import {
+	IssuedAtField,
+	IssuedAtFieldTransformer,
+	OptionalAmountFieldSchema,
+	RequiredAmountFieldSchema,
+	OptionalAmountFieldTransformer,
+	RequiredAmountFieldTransformer
+} from "@/schemas/form.schema";
 
 export namespace BillForm {
 	export type Kind = { readonly type: "create" } | { readonly type: "update"; readonly billId: string };
@@ -32,22 +39,32 @@ export namespace BillForm {
 	}
 }
 
-export const BillFormMemberSchema = z.object({ userId: z.string(), amount: OptionalAmountFieldSchema });
-export type BillFormMember = z.infer<typeof BillFormMemberSchema>;
-export namespace BillFormMemberTransformer {
-	export function toServer(member: BillFormMember) {
+const CreditorSchema = z.object({ userId: z.string().min(1, "Creditor is required"), amount: RequiredAmountFieldSchema("Total amount is required") });
+export namespace CreditorTransformer {
+	export function toServer(member: z.infer<typeof CreditorSchema>) {
+		return { ...member, amount: RequiredAmountFieldTransformer.toServer(member.amount) };
+	}
+
+	export function fromServer(member: ClientBillMember): z.infer<typeof CreditorSchema> {
+		return { ...member, amount: RequiredAmountFieldTransformer.fromServer(member.amount) };
+	}
+}
+
+const DebtorSchema = z.object({ amount: OptionalAmountFieldSchema, userId: z.string().min(1, "Debtor is required") });
+export namespace DebtorTransformer {
+	export function toServer(member: z.infer<typeof DebtorSchema>) {
 		return { ...member, amount: OptionalAmountFieldTransformer.toServer(member.amount) };
 	}
 
-	export function fromServer(member: ClientBillMember): BillFormMember {
+	export function fromServer(member: ClientBillMember): z.infer<typeof DebtorSchema> {
 		return { ...member, amount: OptionalAmountFieldTransformer.fromServer(member.amount) };
 	}
 }
 
 export const BillFormStateSchema = API.Bills.UpsertBillSchema.extend({
 	issuedAt: IssuedAtField,
-	creditor: BillFormMemberSchema,
-	debtors: z.array(BillFormMemberSchema)
+	creditor: CreditorSchema,
+	debtors: z.array(DebtorSchema)
 });
 
 export type BillFormState = z.infer<typeof BillFormStateSchema>;
@@ -55,18 +72,18 @@ namespace BillFormStateTransformer {
 	export function fromServer(bill: ClientBill): BillFormState {
 		return {
 			...bill,
-			issuedAt: IssuedAtFieldTransformer.fromServer(bill.issuedAt),
-			creditor: BillFormMemberTransformer.fromServer(bill.creditor),
-			debtors: bill.debtors.map(BillFormMemberTransformer.fromServer)
+			creditor: CreditorTransformer.fromServer(bill.creditor),
+			debtors: bill.debtors.map(DebtorTransformer.fromServer),
+			issuedAt: IssuedAtFieldTransformer.fromServer(bill.issuedAt)
 		};
 	}
 
 	export function toServer(formState: BillFormState): API.Bills.UpsertBill {
 		return {
 			...formState,
-			issuedAt: IssuedAtFieldTransformer.toServer(formState.issuedAt),
-			creditor: BillFormMemberTransformer.toServer(formState.creditor),
-			debtors: formState.debtors.map(BillFormMemberTransformer.toServer)
+			creditor: CreditorTransformer.toServer(formState.creditor),
+			debtors: formState.debtors.map(DebtorTransformer.toServer),
+			issuedAt: IssuedAtFieldTransformer.toServer(formState.issuedAt)
 		};
 	}
 }
@@ -74,7 +91,12 @@ namespace BillFormStateTransformer {
 function useBillForm() {
 	return useForm<BillFormState>({
 		resolver: zodResolver(BillFormStateSchema),
-		defaultValues: { receiptFile: null, debtors: [{ amount: "", userId: "" }], issuedAt: formatDate(format(new Date(), SERVER_DATE_FORMAT)).client }
+		defaultValues: {
+			receiptFile: null,
+			creditor: { userId: "", amount: "" },
+			debtors: [{ amount: "", userId: "" }],
+			issuedAt: formatDate(format(new Date(), SERVER_DATE_FORMAT)).client
+		}
 	});
 }
 
@@ -119,6 +141,8 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 			}
 		});
 	}, [createBill, handleSubmit, kind, updateBill]);
+
+	const { isPending: isPendingUsers } = useQuery({ queryKey: ["users"], queryFn: API.Users.List.query });
 
 	return (
 		<FormProvider {...methods}>
@@ -206,7 +230,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 									</Button>
 								</>
 							) : (
-								<Button type="submit" variant="solid" onClick={onSubmit}>
+								<Button type="submit" variant="solid" onClick={onSubmit} disabled={isPendingUsers}>
 									<IoIosAddCircle /> Create
 								</Button>
 							)}

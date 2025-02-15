@@ -20,10 +20,11 @@ export namespace OptionalAmountFieldTransformer {
 	}
 }
 
-export const RequiredAmountFieldSchema = z
-	.string()
-	.refine((val) => val !== "", "Amount is required")
-	.refine((val) => /^[1-9]\d*$/.test(val), "Amount must be a number greater than zero");
+export const RequiredAmountFieldSchema = (requiredMessage: string) =>
+	z
+		.string()
+		.refine((val) => val !== "", requiredMessage)
+		.refine((val) => /^[1-9]\d*$/.test(val), "The amount must be a number greater than zero");
 
 export namespace RequiredAmountFieldTransformer {
 	export function toServer(amount: string): number {

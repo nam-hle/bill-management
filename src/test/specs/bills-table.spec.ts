@@ -9,7 +9,7 @@ import { Assertions } from "@/test/helpers/assertions";
 import { seedGroup } from "@/test/functions/seed-group";
 import { type TableLocator } from "@/test/locators/table-locator";
 
-const presetBills: Omit<Actions.FillBillFormParams, "description">[] = [
+const presetBills: Omit<Actions.BillForm.FillParams, "description">[] = [
 	{
 		creditor: { amount: "90", name: FULL_NAMES.HARRY },
 		debtors: [
@@ -98,7 +98,7 @@ test.beforeAll("Seed bills", async ({ browser }, testInfo) => {
 		await Actions.goToBillsPage(page);
 
 		for (const index of [0, 1, 2]) {
-			await Actions.fillBillForm(page, { description: `Breakfast ${index}`, ...presetBills[index % 3] });
+			await Actions.BillForm.fill(page, { description: `Breakfast ${index}`, ...presetBills[index % 3] });
 			await Actions.submit(page);
 		}
 
@@ -110,7 +110,7 @@ test.beforeAll("Seed bills", async ({ browser }, testInfo) => {
 		await Actions.goToBillsPage(page);
 
 		for (const index of [3, 4, 5]) {
-			await Actions.fillBillForm(page, { description: `Lunch ${index}`, ...presetBills[index % 3] });
+			await Actions.BillForm.fill(page, { description: `Lunch ${index}`, ...presetBills[index % 3] });
 			await Actions.submit(page);
 		}
 
@@ -122,7 +122,7 @@ test.beforeAll("Seed bills", async ({ browser }, testInfo) => {
 		await Actions.goToBillsPage(page);
 
 		for (const index of [6, 7, 8]) {
-			await Actions.fillBillForm(page, { description: `Dinner ${index}`, ...presetBills[index % 3] });
+			await Actions.BillForm.fill(page, { description: `Dinner ${index}`, ...presetBills[index % 3] });
 			await Actions.submit(page);
 		}
 
@@ -133,7 +133,7 @@ test.beforeAll("Seed bills", async ({ browser }, testInfo) => {
 		await Actions.login(page, USERNAMES.RON);
 		await Actions.goToBillsPage(page);
 
-		await Actions.fillBillForm(page, {
+		await Actions.BillForm.fill(page, {
 			description: `Coffee`,
 			creditor: { amount: "90", name: FULL_NAMES.RON },
 			debtors: [
@@ -150,7 +150,7 @@ test.beforeAll("Seed bills", async ({ browser }, testInfo) => {
 		await Actions.login(page, USERNAMES.HARRY);
 		await Actions.goToBillsPage(page);
 
-		await Actions.fillBillForm(page, {
+		await Actions.BillForm.fill(page, {
 			description: `Party`,
 			creditor: { amount: "90", name: FULL_NAMES.HARRY },
 			debtors: [

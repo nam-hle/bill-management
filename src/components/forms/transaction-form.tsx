@@ -39,7 +39,7 @@ namespace TransactionForm {
 
 const FormStateSchema = API.Transactions.Create.BodySchema.omit({ amount: true, issuedAt: true }).extend({
 	issuedAt: IssuedAtField,
-	amount: RequiredAmountFieldSchema
+	amount: RequiredAmountFieldSchema("Amount is required")
 });
 
 type FormState = z.infer<typeof FormStateSchema>;

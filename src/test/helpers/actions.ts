@@ -84,30 +84,53 @@ export namespace Actions {
 		});
 	}
 
-	export interface FillBillFormParams {
-		description: string;
-		creditor: BillMember;
-		debtors: BillMember[];
-	}
-	export async function fillBillForm(page: Page, params: { description: string; creditor: BillMember; debtors: BillMember[] }) {
-		await test.step(`Fill bill form`, async () => {
-			await expect(page).toHaveURL("/bills");
+	export namespace BillForm {
+		export async function fillDescription(page: Page, value: string) {
+			await fillInput(page, "description", value);
+		}
 
-			await page.getByRole("link", { name: "New" }).click();
+		export async function selectCreditor(page: Page, name: string) {
+			await selectOption(page, "Creditor", name);
+		}
 
-			await fillInput(page, "description", params.description);
-			await selectOption(page, "Creditor", params.creditor.name);
-			await fillInput(page, "creditor.amount", params.creditor.amount);
+		export async function fillCreditorAmount(page: Page, amount: string) {
+			await fillInput(page, "creditor.amount", amount);
+		}
 
-			for (let debtorIndex = 0; debtorIndex < params.debtors.length; debtorIndex++) {
-				if (debtorIndex > 0) {
-					await page.getByRole("button", { name: "Add debtor" }).click();
+		export async function selectDebtor(page: Page, debtorIndex: number, name: string) {
+			await selectOption(page, `Debtor ${debtorIndex + 1}`, name);
+		}
+
+		export async function fillDebtorAmount(page: Page, debtorIndex: number, amount: string) {
+			await fillInput(page, `debtors.${debtorIndex}.amount`, amount);
+		}
+
+		export interface FillParams {
+			description: string;
+			creditor: BillMember;
+			debtors: BillMember[];
+		}
+		export async function fill(page: Page, params: { description: string; creditor: BillMember; debtors: BillMember[] }) {
+			await test.step(`Fill bill form`, async () => {
+				await expect(page).toHaveURL("/bills");
+
+				// TODO: Move click outside this function
+				await page.getByRole("link", { name: "New" }).click();
+
+				await BillForm.fillDescription(page, params.description);
+				await BillForm.selectCreditor(page, params.creditor.name);
+				await BillForm.fillCreditorAmount(page, params.creditor.amount);
+
+				for (let debtorIndex = 0; debtorIndex < params.debtors.length; debtorIndex++) {
+					if (debtorIndex > 0) {
+						await page.getByRole("button", { name: "Add debtor" }).click();
+					}
+
+					const debtor = params.debtors[debtorIndex];
+					await BillForm.selectDebtor(page, debtorIndex, debtor.name);
+					await BillForm.fillDebtorAmount(page, debtorIndex, debtor.amount);
 				}
-
-				const debtor = params.debtors[debtorIndex];
-				await selectOption(page, `Debtor ${debtorIndex + 1}`, debtor.name);
-				await fillInput(page, `debtors.${debtorIndex}.amount`, debtor.amount);
-			}
-		});
+			});
+		}
 	}
 }
