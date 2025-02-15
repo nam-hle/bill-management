@@ -8,6 +8,10 @@ export namespace Locators {
 		return page.locator(ErrorText);
 	}
 
+	export function locateNotifications(page: Page) {
+		return page.getByTestId("table").getByTestId("notification-text");
+	}
+
 	export function locateStatValue(page: Page, statLabel: string) {
 		return page
 			.locator(".chakra-stat__root", { has: page.locator(".chakra-stat__label", { hasText: statLabel }) })

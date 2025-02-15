@@ -110,7 +110,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 			<GridItem colSpan={{ base: 3 }}>
 				<Field label={amountLabel} invalid={!!fieldError?.amount} required={member.type === "creditor"} errorText={fieldError?.amount?.message}>
 					<Group attached width="100%">
-						<SkeletonWrapper loading={!!loadingAmount} skeleton={<Skeleton width="100%" height="40px" />}>
+						<SkeletonWrapper loading={loadingAmount} skeleton={<Skeleton width="100%" height="40px" />}>
 							<Input {...register(`${fieldKey}.amount`)} textAlign="right" readOnly={!editing} pointerEvents={editing ? undefined : "none"} />
 						</SkeletonWrapper>
 						<InputAddon>.000 VND</InputAddon>
@@ -119,7 +119,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 			</GridItem>
 
 			<GridItem alignSelf="flex-end" colSpan={{ base: 2 }} justifySelf="flex-end">
-				{editing && (
+				{editing && onRemove && (
 					<Button variant="subtle" colorPalette="red" onClick={onRemove}>
 						<MdDeleteOutline /> Delete
 					</Button>

@@ -71,6 +71,10 @@ export class Row {
 
 		return new Cell(this.row, columnIndex);
 	}
+
+	async click() {
+		await this.row.click();
+	}
 }
 
 export class Cell {

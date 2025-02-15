@@ -130,12 +130,12 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 
 	const searchParams2 = useDebounce(
 		{
-			textSearch,
 			since: filters.since,
 			debtorId: filters.debtor,
 			creatorId: filters.creator,
 			page: pagination.pageNumber,
-			creditorId: filters.creditor
+			creditorId: filters.creditor,
+			textSearch: textSearch || undefined
 		},
 		500
 	);

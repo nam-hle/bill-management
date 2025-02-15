@@ -7,11 +7,6 @@ import { Locators } from "@/test/helpers/locators";
 import { Assertions } from "@/test/helpers/assertions";
 import { seedGroup } from "@/test/functions/seed-group";
 
-// TODO: Assert bill tables as well
-// TODO: Assert toast notifications
-// TODO: Assert bill metadata
-// TODO: Test bill update
-
 test.describe("basic", () => {
 	const testCases: {
 		description: string;
