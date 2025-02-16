@@ -14,10 +14,10 @@ test("basic", async ({ page }) => {
 		await Actions.login(page, USERNAMES.RON);
 
 		await page.getByRole("button", { name: "Transactions" }).click();
-		await Actions.fillTransactionForm(page, { amount: "40", receiver: FULL_NAMES.HARRY });
+		await Actions.TransactionForm.fill(page, { amount: "40", receiver: FULL_NAMES.HARRY });
 
 		await page.getByRole("button", { name: "Transactions" }).click();
-		await Actions.fillTransactionForm(page, { amount: "41", receiver: FULL_NAMES.HARRY });
+		await Actions.TransactionForm.fill(page, { amount: "41", receiver: FULL_NAMES.HARRY });
 
 		await Actions.logout(page);
 	});
@@ -26,10 +26,10 @@ test("basic", async ({ page }) => {
 		await Actions.login(page, USERNAMES.HERMIONE);
 
 		await page.getByRole("button", { name: "Transactions" }).click();
-		await Actions.fillTransactionForm(page, { amount: "42", receiver: FULL_NAMES.HARRY });
+		await Actions.TransactionForm.fill(page, { amount: "42", receiver: FULL_NAMES.HARRY });
 
 		await page.getByRole("button", { name: "Transactions" }).click();
-		await Actions.fillTransactionForm(page, { amount: "43", receiver: FULL_NAMES.HARRY });
+		await Actions.TransactionForm.fill(page, { amount: "43", receiver: FULL_NAMES.HARRY });
 
 		await Actions.logout(page);
 	});
@@ -38,10 +38,10 @@ test("basic", async ({ page }) => {
 		await Actions.login(page, USERNAMES.HARRY);
 
 		await page.getByRole("button", { name: "Transactions" }).click();
-		await Actions.fillTransactionForm(page, { amount: "44", receiver: FULL_NAMES.RON });
+		await Actions.TransactionForm.fill(page, { amount: "44", receiver: FULL_NAMES.RON });
 
 		await page.getByRole("button", { name: "Transactions" }).click();
-		await Actions.fillTransactionForm(page, { amount: "45", receiver: FULL_NAMES.HERMIONE });
+		await Actions.TransactionForm.fill(page, { amount: "45", receiver: FULL_NAMES.HERMIONE });
 
 		await page.getByRole("button", { name: "Transactions" }).click();
 	});

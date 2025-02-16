@@ -69,19 +69,35 @@ export namespace Actions {
 		});
 	}
 
-	export async function fillTransactionForm(page: Page, params: { amount: string; receiver: string }) {
-		await test.step(`Fill transaction form: receiver=${params.receiver}, amount= ${params.amount}`, async () => {
-			await expect(page).toHaveURL("/transactions");
+	export namespace TransactionForm {
+		export async function submit(page: Page) {
+			await test.step("Submit transaction", async () => {
+				await page.getByRole("main").getByRole("button", { name: "Create" }).click();
+			});
+		}
 
-			await page.getByRole("link", { name: "New" }).click();
+		export async function selectReceiver(page: Page, name: string) {
+			await selectOption(page, "Receiver", name);
+		}
 
-			await selectOption(page, "Receiver", params.receiver);
-			await fillInput(page, "amount", params.amount);
+		export async function fillAmount(page: Page, amount: string) {
+			await fillInput(page, "amount", amount);
+		}
 
-			await page.getByRole("main").getByRole("button", { name: "Create" }).click();
+		export async function fill(page: Page, params: { amount: string; receiver: string }) {
+			await test.step(`Fill transaction form: receiver=${params.receiver}, amount= ${params.amount}`, async () => {
+				await expect(page).toHaveURL("/transactions");
 
-			await expect(page).toHaveURL("/transactions");
-		});
+				await page.getByRole("link", { name: "New" }).click();
+
+				await selectReceiver(page, params.receiver);
+				await fillAmount(page, params.amount);
+
+				await Actions.TransactionForm.submit(page);
+
+				await expect(page).toHaveURL("/transactions");
+			});
+		}
 	}
 
 	export namespace BillForm {
