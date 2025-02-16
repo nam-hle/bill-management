@@ -50,19 +50,6 @@ export namespace UsersControllers {
 		return { paid: data.paid ?? 0, sent: data.sent ?? 0, owed: data.owed ?? 0, net: data.balance ?? 0, received: data.received ?? 0 };
 	}
 
-	export async function report(supabase: SupabaseInstance, userId: string): Promise<Balance> {
-		const { data, error } = await supabase.rpc("report", { target_user_id: userId }).single();
-
-		if (error) {
-			throw error;
-		}
-
-		console.log(data);
-		const { owed, paid, sent, received, self_paid } = data;
-
-		return { sent, received, owed: owed - self_paid, paid: paid - self_paid, net: paid - owed + received - sent };
-	}
-
 	export async function getUserInfo(supabase: SupabaseInstance, userId: string): Promise<UserInfo> {
 		const { error, data: profile } = await supabase.from("profiles").select(`fullName:full_name, avatar_url`).eq("id", userId).single();
 
