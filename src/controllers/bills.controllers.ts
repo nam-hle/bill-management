@@ -1,5 +1,3 @@
-import _ from "lodash";
-
 import { type API } from "@/api";
 import { Pagination } from "@/types";
 import { type ClientBill } from "@/schemas";
@@ -43,6 +41,7 @@ export namespace BillsControllers {
 
 	export interface GetManyByMemberIdPayload extends Omit<API.Bills.List.SearchParams, "debtorId" | "creatorId" | "creditorId"> {
 		readonly limit: number;
+		// TODO: Unused anymore
 		readonly memberId: string;
 		readonly debtorId?: string;
 		readonly creatorId?: string;
@@ -50,54 +49,41 @@ export namespace BillsControllers {
 	}
 
 	export async function getManyByMemberId(supabase: SupabaseInstance, payload: GetManyByMemberIdPayload): Promise<API.Bills.List.Response> {
-		const { page, since, limit, memberId, debtorId, creatorId, creditorId, textSearch } = payload;
+		const { page, since, limit, debtorId, creatorId, creditorId, textSearch } = payload;
 
-		let billMembersQuery = supabase.from("bill_debtors").select(`billId:bill_id`);
+		let billsQuery = supabase.from("bills").select(BILLS_SELECT);
 
 		if (creditorId !== undefined) {
-			billMembersQuery = billMembersQuery.eq("user_id", creditorId).eq("role", "Creditor");
+			billsQuery = billsQuery.eq("creditor_id", creditorId);
+		}
+
+		if (creatorId !== undefined) {
+			billsQuery = billsQuery.eq("creator_id", creatorId);
 		}
 
 		if (debtorId !== undefined) {
-			billMembersQuery = billMembersQuery.eq("user_id", debtorId).eq("role", "Debtor");
+			const billsAsDebtors = (
+				(await supabase.from("bill_debtors").select(`billId:bill_id`).eq("user_id", debtorId).eq("role", "Debtor")).data ?? []
+			).map((e) => e.billId);
+
+			billsQuery = billsQuery.in("id", billsAsDebtors);
 		}
 
-		if (creditorId === undefined && debtorId === undefined && creatorId === undefined) {
-			billMembersQuery = billMembersQuery.eq("user_id", memberId);
-		}
-
-		const billMembers = (await billMembersQuery).data ?? [];
-		let billIDs = _.uniqBy(billMembers, "billId").map(({ billId }) => billId);
-
-		if (creatorId !== undefined) {
-			const createdBills = (await supabase.from("bills").select(`id`).eq("creator_id", creatorId)).data ?? [];
-			billIDs = _.intersection(
-				billIDs,
-				createdBills.map(({ id }) => id)
-			);
-		}
-
+		// TODO: Remove due to zod validation
 		if (since !== undefined && /^\w+d$/.test(since)) {
 			const days = parseInt(since.replace("d", ""), 10);
 
 			if (!isNaN(days)) {
 				const date = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-				const timeBills = (await supabase.from("bills").select(`id`).gt("created_at", date)).data ?? [];
-
-				billIDs = _.intersection(
-					billIDs,
-					timeBills.map(({ id }) => id)
-				);
+				billsQuery = billsQuery.gt("created_at", date);
 			}
 		}
 
-		let finalQuery = supabase.from("bills").select(BILLS_SELECT, { count: "exact" }).in("id", billIDs);
-
 		if (textSearch) {
-			finalQuery = finalQuery.filter("description", "fts", `${textSearch}:*`);
+			billsQuery = billsQuery.filter("description", "fts", `${textSearch}:*`);
 		}
 
-		const { count, data: bills } = await finalQuery
+		const { count, data: bills } = await billsQuery
 			.order("created_at", { ascending: false })
 			.range(...Pagination.toRange({ pageSize: limit, pageNumber: page }));
 
