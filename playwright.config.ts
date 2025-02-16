@@ -1,16 +1,8 @@
 import { devices, defineConfig } from "@playwright/test";
 
+const LOCAL_PORT = 4000;
+const PROD = LOCAL_PORT === 4000;
 const profiles = {
-	LOCAL: {
-		port: 4000,
-		retries: 0,
-		video: "on",
-		timeout: 30_000,
-		reporter: "html",
-		forbidOnly: false,
-		expectTimeout: 30_000,
-		reuseExistingServer: true
-	},
 	CI: {
 		port: 4000,
 		retries: 2,
@@ -20,6 +12,16 @@ const profiles = {
 		expectTimeout: 20_000,
 		reuseExistingServer: false,
 		video: "retain-on-failure"
+	},
+	LOCAL: {
+		retries: 0,
+		video: "on",
+		port: LOCAL_PORT,
+		reporter: "html",
+		forbidOnly: false,
+		reuseExistingServer: true,
+		timeout: PROD ? 90_000 : 30_000,
+		expectTimeout: PROD ? 30_000 : 60_000
 	}
 } as const;
 

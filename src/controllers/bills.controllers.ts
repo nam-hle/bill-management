@@ -4,6 +4,7 @@ import { type API } from "@/api";
 import { Pagination } from "@/types";
 import { type ClientBill } from "@/schemas";
 import { type SupabaseInstance } from "@/services/supabase/server";
+import { NotificationsControllers } from "@/controllers/notifications.controllers";
 
 export namespace BillsControllers {
 	const BILLS_SELECT = `
@@ -33,6 +34,10 @@ export namespace BillsControllers {
 			throw new Error("Error creating bill");
 		}
 
+		await NotificationsControllers.createManyBillCreated(supabase, [
+			{ billId: data.id, role: "Creditor", userId: creditor_id, amount: total_amount, triggerId: creator_id }
+		]);
+
 		return data;
 	}
 
@@ -47,19 +52,19 @@ export namespace BillsControllers {
 	export async function getManyByMemberId(supabase: SupabaseInstance, payload: GetManyByMemberIdPayload): Promise<API.Bills.List.Response> {
 		const { page, since, limit, memberId, debtorId, creatorId, creditorId, textSearch } = payload;
 
-		const billMembersQuery = supabase.from("bill_debtors").select(`billId:bill_id`);
-		//
-		// if (creditorId !== undefined) {
-		// 	billMembersQuery = billMembersQuery.eq("user_id", creditorId).eq("role", "Creditor");
-		// }
-		//
-		// if (debtorId !== undefined) {
-		// 	billMembersQuery = billMembersQuery.eq("user_id", debtorId).eq("role", "Debtor");
-		// }
-		//
-		// if (creditorId === undefined && debtorId === undefined && creatorId === undefined) {
-		// 	billMembersQuery = billMembersQuery.eq("user_id", memberId);
-		// }
+		let billMembersQuery = supabase.from("bill_debtors").select(`billId:bill_id`);
+
+		if (creditorId !== undefined) {
+			billMembersQuery = billMembersQuery.eq("user_id", creditorId).eq("role", "Creditor");
+		}
+
+		if (debtorId !== undefined) {
+			billMembersQuery = billMembersQuery.eq("user_id", debtorId).eq("role", "Debtor");
+		}
+
+		if (creditorId === undefined && debtorId === undefined && creatorId === undefined) {
+			billMembersQuery = billMembersQuery.eq("user_id", memberId);
+		}
 
 		const billMembers = (await billMembersQuery).data ?? [];
 		let billIDs = _.uniqBy(billMembers, "billId").map(({ billId }) => billId);
@@ -146,10 +151,44 @@ export namespace BillsControllers {
 	export async function updateById(
 		supabase: SupabaseInstance,
 		id: string,
-		payload: { issuedAt: string; updaterId: string; description: string; receiptFile: string | null }
+		payload: {
+			issuedAt: string;
+			updaterId: string;
+			creditorId: string;
+			totalAmount: number;
+			description: string;
+			receiptFile: string | null;
+		}
 	) {
-		const { description, issuedAt: issued_at, updaterId: updater_id, receiptFile: receipt_file } = payload;
-		const { data, error } = await supabase.from("bills").update({ issued_at, updater_id, description, receipt_file }).eq("id", id).select();
+		const {
+			description,
+			issuedAt: issued_at,
+			updaterId: updater_id,
+			creditorId: creditor_id,
+			totalAmount: total_amount,
+			receiptFile: receipt_file
+		} = payload;
+
+		const { data: currentBill } = await supabase.from("bills").select(BILLS_SELECT).eq("id", id).single();
+
+		if (!currentBill) {
+			throw new Error("Bill not found");
+		}
+
+		await computeCreditorNotifications(supabase, {
+			billId: id,
+			triggerId: updater_id,
+			nextCreditor: { userId: creditor_id, amount: total_amount },
+			currentCreditor: { amount: currentBill.totalAmount, userId: currentBill.creditor.userId }
+		});
+
+		const { data, error } = await supabase
+			.from("bills")
+			.update({ issued_at, updater_id, creditor_id, description, total_amount, receipt_file })
+			.eq("id", id)
+			.select();
+
+		// TODO: Update creditor notifications
 
 		if (error) {
 			throw error;
@@ -160,5 +199,33 @@ export namespace BillsControllers {
 		}
 
 		return data;
+	}
+
+	interface Creditor {
+		readonly userId: string;
+		readonly amount: number;
+	}
+	async function computeCreditorNotifications(
+		supabase: SupabaseInstance,
+		payload: { billId: string; triggerId: string; nextCreditor: Creditor; currentCreditor: Creditor }
+	) {
+		const { billId, triggerId, nextCreditor, currentCreditor } = payload;
+
+		if (currentCreditor.userId === nextCreditor.userId) {
+			if (currentCreditor.amount === nextCreditor.amount) {
+				return;
+			}
+
+			await NotificationsControllers.createManyBillUpdated(supabase, [
+				{ billId, triggerId, userId: currentCreditor.userId, currentAmount: nextCreditor.amount, previousAmount: currentCreditor.amount }
+			]);
+
+			return;
+		}
+
+		await NotificationsControllers.createManyBillDeleted(supabase, [{ billId, triggerId, role: "Creditor", userId: currentCreditor.userId }]);
+		await NotificationsControllers.createManyBillCreated(supabase, [
+			{ billId, triggerId, role: "Creditor", amount: nextCreditor.amount, userId: nextCreditor.userId }
+		]);
 	}
 }
