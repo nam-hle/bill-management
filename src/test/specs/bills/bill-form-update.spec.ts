@@ -105,8 +105,11 @@ test("basic", async ({ page }, testInfo) => {
 		await Assertions.assertBillsTable(billsTable, expectedBillsTable);
 
 		await billsTable.getRow(0).click();
+
 		await expect(page.getByText(/Last updated [ \w]+ by Hermione Granger/)).toBeVisible();
 		await expect(page.getByText(/Created [ \w]+ by Harry Potter/)).toBeVisible();
+
+		await Actions.logout(page);
 	});
 
 	await test.step("Assert notifications", async () => {
