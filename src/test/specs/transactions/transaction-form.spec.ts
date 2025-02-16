@@ -11,7 +11,7 @@ test("basic", async ({ page, browser }) => {
 	await Actions.login(page, USERNAMES.HARRY);
 
 	await Actions.goToTransactionsPage(page);
-	await Actions.fillTransactionForm(page, { amount: "42", receiver: FULL_NAMES.RON });
+	await Actions.TransactionForm.fill(page, { amount: "42", receiver: FULL_NAMES.RON });
 
 	const transactionsTable = await Locators.locateTable(page, 0);
 
