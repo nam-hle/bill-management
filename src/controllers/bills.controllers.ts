@@ -1,5 +1,4 @@
 import { type API } from "@/api";
-import { Pagination } from "@/types";
 import { type ClientBill } from "@/schemas";
 import { type SupabaseInstance } from "@/services/supabase/server";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
@@ -49,45 +48,70 @@ export namespace BillsControllers {
 	}
 
 	export async function getManyByMemberId(supabase: SupabaseInstance, payload: GetManyByMemberIdPayload): Promise<API.Bills.List.Response> {
-		const { page, since, limit, debtorId, creatorId, creditorId, textSearch } = payload;
+		const { page, limit, memberId, debtorId, creatorId, creditorId } = payload;
 
-		let billsQuery = supabase.from("bills").select(BILLS_SELECT);
+		// let sinceDate: string | null = null;
+		//
+		// if (since !== undefined && /^\d+d$/.test(since)) {
+		// 	const days = parseInt(since.replace("d", ""), 10);
+		//
+		// 	if (!isNaN(days)) {
+		// 		sinceDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+		// 	}
+		// }
 
-		if (creditorId !== undefined) {
-			billsQuery = billsQuery.eq("creditor_id", creditorId);
+		const params = {
+			page_size: limit,
+			page_number: page,
+
+			member: memberId,
+			debtor: debtorId,
+			creator: creatorId,
+			creditor: creditorId
+		};
+		console.log(params);
+
+		const { data, error } = await supabase.rpc("get_filtered_bills", params);
+
+		if (error) {
+			console.error(error);
+			throw error;
 		}
 
-		if (creatorId !== undefined) {
-			billsQuery = billsQuery.eq("creator_id", creatorId);
+		if (!data) {
+			return { data: [], fullSize: 0 };
 		}
 
-		if (debtorId !== undefined) {
-			const billsAsDebtors = (
-				(await supabase.from("bill_debtors").select(`billId:bill_id`).eq("user_id", debtorId).eq("role", "Debtor")).data ?? []
-			).map((e) => e.billId);
+		console.log(data);
 
-			billsQuery = billsQuery.in("id", billsAsDebtors);
-		}
+		// const targetBillIds =
+		// 	creditorId === undefined && debtorId === undefined && creatorId === undefined
+		// 		? await getRelevantBillIds(supabase, payload)
+		// 		: await getTargetMemberBillIds(supabase, payload);
+		//
+		// let billsQuery = supabase.from("bills").select(BILLS_SELECT, { count: "exact" }).in("id", targetBillIds);
+		//
+		// // TODO: Remove due to zod validation
+		// if (since !== undefined && /^\w+d$/.test(since)) {
+		// 	const days = parseInt(since.replace("d", ""), 10);
+		//
+		// 	if (!isNaN(days)) {
+		// 		const date = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+		// 		billsQuery = billsQuery.gt("created_at", date);
+		// 	}
+		// }
+		//
+		// if (textSearch) {
+		// 	billsQuery = billsQuery.filter("description", "fts", `${textSearch}:*`);
+		// }
 
-		// TODO: Remove due to zod validation
-		if (since !== undefined && /^\w+d$/.test(since)) {
-			const days = parseInt(since.replace("d", ""), 10);
+		const { data: bills } = await supabase
+			.from("bills")
+			.select(BILLS_SELECT)
+			.in("id", data?.map((e) => e.id) ?? [])
+			.order("created_at", { ascending: false });
 
-			if (!isNaN(days)) {
-				const date = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-				billsQuery = billsQuery.gt("created_at", date);
-			}
-		}
-
-		if (textSearch) {
-			billsQuery = billsQuery.filter("description", "fts", `${textSearch}:*`);
-		}
-
-		const { count, data: bills } = await billsQuery
-			.order("created_at", { ascending: false })
-			.range(...Pagination.toRange({ pageSize: limit, pageNumber: page }));
-
-		return { fullSize: count ?? 0, data: bills?.map(toClientBill) ?? [] };
+		return { fullSize: data[0].total_count, data: bills?.map(toClientBill) ?? [] };
 	}
 
 	function toClientBill(bill: BillSelectResult): ClientBill {

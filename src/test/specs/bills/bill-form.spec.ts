@@ -17,11 +17,6 @@ test.describe("basic", () => {
 		{
 			statsExpectation: {},
 			description: "As creator only",
-			expectedRecentTable: {
-				rows: [],
-				pagination: null,
-				heading: "Recent bills"
-			},
 			formParams: {
 				description: "Dinner",
 				creditor: { amount: "90", name: FULL_NAMES.RON },
@@ -29,6 +24,17 @@ test.describe("basic", () => {
 					{ amount: "20", name: FULL_NAMES.RON },
 					{ amount: "30", name: FULL_NAMES.HERMIONE },
 					{ amount: "40", name: FULL_NAMES.DUMBLEDORE }
+				]
+			},
+			expectedRecentTable: {
+				pagination: null,
+				heading: "Recent bills",
+				rows: [
+					{
+						description: "Dinner",
+						creditor: `${FULL_NAMES.RON} (90)`,
+						debtors: [`${FULL_NAMES.HERMIONE} (30)`, `${FULL_NAMES.DUMBLEDORE} (40)`, `${FULL_NAMES.RON} (20)`]
+					}
 				]
 			}
 		},

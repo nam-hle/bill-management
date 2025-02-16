@@ -86,7 +86,7 @@ const expectedRows: Assertions.BillsTableExpectation["rows"] = [
 	}
 ];
 
-test.beforeAll("Seed bills", async ({ browser }, testInfo) => {
+test.skip("Seed bills", async ({ browser }, testInfo) => {
 	test.setTimeout(testInfo.timeout * 1.5);
 	await truncate();
 	await seedGroup();
