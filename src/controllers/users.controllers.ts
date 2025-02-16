@@ -57,6 +57,7 @@ export namespace UsersControllers {
 			throw error;
 		}
 
+		console.log(data);
 		const { owed, paid, sent, received, self_paid } = data;
 
 		return { sent, received, owed: owed - self_paid, paid: paid - self_paid, net: paid - owed + received - sent };

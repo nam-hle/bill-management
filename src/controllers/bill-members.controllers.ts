@@ -13,7 +13,7 @@ export namespace BillMembersControllers {
 	}
 	export async function createMany(supabase: SupabaseInstance, triggerId: string, payloads: CreatePayload[]) {
 		await supabase
-			.from("bill_members")
+			.from("bill_debtors")
 			.insert(payloads.map(({ billId: bill_id, userId: user_id, ...payload }) => ({ ...payload, bill_id, user_id })));
 
 		await NotificationsControllers.createManyBillCreated(
@@ -92,7 +92,7 @@ export namespace BillMembersControllers {
 	}
 	export async function updateManyAmount(supabase: SupabaseInstance, triggerId: string, payloads: UpdateAmountPayload[]) {
 		const updatePromises = payloads.map(({ role, amount, userId, billId }) =>
-			supabase.from("bill_members").update({ amount }).match({ role, user_id: userId, bill_id: billId }).select()
+			supabase.from("bill_debtors").update({ amount }).match({ role, user_id: userId, bill_id: billId }).select()
 		);
 
 		const results = await Promise.all(updatePromises);
@@ -119,7 +119,7 @@ export namespace BillMembersControllers {
 
 	export async function deleteMany(supabase: SupabaseInstance, triggerId: string, payloads: DeletedPayload[]) {
 		const deletePromises = payloads.map(({ role, userId: user_id, billId: bill_id }) =>
-			supabase.from("bill_members").delete().match({ role, bill_id, user_id })
+			supabase.from("bill_debtors").delete().match({ role, bill_id, user_id })
 		);
 
 		const results = await Promise.all(deletePromises);
@@ -139,7 +139,7 @@ export namespace BillMembersControllers {
 	const SELECT = `userId:user_id, role, amount, profiles (username)`;
 
 	export async function getAll(supabase: SupabaseInstance) {
-		const { data } = await supabase.from("bill_members").select(SELECT);
+		const { data } = await supabase.from("bill_debtors").select(SELECT);
 
 		if (!data) {
 			throw new Error("Error getting bill members");

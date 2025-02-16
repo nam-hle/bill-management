@@ -1,6 +1,6 @@
 import { supabaseTest } from "@/test/setup";
 
-const PUBLIC_TABLES = ["bills", "transactions", "bill_members", "bank_accounts", "profiles", "notifications"] as const;
+const PUBLIC_TABLES = ["bills", "transactions", "bill_debtors", "bank_accounts", "profiles", "notifications"] as const;
 
 export async function truncate() {
 	try {

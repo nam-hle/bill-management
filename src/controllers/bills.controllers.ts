@@ -8,19 +8,26 @@ import { type SupabaseInstance } from "@/services/supabase/server";
 export namespace BillsControllers {
 	const BILLS_SELECT = `
     id,
-    description,
+    creator:profiles!creator_id   (userId:id, fullName:full_name),
     createdAt:created_at,
+    
+    updater:profiles!updater_id   (userId:id, fullName:full_name),
     updatedAt:updated_at,
+    
+    description,
     issuedAt:issued_at,
     receiptFile:receipt_file,
-    creator:profiles!creator_id (userId:id, fullName:full_name),
-    updater:profiles!updater_id (userId:id, fullName:full_name),
-    billMembers:bill_members (user:user_id (userId:id, fullName:full_name), amount, role)
+    totalAmount:total_amount,
+    creditor:profiles!creditor_id (userId:id, fullName:full_name),
+    billDebtors:bill_debtors (user:user_id (userId:id, fullName:full_name), amount, role)
   `;
 
-	export async function create(supabase: SupabaseInstance, payload: { issuedAt: string; creatorId: string; description: string }) {
-		const { description, issuedAt: issued_at, creatorId: creator_id } = payload;
-		const { data } = await supabase.from("bills").insert({ issued_at, creator_id, description }).select("id").single();
+	export async function create(
+		supabase: SupabaseInstance,
+		payload: { issuedAt: string; creatorId: string; creditorId: string; totalAmount: number; description: string }
+	) {
+		const { description, issuedAt: issued_at, creatorId: creator_id, creditorId: creditor_id, totalAmount: total_amount } = payload;
+		const { data } = await supabase.from("bills").insert({ issued_at, creator_id, description, creditor_id, total_amount }).select("id").single();
 
 		if (!data) {
 			throw new Error("Error creating bill");
@@ -40,19 +47,19 @@ export namespace BillsControllers {
 	export async function getManyByMemberId(supabase: SupabaseInstance, payload: GetManyByMemberIdPayload): Promise<API.Bills.List.Response> {
 		const { page, since, limit, memberId, debtorId, creatorId, creditorId, textSearch } = payload;
 
-		let billMembersQuery = supabase.from("bill_members").select(`billId:bill_id`);
-
-		if (creditorId !== undefined) {
-			billMembersQuery = billMembersQuery.eq("user_id", creditorId).eq("role", "Creditor");
-		}
-
-		if (debtorId !== undefined) {
-			billMembersQuery = billMembersQuery.eq("user_id", debtorId).eq("role", "Debtor");
-		}
-
-		if (creditorId === undefined && debtorId === undefined && creatorId === undefined) {
-			billMembersQuery = billMembersQuery.eq("user_id", memberId);
-		}
+		const billMembersQuery = supabase.from("bill_debtors").select(`billId:bill_id`);
+		//
+		// if (creditorId !== undefined) {
+		// 	billMembersQuery = billMembersQuery.eq("user_id", creditorId).eq("role", "Creditor");
+		// }
+		//
+		// if (debtorId !== undefined) {
+		// 	billMembersQuery = billMembersQuery.eq("user_id", debtorId).eq("role", "Debtor");
+		// }
+		//
+		// if (creditorId === undefined && debtorId === undefined && creatorId === undefined) {
+		// 	billMembersQuery = billMembersQuery.eq("user_id", memberId);
+		// }
 
 		const billMembers = (await billMembersQuery).data ?? [];
 		let billIDs = _.uniqBy(billMembers, "billId").map(({ billId }) => billId);
@@ -93,21 +100,16 @@ export namespace BillsControllers {
 	}
 
 	function toClientBill(bill: BillSelectResult): ClientBill {
-		const { creator, updater, updatedAt, createdAt, billMembers, ...rest } = bill;
+		const { creator, updater, creditor, updatedAt, createdAt, totalAmount, billDebtors, ...rest } = bill;
 
-		const creditor = billMembers.find((bm) => bm.role === "Creditor");
-		const debtors = billMembers.filter((bm) => bm.role === "Debtor");
-
-		if (!creditor) {
-			throw new Error("Creator not found");
-		}
+		const debtors = billDebtors.filter((bm) => bm.role === "Debtor");
 
 		return {
 			...rest,
-			creditor: toMember(creditor),
 			debtors: debtors.map(toMember),
 			creator: { ...creator, timestamp: createdAt },
-			updater: updater && updatedAt ? { ...updater, timestamp: updatedAt } : undefined
+			updater: updater && updatedAt ? { ...updater, timestamp: updatedAt } : undefined,
+			creditor: { amount: totalAmount, userId: creditor.userId, role: "Creditor" as const, fullName: creditor.fullName }
 		};
 
 		function toMember(billMember: BillMemberSelectResult) {
@@ -129,7 +131,7 @@ export namespace BillsControllers {
 	}
 
 	type BillSelectResult = Awaited<ReturnType<typeof __get>>;
-	type BillMemberSelectResult = BillSelectResult["billMembers"][number];
+	type BillMemberSelectResult = BillSelectResult["billDebtors"][number];
 
 	export async function getById(supabase: SupabaseInstance, id: string): Promise<ClientBill> {
 		const { data } = await supabase.from("bills").select(BILLS_SELECT).eq("id", id).single();

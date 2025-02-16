@@ -55,24 +55,13 @@ export async function POST(request: Request) {
 		const bill = await BillsControllers.create(supabase, {
 			issuedAt,
 			description,
-			creatorId: creator.id
+			creatorId: creator.id,
+			creditorId: creditor.userId,
+			totalAmount: creditor.amount
 		});
 
-		// Step 2: Insert bill members
 		const billMembers = debtors.map(({ userId, amount }) => {
-			return {
-				userId,
-				amount,
-				billId: bill.id,
-				role: "Debtor" as BillMemberRole
-			};
-		});
-
-		billMembers.push({
-			billId: bill.id,
-			userId: creditor.userId,
-			amount: creditor.amount,
-			role: "Creditor" as BillMemberRole
+			return { userId, amount, billId: bill.id, role: "Debtor" as BillMemberRole };
 		});
 
 		await BillMembersControllers.createMany(supabase, creator.id, billMembers);
