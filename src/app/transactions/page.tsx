@@ -15,7 +15,7 @@ export default async function TransactionsPage() {
 	const currentUser = await getCurrentUser();
 
 	return (
-		<VStack gap="{spacing.4}" alignItems="flex-start">
+		<VStack className="ck" gap="{spacing.4}" alignItems="flex-start">
 			<TransactionsTable
 				mode="advance"
 				currentUserId={currentUser.id}

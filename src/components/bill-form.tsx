@@ -146,7 +146,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 
 	return (
 		<FormProvider {...methods}>
-			<Stack gap="{spacing.4}">
+			<Stack className="ck" gap="{spacing.4}">
 				<BillFormHeading kind={kind} bill={bill} />
 				<SimpleGrid columns={10} gap="{spacing.4}">
 					<GridItem colSpan={{ base: 10 }}>

@@ -175,7 +175,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 					</DialogContent>
 				</DialogRoot>
 			)}
-			<Stack maxWidth="60%" gap="{spacing.4}">
+			<Stack maxWidth="60%" className="ck" gap="{spacing.4}">
 				<HStack gap={0} justifyContent="space-between">
 					<Heading>
 						{editing ? "Transaction Details" : "New Transaction"}
