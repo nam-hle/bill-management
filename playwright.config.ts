@@ -2,7 +2,7 @@ import { devices, defineConfig } from "@playwright/test";
 
 const profiles = {
 	LOCAL: {
-		port: 3000,
+		port: 4000,
 		retries: 0,
 		video: "on",
 		timeout: 30_000,

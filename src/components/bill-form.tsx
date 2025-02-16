@@ -275,6 +275,8 @@ function useCreateBill() {
 }
 
 function useUpdateBill(onSuccess: () => void) {
+	const queryClient = useQueryClient();
+
 	const { mutate } = useMutation({
 		mutationFn: API.Bills.Update.mutate,
 		onError: () => {
@@ -290,7 +292,8 @@ function useUpdateBill(onSuccess: () => void) {
 				title: "Bill updated successfully",
 				description: "The bill details have been updated successfully."
 			});
-			onSuccess();
+
+			queryClient.invalidateQueries({ queryKey: ["bills"] }).then(onSuccess);
 		}
 	});
 

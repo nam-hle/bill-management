@@ -66,7 +66,6 @@ export const ReceiptUpload: React.FC<ReceiptUpload.Props> = (props) => {
 						maxFiles={1}
 						height="100%"
 						alignItems="center"
-						paddingInline="{spacing.4}"
 						accept={["image/png", "image/jpeg"]}
 						onFileAccept={(details) => uploadFile({ ownerId, bucketName: "receipts", file: details.files[0] })}>
 						{url ? (

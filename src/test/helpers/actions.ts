@@ -11,7 +11,7 @@ export namespace Actions {
 	}
 
 	export async function goToNotificationsPage(page: Page) {
-		await test.step(`Go to Home page`, async () => {
+		await test.step(`Go to Notifications page`, async () => {
 			await page.goto("/notifications");
 		});
 	}
@@ -85,6 +85,36 @@ export namespace Actions {
 	}
 
 	export namespace BillForm {
+		export async function edit(page: Page) {
+			await test.step(`Edit bill`, async () => {
+				await page.getByRole("button", { name: "Edit" }).click();
+			});
+		}
+
+		export async function save(page: Page) {
+			await test.step("Save bill", async () => {
+				await page.getByRole("button", { name: "Done" }).click();
+			});
+		}
+
+		export async function cancel(page: Page) {
+			await test.step("Cancel changes", async () => {
+				await page.getByRole("button", { name: "Cancel" }).click();
+			});
+		}
+
+		export async function addDebtor(page: Page) {
+			await test.step(`Add debtor`, async () => {
+				await page.getByRole("button", { name: "Add debtor" }).click();
+			});
+		}
+
+		export async function removeDebtor(page: Page, debtorIndex: number) {
+			await test.step(`Remove debtor`, async () => {
+				await page.getByRole("button", { name: "Delete" }).nth(debtorIndex).click();
+			});
+		}
+
 		export async function fillDescription(page: Page, value: string) {
 			await fillInput(page, "description", value);
 		}
@@ -117,18 +147,18 @@ export namespace Actions {
 				// TODO: Move click outside this function
 				await page.getByRole("link", { name: "New" }).click();
 
-				await BillForm.fillDescription(page, params.description);
-				await BillForm.selectCreditor(page, params.creditor.name);
-				await BillForm.fillCreditorAmount(page, params.creditor.amount);
+				await fillDescription(page, params.description);
+				await selectCreditor(page, params.creditor.name);
+				await fillCreditorAmount(page, params.creditor.amount);
 
 				for (let debtorIndex = 0; debtorIndex < params.debtors.length; debtorIndex++) {
 					if (debtorIndex > 0) {
-						await page.getByRole("button", { name: "Add debtor" }).click();
+						await addDebtor(page);
 					}
 
 					const debtor = params.debtors[debtorIndex];
-					await BillForm.selectDebtor(page, debtorIndex, debtor.name);
-					await BillForm.fillDebtorAmount(page, debtorIndex, debtor.amount);
+					await selectDebtor(page, debtorIndex, debtor.name);
+					await fillDebtorAmount(page, debtorIndex, debtor.amount);
 				}
 			});
 		}
