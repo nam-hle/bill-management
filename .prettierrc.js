@@ -5,5 +5,8 @@ module.exports = {
 	endOfLine: "auto",
 	trailingComma: "none",
 	bracketSameLine: true,
-	arrowParens: "always"
+	arrowParens: "always",
+	tailwindConfig: "./tailwind.config.js",
+	plugins: ["prettier-plugin-tailwindcss"],
+	tailwindStylesheet: "./src/app/globals.css"
 };

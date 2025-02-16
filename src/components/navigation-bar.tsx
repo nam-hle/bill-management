@@ -1,54 +1,25 @@
 "use client";
 
 import React from "react";
-import { usePathname } from "next/navigation";
-import { Stack, HStack } from "@chakra-ui/react";
 
-import { ColorModeButton } from "@/chakra/color-mode";
-import { LinkButton } from "@/components/link-button";
+import { Frame } from "@/components/tabs";
 import { AvatarContainer } from "@/components/avatar-container";
+import { ThemeToggleButton } from "@/components/theme-toggle-button";
 import { NotificationContainer } from "@/components/notification-container";
 
-export const NavigationBar: React.FC<AvatarContainer.Props> = ({ userInfo }) => {
-	const pathname = usePathname();
-	const pageName = pathname.split("/")[1];
-
+export const NavigationBar: React.FC<Partial<AvatarContainer.Props>> = ({ pendingUserInfo }) => {
 	return (
-		<HStack
-			as="header"
-			className="ck"
-			marginInline="auto"
-			maxWidth="{sizes.8xl}"
-			paddingBlock="{spacing.2}"
-			paddingInline="{spacing.8}"
-			justifyContent="space-between">
-			<Stack direction="row" minHeight="48px" gap="{spacing.2}" alignItems="center">
-				{userInfo && (
-					<>
-						<LinkButton href="/" size="sm" active={pageName === ""}>
-							Home
-						</LinkButton>
-						<LinkButton size="sm" href="/bills" active={pageName === "bills"}>
-							Bills
-						</LinkButton>
-						<LinkButton size="sm" href="/transactions" active={pageName === "transactions"}>
-							Transactions
-						</LinkButton>
-						<LinkButton size="sm" variant="solid" href="/bills/new">
-							Create
-						</LinkButton>
-					</>
-				)}
-			</Stack>
-			<Stack direction="row" minHeight="48px" gap="{spacing.2}" alignItems="center">
-				<ColorModeButton />
-				{userInfo && (
+		<header className="mx-auto flex max-w-screen-2xl items-center justify-between px-8 py-2">
+			<div className="flex min-h-[48px] items-center gap-2">{pendingUserInfo && <Frame />}</div>
+			<div className="flex min-h-[48px] items-center gap-2">
+				<ThemeToggleButton />
+				{pendingUserInfo && (
 					<>
 						<NotificationContainer />
-						<AvatarContainer userInfo={userInfo} />
+						<AvatarContainer pendingUserInfo={pendingUserInfo} />
 					</>
 				)}
-			</Stack>
-		</HStack>
+			</div>
+		</header>
 	);
 };

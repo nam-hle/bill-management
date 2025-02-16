@@ -2,18 +2,14 @@
 
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Table, HStack, VStack, Heading, VisuallyHidden } from "@chakra-ui/react";
+
+import { DataTable } from "@/components/data-table/data-table";
+import { TransactionAction } from "@/components/transaction-action";
+import { TransactionStatusBadge } from "@/components/transaction-status-badge";
 
 import { API } from "@/api";
-import { EmptyState } from "@/chakra/empty-state";
+import { DEFAULT_PAGE_NUMBER } from "@/constants";
 import { displayDate, displayDateAsTitle } from "@/utils";
-import { FilterButton } from "@/components/filter-button";
-import { LinkedTableRow } from "@/components/table-body-row";
-import { TransactionAction } from "@/components/transaction-action";
-import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
-import { TableBodySkeleton } from "@/components/table-body-skeleton";
-import { TransactionStatusBadge } from "@/components/transaction-status-badge";
-import { PaginationRoot, PaginationItems, PaginationNextTrigger, PaginationPrevTrigger } from "@/chakra/pagination";
 
 namespace TransactionsTable {
 	export interface Props {
@@ -55,80 +51,67 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 	}, []);
 
 	return (
-		<VStack width="100%" gap="{spacing.4}" data-testid="table-container">
-			<HStack width="100%" data-testid="table-heading" justifyContent="space-between">
-				<Heading as="h1" data-testid="table-title">
-					{title ?? "Transactions"}
-					{mode === "advance" && isSuccess ? ` (${data.fullSize})` : ""}
-				</Heading>
-				{action}
-			</HStack>
-			{mode === "advance" && (
-				<HStack width="100%" data-testid="table-filters">
-					<FilterButton {...createOwnerFilter("toMe")}>To Me</FilterButton>
-					<FilterButton {...createOwnerFilter("byMe")}>By Me</FilterButton>
-				</HStack>
-			)}
+		<div className="w-full gap-4" data-testid="table-container">
+			{/*<HStack width="100%" data-testid="table-heading" justifyContent="space-between">*/}
+			{/*	<TypographyH1 data-testid="table-title">*/}
+			{/*		{title ?? "Transactions"}*/}
+			{/*		{mode === "advance" && isSuccess ? ` (${data.fullSize})` : ""}*/}
+			{/*	</TypographyH1>*/}
+			{/*	{action}*/}
+			{/*</HStack>*/}
+			{/*{mode === "advance" && (*/}
+			{/*	<HStack width="100%" data-testid="table-filters">*/}
+			{/*		<FilterButton {...createOwnerFilter("toMe")}>To Me</FilterButton>*/}
+			{/*		<FilterButton {...createOwnerFilter("byMe")}>By Me</FilterButton>*/}
+			{/*	</HStack>*/}
+			{/*)}*/}
 
 			{/*{transactions.length === 0 && <EmptyState width="100%" title="You have no transactions yet." />}*/}
 
-			<Table.Root size="md" interactive variant="outline" data-testid={`table__${isLoading ? "loading" : "settled"}`}>
-				<Table.Header>
-					<Table.Row>
-						<Table.ColumnHeader>ID</Table.ColumnHeader>
-						<Table.ColumnHeader>Issued At</Table.ColumnHeader>
-						<Table.ColumnHeader>Sender</Table.ColumnHeader>
-						<Table.ColumnHeader>Receiver</Table.ColumnHeader>
-						<Table.ColumnHeader>Amount</Table.ColumnHeader>
-						<Table.ColumnHeader>Status</Table.ColumnHeader>
-						{mode === "advance" && (
-							<Table.ColumnHeader>
-								<VisuallyHidden>Action</VisuallyHidden>
-							</Table.ColumnHeader>
-						)}
-					</Table.Row>
-				</Table.Header>
-				<Table.Body>
-					{isLoading ? (
-						<TableBodySkeleton numberOfCols={mode === "advance" ? 7 : 6} />
-					) : !data?.data.length ? (
-						<Table.Row width="100%">
-							<Table.Cell colSpan={mode === "advance" ? 7 : 6}>
-								<EmptyState title="You have no transactions yet" />
-							</Table.Cell>
-						</Table.Row>
-					) : (
-						data.data.map((transaction) => (
-							<LinkedTableRow key={transaction.id} href={`/transactions/${transaction.id}`}>
-								<Table.Cell>{transaction.id.slice(0, 6)}</Table.Cell>
-								<Table.Cell title={displayDateAsTitle(transaction.issuedAt)}>{displayDate(transaction.issuedAt)}</Table.Cell>
-								<Table.Cell>{formatUser(transaction.sender, currentUserId)}</Table.Cell>
-								<Table.Cell>{formatUser(transaction.receiver, currentUserId)}</Table.Cell>
-								<Table.Cell>{transaction.amount}</Table.Cell>
-								<Table.Cell>
-									<TransactionStatusBadge status={transaction.status} />
-								</Table.Cell>
-								{mode === "advance" && (
-									<Table.Cell>
-										<TransactionAction transaction={transaction} currentUserId={currentUserId} />
-									</Table.Cell>
-								)}
-							</LinkedTableRow>
-						))
-					)}
-				</Table.Body>
-			</Table.Root>
+			<DataTable
+				data={data?.data ?? []}
+				columns={[
+					{
+						key: "id",
+						label: "ID",
+						dataGetter: ({ row }) => row.id.slice(0, 6)
+					},
+					{
+						key: "issuedAt",
+						label: "Issued At",
+						dataGetter: ({ row }) => displayDate(row.issuedAt),
+						titleGetter: ({ row }) => displayDateAsTitle(row.issuedAt)
+					},
+					{
+						key: "sender",
+						label: "Sender",
+						dataGetter: ({ row }) => formatUser(row.sender, currentUserId)
+					},
+					{
+						key: "receiver",
+						label: "Receiver",
+						dataGetter: ({ row }) => formatUser(row.receiver, currentUserId)
+					},
+					{ key: "amount", label: "Amount", dataGetter: ({ row }) => row.amount },
+					{
+						key: "status",
+						label: "Status",
+						dataGetter: ({ row }) => <TransactionStatusBadge status={row.status} />
+					},
+					{ key: "action", label: "Action", dataGetter: ({ row }) => <TransactionAction transaction={row} currentUserId={currentUserId} /> }
+				]}
+			/>
 
-			{mode === "advance" && DEFAULT_PAGE_SIZE < (data?.fullSize ?? 0) && (
-				<HStack w="100%" justifyContent="flex-end">
-					<PaginationRoot page={page} siblingCount={1} count={data?.fullSize ?? 0} onPageChange={onPageChange} pageSize={DEFAULT_PAGE_SIZE}>
-						<PaginationPrevTrigger />
-						<PaginationItems />
-						<PaginationNextTrigger />
-					</PaginationRoot>
-				</HStack>
-			)}
-		</VStack>
+			{/*{mode === "advance" && DEFAULT_PAGE_SIZE < (data?.fullSize ?? 0) && (*/}
+			{/*	<HStack w="100%" justifyContent="flex-end">*/}
+			{/*		<PaginationRoot page={page} siblingCount={1} count={data?.fullSize ?? 0} onPageChange={onPageChange} pageSize={DEFAULT_PAGE_SIZE}>*/}
+			{/*			<PaginationPrevTrigger />*/}
+			{/*			<PaginationItems />*/}
+			{/*			<PaginationNextTrigger />*/}
+			{/*		</PaginationRoot>*/}
+			{/*	</HStack>*/}
+			{/*)}*/}
+		</div>
 	);
 };
 

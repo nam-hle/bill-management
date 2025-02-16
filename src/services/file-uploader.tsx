@@ -2,21 +2,22 @@ import React from "react";
 import { useMutation } from "@tanstack/react-query";
 
 import { generateUid } from "@/utils";
-import { toaster } from "@/chakra/toaster";
+import { useToast } from "@/hooks/use-toast";
 import { createSupabaseClient } from "@/services/supabase/client";
 
 type BucketName = "avatars" | "receipts";
 
 export function useFileUploader(onSuccess: (filePath: string) => void) {
+	const { toast } = useToast();
 	const { mutate, isPending } = useMutation({
 		mutationFn: uploadFile,
 		onSuccess: (filePath) => {
-			toaster.create({ type: "success", title: "Image uploaded", description: "The image has been uploaded successfully." });
+			toast({ title: "Image uploaded", description: "The image has been uploaded successfully." });
 			onSuccess(filePath);
 		},
 		onError: () => {
-			toaster.create({
-				type: "error",
+			toast({
+				variant: "destructive",
 				title: "Failed to upload avatar",
 				description: "An error occurred while uploading the avatar. Please try again."
 			});

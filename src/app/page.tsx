@@ -1,27 +1,29 @@
 import React from "react";
-import { Stack } from "@chakra-ui/react";
-import { MdArrowRightAlt } from "react-icons/md";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
-import { LinkButton } from "@/chakra/link-button";
+import { Button } from "@/components/shadcn/button";
 import { BalanceReport } from "@/components/balance-report";
-import { getCurrentUser } from "@/services/supabase/server";
-import { LoginFormV2 } from "@/components/forms/login-form-v2";
 import { BillsTable, TransactionsTable } from "@/components/tables";
+
+import { getCurrentUser } from "@/services/supabase/server";
 
 export default async function DashboardPage() {
 	const currentUser = await getCurrentUser();
 
 	return (
 		<>
-			<Stack gap={6} className="ck">
+			<div className="flex flex-col gap-6">
 				<BalanceReport />
 				<BillsTable
 					title="Recent bills"
 					currentUserId={currentUser.id}
 					action={
-						<LinkButton href="/bills" variant="subtle" colorScheme="blue">
-							View All <MdArrowRightAlt />
-						</LinkButton>
+						<Button asChild size="sm">
+							<Link href="/bills">
+								View All <ArrowRight />
+							</Link>
+						</Button>
 					}
 				/>
 				<TransactionsTable
@@ -29,13 +31,14 @@ export default async function DashboardPage() {
 					title="Recent transactions"
 					currentUserId={currentUser.id}
 					action={
-						<LinkButton variant="subtle" colorScheme="blue" href="/transactions">
-							View All <MdArrowRightAlt />
-						</LinkButton>
+						<Button asChild size="sm">
+							<Link href="/transactions">
+								View All <ArrowRight />
+							</Link>
+						</Button>
 					}
 				/>
-			</Stack>
-			<LoginFormV2 />
+			</div>
 		</>
 	);
 }

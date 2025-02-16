@@ -6,15 +6,16 @@ import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { cn } from "@/shadcn/lib/utils";
-import { signup } from "@/app/login/actions";
-import { Input } from "@/shadcn/components/ui/input";
-import { Button } from "@/shadcn/components/ui/button";
+import { Input } from "@/components/shadcn/input";
+import { Button } from "@/components/shadcn/button";
 import { RequiredLabel } from "@/components/required-label";
+import { Alert, AlertDescription } from "@/components/shadcn/alert";
+import { Form, FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
+import { Card, CardTitle, CardHeader, CardFooter, CardContent, CardDescription } from "@/components/shadcn/card";
+
+import { cn } from "@/utils/cn";
+import { signup } from "@/app/login/actions";
 import { type SignUpForm, SignUpFormSchema } from "@/schemas";
-import { Alert, AlertDescription } from "@/shadcn/components/ui/alert";
-import { Form, FormItem, FormField, FormControl, FormMessage } from "@/shadcn/components/ui/form";
-import { Card, CardTitle, CardHeader, CardFooter, CardContent, CardDescription } from "@/shadcn/components/ui/card";
 
 export function SignUpForm() {
 	const form = useForm<SignUpForm>({
@@ -39,7 +40,7 @@ export function SignUpForm() {
 
 	return (
 		<Form {...form}>
-			<div className={cn("mx-auto flex flex-col gap-6 w-[400px]")}>
+			<div className={cn("mx-auto flex w-[400px] flex-col gap-6")}>
 				<Card>
 					<CardHeader>
 						<CardTitle className="text-2xl">Sign Up</CardTitle>

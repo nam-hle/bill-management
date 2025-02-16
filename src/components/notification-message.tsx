@@ -1,9 +1,8 @@
 import React from "react";
-import { capitalize } from "lodash";
 import { useRouter } from "next/navigation";
-import { Text, Stack, HStack, Center } from "@chakra-ui/react";
 
-import { Status } from "@/chakra/status";
+import { StatusDot } from "@/components/status-dot";
+
 import { formatDistanceTime } from "@/utils";
 import {
 	type ClientNotification,
@@ -31,29 +30,23 @@ export const NotificationMessage: React.FC<NotificationMessage.Props> = (props) 
 	const message = React.useMemo(() => transformMessage(renderMessage(notification)), [notification]);
 
 	return (
-		<HStack cursor="pointer" padding="{spacing.2}" _hover={{ bg: "gray.200" }} justifyContent="space-between">
-			<Stack gap="0">
-				<Text
-					width="100%"
-					textStyle="sm"
-					data-testid="notification-text"
-					onClick={() => {
-						if (link) {
-							router.push(link);
-						}
+		<div
+			onClick={() => {
+				if (link) {
+					router.push(link);
+				}
 
-						onClick();
-					}}>
+				onClick();
+			}}
+			className="flex cursor-pointer items-center justify-between gap-1 p-2 transition hover:bg-gray-200">
+			<div className="flex flex-col gap-0">
+				<p className="text-sm" data-testid="notification-text">
 					{message}
-				</Text>
-				<Text textStyle="xs" color="gray.500">
-					{capitalize(formatDistanceTime(createdAt))}
-				</Text>
-			</Stack>
-			<Center width="20px" height="20px">
-				{!readStatus && <Status value="info" />}
-			</Center>
-		</HStack>
+				</p>
+				<p className="text-xs text-gray-500">{formatDistanceTime(createdAt)}</p>
+			</div>
+			<div className="flex h-5 w-5 items-center justify-center">{!readStatus && <StatusDot value="info" />}</div>
+		</div>
 	);
 };
 

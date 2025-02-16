@@ -1,14 +1,15 @@
 import React from "react";
 import { MdCheck } from "react-icons/md";
 
-import { type Container } from "@/types";
-import { Button, type ButtonProps } from "@/chakra/button";
+import { Button } from "@/components/shadcn/button";
 
-export const FilterButton: React.FC<Container & ButtonProps & { active: boolean }> = (props) => {
+import { type Container } from "@/types";
+
+export const FilterButton: React.FC<Container & { active: boolean }> = (props) => {
 	const { active, children, ...rest } = props;
 
 	return (
-		<Button size="sm" variant={active ? "surface" : "outline"} colorPalette={active ? "blue" : undefined} {...rest}>
+		<Button size="sm" variant={active ? "secondary" : "outline"} {...rest}>
 			{active ? <MdCheck /> : undefined}
 			{children}
 		</Button>

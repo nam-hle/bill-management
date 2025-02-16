@@ -3,23 +3,27 @@
 import { type z } from "zod";
 import React, { useState } from "react";
 import { parse, format } from "date-fns";
+import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { IoIosAddCircle } from "react-icons/io";
-import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Stack, Group, Image, Input, HStack, Center, Heading, InputAddon } from "@chakra-ui/react";
+
+import { Select } from "@/components/inputs";
+import { Input } from "@/components/shadcn/input";
+import { Button } from "@/components/shadcn/button";
+import { TypographyH1 } from "@/components/typography";
+import { Skeleton } from "@/components/shadcn/skeleton";
+import { RequiredLabel } from "@/components/required-label";
+import { SkeletonWrapper } from "@/components/skeleton-wrapper";
+import { TransactionAction } from "@/components/transaction-action";
+import { TransactionStatusBadge } from "@/components/transaction-status-badge";
+import { Form, FormItem, FormField, FormMessage, FormControl } from "@/components/shadcn/form";
 
 import { API } from "@/api";
-import { Field } from "@/chakra/field";
-import { Button } from "@/chakra/button";
-import { toaster } from "@/chakra/toaster";
-import { Select } from "@/components/inputs";
-import { DialogRoot, DialogContent } from "@/chakra/dialog";
+import { useToast } from "@/hooks/use-toast";
 import { CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
-import { TransactionAction } from "@/components/transaction-action";
 import { type ClientUser, type ClientTransaction } from "@/schemas";
-import { TransactionStatusBadge } from "@/components/transaction-status-badge";
 import { IssuedAtField, IssuedAtFieldTransformer, RequiredAmountFieldSchema } from "@/schemas/form.schema";
 
 namespace TransactionForm {
@@ -47,21 +51,21 @@ type FormState = z.infer<typeof FormStateSchema>;
 export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 	const { kind, users, currentUserId } = props;
 	const editing = React.useMemo(() => kind.type === "update", [kind.type]);
-	const [qrImage, setQrImage] = React.useState<string | undefined>(undefined);
+	const [_qrImage, setQrImage] = React.useState<string | undefined>(undefined);
 
+	const { toast } = useToast();
 	const router = useRouter();
 	const { mutate: generateQR } = useMutation({
 		mutationFn: API.QR.Create.mutate,
 		onError: () => {
-			toaster.create({
-				type: "error",
+			toast({
+				variant: "destructive",
 				title: "Failed to generate QR code",
 				description: "An error occurred while generating the QR code. Please try again."
 			});
 		},
 		onSuccess: (response) => {
-			toaster.create({
-				type: "success",
+			toast({
 				title: "QR code generated successfully",
 				description: "A new QR code has been generated successfully."
 			});
@@ -74,15 +78,14 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 	const { mutate } = useMutation({
 		mutationFn: API.Transactions.Create.mutation,
 		onError: () => {
-			toaster.create({
-				type: "error",
+			toast({
+				variant: "destructive",
 				title: "Failed to create transaction",
 				description: "An error occurred while creating the transaction. Please try again."
 			});
 		},
 		onSuccess: () => {
-			toaster.create({
-				type: "success",
+			toast({
 				title: "Transaction created successfully",
 				description: "A new transaction has been created and saved successfully. Redirecting to transactions page..."
 			});
@@ -91,6 +94,14 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 		}
 	});
 
+	const form = useForm<FormState>({
+		resolver: zodResolver(FormStateSchema),
+		defaultValues: {
+			amount: kind.type === "update" ? String(kind.transaction.amount) : "",
+			receiverId: kind.type === "update" ? kind.transaction.receiver.id : "",
+			issuedAt: IssuedAtFieldTransformer.fromServer(kind.type === "update" ? kind.transaction.issuedAt : undefined)
+		}
+	});
 	const {
 		watch,
 		reset,
@@ -99,14 +110,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 		setValue,
 		handleSubmit,
 		formState: { errors }
-	} = useForm<FormState>({
-		resolver: zodResolver(FormStateSchema),
-		defaultValues: {
-			amount: kind.type === "update" ? String(kind.transaction.amount) : "",
-			receiverId: kind.type === "update" ? kind.transaction.receiver.id : "",
-			issuedAt: IssuedAtFieldTransformer.fromServer(kind.type === "update" ? kind.transaction.issuedAt : undefined)
-		}
-	});
+	} = form;
 
 	const { mutate: fetchSuggestion } = useMutation({
 		mutationKey: ["transactions", "suggestion"],
@@ -161,97 +165,127 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 
 	return (
 		<>
-			{openDialog && qrImage && (
-				<DialogRoot lazyMount open={openDialog} onOpenChange={(e) => setOpenDialog(e.open)}>
-					<DialogContent margin={0} width="100vw" height="100vh" boxShadow="none" justifyContent="center" backgroundColor="transparent">
-						<Center>
-							<Image alt="receipt" src={qrImage} />
-						</Center>
-						<HStack marginTop="{spacing.4}" justifyContent="center">
-							<Button variant="solid" onClick={onSubmit}>
-								Done
-							</Button>
-						</HStack>
-					</DialogContent>
-				</DialogRoot>
-			)}
-			<Stack maxWidth="60%" className="ck" gap="{spacing.4}">
-				<HStack gap={0} justifyContent="space-between">
-					<Heading>
-						{editing ? "Transaction Details" : "New Transaction"}
-						{kind.type === "update" && <TransactionStatusBadge size="sm" status={kind.transaction.status} />}
-					</Heading>
-					{kind.type === "update" && <TransactionAction currentUserId={currentUserId} transaction={kind.transaction} />}
-				</HStack>
+			{/*{openDialog && qrImage && (*/}
+			{/*	<DialogRoot lazyMount open={openDialog} onOpenChange={(e) => setOpenDialog(e.open)}>*/}
+			{/*		<DialogContent margin={0} width="100vw" height="100vh" boxShadow="none" justifyContent="center" backgroundColor="transparent">*/}
+			{/*			<Center>*/}
+			{/*				<Image alt="receipt" src={qrImage} />*/}
+			{/*			</Center>*/}
+			{/*			<HStack marginTop="{spacing.4}" justifyContent="center">*/}
+			{/*				<Button onClick={onSubmit}>Done</Button>*/}
+			{/*			</HStack>*/}
+			{/*		</DialogContent>*/}
+			{/*	</DialogRoot>*/}
+			{/*)}*/}
+			<Form {...form}>
+				<div className="flex flex-col gap-4">
+					<div className="flex flex-row justify-between align-middle">
+						<TypographyH1 className="flex align-middle">
+							{editing ? "Transaction Details" : "New Transaction"}
+							{kind.type === "update" && <TransactionStatusBadge className="ml-2" status={kind.transaction.status} />}
+						</TypographyH1>
 
-				<Field required label="Receiver" invalid={!!errors.receiverId} errorText={errors.receiverId?.message}>
-					<Controller
-						name="receiverId"
+						{kind.type === "update" && <TransactionAction currentUserId={currentUserId} transaction={kind.transaction} />}
+					</div>
+
+					<FormField
 						control={control}
+						name="receiverId"
 						render={({ field }) => (
-							<Select
-								{...register("receiverId")}
-								readonly={editing}
-								value={field.value}
-								onValueChange={(value) => {
-									field.onChange(value);
-									setValue("bankAccountId", undefined);
-								}}
-								items={users.flatMap((user) => {
-									if (editing || user.id !== currentUserId) {
-										return { value: user.id, label: user.fullName };
-									}
+							<FormItem>
+								<RequiredLabel htmlFor="receiverId">Receiver</RequiredLabel>
+								<Select
+									{...register("receiverId")}
+									readonly={editing}
+									value={field.value}
+									onValueChange={(value) => {
+										field.onChange(value);
+										setValue("bankAccountId", undefined);
+									}}
+									items={users.flatMap((user) => {
+										if (editing || user.id !== currentUserId) {
+											return { value: user.id, label: user.fullName };
+										}
 
-									return [];
-								})}
-							/>
+										return [];
+									})}
+								/>
+								<FormMessage>{errors.receiverId?.message}</FormMessage>
+							</FormItem>
 						)}
 					/>
-				</Field>
 
-				<Field required label="Bank Account" invalid={!!errors.bankAccountId} errorText={errors.bankAccountId?.message}>
-					<Controller
+					<FormField
 						control={control}
 						name="bankAccountId"
 						render={({ field }) => (
-							<Select
-								readonly={editing}
-								value={field.value}
-								onValueChange={field.onChange}
-								disabled={isFetchingReceiverBankAccounts}
-								items={
-									receiverBankAccounts?.flatMap((account) => {
-										return { value: account.id, label: `${account.accountHolder} (${account.providerName} ${account.accountNumber})` };
-									}) ?? []
-								}
-							/>
+							<FormItem>
+								<RequiredLabel htmlFor="bankAccountId">Bank Account</RequiredLabel>
+								<SkeletonWrapper loading={isFetchingReceiverBankAccounts} skeleton={<Skeleton className="h-10 w-full" />}>
+									<Select
+										{...register("bankAccountId")}
+										readonly={editing}
+										value={field.value}
+										onValueChange={field.onChange}
+										items={
+											receiverBankAccounts?.flatMap((account) => {
+												return { value: account.id, label: `${account.accountHolder} (${account.providerName} ${account.accountNumber})` };
+											}) ?? []
+										}
+									/>
+								</SkeletonWrapper>
+								<FormMessage>{errors.bankAccountId?.message}</FormMessage>
+							</FormItem>
 						)}
 					/>
-				</Field>
 
-				<Field required label="Amount" invalid={!!errors.amount} errorText={errors.amount?.message}>
-					<Group attached width="100%">
-						<Input {...register("amount")} textAlign="right" readOnly={editing} pointerEvents={editing ? "none" : undefined} />
-						<InputAddon>.000 VND</InputAddon>
-					</Group>
-				</Field>
+					<FormField
+						name="amount"
+						control={control}
+						render={({ field }) => (
+							<FormItem>
+								<RequiredLabel htmlFor="amount">Amount</RequiredLabel>
+								<FormControl>
+									<Input {...field} readOnly={!editing} />
+								</FormControl>
+								<FormMessage>{errors?.amount?.message}</FormMessage>
+							</FormItem>
+						)}
+					/>
 
-				<Field required label="Issued At" invalid={!!errors.issuedAt} errorText={errors.issuedAt?.message}>
-					<Input {...register("issuedAt")} readOnly={editing} placeholder={CLIENT_DATE_FORMAT} pointerEvents={editing ? "none" : undefined} />
-				</Field>
+					<FormField
+						name="issuedAt"
+						control={control}
+						render={({ field }) => (
+							<FormItem>
+								<RequiredLabel htmlFor="issuedAt">Issued At</RequiredLabel>
+								<FormControl>
+									<Input placeholder={CLIENT_DATE_FORMAT} {...field} />
+									{/*readOnly={!editing}*/}
+								</FormControl>
+								<FormMessage>{errors.issuedAt?.message}</FormMessage>
+							</FormItem>
+						)}
+					/>
 
-				{kind.type === "create" && (
-					<HStack>
-						<Button variant="solid" onClick={onSubmit}>
-							<IoIosAddCircle /> Create
-						</Button>
-						<Button variant="solid" onClick={onGenerateQR}>
-							<IoIosAddCircle /> Generate QR
-						</Button>
-						<Button onClick={() => fetchSuggestion()}>Suggest</Button>
-					</HStack>
-				)}
-			</Stack>
+					{kind.type === "create" && (
+						<div className="flex justify-between gap-2">
+							<Button onClick={onSubmit}>
+								<IoIosAddCircle /> Create
+							</Button>
+							<div className="flex gap-2">
+								<Button variant="secondary" onClick={onGenerateQR}>
+									<IoIosAddCircle /> Generate QR
+								</Button>
+
+								<Button variant="secondary" onClick={() => fetchSuggestion()}>
+									Suggest
+								</Button>
+							</div>
+						</div>
+					)}
+				</div>
+			</Form>
 		</>
 	);
 };

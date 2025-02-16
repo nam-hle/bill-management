@@ -18,13 +18,13 @@ export namespace Actions {
 
 	export async function goToTransactionsPage(page: Page) {
 		await test.step(`Go to Transactions page`, async () => {
-			await page.getByRole("button", { name: "Transactions" }).click();
+			await page.getByRole("link", { name: "Transactions" }).click();
 		});
 	}
 
 	export async function goToBillsPage(page: Page) {
 		await test.step(`Go to Bills page`, async () => {
-			await page.getByRole("button", { name: "Bills" }).click();
+			await page.getByRole("link", { name: "Bills" }).click();
 		});
 	}
 

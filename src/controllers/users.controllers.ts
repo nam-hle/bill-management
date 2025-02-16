@@ -1,3 +1,4 @@
+import { wait } from "@/utils";
 import { type Balance, type UserInfo } from "@/types";
 import { type SupabaseInstance } from "@/services/supabase/server";
 import { type ClientUser, type ProfileFormPayload } from "@/schemas";
@@ -57,6 +58,20 @@ export namespace UsersControllers {
 			throw new Error(error?.message || "Profile not found");
 		}
 
+		const { data: user, error: userError } = await supabase.auth.getUser();
+
+		if (userError || !user) {
+			throw new Error(userError?.message || "User not found");
+		}
+
+		await wait(2000);
+
+		const email = user.user?.email;
+
+		if (!email) {
+			throw new Error("Email not found");
+		}
+
 		let avatarUrl: string | undefined;
 
 		if (profile.avatar_url) {
@@ -64,6 +79,6 @@ export namespace UsersControllers {
 			avatarUrl = data.publicUrl;
 		}
 
-		return { avatarUrl, fullName: profile.fullName ?? "" };
+		return { email, avatarUrl, fullName: profile.fullName ?? "" };
 	}
 }

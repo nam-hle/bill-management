@@ -6,6 +6,14 @@ export interface Container {
 	children: React.ReactNode;
 }
 
+export interface ClassName {
+	className?: string;
+}
+
+export interface Identifiable {
+	readonly id: string;
+}
+
 export interface Pagination {
 	readonly pageSize: number;
 	/** 1-based */
@@ -37,6 +45,7 @@ export interface Balance {
 }
 
 export interface UserInfo {
+	readonly email: string;
 	readonly fullName: string;
 	readonly avatarUrl?: string;
 }
