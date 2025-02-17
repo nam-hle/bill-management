@@ -27,8 +27,6 @@ namespace BillsTable {
 	}
 }
 
-const OWNER_FILTER_KEYS = ["creditor", "creator", "debtor"] as const;
-type OwnerFilterKey = (typeof OWNER_FILTER_KEYS)[number];
 type Filters = API.Bills.List.SearchParams;
 
 function toFilters(searchParams: ReadonlyURLSearchParams): Filters {
@@ -37,118 +35,67 @@ function toFilters(searchParams: ReadonlyURLSearchParams): Filters {
 
 function toSearchParams(filters: Filters) {
 	const params = new URLSearchParams();
-	console.log(filters);
 
-	Object.entries(filters)
-		.sort((a, b) => a[0].localeCompare(b[0]))
-		.forEach(([_key, value]) => {
-			const key = _key as keyof Filters;
+	for (const [key, value] of Object.entries(filters)) {
+		if (key === "page" && value === DEFAULT_PAGE_NUMBER) {
+			continue;
+		}
 
-			if (key === "page") {
-				if (value !== DEFAULT_PAGE_NUMBER) {
-					params.set("page", value.toString());
-				}
-
-				return;
-			}
-
-			if (value !== null && value !== undefined && value !== "") {
-				params.set(key, value.toString());
-			}
-		});
-	console.log(params);
-
-	if (Object.keys(params).length === 0) {
-		return "";
+		if (value !== null && value !== undefined && value !== "") {
+			params.set(key, value.toString());
+		}
 	}
 
 	return `?${params.toString()}`;
 }
 
-function toPagination(searchParams: ReadonlyURLSearchParams) {
-	const pageSize = searchParams.get("limit");
-	const pageNumber = searchParams.get("page");
-
-	return {
-		pageSize: pageSize ? parseInt(pageSize, 10) : DEFAULT_PAGE_SIZE,
-		pageNumber: pageNumber ? parseInt(pageNumber, 10) : DEFAULT_PAGE_NUMBER
-	};
-}
-
-function toTextSearch(searchParams: ReadonlyURLSearchParams) {
-	return searchParams.get("search") ?? "";
-}
-
 export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 	const { title, action, advanced, currentUserId } = props;
 	const searchParams = useSearchParams();
-	const [textSearch, setTextSearch] = React.useState(() => toTextSearch(searchParams));
-
 	const [filters, setFilters] = React.useState(() => toFilters(searchParams));
-	const pagination = toPagination(searchParams);
 
 	const router = useRouter();
 
 	const onFilterChange = React.useCallback(
-		(filterKey: OwnerFilterKey | "since", filterValue: string | null) => {
-			// const nextFilters = { ...filters, [filterKey]: filterValue };
+		<T extends keyof Filters>(filterKey: T, filterValue: Filters[T]) => {
 			setFilters((prevFilters) => {
-				const nextFilters = { ...prevFilters, [filterKey]: filterValue };
+				const nextFilters: Filters = {
+					...prevFilters,
+					[filterKey]: filterValue,
+					page: filterKey === "page" ? (filterValue as number) : DEFAULT_PAGE_NUMBER
+				};
 				router.push(toSearchParams(nextFilters));
 
 				return nextFilters;
 			});
-			// router.push(toSearchParams({ ...filters, [filterKey]: filterValue }));
 		},
 		[router]
 	);
 
-	const onSearch = React.useCallback(() => {
-		setTextSearch(() => textSearch.trim);
-		router.push(toSearchParams({ ...filters, q: textSearch }));
-	}, [filters, router, textSearch]);
-
-	const onPageChange = React.useCallback(
-		(params: { page: number }) => {
-			router.push(toSearchParams({ ...filters, page: params.page }));
-		},
-		[filters, router]
-	);
-
 	const createOwnerFilter = React.useCallback(
-		(filterKey: OwnerFilterKey) => {
+		(filterKey: "creditor" | "debtor" | "creator") => {
 			return {
 				active: filters[filterKey] === "me",
-				onClick: () => onFilterChange(filterKey, filters[filterKey] === undefined ? "me" : null)
+				onClick: () => onFilterChange(filterKey, filters[filterKey] === undefined ? "me" : undefined)
 			};
 		},
 		[filters, onFilterChange]
 	);
 
 	const createTimeFilter = React.useCallback(
-		(duration: "7d" | "30d" | null) => {
+		(duration: "7d" | "30d" | undefined) => {
 			return {
 				active: filters["since"] === duration,
-				onClick: () => onFilterChange("since", filters["since"] !== duration ? duration : null)
+				onClick: () => onFilterChange("since", filters["since"] !== duration ? duration : undefined)
 			};
 		},
 		[filters, onFilterChange]
 	);
 
-	const searchParams2 = useDebounce(
-		{
-			since: filters.since,
-			debtor: filters.debtor,
-			creator: filters.creator,
-			creditor: filters.creditor,
-			q: textSearch || undefined,
-			page: pagination.pageNumber
-		} satisfies API.Bills.List.SearchParams,
-		500
-	);
+	const query = useDebounce({ ...filters, q: filters.q || undefined }, 500);
 	const { data, isSuccess, isPending } = useQuery({
-		queryKey: ["bills", searchParams2],
-		queryFn: () => API.Bills.List.query(searchParams2)
+		queryKey: ["bills", query],
+		queryFn: () => API.Bills.List.query(query)
 	});
 
 	return (
@@ -168,13 +115,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 					<FilterButton {...createTimeFilter("7d")}>Last 7 days</FilterButton>
 					<FilterButton {...createTimeFilter("30d")}>Last 30 days</FilterButton>
 					<InputGroup w="200px" marginLeft="auto" startElement={<GoSearch />}>
-						<Input
-							onBlur={onSearch}
-							name="search-bar"
-							value={textSearch}
-							placeholder="Type to search.."
-							onChange={(e) => setTextSearch(e.target.value)}
-						/>
+						<Input name="search-bar" value={filters.q || ""} placeholder="Type to search.." onChange={(e) => onFilterChange("q", e.target.value)} />
 					</InputGroup>
 				</HStack>
 			)}
@@ -222,14 +163,14 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 					)}
 				</Table.Body>
 			</Table.Root>
-			{advanced && isSuccess && pagination.pageSize < data.fullSize && (
+			{advanced && isSuccess && DEFAULT_PAGE_SIZE < data.fullSize && (
 				<HStack w="100%" justifyContent="flex-end">
 					<PaginationRoot
 						siblingCount={1}
+						page={filters.page}
 						count={data.fullSize}
-						onPageChange={onPageChange}
-						page={pagination.pageNumber}
-						pageSize={pagination.pageSize}>
+						pageSize={DEFAULT_PAGE_SIZE}
+						onPageChange={({ page }) => onFilterChange("page", page)}>
 						<PaginationPrevTrigger />
 						<PaginationItems />
 						<PaginationNextTrigger />
