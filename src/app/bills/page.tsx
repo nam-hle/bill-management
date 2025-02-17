@@ -3,32 +3,16 @@ import { type Metadata } from "next";
 import { VStack } from "@chakra-ui/react";
 import { IoIosAddCircle } from "react-icons/io";
 
+import { BillsTable } from "@/components/tables";
 import { LinkButton } from "@/chakra/link-button";
-import { BillsTable, BalancesTable } from "@/components/tables";
-import { UsersControllers, BillMembersControllers } from "@/controllers";
-import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
+import { getCurrentUser } from "@/services/supabase/server";
 
 export const metadata: Metadata = {
 	title: "Bills"
 };
 
 export default async function BillsPage() {
-	const supabase = await createSupabaseServer();
 	const currentUser = await getCurrentUser();
-
-	const users = await UsersControllers.getUsers(supabase);
-
-	const membersData = await BillMembersControllers.getAll(supabase);
-
-	const balances = membersData.reduce(
-		(acc, member) => {
-			const balanceChange = member.role === "Creditor" ? member.amount : -member.amount;
-			acc[member.userId] = (acc[member.userId] || 0) + balanceChange;
-
-			return acc;
-		},
-		{} as Record<string, number>
-	);
 
 	return (
 		<VStack gap="{spacing.4}" alignItems="flex-start">
@@ -41,7 +25,6 @@ export default async function BillsPage() {
 					</LinkButton>
 				}
 			/>
-			<BalancesTable balances={balances} users={users ?? []} />
 		</VStack>
 	);
 }

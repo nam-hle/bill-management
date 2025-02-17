@@ -124,10 +124,10 @@ export namespace API {
 
 		export namespace List {
 			export const SearchParamsSchema = z.object({
-				textSearch: z.string().optional(),
-				debtorId: z.literal("me").optional(),
-				creatorId: z.literal("me").optional(),
-				creditorId: z.literal("me").optional(),
+				q: z.string().optional(),
+				debtor: z.literal("me").optional(),
+				creator: z.literal("me").optional(),
+				creditor: z.literal("me").optional(),
 				since: z.enum(["7d", "30d"]).optional(),
 				page: z.coerce.number().int().positive().optional().default(DEFAULT_PAGE_NUMBER)
 			});

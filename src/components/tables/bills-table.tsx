@@ -27,121 +27,75 @@ namespace BillsTable {
 	}
 }
 
-const TIME_FILTER_KEYS = ["since"] as const;
-type TimeFilterKey = (typeof TIME_FILTER_KEYS)[number];
+type Filters = API.Bills.List.SearchParams;
 
-const OWNER_FILTER_KEYS = ["creditor", "creator", "debtor"] as const;
-type OwnerFilterKey = (typeof OWNER_FILTER_KEYS)[number];
-interface Filters extends Partial<Record<OwnerFilterKey, "me">> {
-	since?: "7d" | "30d";
+function toFilters(searchParams: ReadonlyURLSearchParams): Filters {
+	return API.Bills.List.SearchParamsSchema.parse(Object.fromEntries(searchParams.entries()));
 }
 
-function toFilters(searchParams: ReadonlyURLSearchParams) {
-	const params: Filters = {};
-	searchParams.forEach((value, key) => {
-		if (OWNER_FILTER_KEYS.includes(key as OwnerFilterKey) || TIME_FILTER_KEYS.includes(key as TimeFilterKey)) {
-			// @ts-expect-error asd asd asd
-			params[key as OwnerFilterKey] = value;
+function toSearchParams(filters: Filters) {
+	const params = new URLSearchParams();
+
+	for (const [key, value] of Object.entries(filters)) {
+		if (key === "page" && value === DEFAULT_PAGE_NUMBER) {
+			continue;
 		}
-	});
 
-	return params;
-}
+		if (value !== null && value !== undefined && value !== "") {
+			params.set(key, value.toString());
+		}
+	}
 
-function toPagination(searchParams: ReadonlyURLSearchParams) {
-	const pageSize = searchParams.get("limit");
-	const pageNumber = searchParams.get("page");
-
-	return {
-		pageSize: pageSize ? parseInt(pageSize, 10) : DEFAULT_PAGE_SIZE,
-		pageNumber: pageNumber ? parseInt(pageNumber, 10) : DEFAULT_PAGE_NUMBER
-	};
-}
-
-function toTextSearch(searchParams: ReadonlyURLSearchParams) {
-	return searchParams.get("search") ?? "";
+	return `?${params.toString()}`;
 }
 
 export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 	const { title, action, advanced, currentUserId } = props;
 	const searchParams = useSearchParams();
-	const [textSearch, setTextSearch] = React.useState(() => toTextSearch(searchParams));
-
-	const filters = toFilters(searchParams);
-	const pagination = toPagination(searchParams);
+	const [filters, setFilters] = React.useState(() => toFilters(searchParams));
 
 	const router = useRouter();
 
 	const onFilterChange = React.useCallback(
-		(filterKey: OwnerFilterKey | TimeFilterKey, filterValue: string | null) => {
-			const updatedFilters = { ...filters };
+		<T extends keyof Filters>(filterKey: T, filterValue: Filters[T]) => {
+			setFilters((prevFilters) => {
+				const nextFilters: Filters = {
+					...prevFilters,
+					[filterKey]: filterValue,
+					page: filterKey === "page" ? (filterValue as number) : DEFAULT_PAGE_NUMBER
+				};
+				router.push(toSearchParams(nextFilters));
 
-			if (filterValue !== null) {
-				// @ts-expect-error asd asd asd sa
-				updatedFilters[filterKey] = filterValue;
-			} else {
-				delete updatedFilters[filterKey];
-			}
-
-			router.push(`?${new URLSearchParams(updatedFilters).toString()}`);
+				return nextFilters;
+			});
 		},
-		[filters, router]
-	);
-
-	const onSearch = React.useCallback(() => {
-		const updatedFilters: Filters & { search?: string } = { ...filters, search: textSearch };
-
-		if (textSearch === "") {
-			delete updatedFilters.search;
-		}
-
-		// @ts-expect-error asdasd asd asdas d
-		router.push(`?${new URLSearchParams(updatedFilters).toString()}`);
-	}, [filters, router, textSearch]);
-
-	const onPageChange = React.useCallback(
-		(params: { page: number }) => {
-			const updatedFilters = { ...filters, page: String(params.page) };
-
-			router.push(`?${new URLSearchParams(updatedFilters).toString()}`);
-		},
-		[filters, router]
+		[router]
 	);
 
 	const createOwnerFilter = React.useCallback(
-		(filterKey: OwnerFilterKey) => {
+		(filterKey: "creditor" | "debtor" | "creator") => {
 			return {
 				active: filters[filterKey] === "me",
-				onClick: () => onFilterChange(filterKey, filters[filterKey] === undefined ? "me" : null)
+				onClick: () => onFilterChange(filterKey, filters[filterKey] === undefined ? "me" : undefined)
 			};
 		},
 		[filters, onFilterChange]
 	);
 
 	const createTimeFilter = React.useCallback(
-		(filterKey: TimeFilterKey, duration: string) => {
+		(duration: "7d" | "30d" | undefined) => {
 			return {
-				active: filters[filterKey] === duration,
-				onClick: () => onFilterChange(filterKey, filters[filterKey] !== duration ? duration : null)
+				active: filters["since"] === duration,
+				onClick: () => onFilterChange("since", filters["since"] !== duration ? duration : undefined)
 			};
 		},
 		[filters, onFilterChange]
 	);
 
-	const searchParams2 = useDebounce(
-		{
-			since: filters.since,
-			debtorId: filters.debtor,
-			creatorId: filters.creator,
-			page: pagination.pageNumber,
-			creditorId: filters.creditor,
-			textSearch: textSearch || undefined
-		},
-		500
-	);
+	const query = useDebounce({ ...filters, q: filters.q || undefined }, 500);
 	const { data, isSuccess, isPending } = useQuery({
-		queryKey: ["bills", searchParams2],
-		queryFn: () => API.Bills.List.query(searchParams2)
+		queryKey: ["bills", query],
+		queryFn: () => API.Bills.List.query(query)
 	});
 
 	return (
@@ -158,16 +112,10 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 					<FilterButton {...createOwnerFilter("creator")}>As creator</FilterButton>
 					<FilterButton {...createOwnerFilter("creditor")}>As creditor</FilterButton>
 					<FilterButton {...createOwnerFilter("debtor")}>As debtor</FilterButton>
-					<FilterButton {...createTimeFilter("since", "7d")}>Last 7 days</FilterButton>
-					<FilterButton {...createTimeFilter("since", "30d")}>Last 30 days</FilterButton>
+					<FilterButton {...createTimeFilter("7d")}>Last 7 days</FilterButton>
+					<FilterButton {...createTimeFilter("30d")}>Last 30 days</FilterButton>
 					<InputGroup w="200px" marginLeft="auto" startElement={<GoSearch />}>
-						<Input
-							onBlur={onSearch}
-							name="search-bar"
-							value={textSearch}
-							placeholder="Type to search.."
-							onChange={(e) => setTextSearch(e.target.value)}
-						/>
+						<Input name="search-bar" value={filters.q || ""} placeholder="Type to search.." onChange={(e) => onFilterChange("q", e.target.value)} />
 					</InputGroup>
 				</HStack>
 			)}
@@ -215,14 +163,14 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 					)}
 				</Table.Body>
 			</Table.Root>
-			{advanced && isSuccess && pagination.pageSize < data.fullSize && (
+			{advanced && isSuccess && DEFAULT_PAGE_SIZE < data.fullSize && (
 				<HStack w="100%" justifyContent="flex-end">
 					<PaginationRoot
 						siblingCount={1}
+						page={filters.page}
 						count={data.fullSize}
-						onPageChange={onPageChange}
-						page={pagination.pageNumber}
-						pageSize={pagination.pageSize}>
+						pageSize={DEFAULT_PAGE_SIZE}
+						onPageChange={({ page }) => onFilterChange("page", page)}>
 						<PaginationPrevTrigger />
 						<PaginationItems />
 						<PaginationNextTrigger />

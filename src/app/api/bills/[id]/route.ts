@@ -33,12 +33,16 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 		const { debtors, issuedAt, creditor, description, receiptFile } = body;
 
 		// Members need to be updated first
-		await BillMembersControllers.updateMany(supabase, updater.id, {
-			billId,
-			members: [{ ...creditor, role: "Creditor" }, ...debtors.map((debtor) => ({ ...debtor, role: "Debtor" as const }))]
-		});
+		await BillMembersControllers.updateMany(supabase, updater.id, { billId, nextDebtors: debtors });
 
-		await BillsControllers.updateById(supabase, billId, { issuedAt, receiptFile, description, updaterId: updater.id });
+		await BillsControllers.updateById(supabase, billId, {
+			issuedAt,
+			receiptFile,
+			description,
+			updaterId: updater.id,
+			creditorId: creditor.userId,
+			totalAmount: creditor.amount
+		});
 
 		return new Response(JSON.stringify({ success: true, data: { billId } }), { status: 201 });
 	} catch (error) {

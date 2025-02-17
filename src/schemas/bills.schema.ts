@@ -13,8 +13,8 @@ export const ClientBillMemberSchema = z.object({
 });
 export type ClientBillMember = z.infer<typeof ClientBillMemberSchema>;
 export namespace ClientBillMember {
-	export function isEqual(a: Omit<ClientBillMember, "fullName">, b: Omit<ClientBillMember, "fullName">) {
-		return a.userId === b.userId && a.role === b.role;
+	export function isEqual(a: { userId: string }, b: { userId: string }) {
+		return a.userId === b.userId;
 	}
 }
 
