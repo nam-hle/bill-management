@@ -241,8 +241,15 @@ testBillsPage("Debtor filter", async ({ page, billsTableLocator }) => {
 		rows: [expectedRows[2], expectedRows[1]],
 		pagination: { totalPages: 2, currentPage: 2 }
 	});
+	await expect(page).toHaveURL("/bills?page=2&debtor=me");
 
-	await expect(page).toHaveURL("/bills?debtor=me&page=2");
+	await waitForLoading(page, () => page.getByRole("button", { name: "As creditor" }).click());
+	await Assertions.assertBillsTable(billsTableLocator, {
+		pagination: null,
+		heading: "Bills (1)",
+		rows: [expectedRows[9]]
+	});
+	await expect(page).toHaveURL("/bills?creditor=me&debtor=me");
 });
 
 testBillsPage("Creditor & Debtor filters", async ({ page, billsTableLocator }) => {
@@ -279,7 +286,7 @@ testBillsPage("Search", async ({ page, billsTableLocator }) => {
 		rows: [expectedRows[2], expectedRows[1], expectedRows[0]]
 	});
 
-	// await expect(page).toHaveURL("?search=break");
+	await expect(page).toHaveURL("/bills?q=break");
 });
 
 testBillsPage("Search & Filter", async ({ page, billsTableLocator }) => {
@@ -292,7 +299,7 @@ testBillsPage("Search & Filter", async ({ page, billsTableLocator }) => {
 		rows: [expectedRows[2], expectedRows[1]]
 	});
 
-	// await expect(page).toHaveURL("?search=break&debtor=me");
+	await expect(page).toHaveURL("/bills?q=break&debtor=me");
 });
 
 testBillsPage("Navigate with query", async ({ page, billsTableLocator }) => {

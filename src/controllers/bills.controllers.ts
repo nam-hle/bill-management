@@ -49,7 +49,6 @@ export namespace BillsControllers {
 	export async function getManyByMemberId(supabase: SupabaseInstance, payload: GetManyByMemberIdPayload): Promise<API.Bills.List.Response> {
 		const { page, limit, since, debtor, member, creator, creditor, q: textSearch } = payload;
 
-		console.log(payload);
 		let sinceDate: string | null = null;
 
 		if (since !== undefined && /^\d+d$/.test(since)) {

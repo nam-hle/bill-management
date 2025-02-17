@@ -20,7 +20,7 @@ const profiles = {
 		reporter: "html",
 		forbidOnly: false,
 		reuseExistingServer: true,
-		timeout: PROD ? 90_000 : 30_000,
+		timeout: PROD ? 30_000 : 90_000,
 		expectTimeout: PROD ? 30_000 : 60_000
 	}
 } as const;
