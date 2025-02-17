@@ -38,18 +38,18 @@ export namespace BillsControllers {
 		return data;
 	}
 
-	export interface GetManyByMemberIdPayload extends Omit<API.Bills.List.SearchParams, "debtorId" | "creatorId" | "creditorId"> {
+	export interface GetManyByMemberIdPayload extends Omit<API.Bills.List.SearchParams, "debtor" | "creator" | "creditor"> {
 		readonly limit: number;
-		// TODO: Unused anymore
-		readonly memberId: string;
-		readonly debtorId?: string;
-		readonly creatorId?: string;
-		readonly creditorId?: string;
+		readonly member: string;
+		readonly debtor?: string;
+		readonly creator?: string;
+		readonly creditor?: string;
 	}
 
 	export async function getManyByMemberId(supabase: SupabaseInstance, payload: GetManyByMemberIdPayload): Promise<API.Bills.List.Response> {
-		const { page, limit, since, memberId, debtorId, creatorId, textSearch, creditorId } = payload;
+		const { page, limit, since, debtor, member, creator, creditor, q: textSearch } = payload;
 
+		console.log(payload);
 		let sinceDate: string | null = null;
 
 		if (since !== undefined && /^\d+d$/.test(since)) {
@@ -66,10 +66,10 @@ export namespace BillsControllers {
 			since_timestamp: sinceDate,
 			text_search: textSearch ?? null,
 
-			member: memberId,
-			debtor: debtorId,
-			creator: creatorId,
-			creditor: creditorId
+			member,
+			debtor,
+			creator,
+			creditor
 		};
 
 		const { data, error } = await supabase.rpc("get_filtered_bills", params);

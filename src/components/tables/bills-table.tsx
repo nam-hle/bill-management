@@ -27,25 +27,42 @@ namespace BillsTable {
 	}
 }
 
-const TIME_FILTER_KEYS = ["since"] as const;
-type TimeFilterKey = (typeof TIME_FILTER_KEYS)[number];
-
 const OWNER_FILTER_KEYS = ["creditor", "creator", "debtor"] as const;
 type OwnerFilterKey = (typeof OWNER_FILTER_KEYS)[number];
-interface Filters extends Partial<Record<OwnerFilterKey, "me">> {
-	since?: "7d" | "30d";
+type Filters = API.Bills.List.SearchParams;
+
+function toFilters(searchParams: ReadonlyURLSearchParams): Filters {
+	return API.Bills.List.SearchParamsSchema.parse(Object.fromEntries(searchParams.entries()));
 }
 
-function toFilters(searchParams: ReadonlyURLSearchParams) {
-	const params: Filters = {};
-	searchParams.forEach((value, key) => {
-		if (OWNER_FILTER_KEYS.includes(key as OwnerFilterKey) || TIME_FILTER_KEYS.includes(key as TimeFilterKey)) {
-			// @ts-expect-error asd asd asd
-			params[key as OwnerFilterKey] = value;
-		}
-	});
+function toSearchParams(filters: Filters) {
+	const params = new URLSearchParams();
+	console.log(filters);
 
-	return params;
+	Object.entries(filters)
+		.sort((a, b) => a[0].localeCompare(b[0]))
+		.forEach(([_key, value]) => {
+			const key = _key as keyof Filters;
+
+			if (key === "page") {
+				if (value !== DEFAULT_PAGE_NUMBER) {
+					params.set("page", value.toString());
+				}
+
+				return;
+			}
+
+			if (value !== null && value !== undefined && value !== "") {
+				params.set(key, value.toString());
+			}
+		});
+	console.log(params);
+
+	if (Object.keys(params).length === 0) {
+		return "";
+	}
+
+	return `?${params.toString()}`;
 }
 
 function toPagination(searchParams: ReadonlyURLSearchParams) {
@@ -67,43 +84,33 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 	const searchParams = useSearchParams();
 	const [textSearch, setTextSearch] = React.useState(() => toTextSearch(searchParams));
 
-	const filters = toFilters(searchParams);
+	const [filters, setFilters] = React.useState(() => toFilters(searchParams));
 	const pagination = toPagination(searchParams);
 
 	const router = useRouter();
 
 	const onFilterChange = React.useCallback(
-		(filterKey: OwnerFilterKey | TimeFilterKey, filterValue: string | null) => {
-			const updatedFilters = { ...filters };
+		(filterKey: OwnerFilterKey | "since", filterValue: string | null) => {
+			// const nextFilters = { ...filters, [filterKey]: filterValue };
+			setFilters((prevFilters) => {
+				const nextFilters = { ...prevFilters, [filterKey]: filterValue };
+				router.push(toSearchParams(nextFilters));
 
-			if (filterValue !== null) {
-				// @ts-expect-error asd asd asd sa
-				updatedFilters[filterKey] = filterValue;
-			} else {
-				delete updatedFilters[filterKey];
-			}
-
-			router.push(`?${new URLSearchParams(updatedFilters).toString()}`);
+				return nextFilters;
+			});
+			// router.push(toSearchParams({ ...filters, [filterKey]: filterValue }));
 		},
-		[filters, router]
+		[router]
 	);
 
 	const onSearch = React.useCallback(() => {
-		const updatedFilters: Filters & { search?: string } = { ...filters, search: textSearch };
-
-		if (textSearch === "") {
-			delete updatedFilters.search;
-		}
-
-		// @ts-expect-error asdasd asd asdas d
-		router.push(`?${new URLSearchParams(updatedFilters).toString()}`);
+		setTextSearch(() => textSearch.trim);
+		router.push(toSearchParams({ ...filters, q: textSearch }));
 	}, [filters, router, textSearch]);
 
 	const onPageChange = React.useCallback(
 		(params: { page: number }) => {
-			const updatedFilters = { ...filters, page: String(params.page) };
-
-			router.push(`?${new URLSearchParams(updatedFilters).toString()}`);
+			router.push(toSearchParams({ ...filters, page: params.page }));
 		},
 		[filters, router]
 	);
@@ -119,10 +126,10 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 	);
 
 	const createTimeFilter = React.useCallback(
-		(filterKey: TimeFilterKey, duration: string) => {
+		(duration: "7d" | "30d" | null) => {
 			return {
-				active: filters[filterKey] === duration,
-				onClick: () => onFilterChange(filterKey, filters[filterKey] !== duration ? duration : null)
+				active: filters["since"] === duration,
+				onClick: () => onFilterChange("since", filters["since"] !== duration ? duration : null)
 			};
 		},
 		[filters, onFilterChange]
@@ -131,12 +138,12 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 	const searchParams2 = useDebounce(
 		{
 			since: filters.since,
-			debtorId: filters.debtor,
-			creatorId: filters.creator,
-			page: pagination.pageNumber,
-			creditorId: filters.creditor,
-			textSearch: textSearch || undefined
-		},
+			debtor: filters.debtor,
+			creator: filters.creator,
+			creditor: filters.creditor,
+			q: textSearch || undefined,
+			page: pagination.pageNumber
+		} satisfies API.Bills.List.SearchParams,
 		500
 	);
 	const { data, isSuccess, isPending } = useQuery({
@@ -158,8 +165,8 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 					<FilterButton {...createOwnerFilter("creator")}>As creator</FilterButton>
 					<FilterButton {...createOwnerFilter("creditor")}>As creditor</FilterButton>
 					<FilterButton {...createOwnerFilter("debtor")}>As debtor</FilterButton>
-					<FilterButton {...createTimeFilter("since", "7d")}>Last 7 days</FilterButton>
-					<FilterButton {...createTimeFilter("since", "30d")}>Last 30 days</FilterButton>
+					<FilterButton {...createTimeFilter("7d")}>Last 7 days</FilterButton>
+					<FilterButton {...createTimeFilter("30d")}>Last 30 days</FilterButton>
 					<InputGroup w="200px" marginLeft="auto" startElement={<GoSearch />}>
 						<Input
 							onBlur={onSearch}

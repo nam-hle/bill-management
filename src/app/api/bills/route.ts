@@ -19,16 +19,16 @@ export async function GET(request: NextRequest) {
 
 		const { id: currentUserId } = await getCurrentUser();
 
-		const { page, debtorId, creatorId, creditorId, ...rest } = searchParams;
+		const { page, debtor, creator, creditor, ...rest } = searchParams;
 
 		const resolvedSearchParams: BillsControllers.GetManyByMemberIdPayload = {
 			...rest,
-			memberId: currentUserId,
+			member: currentUserId,
 			limit: DEFAULT_PAGE_SIZE,
 			page: page ?? DEFAULT_PAGE_NUMBER,
-			debtorId: debtorId === "me" ? currentUserId : undefined,
-			creatorId: creatorId === "me" ? currentUserId : undefined,
-			creditorId: creditorId === "me" ? currentUserId : undefined
+			debtor: debtor === "me" ? currentUserId : undefined,
+			creator: creator === "me" ? currentUserId : undefined,
+			creditor: creditor === "me" ? currentUserId : undefined
 		};
 
 		const response: API.Bills.List.Response = await BillsControllers.getManyByMemberId(supabase, resolvedSearchParams);
