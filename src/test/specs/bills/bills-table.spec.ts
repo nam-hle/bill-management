@@ -249,7 +249,7 @@ testBillsPage("Debtor filter", async ({ page, billsTableLocator }) => {
 		heading: "Bills (1)",
 		rows: [expectedRows[9]]
 	});
-	await expect(page).toHaveURL("/bills?creditor=me&debtor=me");
+	await expect(page).toHaveURL("/bills?debtor=me&creditor=me");
 });
 
 testBillsPage("Creditor & Debtor filters", async ({ page, billsTableLocator }) => {
