@@ -86,7 +86,7 @@ const expectedRows: Assertions.BillsTableExpectation["rows"] = [
 	}
 ];
 
-test.skip("Seed bills", async ({ browser }, testInfo) => {
+test.beforeAll("Seed bills", async ({ browser }, testInfo) => {
 	test.setTimeout(testInfo.timeout * 1.5);
 	await truncate();
 	await seedGroup();
@@ -245,7 +245,7 @@ testBillsPage("Debtor filter", async ({ page, billsTableLocator }) => {
 	await expect(page).toHaveURL("/bills?debtor=me&page=2");
 });
 
-testBillsPage.fail("Creditor & Debtor filters", async ({ page, billsTableLocator }) => {
+testBillsPage("Creditor & Debtor filters", async ({ page, billsTableLocator }) => {
 	await waitForLoading(page, () => page.getByRole("button", { name: "As creditor" }).click());
 	await waitForLoading(page, () => page.getByRole("button", { name: "As debtor" }).click());
 
@@ -256,6 +256,19 @@ testBillsPage.fail("Creditor & Debtor filters", async ({ page, billsTableLocator
 	});
 
 	await expect(page).toHaveURL("/bills?creditor=me&debtor=me");
+});
+
+testBillsPage("Creator & Debtor filters", async ({ page, billsTableLocator }) => {
+	await waitForLoading(page, () => page.getByRole("button", { name: "As creator" }).click());
+	await waitForLoading(page, () => page.getByRole("button", { name: "As debtor" }).click());
+
+	await Assertions.assertBillsTable(billsTableLocator, {
+		pagination: null,
+		heading: "Bills (3)",
+		rows: [expectedRows[9], expectedRows[8], expectedRows[7]]
+	});
+
+	await expect(page).toHaveURL("/bills?creator=me&debtor=me");
 });
 
 testBillsPage("Search", async ({ page, billsTableLocator }) => {

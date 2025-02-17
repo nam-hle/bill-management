@@ -48,62 +48,39 @@ export namespace BillsControllers {
 	}
 
 	export async function getManyByMemberId(supabase: SupabaseInstance, payload: GetManyByMemberIdPayload): Promise<API.Bills.List.Response> {
-		const { page, limit, memberId, debtorId, creatorId, creditorId } = payload;
+		const { page, limit, since, memberId, debtorId, creatorId, textSearch, creditorId } = payload;
 
-		// let sinceDate: string | null = null;
-		//
-		// if (since !== undefined && /^\d+d$/.test(since)) {
-		// 	const days = parseInt(since.replace("d", ""), 10);
-		//
-		// 	if (!isNaN(days)) {
-		// 		sinceDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-		// 	}
-		// }
+		let sinceDate: string | null = null;
+
+		if (since !== undefined && /^\d+d$/.test(since)) {
+			const days = parseInt(since.replace("d", ""), 10);
+
+			if (!isNaN(days)) {
+				sinceDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+			}
+		}
 
 		const params = {
 			page_size: limit,
 			page_number: page,
+			since_timestamp: sinceDate,
+			text_search: textSearch ?? null,
 
 			member: memberId,
 			debtor: debtorId,
 			creator: creatorId,
 			creditor: creditorId
 		};
-		console.log(params);
 
 		const { data, error } = await supabase.rpc("get_filtered_bills", params);
 
 		if (error) {
-			console.error(error);
 			throw error;
 		}
 
-		if (!data) {
+		if (!data?.length) {
 			return { data: [], fullSize: 0 };
 		}
-
-		console.log(data);
-
-		// const targetBillIds =
-		// 	creditorId === undefined && debtorId === undefined && creatorId === undefined
-		// 		? await getRelevantBillIds(supabase, payload)
-		// 		: await getTargetMemberBillIds(supabase, payload);
-		//
-		// let billsQuery = supabase.from("bills").select(BILLS_SELECT, { count: "exact" }).in("id", targetBillIds);
-		//
-		// // TODO: Remove due to zod validation
-		// if (since !== undefined && /^\w+d$/.test(since)) {
-		// 	const days = parseInt(since.replace("d", ""), 10);
-		//
-		// 	if (!isNaN(days)) {
-		// 		const date = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-		// 		billsQuery = billsQuery.gt("created_at", date);
-		// 	}
-		// }
-		//
-		// if (textSearch) {
-		// 	billsQuery = billsQuery.filter("description", "fts", `${textSearch}:*`);
-		// }
 
 		const { data: bills } = await supabase
 			.from("bills")
