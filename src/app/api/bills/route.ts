@@ -35,8 +35,6 @@ export async function GET(request: NextRequest) {
 
 		return new Response(JSON.stringify(response), { status: 200 });
 	} catch (error) {
-		console.error(error);
-
 		return RouteUtils.ServerError;
 	}
 }
