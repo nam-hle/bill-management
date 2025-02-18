@@ -20,14 +20,14 @@ export function LoginFormV2({ className, ...props }: React.ComponentPropsWithout
 			password: ""
 		}
 	});
+
 	const {
 		control,
-		register,
 		handleSubmit,
-		formState: { errors, isSubmitting }
+		formState: { errors }
 	} = form;
 
-	const [formError, setFormError] = React.useState<string | undefined>();
+	const [_formError, setFormError] = React.useState<string | undefined>();
 
 	const onSubmitLogin = async (data: { email: string; password: string }) => {
 		const error = await login(data);
@@ -36,14 +36,6 @@ export function LoginFormV2({ className, ...props }: React.ComponentPropsWithout
 			setFormError(error);
 		}
 	};
-
-	// const onSubmitSignup = async (data: { email: string; password: string }) => {
-	// 	const error = await signup(data);
-	//
-	// 	if (error) {
-	// 		setFormError(error);
-	// 	}
-	// };
 
 	return (
 		<Form {...form}>
