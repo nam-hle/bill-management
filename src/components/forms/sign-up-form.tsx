@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -12,7 +14,7 @@ import { RequiredLabel } from "@/components/required-label";
 import { type SignUpForm, SignUpFormSchema } from "@/schemas";
 import { Alert, AlertDescription } from "@/shadcn/components/ui/alert";
 import { Form, FormItem, FormField, FormControl, FormMessage } from "@/shadcn/components/ui/form";
-import { Card, CardTitle, CardHeader, CardContent, CardDescription } from "@/shadcn/components/ui/card";
+import { Card, CardTitle, CardHeader, CardFooter, CardContent, CardDescription } from "@/shadcn/components/ui/card";
 
 export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
 	const form = useForm<SignUpForm>({
@@ -22,17 +24,16 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
 
 	const {
 		control,
+		setError,
 		handleSubmit,
-		formState: { errors }
+		formState: { errors, isSubmitting }
 	} = form;
-
-	const [signUpError, setSignUpError] = React.useState<string | undefined>();
 
 	const onSubmitSignup = async (data: { email: string; password: string }) => {
 		const error = await signup(data);
 
 		if (error) {
-			setSignUpError(error);
+			setError("root", { message: error });
 		}
 	};
 
@@ -44,12 +45,12 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
 						<CardTitle className="text-2xl">Sign Up</CardTitle>
 						<CardDescription>Create a new account to get started</CardDescription>
 					</CardHeader>
-					<CardContent>
-						<form onSubmit={handleSubmit((data) => onSubmitSignup(data))}>
+					<form onSubmit={handleSubmit((data) => onSubmitSignup(data))}>
+						<CardContent>
 							<div className="flex flex-col gap-6">
-								{signUpError && (
+								{errors.root && (
 									<Alert className="py-2" variant="destructive">
-										<AlertDescription>{signUpError}</AlertDescription>
+										<AlertDescription>{errors.root.message}</AlertDescription>
 									</Alert>
 								)}
 								<FormField
@@ -104,12 +105,21 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
 										</FormItem>
 									)}
 								/>
-								<Button type="submit" className="w-full">
-									Create Account
-								</Button>
 							</div>
-						</form>
-					</CardContent>
+						</CardContent>
+						<CardFooter className="flex flex-col space-y-4">
+							<Button type="submit" className="w-full" disabled={isSubmitting}>
+								{isSubmitting && <Loader2 className="animate-spin" />}
+								Create Account
+							</Button>
+							<p className="text-sm text-gray-600">
+								Already have an account?{" "}
+								<Link href="/login" className="text-primary underline underline-offset-4">
+									Log in here
+								</Link>
+							</p>
+						</CardFooter>
+					</form>
 				</Card>
 			</div>
 		</Form>

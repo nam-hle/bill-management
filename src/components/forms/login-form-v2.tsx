@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -90,9 +91,9 @@ export function LoginFormV2({ className, ...props }: React.ComponentPropsWithout
 							</div>
 							<div className="mt-4 text-center text-sm">
 								Don&apos;t have an account?{" "}
-								<a href="/signup" className="underline underline-offset-4">
+								<Link href="/signup" className="text-primary underline underline-offset-4">
 									Sign up
-								</a>
+								</Link>
 							</div>
 						</form>
 					</CardContent>
