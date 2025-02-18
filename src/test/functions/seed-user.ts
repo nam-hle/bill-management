@@ -8,7 +8,10 @@ export async function seedUser(params: { email: string; fullName?: string; passw
 	const { data, error } = await supabaseTest.auth.admin.createUser({
 		password,
 		email: fullEmail,
-		email_confirm: true
+		email_confirm: true,
+		user_metadata: {
+			full_name: fullName
+		}
 	});
 
 	if (error) {
@@ -17,10 +20,6 @@ export async function seedUser(params: { email: string; fullName?: string; passw
 
 	if (!data) {
 		throw new Error("Can not get user data");
-	}
-
-	if (fullName) {
-		await supabaseTest.from("profiles").update({ full_name: fullName }).eq("id", data.user.id).single();
 	}
 
 	return data.user.id;

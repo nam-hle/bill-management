@@ -49,7 +49,7 @@ export function LoginFormV2() {
 							<div className="flex flex-col gap-6">
 								{errors.root && (
 									<Alert className="py-2" variant="destructive">
-										<AlertDescription>{errors.root.message}</AlertDescription>
+										<AlertDescription data-testid="form-error">{errors.root.message}</AlertDescription>
 									</Alert>
 								)}
 								<div className="grid gap-2">

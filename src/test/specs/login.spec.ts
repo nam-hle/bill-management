@@ -5,6 +5,8 @@ import { Actions } from "@/test/helpers/actions";
 import { seedUser } from "@/test/functions/seed-user";
 import { FULL_NAMES, DEFAULT_PASSWORD } from "@/test/utils";
 
+// TODO: Validate login form
+
 test("Login should fail with incorrect credentials", async ({ page }) => {
 	await page.goto("/");
 
@@ -14,7 +16,7 @@ test("Login should fail with incorrect credentials", async ({ page }) => {
 	await Actions.fillInput(page, "password", DEFAULT_PASSWORD);
 	await Actions.submit(page);
 
-	await expect(page.locator(".chakra-alert__root")).toHaveText("Invalid login credentials");
+	await expect(page.getByTestId("form-error")).toHaveText("Invalid login credentials");
 
 	await seedUser({ email: "harry", fullName: FULL_NAMES.HARRY });
 
