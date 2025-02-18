@@ -8,17 +8,15 @@ import { cn } from "@/shadcn/lib/utils";
 import { login } from "@/app/login/actions";
 import { Input } from "@/shadcn/components/ui/input";
 import { Button } from "@/shadcn/components/ui/button";
+import { Alert, AlertDescription } from "@/shadcn/components/ui/alert";
 import { type LoginFormPayload, LoginFormPayloadSchema } from "@/schemas";
 import { Card, CardTitle, CardHeader, CardContent, CardDescription } from "@/shadcn/components/ui/card";
 import { Form, FormItem, FormField, FormLabel, FormControl, FormMessage } from "@/shadcn/components/ui/form";
 
 export function LoginFormV2({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
 	const form = useForm<LoginFormPayload>({
-		resolver: zodResolver(LoginFormPayloadSchema),
-		defaultValues: {
-			email: "",
-			password: ""
-		}
+		defaultValues: { email: "", password: "" },
+		resolver: zodResolver(LoginFormPayloadSchema)
 	});
 
 	const {
@@ -27,27 +25,32 @@ export function LoginFormV2({ className, ...props }: React.ComponentPropsWithout
 		formState: { errors }
 	} = form;
 
-	const [_formError, setFormError] = React.useState<string | undefined>();
+	const [loginError, setLoginError] = React.useState<string | undefined>();
 
-	const onSubmitLogin = async (data: { email: string; password: string }) => {
+	const onLogin = async (data: { email: string; password: string }) => {
 		const error = await login(data);
 
 		if (error) {
-			setFormError(error);
+			setLoginError(error);
 		}
 	};
 
 	return (
 		<Form {...form}>
-			<div className={cn("flex flex-col gap-6 w-[400px]", className)} {...props}>
+			<div className={cn("mx-auto flex flex-col gap-6 w-[400px]", className)} {...props}>
 				<Card>
 					<CardHeader>
 						<CardTitle className="text-2xl">Login</CardTitle>
 						<CardDescription>Enter your email below to login to your account</CardDescription>
 					</CardHeader>
 					<CardContent>
-						<form onSubmit={handleSubmit(onSubmitLogin)}>
+						<form onSubmit={handleSubmit(onLogin)}>
 							<div className="flex flex-col gap-6">
+								{loginError && (
+									<Alert className="py-2" variant="destructive">
+										<AlertDescription>{loginError}</AlertDescription>
+									</Alert>
+								)}
 								<div className="grid gap-2">
 									<FormField
 										name="email"
@@ -56,7 +59,7 @@ export function LoginFormV2({ className, ...props }: React.ComponentPropsWithout
 											<FormItem>
 												<FormLabel>Email</FormLabel>
 												<FormControl>
-													<Input placeholder="Enter your full name" {...field} />
+													<Input placeholder="Enter your email" {...field} />
 												</FormControl>
 												<FormMessage>{errors.email?.message}</FormMessage>
 											</FormItem>
