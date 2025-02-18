@@ -3,7 +3,6 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
-import { wait } from "@/utils";
 import { createSupabaseServer } from "@/services/supabase/server";
 import { SignUpPayloadSchema, type LoginFormPayload } from "@/schemas";
 
@@ -23,8 +22,6 @@ export async function signup(payload: unknown) {
 	const supabase = await createSupabaseServer();
 
 	const formData = SignUpPayloadSchema.safeParse(payload);
-
-	await wait(2000);
 
 	if (!formData.success) {
 		return formData.error.errors[0].message;

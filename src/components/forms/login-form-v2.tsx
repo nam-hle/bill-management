@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -14,7 +15,7 @@ import { type LoginFormPayload, LoginFormPayloadSchema } from "@/schemas";
 import { Card, CardTitle, CardHeader, CardContent, CardDescription } from "@/shadcn/components/ui/card";
 import { Form, FormItem, FormField, FormLabel, FormControl, FormMessage } from "@/shadcn/components/ui/form";
 
-export function LoginFormV2({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
+export function LoginFormV2() {
 	const form = useForm<LoginFormPayload>({
 		defaultValues: { email: "", password: "" },
 		resolver: zodResolver(LoginFormPayloadSchema)
@@ -22,23 +23,22 @@ export function LoginFormV2({ className, ...props }: React.ComponentPropsWithout
 
 	const {
 		control,
+		setError,
 		handleSubmit,
-		formState: { errors }
+		formState: { errors, isSubmitting }
 	} = form;
-
-	const [loginError, setLoginError] = React.useState<string | undefined>();
 
 	const onLogin = async (data: { email: string; password: string }) => {
 		const error = await login(data);
 
 		if (error) {
-			setLoginError(error);
+			setError("root", { message: error });
 		}
 	};
 
 	return (
 		<Form {...form}>
-			<div className={cn("mx-auto flex flex-col gap-6 w-[400px]", className)} {...props}>
+			<div className={cn("mx-auto flex flex-col gap-6 w-[400px]")}>
 				<Card>
 					<CardHeader>
 						<CardTitle className="text-2xl">Login</CardTitle>
@@ -47,9 +47,9 @@ export function LoginFormV2({ className, ...props }: React.ComponentPropsWithout
 					<CardContent>
 						<form onSubmit={handleSubmit(onLogin)}>
 							<div className="flex flex-col gap-6">
-								{loginError && (
+								{errors.root && (
 									<Alert className="py-2" variant="destructive">
-										<AlertDescription>{loginError}</AlertDescription>
+										<AlertDescription>{errors.root.message}</AlertDescription>
 									</Alert>
 								)}
 								<div className="grid gap-2">
@@ -85,7 +85,8 @@ export function LoginFormV2({ className, ...props }: React.ComponentPropsWithout
 										</FormItem>
 									)}
 								/>
-								<Button type="submit" className="w-full">
+								<Button type="submit" className="w-full" disabled={isSubmitting}>
+									{isSubmitting && <Loader2 className="animate-spin" />}
 									Login
 								</Button>
 							</div>

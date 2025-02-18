@@ -16,7 +16,7 @@ import { Alert, AlertDescription } from "@/shadcn/components/ui/alert";
 import { Form, FormItem, FormField, FormControl, FormMessage } from "@/shadcn/components/ui/form";
 import { Card, CardTitle, CardHeader, CardFooter, CardContent, CardDescription } from "@/shadcn/components/ui/card";
 
-export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
+export function SignUpForm() {
 	const form = useForm<SignUpForm>({
 		resolver: zodResolver(SignUpFormSchema),
 		defaultValues: { email: "", password: "", fullName: "", confirmPassword: "" }
@@ -39,7 +39,7 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
 
 	return (
 		<Form {...form}>
-			<div className={cn("mx-auto flex flex-col gap-6 w-[400px]", className)} {...props}>
+			<div className={cn("mx-auto flex flex-col gap-6 w-[400px]")}>
 				<Card>
 					<CardHeader>
 						<CardTitle className="text-2xl">Sign Up</CardTitle>

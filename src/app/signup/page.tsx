@@ -6,19 +6,19 @@ import { SignUpForm } from "@/components/forms/sign-up-form";
 import { createSupabaseServer } from "@/services/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Sign Up"
+	title: "Sign Up"
 };
 
 export default async function SignUpPage() {
-  const supabase = await createSupabaseServer();
+	const supabase = await createSupabaseServer();
 
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
+	const {
+		data: { user }
+	} = await supabase.auth.getUser();
 
-  if (user) {
-    redirect("/");
-  }
+	if (user) {
+		redirect("/");
+	}
 
-  return <SignUpForm />;
+	return <SignUpForm />;
 }
