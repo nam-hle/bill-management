@@ -16,6 +16,7 @@ export const NavigationBar: React.FC<AvatarContainer.Props> = ({ userInfo }) => 
 	return (
 		<HStack
 			as="header"
+			className="ck"
 			marginInline="auto"
 			maxWidth="{sizes.8xl}"
 			paddingBlock="{spacing.2}"

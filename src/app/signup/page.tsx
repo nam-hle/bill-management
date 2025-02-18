@@ -2,14 +2,14 @@ import React from "react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { LoginFormV2 } from "@/components/forms/login-form-v2";
+import { SignUpForm } from "@/components/forms/sign-up-form";
 import { createSupabaseServer } from "@/services/supabase/server";
 
 export const metadata: Metadata = {
-	title: "Login"
+	title: "Sign Up"
 };
 
-export default async function LoginPage() {
+export default async function SignUpPage() {
 	const supabase = await createSupabaseServer();
 
 	const {
@@ -20,5 +20,5 @@ export default async function LoginPage() {
 		redirect("/");
 	}
 
-	return <LoginFormV2 />;
+	return <SignUpForm />;
 }

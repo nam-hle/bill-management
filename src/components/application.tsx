@@ -1,5 +1,4 @@
 import React from "react";
-import { Box } from "@chakra-ui/react";
 
 import { type Container } from "@/types";
 import { Toaster } from "@/chakra/toaster";
@@ -11,9 +10,7 @@ export const Application: React.FC<Container & AvatarContainer.Props> = ({ userI
 		<>
 			<Toaster />
 			<NavigationBar userInfo={userInfo} />
-			<Box as="main" marginInline="auto" maxWidth="{sizes.8xl}" paddingBlock="{spacing.4}" paddingInline="{spacing.8}" minHeight="calc(100vh - 64px)">
-				{children}
-			</Box>
+			<main className="mx-auto max-w-8xl py-4 px-8 min-h-[calc(100vh-64px)]">{children}</main>
 		</>
 	);
 };
