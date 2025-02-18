@@ -25,7 +25,7 @@ export const BankAccountsTable: React.FC<BankAccountsTable.Props> = (props) => {
 	});
 
 	return (
-		<VStack width="60%" gap="{spacing.4}" marginInline="auto">
+		<VStack width="60%" className="ck" gap="{spacing.4}" marginInline="auto">
 			<HStack width="100%" justifyContent="space-between">
 				<Heading as="h1">Accounts</Heading>
 			</HStack>

@@ -47,7 +47,7 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 	const onSubmit = React.useMemo(() => handleSubmit((data) => mutate(data)), [handleSubmit, mutate]);
 
 	return (
-		<Stack as="form" width="60%" gap="{spacing.4}" onSubmit={onSubmit} marginInline="auto">
+		<Stack as="form" width="60%" className="ck" gap="{spacing.4}" onSubmit={onSubmit} marginInline="auto">
 			<Heading>Profile</Heading>
 			<SimpleGrid gap="{spacing.2}" templateRows="repeat(2, 1fr)" templateColumns="repeat(12, 1fr)">
 				<GridItem rowSpan={2} colSpan={3} alignSelf="center">

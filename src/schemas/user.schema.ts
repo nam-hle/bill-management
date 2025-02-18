@@ -21,11 +21,11 @@ export const LoginFormPayloadSchema = z.object({
 });
 export type LoginFormPayload = z.infer<typeof LoginFormPayloadSchema>;
 
-export const SignUpFormPayloadSchema = z
+export const SignUpFormSchema = z
 	.object({
 		confirmPassword: z.string(),
 		email: z.string().email("Invalid email address"),
-		fullName: z.string().min(1, "Full name is required"),
+		fullName: z.string().min(1, "Display name is required"),
 		password: z.string().min(6, "Password must be at least 6 characters")
 	})
 	.refine((data) => data.password === data.confirmPassword, {
@@ -33,4 +33,8 @@ export const SignUpFormPayloadSchema = z
 		message: "Passwords do not match"
 	});
 
-export type SignUpFormPayload = z.infer<typeof SignUpFormPayloadSchema>;
+export type SignUpForm = z.infer<typeof SignUpFormSchema>;
+
+export const SignUpPayloadSchema = SignUpFormSchema.innerType().omit({ confirmPassword: true });
+// @ts-expect-error ABC
+export const SignUpPayload = z.infer<typeof SignUpPayloadSchema>;

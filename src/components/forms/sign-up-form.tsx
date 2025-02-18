@@ -5,18 +5,19 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { cn } from "@/shadcn/lib/utils";
-import { login } from "@/app/login/actions";
+import { signup } from "@/app/login/actions";
 import { Input } from "@/shadcn/components/ui/input";
 import { Button } from "@/shadcn/components/ui/button";
+import { RequiredLabel } from "@/components/required-label";
+import { type SignUpForm, SignUpFormSchema } from "@/schemas";
 import { Alert, AlertDescription } from "@/shadcn/components/ui/alert";
-import { type LoginFormPayload, LoginFormPayloadSchema } from "@/schemas";
+import { Form, FormItem, FormField, FormControl, FormMessage } from "@/shadcn/components/ui/form";
 import { Card, CardTitle, CardHeader, CardContent, CardDescription } from "@/shadcn/components/ui/card";
-import { Form, FormItem, FormField, FormLabel, FormControl, FormMessage } from "@/shadcn/components/ui/form";
 
-export function LoginFormV2({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
-	const form = useForm<LoginFormPayload>({
-		defaultValues: { email: "", password: "" },
-		resolver: zodResolver(LoginFormPayloadSchema)
+export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
+	const form = useForm<SignUpForm>({
+		resolver: zodResolver(SignUpFormSchema),
+		defaultValues: { email: "", password: "", fullName: "", confirmPassword: "" }
 	});
 
 	const {
@@ -25,13 +26,13 @@ export function LoginFormV2({ className, ...props }: React.ComponentPropsWithout
 		formState: { errors }
 	} = form;
 
-	const [loginError, setLoginError] = React.useState<string | undefined>();
+	const [signUpError, setSignUpError] = React.useState<string | undefined>();
 
-	const onLogin = async (data: { email: string; password: string }) => {
-		const error = await login(data);
+	const onSubmitSignup = async (data: { email: string; password: string }) => {
+		const error = await signup(data);
 
 		if (error) {
-			setLoginError(error);
+			setSignUpError(error);
 		}
 	};
 
@@ -40,43 +41,49 @@ export function LoginFormV2({ className, ...props }: React.ComponentPropsWithout
 			<div className={cn("mx-auto flex flex-col gap-6 w-[400px]", className)} {...props}>
 				<Card>
 					<CardHeader>
-						<CardTitle className="text-2xl">Login</CardTitle>
-						<CardDescription>Enter your email below to login to your account</CardDescription>
+						<CardTitle className="text-2xl">Sign Up</CardTitle>
+						<CardDescription>Create a new account to get started</CardDescription>
 					</CardHeader>
 					<CardContent>
-						<form onSubmit={handleSubmit(onLogin)}>
+						<form onSubmit={handleSubmit((data) => onSubmitSignup(data))}>
 							<div className="flex flex-col gap-6">
-								{loginError && (
+								{signUpError && (
 									<Alert className="py-2" variant="destructive">
-										<AlertDescription>{loginError}</AlertDescription>
+										<AlertDescription>{signUpError}</AlertDescription>
 									</Alert>
 								)}
-								<div className="grid gap-2">
-									<FormField
-										name="email"
-										control={control}
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>Email</FormLabel>
-												<FormControl>
-													<Input placeholder="Enter your email" {...field} />
-												</FormControl>
-												<FormMessage>{errors.email?.message}</FormMessage>
-											</FormItem>
-										)}
-									/>
-								</div>
+								<FormField
+									name="fullName"
+									control={control}
+									render={({ field }) => (
+										<FormItem>
+											<RequiredLabel htmlFor="fullName">Display Name</RequiredLabel>
+											<FormControl>
+												<Input placeholder="John Doe" {...field} />
+											</FormControl>
+											<FormMessage>{errors.fullName?.message}</FormMessage>
+										</FormItem>
+									)}
+								/>
+								<FormField
+									name="email"
+									control={control}
+									render={({ field }) => (
+										<FormItem>
+											<RequiredLabel htmlFor="email">Email</RequiredLabel>
+											<FormControl>
+												<Input placeholder="john.doe@example.com" {...field} />
+											</FormControl>
+											<FormMessage>{errors.email?.message}</FormMessage>
+										</FormItem>
+									)}
+								/>
 								<FormField
 									name="password"
 									control={control}
 									render={({ field }) => (
 										<FormItem>
-											<div className="flex items-center">
-												<FormLabel>Password</FormLabel>
-												<a href="#" className="ml-auto inline-block text-sm underline-offset-4 hover:underline">
-													Forgot your password?
-												</a>
-											</div>
+											<RequiredLabel htmlFor="password">Password</RequiredLabel>
 											<FormControl>
 												<Input id="password" type="password" {...field} />
 											</FormControl>
@@ -84,15 +91,22 @@ export function LoginFormV2({ className, ...props }: React.ComponentPropsWithout
 										</FormItem>
 									)}
 								/>
+								<FormField
+									control={control}
+									name="confirmPassword"
+									render={({ field }) => (
+										<FormItem>
+											<RequiredLabel htmlFor="confirmPassword">Confirm Password</RequiredLabel>
+											<FormControl>
+												<Input type="password" id="confirm-password" {...field} />
+											</FormControl>
+											<FormMessage>{errors.confirmPassword?.message}</FormMessage>
+										</FormItem>
+									)}
+								/>
 								<Button type="submit" className="w-full">
-									Login
+									Create Account
 								</Button>
-							</div>
-							<div className="mt-4 text-center text-sm">
-								Don&apos;t have an account?{" "}
-								<a href="#" className="underline underline-offset-4">
-									Sign up
-								</a>
 							</div>
 						</form>
 					</CardContent>
