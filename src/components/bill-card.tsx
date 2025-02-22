@@ -1,46 +1,17 @@
 "use client";
 
 import { Calendar } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 
 import { Badge } from "@/components/shadcn/badge";
+import { AvatarGroup } from "@/components/avatar-group";
 import { Card, CardContent } from "@/components/shadcn/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/shadcn/avatar";
 
-import { API } from "@/api";
+import { type ClientBill } from "@/schemas";
+import { formatDate, formatCurrency } from "@/utils/format";
 import { getAvatarFallback } from "@/utils/avatar-fallback";
-import { type ClientBill, type ClientBillMember } from "@/schemas";
 
-const formatCurrency = (amount: number) => {
-	return new Intl.NumberFormat("en-US", { currency: "USD", style: "currency" }).format(amount);
-};
-
-const formatDate = (dateString: string) => {
-	return new Date(dateString).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-};
-
-const AvatarGroup = ({ users, max = 3 }: { max?: number; users: ClientBillMember[] }) => {
-	const displayUsers = users.slice(0, max);
-	const remaining = users.length - max;
-
-	return (
-		<div className="flex -space-x-2 overflow-hidden">
-			{displayUsers.map((user) => (
-				<Avatar key={user.userId} className="inline-block border-2 border-background">
-					<AvatarImage alt={user.fullName} src={user.avatar ?? undefined} />
-					<AvatarFallback>{getAvatarFallback(user.fullName)}</AvatarFallback>
-				</Avatar>
-			))}
-			{remaining > 0 && (
-				<Avatar className="inline-block border-2 border-background bg-muted">
-					<AvatarFallback>+{remaining}</AvatarFallback>
-				</Avatar>
-			)}
-		</div>
-	);
-};
-
-const BillCard = ({ bill, currentUserId }: { bill: ClientBill; currentUserId: string }) => {
+export const BillCard = ({ bill, currentUserId }: { bill: ClientBill; currentUserId: string }) => {
 	const currentUserDebtor = bill.debtors.find((d) => d.userId === currentUserId);
 	const otherDebtors = bill.debtors.filter((d) => d.userId !== currentUserId);
 
@@ -75,19 +46,3 @@ const BillCard = ({ bill, currentUserId }: { bill: ClientBill; currentUserId: st
 		</Card>
 	);
 };
-
-export function CompactRecentBillsWithAvatars({ currentUserId }: { currentUserId: string }) {
-	const { data } = useQuery({
-		queryKey: ["bills"],
-		queryFn: () => API.Bills.List.query({ page: 1 })
-	});
-
-	return (
-		<div className="space-y-4">
-			<h2 className="text-xl font-bold">Recent Bills</h2>
-			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-				{data?.data?.map((bill) => <BillCard bill={bill} key={bill.id} currentUserId={currentUserId} />)}
-			</div>
-		</div>
-	);
-}

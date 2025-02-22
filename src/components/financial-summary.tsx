@@ -1,72 +1,76 @@
-import { PiggyBank, CreditCard, ArrowUpIcon, ArrowDownIcon } from "lucide-react";
+"use client";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Frown, InfoIcon, PiggyBank, CreditCard, ArrowUpRight, ArrowDownLeft, type LucideIcon } from "lucide-react";
 
+import { Show } from "@/components/show";
+import { Skeleton } from "@/components/shadcn/skeleton";
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/shadcn/card";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/shadcn/tooltip";
 
-interface FinancialData {
-	owedAmount: number;
-	paidAmount: number;
-	sentAmount: number;
-	netBalance: number;
-	receivedAmount: number;
-}
+import { cn } from "@/utils/cn";
+import type { Balance } from "@/types";
+import { axiosInstance } from "@/services";
 
 const formatCurrency = (amount: number) => {
-	return new Intl.NumberFormat("en-US", { currency: "USD", style: "currency" }).format(amount);
+	return new Intl.NumberFormat("vi-VN", { currency: "VND", style: "currency" }).format(amount * 1000);
 };
 
-export function FinancialSummary({ data }: { data: FinancialData }) {
+const StatText: React.FC<{ label: string; color: string; amount?: number; Icon: LucideIcon; description: string }> = (props) => {
+	const { Icon, label, color, amount, description } = props;
+
+	return (
+		<Card>
+			<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+				<CardTitle className="text-sm font-medium">
+					{label}
+					<TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger>
+								<InfoIcon className="ml-1 h-4 w-4 text-muted-foreground" />
+							</TooltipTrigger>
+							<TooltipContent>
+								<p>{description}</p>
+							</TooltipContent>
+						</Tooltip>
+					</TooltipProvider>
+				</CardTitle>
+				<Icon className={cn("h-4 w-4", color)} />
+			</CardHeader>
+			<CardContent>
+				<Show when={amount} fallback={<Skeleton className="h-8 w-32" />}>
+					{(amount) => <div className={cn("text-2xl font-bold", color)}>{formatCurrency(amount)}</div>}
+				</Show>
+			</CardContent>
+		</Card>
+	);
+};
+
+export function FinancialSummary() {
+	const { data } = useQuery<{ data: Balance }>({
+		queryKey: ["balance-report"],
+		queryFn: () => axiosInstance.get("/profile/balance")
+	});
+
 	return (
 		<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-			<Card>
-				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-					<CardTitle className="text-sm font-medium">Owed Amount</CardTitle>
-					<ArrowUpIcon className="h-4 w-4 text-red-500" />
-				</CardHeader>
-				<CardContent>
-					<div className="text-2xl font-bold text-red-500">{formatCurrency(data.owedAmount)}</div>
-					<p className="text-xs text-muted-foreground">Amount you owe to others</p>
-				</CardContent>
-			</Card>
-			<Card>
-				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-					<CardTitle className="text-sm font-medium">Paid Amount</CardTitle>
-					<CreditCard className="h-4 w-4 text-green-500" />
-				</CardHeader>
-				<CardContent>
-					<div className="text-2xl font-bold text-green-500">{formatCurrency(data.paidAmount)}</div>
-					<p className="text-xs text-muted-foreground">Amount you paid for bills</p>
-				</CardContent>
-			</Card>
-			<Card>
-				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-					<CardTitle className="text-sm font-medium">Sent Amount</CardTitle>
-					<ArrowUpIcon className="h-4 w-4 text-blue-500" />
-				</CardHeader>
-				<CardContent>
-					<div className="text-2xl font-bold text-blue-500">{formatCurrency(data.sentAmount)}</div>
-					<p className="text-xs text-muted-foreground">Amount sent in transactions</p>
-				</CardContent>
-			</Card>
-			<Card>
-				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-					<CardTitle className="text-sm font-medium">Received Amount</CardTitle>
-					<ArrowDownIcon className="h-4 w-4 text-purple-500" />
-				</CardHeader>
-				<CardContent>
-					<div className="text-2xl font-bold text-purple-500">{formatCurrency(data.receivedAmount)}</div>
-					<p className="text-xs text-muted-foreground">Amount received in transactions</p>
-				</CardContent>
-			</Card>
-			<Card>
-				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-					<CardTitle className="text-sm font-medium">Net Balance</CardTitle>
-					<PiggyBank className="h-4 w-4 text-gray-500" />
-				</CardHeader>
-				<CardContent>
-					<div className={`text-2xl font-bold ${data.netBalance >= 0 ? "text-green-500" : "text-red-500"}`}>{formatCurrency(data.netBalance)}</div>
-					<p className="text-xs text-muted-foreground">Your current balance</p>
-				</CardContent>
-			</Card>
+			<StatText label="Owed" Icon={Frown} color="text-red-500" amount={data?.data.owed} description="Amount you owe to others" />
+			<StatText label="Paid" Icon={CreditCard} color="text-green-500" amount={data?.data.paid} description="Amount you paid for bills" />
+			<StatText label="Sent" Icon={ArrowUpRight} color="text-blue-500" amount={data?.data.sent} description="Amount sent in transactions" />
+			<StatText
+				label="Received"
+				Icon={ArrowDownLeft}
+				color="text-purple-500"
+				amount={data?.data.received}
+				description="Amount received in transactions"
+			/>
+			<StatText
+				Icon={PiggyBank}
+				label="Net Balance"
+				amount={data?.data.net}
+				description="Your current balance"
+				color={(data?.data.net ?? 0) >= 0 ? "text-green-500" : "text-red-500"}
+			/>
 		</div>
 	);
 }

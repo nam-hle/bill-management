@@ -4,8 +4,8 @@ import { ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/shadcn/button";
 import { TransactionsTable } from "@/components/tables";
-import { BalanceReport } from "@/components/balance-report";
-import { CompactRecentBillsWithAvatars } from "@/components/compact-bill";
+import { BillCardsList } from "@/components/bill-cards-list";
+import { FinancialSummary } from "@/components/financial-summary";
 
 import { getCurrentUser } from "@/services/supabase/server";
 
@@ -15,8 +15,8 @@ export default async function DashboardPage() {
 	return (
 		<>
 			<div className="flex flex-col gap-6">
-				<BalanceReport />
-				<CompactRecentBillsWithAvatars currentUserId={currentUser.id} />
+				<FinancialSummary />
+				<BillCardsList currentUserId={currentUser.id} />
 				<TransactionsTable
 					mode="basic"
 					title="Recent transactions"

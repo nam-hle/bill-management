@@ -5,14 +5,13 @@ import { useTheme } from "next-themes";
 import { usePathname } from "next/navigation";
 import React, { useRef, useState, useEffect } from "react";
 
-import { Button } from "@/components/shadcn/button";
 import { Card, CardContent } from "@/components/shadcn/card";
 
 const tabs: Tab[] = [
 	{
 		href: "/",
 		label: "Home",
-		match: (path) => path === "/"
+		match: (path) => path === "/" || path === ""
 	},
 	{
 		label: "Bills",
@@ -89,43 +88,38 @@ export const Frame = () => {
 		<div className={`flex w-full items-center justify-center ${isDarkMode ? "dark bg-[#0e0f11]" : ""}`}>
 			<Card
 				className={`relative flex w-full max-w-[1200px] items-center justify-center border-none shadow-none ${isDarkMode ? "bg-transparent" : ""}`}>
-				<CardContent className="p-0">
-					<div className="relative">
-						{/* Hover Highlight */}
-						<div
-							style={{ ...hoverStyle, opacity: hoveredIndex !== null ? 1 : 0 }}
-							className="absolute flex h-[30px] items-center rounded-[6px] bg-[#0e0f1114] transition-all duration-300 ease-out dark:bg-[#ffffff1a]"
-						/>
+				<CardContent className="relative flex items-center p-0">
+					{/* Hover Highlight */}
+					<div
+						style={{ ...hoverStyle, opacity: hoveredIndex !== null ? 1 : 0 }}
+						className="absolute flex h-[30px] items-center rounded-[6px] bg-[#0e0f1114] transition-all duration-300 ease-out dark:bg-[#ffffff1a]"
+					/>
 
-						{/* Active Indicator */}
-						<div style={activeStyle} className="absolute bottom-[-6px] h-[2px] bg-[#0e0f11] transition-all duration-300 ease-out dark:bg-white" />
+					{/* Active Indicator */}
+					<div style={activeStyle} className="absolute bottom-[-6px] h-[2px] bg-[#0e0f11] transition-all duration-300 ease-out dark:bg-white" />
 
-						{/* Tabs */}
-						<div className="relative flex items-center space-x-[6px]">
-							{tabs.map((tab, index) => (
-								<Link
-									key={index}
-									href={tab.href}
-									onMouseLeave={() => setHoveredIndex(null)}
-									onMouseEnter={() => setHoveredIndex(index)}
-									onClick={() => {
-										setActiveIndex(index);
-									}}
-									ref={(el) => {
-										tabRefs.current[index] = el;
-									}}
-									className={`h-[30px] cursor-pointer px-3 py-2 pb-[0.52rem] transition-colors duration-300 ${
-										index === activeIndex ? "text-[#0e0e10] dark:text-white" : "text-[#0e0f1199] dark:text-[#ffffff99]"
-									}`}>
-									<div className="flex h-full items-center justify-center whitespace-nowrap text-sm font-[var(--www-mattmannucci-me-geist-regular-font-family)] leading-5">
-										{tab.label}
-									</div>
-								</Link>
-							))}
-							<Button asChild size="sm" variant="default">
-								<Link href="/bills/new">Create</Link>
-							</Button>
-						</div>
+					{/* Tabs */}
+					<div className="relative flex items-center space-x-[6px]">
+						{tabs.map((tab, index) => (
+							<Link
+								key={index}
+								href={tab.href}
+								onMouseLeave={() => setHoveredIndex(null)}
+								onMouseEnter={() => setHoveredIndex(index)}
+								onClick={() => {
+									setActiveIndex(index);
+								}}
+								ref={(el) => {
+									tabRefs.current[index] = el;
+								}}
+								className={`h-[30px] cursor-pointer px-3 py-2 pb-[0.52rem] transition-colors duration-300 ${
+									index === activeIndex ? "text-[#0e0e10] dark:text-white" : "text-[#0e0f1199] dark:text-[#ffffff99]"
+								}`}>
+								<div className="flex h-full items-center justify-center whitespace-nowrap text-sm font-[var(--www-mattmannucci-me-geist-regular-font-family)] leading-5">
+									{tab.label}
+								</div>
+							</Link>
+						))}
 					</div>
 				</CardContent>
 			</Card>

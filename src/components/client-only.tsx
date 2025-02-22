@@ -10,7 +10,7 @@ export interface ClientOnlyProps {
 }
 export const ClientOnly = (props: ClientOnlyProps) => {
 	const { children, fallback } = props;
-	const [hasMounted, setHasMounted] = React.useState(false);
+	const [hasMounted, setHasMounted] = React.useState<true | undefined>(undefined);
 
 	React.useEffect(() => {
 		setHasMounted(true);
