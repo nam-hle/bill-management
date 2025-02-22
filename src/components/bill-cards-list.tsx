@@ -12,11 +12,9 @@ export function BillCardsList({ currentUserId }: { currentUserId: string }) {
 	});
 
 	return (
-		<div className="space-y-4">
-			<h2 className="text-xl font-bold">Recent Bills</h2>
-			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-				{data?.data?.map((bill) => <BillCard bill={bill} key={bill.id} currentUserId={currentUserId} />)}
-			</div>
+		<div className="flex-1 space-y-4">
+			<h2 className="text-2xl font-bold">Recent Bills</h2>
+			<div className="space-y-4">{data?.data?.map((bill) => <BillCard bill={bill} key={bill.id} currentUserId={currentUserId} />)}</div>
 		</div>
 	);
 }

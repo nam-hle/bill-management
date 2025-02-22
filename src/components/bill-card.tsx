@@ -16,7 +16,7 @@ export const BillCard = ({ bill, currentUserId }: { bill: ClientBill; currentUse
 	const otherDebtors = bill.debtors.filter((d) => d.userId !== currentUserId);
 
 	return (
-		<Card className="w-full">
+		<Card className="w-full/6">
 			<CardContent className="p-4">
 				<div className="flex items-center space-x-4">
 					<Avatar className="h-10 w-10">
