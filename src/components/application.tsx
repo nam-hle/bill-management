@@ -10,7 +10,7 @@ export const Application: React.FC<Container & Partial<AvatarContainer.Props>> =
 	return (
 		<>
 			<NavigationBar pendingUserInfo={pendingUserInfo} />
-			<main className="max-w-8xl mx-auto min-h-[calc(100vh-64px)] px-8 py-4">{children}</main>
+			<main className="mx-auto min-h-[calc(100vh-64px)] max-w-screen-2xl px-8 py-4">{children}</main>
 			<Toaster />
 		</>
 	);

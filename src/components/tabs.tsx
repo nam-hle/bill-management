@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { usePathname } from "next/navigation";
-import { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 
 import { Button } from "@/components/shadcn/button";
 import { Card, CardContent } from "@/components/shadcn/card";
@@ -82,7 +82,7 @@ export const Frame = () => {
 		});
 	}, [activeIndex]);
 
-	const { theme, setTheme } = useTheme();
+	const { theme } = useTheme();
 	const isDarkMode = theme === "dark";
 
 	return (
@@ -114,7 +114,7 @@ export const Frame = () => {
 									ref={(el) => {
 										tabRefs.current[index] = el;
 									}}
-									className={`h-[30px] cursor-pointer px-3 py-2 transition-colors duration-300 ${
+									className={`h-[30px] cursor-pointer px-3 py-2 pb-[0.52rem] transition-colors duration-300 ${
 										index === activeIndex ? "text-[#0e0e10] dark:text-white" : "text-[#0e0f1199] dark:text-[#ffffff99]"
 									}`}>
 									<div className="flex h-full items-center justify-center whitespace-nowrap text-sm font-[var(--www-mattmannucci-me-geist-regular-font-family)] leading-5">

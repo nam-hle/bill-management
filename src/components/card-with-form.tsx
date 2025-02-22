@@ -1,10 +1,10 @@
 import * as React from "react";
 
-import { Input } from "@/shadcn/components/ui/input";
-import { Label } from "@/shadcn/components/ui/label";
-import { Button } from "@/shadcn/components/ui/button";
-import { Select, SelectItem, SelectValue, SelectContent, SelectTrigger } from "@/shadcn/components/ui/select";
-import { Card, CardTitle, CardFooter, CardHeader, CardContent, CardDescription } from "@/shadcn/components/ui/card";
+import { Input } from "@/components/shadcn/input";
+import { Label } from "@/components/shadcn/label";
+import { Button } from "@/components/shadcn/button";
+import { Select, SelectItem, SelectValue, SelectContent, SelectTrigger } from "@/components/shadcn/select";
+import { Card, CardTitle, CardFooter, CardHeader, CardContent, CardDescription } from "@/components/shadcn/card";
 
 export function CardWithForm() {
 	return (
