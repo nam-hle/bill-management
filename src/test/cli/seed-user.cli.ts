@@ -7,7 +7,7 @@ import { seedUser } from "@/test/functions/seed-user";
 
 const argv = yargs(hideBin(process.argv))
 	.option("email", { type: "string", demandOption: true, describe: "User email" })
-	.option("fullName", { type: "string", describe: "Full name of the user" })
+	.option("fullName", { type: "string", demandOption: true, describe: "Full name of the user" })
 	.option("password", { type: "string", describe: "User password" })
 	.help()
 	.parseSync();

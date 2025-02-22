@@ -5,10 +5,11 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
-import { Provider } from "@/chakra/provider";
+import { Application } from "@/components/application";
+import { ThemeProvider } from "@/components/theme-provider";
+
 import { UsersControllers } from "@/controllers";
 import { ReactQueryClientProvider } from "@/services";
-import { Application } from "@/components/application";
 import { createSupabaseServer } from "@/services/supabase/server";
 
 const interSans = Inter({
@@ -41,9 +42,9 @@ export default async function RootLayout({
 		<ReactQueryClientProvider>
 			<html lang="en" suppressHydrationWarning>
 				<body suppressHydrationWarning className={interSans.variable}>
-					<Provider>
-						<Application userInfo={userInfo}>{children}</Application>
-					</Provider>
+					<ThemeProvider enableSystem attribute="class" defaultTheme="system" disableTransitionOnChange>
+						<Application pendingUserInfo={userInfo}>{children}</Application>
+					</ThemeProvider>
 					<ReactQueryDevtools initialIsOpen={false} />
 				</body>
 			</html>

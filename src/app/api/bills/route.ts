@@ -48,13 +48,14 @@ export async function POST(request: Request) {
 			return RouteUtils.BadRequest;
 		}
 
-		const { debtors, issuedAt, creditor, description } = body;
+		const { debtors, issuedAt, creditor, description, receiptFile } = body;
 		const creator = await getCurrentUser();
 
 		// Step 1: Insert bill
 		const bill = await BillsControllers.create(supabase, {
 			issuedAt,
 			description,
+			receiptFile,
 			creatorId: creator.id,
 			creditorId: creditor.userId,
 			totalAmount: creditor.amount

@@ -2,7 +2,8 @@ import React from "react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { LoginFormV2 } from "@/components/forms/login-form-v2";
+import { LoginForm } from "@/components/forms/login-form";
+
 import { createSupabaseServer } from "@/services/supabase/server";
 
 export const metadata: Metadata = {
@@ -20,5 +21,5 @@ export default async function LoginPage() {
 		redirect("/");
 	}
 
-	return <LoginFormV2 />;
+	return <LoginForm />;
 }

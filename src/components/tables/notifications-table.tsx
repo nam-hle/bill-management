@@ -2,14 +2,16 @@
 
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Stack, HStack, VStack, Heading } from "@chakra-ui/react";
+
+import { Button } from "@/components/shadcn/button";
+import { TypographyH1 } from "@/components/typography";
+import { Skeleton } from "@/components/shadcn/skeleton";
+import { NotificationMessage } from "@/components/notification-message";
 
 import { API } from "@/api";
 import { noop } from "@/utils";
-import { Button } from "@/chakra/button";
-import { SkeletonText } from "@/chakra/skeleton";
+import { cn } from "@/utils/cn";
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
-import { NotificationMessage } from "@/components/notification-message";
 
 namespace TransactionsTable {
 	export interface Props {}
@@ -27,27 +29,25 @@ export const NotificationsTable: React.FC<TransactionsTable.Props> = () => {
 	const maxPage = React.useMemo(() => (data?.fullSize ? Math.ceil(data?.fullSize / DEFAULT_PAGE_SIZE) : 1), [data?.fullSize]);
 
 	return (
-		<VStack width="60vh" gap="{spacing.4}" marginInline="auto" data-testid="table-container">
-			<HStack width="100%" justifyContent="space-between">
-				<Heading as="h1">Notifications</Heading>
-			</HStack>
-			<HStack width="100%" justifyContent={isFirstPage ? "flex-end" : "space-between"}>
+		<div data-testid="table-container" className="mx-auto flex w-2/3 flex-col gap-4">
+			<TypographyH1>Notifications</TypographyH1>
+			<div className={cn("flex h-10 w-full", isFirstPage ? "justify-end" : "justify-between")}>
 				{!isFirstPage && (
-					<Button variant="subtle" onClick={() => setPage(page - 1)}>
+					<Button variant="secondary" onClick={() => setPage(page - 1)}>
 						Previous
 					</Button>
 				)}
 				{page === maxPage ? undefined : (
-					<Button variant="subtle" onClick={() => setPage(page + 1)}>
+					<Button variant="secondary" onClick={() => setPage(page + 1)}>
 						Next
 					</Button>
 				)}
-			</HStack>
-			<Stack width="60vh" gap="{spacing.2}" data-testid="table">
+			</div>
+			<div data-testid="table" className="flex flex-col gap-2">
 				{isPending ? (
 					<>
 						{Array.from({ length: DEFAULT_PAGE_SIZE }).map((_, index) => {
-							return <SkeletonText gap="2" key={index} noOfLines={2} />;
+							return <Skeleton key={index} className="h-10 w-full" />;
 						})}
 					</>
 				) : (
@@ -55,7 +55,7 @@ export const NotificationsTable: React.FC<TransactionsTable.Props> = () => {
 						return <NotificationMessage onClick={noop} key={notification.id} notification={notification} />;
 					})
 				)}
-			</Stack>
-		</VStack>
+			</div>
+		</div>
 	);
 };

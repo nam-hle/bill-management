@@ -2,9 +2,10 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { Button } from "@/components/shadcn/button";
+
 import { API } from "@/api";
-import { Button } from "@/chakra/button";
-import { toaster } from "@/chakra/toaster";
+import { useToast } from "@/hooks/use-toast";
 import { capitalize, convertVerb } from "@/utils";
 import { type ClientTransaction, TransactionStatusEnumSchema } from "@/schemas";
 
@@ -19,18 +20,19 @@ export const TransactionAction: React.FC<TransactionAction.Props> = ({ transacti
 	const router = useRouter();
 	const queryClient = useQueryClient();
 
+	const { toast } = useToast();
 	const mutation = useMutation({
 		mutationFn: API.Transactions.Update.mutate,
 		onError: (_, { action }) => {
-			toaster.create({
-				type: "error",
+			toast({
 				title: "Error",
+				variant: "destructive",
 				description: `An error occurred while ${convertVerb(action).vIng} the transaction`
 			});
 		},
 		onSuccess: (_, { action }) => {
-			toaster.create({
-				type: "success",
+			toast({
+				// type: "success",
 				title: `Transaction ${capitalize(convertVerb(action).pastTense)}`,
 				description: `The transaction has been ${convertVerb(action).pastTense} successfully`
 			});
@@ -43,8 +45,7 @@ export const TransactionAction: React.FC<TransactionAction.Props> = ({ transacti
 	if (transaction.status === TransactionStatusEnumSchema.enum.Waiting && transaction.receiver.id === currentUserId) {
 		return (
 			<Button
-				size="xs"
-				variant="solid"
+				size="sm"
 				onClick={(event) => {
 					event.stopPropagation();
 					mutation.mutate({ action: "confirm", transactionId: transaction.id });
@@ -57,9 +58,8 @@ export const TransactionAction: React.FC<TransactionAction.Props> = ({ transacti
 	if (transaction.status === TransactionStatusEnumSchema.enum.Waiting && transaction.sender.id === currentUserId) {
 		return (
 			<Button
-				size="xs"
-				variant="solid"
-				colorPalette="red"
+				size="sm"
+				variant="destructive"
 				onClick={(event) => {
 					event.stopPropagation();
 					mutation.mutate({ action: "decline", transactionId: transaction.id });

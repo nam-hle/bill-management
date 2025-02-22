@@ -9,6 +9,7 @@ const profiles = {
 		timeout: 60_000,
 		reporter: "list",
 		forbidOnly: true,
+		command: "pnpm start",
 		expectTimeout: 20_000,
 		reuseExistingServer: false,
 		video: "retain-on-failure"
@@ -21,7 +22,8 @@ const profiles = {
 		forbidOnly: false,
 		reuseExistingServer: true,
 		timeout: PROD ? 30_000 : 90_000,
-		expectTimeout: PROD ? 30_000 : 60_000
+		expectTimeout: PROD ? 30_000 : 60_000,
+		command: PROD ? "pnpm start" : "pnpm dev"
 	}
 } as const;
 
@@ -53,7 +55,7 @@ export default defineConfig({
 		stdout: "pipe",
 		stderr: "pipe",
 		timeout: 60_000,
-		command: "pnpm start",
+		command: profile.command,
 		url: `http://127.0.0.1:${profile.port}`,
 		reuseExistingServer: profile.reuseExistingServer
 	}

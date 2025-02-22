@@ -1,15 +1,19 @@
 "use client";
 import React from "react";
+import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
-import { useForm, Controller } from "react-hook-form";
-import { Input, Stack, HStack, Heading, GridItem, SimpleGrid } from "@chakra-ui/react";
+
+import { Input } from "@/components/shadcn/input";
+import { Button } from "@/components/shadcn/button";
+import { FileUpload } from "@/components/file-upload";
+import { TypographyH1 } from "@/components/typography";
+import { RequiredLabel } from "@/components/required-label";
+import { Avatar, AvatarImage } from "@/components/shadcn/avatar";
+import { Form, FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
 
 import { API } from "@/api";
-import { Field } from "@/chakra/field";
-import { Button } from "@/chakra/button";
-import { toaster } from "@/chakra/toaster";
+import { useToast } from "@/hooks/use-toast";
 import { type ProfileFormPayload } from "@/schemas";
-import { ProfileAvatar } from "@/components/profile-avatar";
 
 namespace ProfileForm {
 	export interface Props {
@@ -21,23 +25,27 @@ namespace ProfileForm {
 }
 
 export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
+	const form = useForm<ProfileFormPayload & { email: string }>({
+		defaultValues: { email: props.email, fullName: props.fullName, avatarUrl: props.avatarUrl }
+	});
 	const {
 		reset,
 		control,
 		register,
 		handleSubmit,
 		formState: { errors, isDirty, isSubmitting }
-	} = useForm<ProfileFormPayload>({ defaultValues: { fullName: props.fullName, avatarUrl: props.avatarUrl } });
+	} = form;
 
+	const { toast } = useToast();
 	const { mutate, isPending } = useMutation({
 		mutationFn: API.Profile.Update.mutate,
 		onSuccess: (data) => {
 			reset(data);
-			toaster.create({ type: "success", title: "Profile updated", description: "Your profile has been updated successfully." });
+			toast({ title: "Profile updated", description: "Your profile has been updated successfully." });
 		},
 		onError: () => {
-			toaster.create({
-				type: "error",
+			toast({
+				variant: "destructive",
 				title: "Failed to update profile",
 				description: "An error occurred while updating the profile. Please try again."
 			});
@@ -47,34 +55,77 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 	const onSubmit = React.useMemo(() => handleSubmit((data) => mutate(data)), [handleSubmit, mutate]);
 
 	return (
-		<Stack as="form" width="60%" className="ck" gap="{spacing.4}" onSubmit={onSubmit} marginInline="auto">
-			<Heading>Profile</Heading>
-			<SimpleGrid gap="{spacing.2}" templateRows="repeat(2, 1fr)" templateColumns="repeat(12, 1fr)">
-				<GridItem rowSpan={2} colSpan={3} alignSelf="center">
-					<Controller
-						name="avatarUrl"
-						control={control}
-						render={({ field }) => <ProfileAvatar ownerId={props.userId} onChange={field.onChange} fileId={field.value ?? undefined} />}
-					/>
-				</GridItem>
+		<Form {...form}>
+			<form onSubmit={onSubmit} className="mx-auto w-[60%] gap-4">
+				<TypographyH1>Profile</TypographyH1>
+				<div className="grid grid-cols-12 grid-rows-2 gap-2">
+					<div className="col-span-3 row-span-2 self-center">
+						<FormField
+							name="avatarUrl"
+							control={control}
+							render={({ field }) => {
+								return (
+									<FileUpload
+										editing
+										buttonSize="sm"
+										bucketName="avatars"
+										ownerId={props.userId}
+										onChange={field.onChange}
+										fileId={field.value ?? undefined}
+										imageRenderer={(src) => (
+											<Avatar className="h-20 w-20 cursor-pointer">
+												<AvatarImage src={src} />
+												{/*<AvatarFallback className="text-sm">{getAvatarFallback(userInfo.fullName)}</AvatarFallback>*/}
+											</Avatar>
+										)}
+									/>
+								);
+								// return <ProfileAvatar ownerId={props.userId} onChange={field.onChange} fileId={field.value ?? undefined} />;
+							}}
+						/>
+					</div>
 
-				<GridItem colSpan={9}>
-					<Field readOnly label="Email">
-						<Input value={props.email} pointerEvents="none" />
-					</Field>
-				</GridItem>
-				<GridItem colSpan={9}>
-					<Field label="Full Name*" invalid={!!errors.fullName} errorText={errors.fullName?.message}>
-						<Input {...register("fullName", { required: "Full Name is required" })} placeholder="Enter your full name" />
-					</Field>
-				</GridItem>
-			</SimpleGrid>
+					<div className="col-span-9">
+						<FormField
+							name="email"
+							control={control}
+							render={({ field }) => (
+								<FormItem>
+									<RequiredLabel htmlFor="email">Email</RequiredLabel>
+									<FormControl>
+										<Input {...field} disabled />
+									</FormControl>
+								</FormItem>
+							)}
+						/>
+					</div>
+					<div className="col-span-9">
+						<FormField
+							name="fullName"
+							control={control}
+							render={({ field }) => (
+								<FormItem>
+									<RequiredLabel htmlFor="fullName">Full Name</RequiredLabel>
+									<FormControl>
+										<Input placeholder="Enter full name" {...field} />
+									</FormControl>
+									<FormMessage>{errors.fullName?.message}</FormMessage>
+								</FormItem>
+							)}
+						/>
+					</div>
+				</div>
 
-			<HStack justifyContent="flex-end">
-				<Button type="submit" disabled={!isDirty} loadingText="Saving..." loading={isSubmitting || isPending}>
-					Save
-				</Button>
-			</HStack>
-		</Stack>
+				<div className="flex justify-end">
+					<Button
+						type="submit"
+						disabled={!isDirty}
+						// loading={isSubmitting || isPending}
+					>
+						Save
+					</Button>
+				</div>
+			</form>
+		</Form>
 	);
 };

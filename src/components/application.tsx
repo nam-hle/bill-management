@@ -1,16 +1,17 @@
 import React from "react";
 
-import { type Container } from "@/types";
-import { Toaster } from "@/chakra/toaster";
+import { Toaster } from "@/components/shadcn/toaster";
 import { NavigationBar } from "@/components/navigation-bar";
 import { type AvatarContainer } from "@/components/avatar-container";
 
-export const Application: React.FC<Container & AvatarContainer.Props> = ({ userInfo, children }) => {
+import { type Container } from "@/types";
+
+export const Application: React.FC<Container & Partial<AvatarContainer.Props>> = ({ children, pendingUserInfo }) => {
 	return (
 		<>
+			<NavigationBar pendingUserInfo={pendingUserInfo} />
+			<main className="max-w-8xl mx-auto min-h-[calc(100vh-64px)] px-8 py-4">{children}</main>
 			<Toaster />
-			<NavigationBar userInfo={userInfo} />
-			<main className="mx-auto max-w-8xl py-4 px-8 min-h-[calc(100vh-64px)]">{children}</main>
 		</>
 	);
 };

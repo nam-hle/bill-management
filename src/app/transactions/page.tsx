@@ -1,10 +1,11 @@
 import React from "react";
+import Link from "next/link";
+import { Plus } from "lucide-react";
 import { type Metadata } from "next";
-import { VStack } from "@chakra-ui/react";
-import { IoIosAddCircle } from "react-icons/io";
 
-import { LinkButton } from "@/chakra/link-button";
+import { Button } from "@/components/shadcn/button";
 import { TransactionsTable } from "@/components/tables";
+
 import { getCurrentUser } from "@/services/supabase/server";
 
 export const metadata: Metadata = {
@@ -15,16 +16,18 @@ export default async function TransactionsPage() {
 	const currentUser = await getCurrentUser();
 
 	return (
-		<VStack className="ck" gap="{spacing.4}" alignItems="flex-start">
+		<div className="flex flex-col items-start gap-4">
 			<TransactionsTable
 				mode="advance"
 				currentUserId={currentUser.id}
 				action={
-					<LinkButton size="sm" variant="solid" href="/transactions/new">
-						<IoIosAddCircle /> New
-					</LinkButton>
+					<Button asChild size="sm">
+						<Link href="/transactions/new">
+							<Plus /> New
+						</Link>
+					</Button>
 				}
 			/>
-		</VStack>
+		</div>
 	);
 }

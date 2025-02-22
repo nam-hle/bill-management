@@ -2,21 +2,16 @@
 
 import _ from "lodash";
 import React from "react";
-import { GoSearch } from "react-icons/go";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@uidotdev/usehooks";
-import { Text, Table, Input, HStack, VStack, Heading } from "@chakra-ui/react";
 import { useRouter, useSearchParams, type ReadonlyURLSearchParams } from "next/navigation";
 
+import { TypographyH1 } from "@/components/typography";
+import { DataTable } from "@/components/data-table/data-table";
+
 import { API } from "@/api";
-import { InputGroup } from "@/chakra/input-group";
-import { EmptyState } from "@/chakra/empty-state";
+import { DEFAULT_PAGE_NUMBER } from "@/constants";
 import { formatTime, formatDistanceTime } from "@/utils";
-import { FilterButton } from "@/components/filter-button";
-import { LinkedTableRow } from "@/components/table-body-row";
-import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
-import { TableBodySkeleton } from "@/components/table-body-skeleton";
-import { PaginationRoot, PaginationItems, PaginationNextTrigger, PaginationPrevTrigger } from "@/chakra/pagination";
 
 namespace BillsTable {
 	export interface Props {
@@ -99,85 +94,86 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 	});
 
 	return (
-		<VStack width="100%" gap="{spacing.4}" data-testid="table-container">
-			<HStack width="100%" data-testid="table-heading" justifyContent="space-between">
-				<Heading as="h1" data-testid="table-title">
+		<div data-testid="table-container" className="flex w-full flex-col gap-4">
+			<div data-testid="table-heading" className="flex w-full flex-row justify-between">
+				<TypographyH1 data-testid="table-title">
 					{title ?? "Bills"}
 					{advanced && isSuccess ? ` (${data.fullSize})` : ""}
-				</Heading>
+				</TypographyH1>
 				{action}
-			</HStack>
-			{advanced && (
-				<HStack width="100%" data-testid="table-filters">
-					<FilterButton {...createOwnerFilter("creator")}>As creator</FilterButton>
-					<FilterButton {...createOwnerFilter("creditor")}>As creditor</FilterButton>
-					<FilterButton {...createOwnerFilter("debtor")}>As debtor</FilterButton>
-					<FilterButton {...createTimeFilter("7d")}>Last 7 days</FilterButton>
-					<FilterButton {...createTimeFilter("30d")}>Last 30 days</FilterButton>
-					<InputGroup w="200px" marginLeft="auto" startElement={<GoSearch />}>
-						<Input name="search-bar" value={filters.q || ""} placeholder="Type to search.." onChange={(e) => onFilterChange("q", e.target.value)} />
-					</InputGroup>
-				</HStack>
-			)}
+			</div>
+			{/*{advanced && (*/}
+			{/*	<HStack width="100%" data-testid="table-filters">*/}
+			{/*		<FilterButton {...createOwnerFilter("creator")}>As creator</FilterButton>*/}
+			{/*		<FilterButton {...createOwnerFilter("creditor")}>As creditor</FilterButton>*/}
+			{/*		<FilterButton {...createOwnerFilter("debtor")}>As debtor</FilterButton>*/}
+			{/*		<FilterButton {...createTimeFilter("7d")}>Last 7 days</FilterButton>*/}
+			{/*		<FilterButton {...createTimeFilter("30d")}>Last 30 days</FilterButton>*/}
+			{/*		/!*<InputGroup w="200px" marginLeft="auto" startElement={<GoSearch />}>*!/*/}
+			{/*		<Input*/}
+			{/*			name="search-bar"*/}
+			{/*			value={filters.q || ""}*/}
+			{/*			className="w-50 ml-auto"*/}
+			{/*			placeholder="Type to search.."*/}
+			{/*			onChange={(e) => onFilterChange("q", e.target.value)}*/}
+			{/*		/>*/}
+			{/*		/!*</InputGroup>*!/*/}
+			{/*	</HStack>*/}
+			{/*)}*/}
 
-			<Table.Root size="md" interactive variant="outline" data-testid={`table__${isPending ? "loading" : "settled"}`}>
-				<Table.Header>
-					<Table.Row>
-						<Table.ColumnHeader>Description</Table.ColumnHeader>
-						<Table.ColumnHeader>Created</Table.ColumnHeader>
-						<Table.ColumnHeader title="The one who made the payment for the bill">Creditor</Table.ColumnHeader>
-						<Table.ColumnHeader maxW="400px" title="The ones who need to pay back the creditor">
-							Debtors
-						</Table.ColumnHeader>
-					</Table.Row>
-				</Table.Header>
-				<Table.Body>
-					{isPending ? (
-						<TableBodySkeleton numberOfCols={4} />
-					) : !data?.data.length ? (
-						<Table.Row width="100%">
-							<Table.Cell colSpan={4}>
-								<EmptyState title="You have no bills yet" />
-							</Table.Cell>
-						</Table.Row>
-					) : (
-						data.data?.map((bill) => (
-							<LinkedTableRow key={bill.id} href={`/bills/${bill.id}`}>
-								<Table.Cell>{bill.description}</Table.Cell>
-								<Table.Cell title={formatTime(bill.creator.timestamp)}>{formatDistanceTime(bill.creator.timestamp)}</Table.Cell>
-								<Table.Cell>{formatUserAmount(bill.creditor, currentUserId)}</Table.Cell>
-								<Table.Cell maxW="400px">
-									<Text truncate>
-										{_.sortBy(bill.debtors, [(debtor) => debtor.userId !== currentUserId, (billMember) => billMember.userId]).map(
-											(billMember, billMemberIndex) => (
-												<React.Fragment key={billMember.userId}>
-													{formatUserAmount(billMember, currentUserId)}
-													{billMemberIndex !== bill.debtors.length - 1 ? ", " : ""}
-												</React.Fragment>
-											)
-										)}
-									</Text>
-								</Table.Cell>
-							</LinkedTableRow>
-						))
-					)}
-				</Table.Body>
-			</Table.Root>
-			{advanced && isSuccess && DEFAULT_PAGE_SIZE < data.fullSize && (
-				<HStack w="100%" justifyContent="flex-end">
-					<PaginationRoot
-						siblingCount={1}
-						page={filters.page}
-						count={data.fullSize}
-						pageSize={DEFAULT_PAGE_SIZE}
-						onPageChange={({ page }) => onFilterChange("page", page)}>
-						<PaginationPrevTrigger />
-						<PaginationItems />
-						<PaginationNextTrigger />
-					</PaginationRoot>
-				</HStack>
-			)}
-		</VStack>
+			<DataTable
+				data={data?.data ?? []}
+				columns={[
+					{
+						key: "description",
+						label: "Description",
+						dataGetter: ({ row }) => row.description
+					},
+					{
+						key: "createdAt",
+						label: "Created",
+						titleGetter: ({ row }) => formatTime(row.creator.timestamp),
+						dataGetter: ({ row }) => formatDistanceTime(row.creator.timestamp)
+					},
+					{
+						key: "creditor",
+						label: "Creditor",
+						dataGetter: ({ row }) => formatUserAmount(row.creditor, currentUserId)
+					},
+					{
+						key: "debtors",
+						label: "Debtors",
+						dataGetter: ({ row }) => (
+							<span className="truncate">
+								{_.sortBy(row.debtors, [(debtor) => debtor.userId !== currentUserId, (billMember) => billMember.userId]).map(
+									(billMember, billMemberIndex) => (
+										<React.Fragment key={billMember.userId}>
+											{formatUserAmount(billMember, currentUserId)}
+											{billMemberIndex !== row.debtors.length - 1 ? ", " : ""}
+										</React.Fragment>
+									)
+								)}
+							</span>
+						)
+					}
+				]}
+			/>
+
+			{/*{advanced && isSuccess && DEFAULT_PAGE_SIZE < data.fullSize && (*/}
+			{/*	<HStack w="100%" justifyContent="flex-end">*/}
+			{/*		<PaginationRoot*/}
+			{/*			siblingCount={1}*/}
+			{/*			page={filters.page}*/}
+			{/*			count={data.fullSize}*/}
+			{/*			pageSize={DEFAULT_PAGE_SIZE}*/}
+			{/*			onPageChange={({ page }) => onFilterChange("page", page)}>*/}
+			{/*			<PaginationPrevTrigger />*/}
+			{/*			<PaginationItems />*/}
+			{/*			<PaginationNextTrigger />*/}
+			{/*		</PaginationRoot>*/}
+			{/*	</HStack>*/}
+			{/*)}*/}
+		</div>
 	);
 };
 

@@ -4,23 +4,26 @@ import { z } from "zod";
 import React from "react";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
+import { DevTool } from "@hookform/devtools";
 import { IoIosAddCircle } from "react-icons/io";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, useFieldArray } from "react-hook-form";
 import { MdEdit, MdCheck, MdCancel } from "react-icons/md";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Input, Stack, HStack, GridItem, SimpleGrid } from "@chakra-ui/react";
-import { useForm, Controller, FormProvider, useFieldArray } from "react-hook-form";
+
+import { Input } from "@/components/shadcn/input";
+import { Button } from "@/components/shadcn/button";
+import { FileUpload } from "@/components/file-upload";
+import { ImageModal } from "@/components/image-modal";
+import { BillMemberInputs } from "@/components/inputs";
+import { RequiredLabel } from "@/components/required-label";
+import { BillFormHeading } from "@/components/bill-form-heading";
+import { Form, FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
 
 import { API } from "@/api";
 import { useBoolean } from "@/hooks";
-import { Field } from "@/chakra/field";
-import { Button } from "@/chakra/button";
-import { toaster } from "@/chakra/toaster";
-import { Skeleton } from "@/chakra/skeleton";
-import { SkeletonWrapper } from "@/components/skeleton-wrapper";
-import { BillFormHeading } from "@/components/bill-form-heading";
+import { useToast } from "@/hooks/use-toast";
 import { type ClientBill, type ClientBillMember } from "@/schemas";
-import { ReceiptUpload, BillMemberInputs } from "@/components/inputs";
 import { formatDate, CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
 import {
 	IssuedAtField,
@@ -92,6 +95,7 @@ function useBillForm() {
 	return useForm<BillFormState>({
 		resolver: zodResolver(BillFormStateSchema),
 		defaultValues: {
+			description: "",
 			receiptFile: null,
 			creditor: { userId: "", amount: "" },
 			debtors: [{ amount: "", userId: "" }],
@@ -115,8 +119,8 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 
 	const loading = React.useMemo(() => kind.type === "update" && loadingBill, [kind.type, loadingBill]);
 
-	const methods = useBillForm();
-	const { watch, reset, control, register, getValues, formState, handleSubmit } = methods;
+	const form = useBillForm();
+	const { watch, reset, control, getValues, formState, handleSubmit } = form;
 	const { errors } = formState;
 
 	React.useEffect(() => {
@@ -145,53 +149,89 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 	const { isPending: isPendingUsers } = useQuery({ queryKey: ["users"], queryFn: API.Users.List.query });
 
 	return (
-		<FormProvider {...methods}>
-			<Stack className="ck" gap="{spacing.4}">
+		<Form {...form}>
+			<div className="flex flex-col gap-4">
 				<BillFormHeading kind={kind} bill={bill} />
-				<SimpleGrid columns={10} gap="{spacing.4}">
-					<GridItem colSpan={{ base: 10 }}>
-						<SimpleGrid gap="{spacing.4}" templateRows="repeat(2, 1fr)" templateColumns="repeat(10, 1fr)">
-							<GridItem colSpan={5}>
-								<Field required label="Description" invalid={!!errors.description} errorText={errors.description?.message}>
-									<SkeletonWrapper loading={loading} skeleton={<Skeleton width="100%" height="40px" />}>
-										<Input
-											{...register("description")}
-											readOnly={!editing}
-											placeholder="Enter bill description"
-											pointerEvents={editing ? undefined : "none"}
-										/>
-									</SkeletonWrapper>
-								</Field>
-							</GridItem>
-							<GridItem rowSpan={2} colSpan={3}>
-								<Controller
+				<div className="grid grid-cols-10 gap-4">
+					<div className="col-span-10">
+						<div className="grid grid-cols-10 grid-rows-2 gap-4">
+							<div className="col-span-5">
+								<FormField
+									control={control}
+									name="description"
+									render={({ field }) => (
+										<FormItem>
+											<RequiredLabel htmlFor="description">Description</RequiredLabel>
+											<FormControl>
+												<Input placeholder="Enter bill description" {...field} />
+												{/*readOnly={!editing}*/}
+												{/*pointerEvents={editing ? undefined : "none"}*/}
+											</FormControl>
+											<FormMessage>{errors.description?.message}</FormMessage>
+										</FormItem>
+									)}
+								/>
+							</div>
+							<div className="col-span-3 row-span-2 flex items-center justify-center">
+								<FormField
 									control={control}
 									name="receiptFile"
 									render={({ field }) => (
-										<ReceiptUpload
-											loading={loading}
+										<FileUpload
+											buttonSize="md"
 											editing={editing}
+											loading={loading}
+											bucketName="receipts"
 											onChange={field.onChange}
 											fileId={field.value ?? undefined}
+											imageRenderer={(src) => <ImageModal src={src} />}
 											ownerId={kind.type === "update" ? kind.billId : undefined}
 										/>
 									)}
 								/>
-							</GridItem>
-							<GridItem colSpan={5}>
-								<Field required label="Issued at" invalid={!!errors.issuedAt} errorText={errors.issuedAt?.message}>
-									<SkeletonWrapper loading={loading} skeleton={<Skeleton width="100%" height="40px" />}>
-										<Input
-											{...register("issuedAt")}
-											readOnly={!editing}
-											placeholder={CLIENT_DATE_FORMAT}
-											pointerEvents={editing ? undefined : "none"}
-										/>
-									</SkeletonWrapper>
-								</Field>
-							</GridItem>
-						</SimpleGrid>
-					</GridItem>
+
+								{/*<Controller*/}
+								{/*	control={control}*/}
+								{/*	name="receiptFile"*/}
+								{/*	render={({ field }) => (*/}
+								{/*		<ReceiptUpload*/}
+								{/*			loading={loading}*/}
+								{/*			editing={editing}*/}
+								{/*			onChange={field.onChange}*/}
+								{/*			fileId={field.value ?? undefined}*/}
+								{/*			ownerId={kind.type === "update" ? kind.billId : undefined}*/}
+								{/*		/>*/}
+								{/*	)}*/}
+								{/*/>*/}
+							</div>
+							<div className="col-span-5">
+								<FormField
+									name="issuedAt"
+									control={control}
+									render={({ field }) => (
+										<FormItem>
+											<RequiredLabel htmlFor="issuedAt">Issued At</RequiredLabel>
+											<FormControl>
+												<Input placeholder={CLIENT_DATE_FORMAT} {...field} />
+												{/*readOnly={!editing}*/}
+											</FormControl>
+											<FormMessage>{errors.issuedAt?.message}</FormMessage>
+										</FormItem>
+									)}
+								/>
+								{/*<Field required label="Issued at" invalid={!!errors.issuedAt} errorText={errors.issuedAt?.message}>*/}
+								{/*	<SkeletonWrapper loading={loading} skeleton={<Skeleton width="100%" height="40px" />}>*/}
+								{/*		<Input*/}
+								{/*			{...register("issuedAt")}*/}
+								{/*			readOnly={!editing}*/}
+								{/*			placeholder={CLIENT_DATE_FORMAT}*/}
+								{/*			pointerEvents={editing ? undefined : "none"}*/}
+								{/*		/>*/}
+								{/*	</SkeletonWrapper>*/}
+								{/*</Field>*/}
+							</div>
+						</div>
+					</div>
 
 					<BillMemberInputs editing={editing} loading={loading} member={{ type: "creditor" }} />
 					{debtors.map((debtor, debtorIndex) => {
@@ -205,45 +245,47 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 							/>
 						);
 					})}
-				</SimpleGrid>
+				</div>
 
-				<HStack justifyContent={editing ? "space-between" : "flex-end"}>
+				<div className={`flex ${editing ? "justify-between" : "justify-end"}`}>
 					{editing && (
-						<Button variant="subtle" onClick={() => appendDebtor({ amount: "", userId: "" })}>
+						<Button size="sm" variant="secondary" onClick={() => appendDebtor({ amount: "", userId: "" })}>
 							Add debtor
 						</Button>
 					)}
 					{editing && (
-						<HStack>
+						<div className="flex gap-4">
 							{kind.type === "update" ? (
 								<>
 									<Button
-										variant="subtle"
+										size="sm"
+										variant="secondary"
 										onClick={() => {
 											endEditing();
 											reset();
 										}}>
 										<MdCancel /> Cancel
 									</Button>
-									<Button variant="solid" onClick={onSubmit}>
-										<MdCheck /> Done
+									<Button size="sm" onClick={onSubmit}>
+										<MdCheck /> Save
 									</Button>
 								</>
 							) : (
-								<Button type="submit" variant="solid" onClick={onSubmit} disabled={isPendingUsers}>
+								<Button size="sm" type="submit" onClick={onSubmit} disabled={isPendingUsers}>
 									<IoIosAddCircle /> Create
 								</Button>
 							)}
-						</HStack>
+						</div>
 					)}
 					{!editing && (
-						<Button variant="solid" onClick={startEditing}>
+						<Button size="sm" onClick={startEditing}>
 							<MdEdit /> Edit
 						</Button>
 					)}
-				</HStack>
-			</Stack>
-		</FormProvider>
+				</div>
+			</div>
+			<DevTool control={control} />
+		</Form>
 	);
 };
 
@@ -251,18 +293,18 @@ function useCreateBill() {
 	const queryClient = useQueryClient();
 	const router = useRouter();
 
+	const { toast } = useToast();
 	const { mutate } = useMutation({
 		mutationFn: API.Bills.Create.mutate,
 		onError: () => {
-			toaster.create({
-				type: "error",
+			toast({
+				variant: "destructive",
 				title: "Failed to create bill",
 				description: "An error occurred while creating the bill. Please try again."
 			});
 		},
 		onSuccess: () => {
-			toaster.create({
-				type: "success",
+			toast({
 				title: "Bill created successfully",
 				description: "A new bill has been created and saved successfully."
 			});
@@ -277,18 +319,18 @@ function useCreateBill() {
 function useUpdateBill(onSuccess: () => void) {
 	const queryClient = useQueryClient();
 
+	const { toast } = useToast();
 	const { mutate } = useMutation({
 		mutationFn: API.Bills.Update.mutate,
 		onError: () => {
-			toaster.create({
-				type: "error",
+			toast({
+				variant: "destructive",
 				title: "Failed to update bill",
 				description: "Unable to update the bill. Please verify your input and retry."
 			});
 		},
 		onSuccess: () => {
-			toaster.create({
-				type: "success",
+			toast({
 				title: "Bill updated successfully",
 				description: "The bill details have been updated successfully."
 			});

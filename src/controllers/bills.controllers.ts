@@ -22,10 +22,21 @@ export namespace BillsControllers {
 
 	export async function create(
 		supabase: SupabaseInstance,
-		payload: { issuedAt: string; creatorId: string; creditorId: string; totalAmount: number; description: string }
+		payload: { issuedAt: string; creatorId: string; creditorId: string; totalAmount: number; description: string; receiptFile: string | null }
 	) {
-		const { description, issuedAt: issued_at, creatorId: creator_id, creditorId: creditor_id, totalAmount: total_amount } = payload;
-		const { data } = await supabase.from("bills").insert({ issued_at, creator_id, description, creditor_id, total_amount }).select("id").single();
+		const {
+			description,
+			issuedAt: issued_at,
+			creatorId: creator_id,
+			creditorId: creditor_id,
+			receiptFile: receipt_file,
+			totalAmount: total_amount
+		} = payload;
+		const { data } = await supabase
+			.from("bills")
+			.insert({ issued_at, creator_id, description, creditor_id, receipt_file, total_amount })
+			.select("id")
+			.single();
 
 		if (!data) {
 			throw new Error("Error creating bill");

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 
 import { ProfileForm } from "@/components/forms";
 import { BankAccountsTable } from "@/components/tables";
+
 import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
 export const metadata: Metadata = {

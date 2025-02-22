@@ -1,14 +1,16 @@
 import React from "react";
-import { FaRegBell } from "react-icons/fa";
+import Link from "next/link";
+import { Bell } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Box, Stack, HStack, IconButton } from "@chakra-ui/react";
+
+import { Button } from "@/components/shadcn/button";
+import { EmptyState } from "@/components/empty-state";
+import { CounterBadge } from "@/components/counter-badge";
+import { NotificationMessage } from "@/components/notification-message";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
 
 import { API } from "@/api";
-import { Button } from "@/chakra/button";
-import { EmptyState } from "@/chakra/empty-state";
 import { type ClientNotification } from "@/schemas";
-import { NotificationMessage } from "@/components/notification-message";
-import { PopoverBody, PopoverRoot, PopoverArrow, PopoverContent, PopoverTrigger } from "@/chakra/popover";
 
 export const NotificationContainer = () => {
 	const [unreadCount, setUnreadCount] = React.useState(0);
@@ -85,48 +87,46 @@ export const NotificationContainer = () => {
 	const [open, setOpen] = React.useState(false);
 
 	return (
-		<PopoverRoot size="lg" open={open} onOpenChange={(e) => setOpen(e.open)} positioning={{ placement: "bottom-end" }}>
+		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
-				<IconButton rounded="full" variant="ghost">
-					<FaRegBell />
-					<CounterBadge count={unreadCount}></CounterBadge>
-				</IconButton>
+				<Button size="icon" variant="outline" className="relative h-8 w-8 rounded-full">
+					<Bell />
+					<CounterBadge count={unreadCount} />
+				</Button>
 			</PopoverTrigger>
-			<PopoverContent width="350px">
-				<PopoverArrow />
-				{notifications.length === 0 && (
-					<PopoverBody padding={0}>
-						<EmptyState title="You have no notifications" />
-					</PopoverBody>
-				)}
-				{notifications.length > 0 && (
-					<PopoverBody padding={0} display="flex" overflowY="auto" maxHeight="500px" gap="{spacing.2}" margin="{spacing.2}" flexDirection="column">
-						<HStack justifyContent="flex-end">
-							<Button size="xs" variant="ghost" onClick={() => readAll()} disabled={unreadCount === 0}>
+			<PopoverContent align="end" className="w-90 p-2">
+				{notifications.length === 0 ? (
+					<EmptyState title="You have no notifications" />
+				) : (
+					<div className="flex max-h-[500px] flex-col gap-2 overflow-y-auto">
+						<div className="flex justify-between">
+							<Button asChild size="sm" variant="ghost" onClick={() => setOpen(false)} className="cursor-pointer px-2">
+								<Link href="/notifications">See more</Link>
+							</Button>
+							<Button size="sm" variant="ghost" onClick={() => readAll()} disabled={unreadCount === 0} className="cursor-pointer px-2">
 								Mark all as read
 							</Button>
-						</HStack>
-						<Stack gap="0">
-							{notifications.map((notification) => {
-								return (
-									<NotificationMessage
-										key={notification.id}
-										notification={notification}
-										onClick={() => {
-											setOpen(false);
-											read({ notificationId: notification.id });
-										}}
-									/>
-								);
-							})}
-						</Stack>
-						<Box w="100%">
+						</div>
+
+						<div className="flex flex-col gap-0">
+							{notifications.map((notification) => (
+								<NotificationMessage
+									key={notification.id}
+									notification={notification}
+									onClick={() => {
+										setOpen(false);
+										read({ notificationId: notification.id });
+									}}
+								/>
+							))}
+						</div>
+
+						<div className="w-full">
 							<Button
-								w="100%"
 								variant="ghost"
-								disabled={!hasOlder}
+								className="w-full"
 								aria-label="Load older notifications"
-								loading={isLoadingOlderNotifications}
+								disabled={!hasOlder || !isLoadingOlderNotifications}
 								onClick={() => {
 									if (oldestTimestamp) {
 										loadMore({ before: oldestTimestamp });
@@ -134,35 +134,10 @@ export const NotificationContainer = () => {
 								}}>
 								{hasOlder ? "Load older notifications" : "No more notifications"}
 							</Button>
-						</Box>
-					</PopoverBody>
+						</div>
+					</div>
 				)}
 			</PopoverContent>
-		</PopoverRoot>
-	);
-};
-
-const CounterBadge: React.FC<{ count: number }> = ({ count }) => {
-	if (count === 0) {
-		return null;
-	}
-
-	return (
-		<Box
-			top="0"
-			right="0"
-			bg="red.500"
-			color="white"
-			fontSize="2xs"
-			display="flex"
-			position="absolute"
-			borderRadius="full"
-			width="{spacing.4}"
-			alignItems="center"
-			height="{spacing.4}"
-			justifyContent="center"
-			transform="translate(20%, -20%)">
-			{count}
-		</Box>
+		</Popover>
 	);
 };

@@ -2,12 +2,11 @@
 
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Stack, HStack, Heading } from "@chakra-ui/react";
+
+import { StatText } from "@/components/stat-text";
 
 import { type Balance } from "@/types";
 import { axiosInstance } from "@/services";
-import { Skeleton } from "@/chakra/skeleton";
-import { StatRoot, StatLabel, StatValueText } from "@/chakra/stat";
 
 export function BalanceReport() {
 	const { data } = useQuery<{ data: Balance }>({
@@ -16,39 +15,15 @@ export function BalanceReport() {
 	});
 
 	return (
-		<Stack gap={2}>
-			<Heading as="h1">Balance</Heading>
-
-			<HStack justify="space-between">
-				<StatRoot>
-					<StatLabel info="The total amount you need to pay back to others">Owed</StatLabel>
-					<ReportSkeleton number={data?.data?.owed} />
-				</StatRoot>
-				<StatRoot>
-					<StatLabel info="The total amount you have received by transactions by others">Received</StatLabel>
-					<ReportSkeleton number={data?.data?.received} />
-				</StatRoot>
-				<StatRoot>
-					<StatLabel info="The total amount you have paid on behalf of others">Paid</StatLabel>
-					<ReportSkeleton number={data?.data?.paid} />
-				</StatRoot>
-				<StatRoot>
-					<StatLabel info="The total amount you sent by transactions to others">Sent</StatLabel>
-					<ReportSkeleton number={data?.data?.sent} />
-				</StatRoot>
-				<StatRoot>
-					<StatLabel>Net Balance</StatLabel>
-					<ReportSkeleton number={data?.data?.net} />
-				</StatRoot>
-			</HStack>
-		</Stack>
+		<div className="space-y-4">
+			<h1 className="text-2xl font-bold">Balance</h1>
+			<div className="grid grid-cols-5 gap-4">
+				<StatText label="Owed" value={data?.data?.owed} info="The total amount you need to pay back to others" />
+				<StatText label="Received" value={data?.data?.received} info="The total amount you have received by transactions by others" />
+				<StatText label="Paid" value={data?.data?.paid} info="The total amount you have paid on behalf of others" />
+				<StatText label="Sent" value={data?.data?.sent} info="The total amount you sent by transactions to others" />
+				<StatText info="asd" label="Net Balance" value={data?.data?.net} />
+			</div>
+		</div>
 	);
 }
-
-const ReportSkeleton: React.FC<{ number: number | undefined }> = ({ number }) => {
-	if (number === undefined) {
-		return <Skeleton loading height="6" width="60px" />;
-	}
-
-	return <StatValueText value={number} />;
-};

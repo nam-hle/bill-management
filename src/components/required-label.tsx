@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Label } from "@/shadcn/components/ui/label";
+import { Label } from "@/components/shadcn/label";
 
 export const RequiredLabel = ({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) => (
 	<Label htmlFor={htmlFor}>

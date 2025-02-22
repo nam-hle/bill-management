@@ -40,6 +40,7 @@ const eslintConfig = [
 		rules: {
 			...reactPlugin.configs.flat.recommended.rules,
 			...reactHooksPlugin.configs.recommended.rules,
+			"react/react-in-jsx-scope": "off",
 			"react/jsx-boolean-value": "error",
 			"react-hooks/exhaustive-deps": "error",
 			"react/jsx-curly-brace-presence": ["error", "never"],
@@ -75,8 +76,14 @@ const eslintConfig = [
 				"error",
 				{
 					type: "line-length",
-					customGroups: { value: { project: ["@\/.*"] } },
-					groups: ["side-effect", "builtin", "external", "project", ["parent", "sibling", "index"]]
+					newlinesBetween: "always",
+					groups: ["side-effect", "builtin", "external", "component", "project", ["parent", "sibling", "index"]],
+					customGroups: {
+						value: {
+							project: "^@\/(?!components)",
+							component: "^@\/components\/.*"
+						}
+					}
 				}
 			],
 

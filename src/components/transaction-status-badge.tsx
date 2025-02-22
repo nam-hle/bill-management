@@ -1,17 +1,19 @@
 import React from "react";
-import { Badge, type BadgeProps } from "@chakra-ui/react";
 
-import { type TransactionStatus, TransactionStatusEnumSchema } from "@/schemas";
+import { Badge } from "@/components/shadcn/badge";
 
-export const TransactionStatusBadge: React.FC<{ status: TransactionStatus } & BadgeProps> = ({ status, size = "lg" }) => {
-	return (
-		<Badge
-			size={size}
-			marginLeft="{spacing.2}"
-			colorPalette={
-				status === TransactionStatusEnumSchema.enum.Waiting ? undefined : status === TransactionStatusEnumSchema.enum.Confirmed ? "green" : "red"
-			}>
-			{status}
-		</Badge>
-	);
+import { type TransactionStatus } from "@/schemas";
+
+export const TransactionStatusBadge: React.FC<{ className?: string; status: TransactionStatus }> = ({ status, className }) => {
+	return <Badge className={className}>{status}</Badge>;
+	// return (
+	// 	<Badge
+	// 		size={size}
+	// 		marginLeft="{spacing.2}"
+	// 		colorPalette={
+	// 			status === TransactionStatusEnumSchema.enum.Waiting ? undefined : status === TransactionStatusEnumSchema.enum.Confirmed ? "green" : "red"
+	// 		}>
+	// 		{status}
+	// 	</Badge>
+	// );
 };

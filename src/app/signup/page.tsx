@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { SignUpForm } from "@/components/forms/sign-up-form";
+
 import { createSupabaseServer } from "@/services/supabase/server";
 
 export const metadata: Metadata = {

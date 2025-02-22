@@ -1,16 +1,19 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MdDeleteOutline } from "react-icons/md";
-import { Controller, useFormContext } from "react-hook-form";
-import { Input, Group, GridItem, InputAddon } from "@chakra-ui/react";
+import { useFormContext } from "react-hook-form";
+
+import { Select } from "@/components/inputs";
+import { Label } from "@/components/shadcn/label";
+import { Input } from "@/components/shadcn/input";
+import { Button } from "@/components/shadcn/button";
+import { Skeleton } from "@/components/shadcn/skeleton";
+import { type BillFormState } from "@/components/bill-form";
+import { RequiredLabel } from "@/components/required-label";
+import { SkeletonWrapper } from "@/components/skeleton-wrapper";
+import { FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
 
 import { API } from "@/api";
-import { Field } from "@/chakra/field";
-import { Button } from "@/chakra/button";
-import { Skeleton } from "@/chakra/skeleton";
-import { Select } from "@/components/inputs";
-import { type BillFormState } from "@/components/bill-form";
-import { SkeletonWrapper } from "@/components/skeleton-wrapper";
 
 namespace BillMemberInputs {
 	export interface Props {
@@ -85,15 +88,18 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 
 	const loadingAmount = props.loading;
 
+	const AmountLabel = member.type === "creditor" ? Label : RequiredLabel;
+
 	return (
 		<>
-			<GridItem colSpan={{ base: 5 }}>
-				<Field required label={selectLabel} invalid={!!fieldError?.userId} errorText={fieldError?.userId?.message}>
-					<Controller
-						control={control}
-						name={`${fieldKey}.userId`}
-						render={({ field }) => (
-							<SkeletonWrapper loading={loadingUsers} skeleton={<Skeleton width="100%" height="40px" />}>
+			<div className="col-span-5">
+				<FormField
+					control={control}
+					name={`${fieldKey}.userId`}
+					render={({ field }) => (
+						<FormItem>
+							<RequiredLabel htmlFor={`${fieldKey}.userId`}>{selectLabel}</RequiredLabel>
+							<SkeletonWrapper loading={loadingUsers} skeleton={<Skeleton className="h-10 w-full" />}>
 								<Select
 									{...register(`${fieldKey}.userId`)}
 									readonly={!editing}
@@ -102,29 +108,37 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 									items={members.map(({ id: value, fullName: label }) => ({ label, value }))}
 								/>
 							</SkeletonWrapper>
-						)}
-					/>
-				</Field>
-			</GridItem>
+							{/*<FormMessage>{fieldError?.amount?.message}</FormMessage>*/}
+						</FormItem>
+					)}
+				/>
+			</div>
 
-			<GridItem colSpan={{ base: 3 }}>
-				<Field label={amountLabel} invalid={!!fieldError?.amount} required={member.type === "creditor"} errorText={fieldError?.amount?.message}>
-					<Group attached width="100%">
-						<SkeletonWrapper loading={loadingAmount} skeleton={<Skeleton width="100%" height="40px" />}>
-							<Input {...register(`${fieldKey}.amount`)} textAlign="right" readOnly={!editing} pointerEvents={editing ? undefined : "none"} />
-						</SkeletonWrapper>
-						<InputAddon>.000 VND</InputAddon>
-					</Group>
-				</Field>
-			</GridItem>
+			<div className="col-span-3">
+				<FormField
+					control={control}
+					name={`${fieldKey}.amount`}
+					render={({ field }) => (
+						<FormItem>
+							<AmountLabel htmlFor={`${fieldKey}.amount`}>{amountLabel}</AmountLabel>
+							<FormControl>
+								<SkeletonWrapper loading={loadingAmount} skeleton={<Skeleton className="h-10 w-full" />}>
+									<Input {...field} readOnly={!editing} />
+								</SkeletonWrapper>
+							</FormControl>
+							<FormMessage>{fieldError?.amount?.message}</FormMessage>
+						</FormItem>
+					)}
+				/>
+			</div>
 
-			<GridItem alignSelf="flex-end" colSpan={{ base: 2 }} justifySelf="flex-end">
+			<div className="col-span-2 self-end justify-self-end">
 				{editing && onRemove && (
-					<Button variant="subtle" colorPalette="red" onClick={onRemove}>
-						<MdDeleteOutline /> Delete
+					<Button size="sm" variant="outline" onClick={onRemove}>
+						<MdDeleteOutline />
 					</Button>
 				)}
-			</GridItem>
+			</div>
 		</>
 	);
 };
