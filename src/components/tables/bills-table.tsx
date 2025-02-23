@@ -7,11 +7,14 @@ import { useDebounce } from "@uidotdev/usehooks";
 import { useRouter, useSearchParams, type ReadonlyURLSearchParams } from "next/navigation";
 
 import { TypographyH1 } from "@/components/typography";
+import { FilterButton } from "@/components/filter-button";
 import { DataTable } from "@/components/data-table/data-table";
 
 import { API } from "@/api";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
 import { formatTime, formatDistanceTime } from "@/utils";
+
+import { Input } from "../shadcn/input";
 
 namespace BillsTable {
 	export interface Props {
@@ -95,34 +98,34 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 
 	return (
 		<div data-testid="table-container" className="flex w-full flex-col gap-4">
-			<div data-testid="table-heading" className="flex w-full flex-row justify-between">
+			<div data-testid="table-heading" className="flex w-full flex-row items-center justify-between">
 				<TypographyH1 data-testid="table-title">
 					{title ?? "Bills"}
 					{advanced && isSuccess ? ` (${data.fullSize})` : ""}
 				</TypographyH1>
 				{action}
 			</div>
-			{/*{advanced && (*/}
-			{/*	<HStack width="100%" data-testid="table-filters">*/}
-			{/*		<FilterButton {...createOwnerFilter("creator")}>As creator</FilterButton>*/}
-			{/*		<FilterButton {...createOwnerFilter("creditor")}>As creditor</FilterButton>*/}
-			{/*		<FilterButton {...createOwnerFilter("debtor")}>As debtor</FilterButton>*/}
-			{/*		<FilterButton {...createTimeFilter("7d")}>Last 7 days</FilterButton>*/}
-			{/*		<FilterButton {...createTimeFilter("30d")}>Last 30 days</FilterButton>*/}
-			{/*		/!*<InputGroup w="200px" marginLeft="auto" startElement={<GoSearch />}>*!/*/}
-			{/*		<Input*/}
-			{/*			name="search-bar"*/}
-			{/*			value={filters.q || ""}*/}
-			{/*			className="w-50 ml-auto"*/}
-			{/*			placeholder="Type to search.."*/}
-			{/*			onChange={(e) => onFilterChange("q", e.target.value)}*/}
-			{/*		/>*/}
-			{/*		/!*</InputGroup>*!/*/}
-			{/*	</HStack>*/}
-			{/*)}*/}
 
 			<DataTable
-				data={(data?.data ?? []).map((row) => ({ ...row, href: `/bills/${row.id}` }))}
+				data={data?.data?.map((row) => ({ ...row, href: `/bills/${row.id}` }))}
+				toolbar={
+					advanced && (
+						<div data-testid="table-filters" className="flex flex-1 items-center space-x-2">
+							<Input
+								className="w-50"
+								name="search-bar"
+								value={filters.q || ""}
+								placeholder="Filter bills..."
+								onChange={(e) => onFilterChange("q", e.target.value)}
+							/>
+							<FilterButton {...createOwnerFilter("creator")}>As creator</FilterButton>
+							<FilterButton {...createOwnerFilter("creditor")}>As creditor</FilterButton>
+							<FilterButton {...createOwnerFilter("debtor")}>As debtor</FilterButton>
+							<FilterButton {...createTimeFilter("7d")}>Last 7 days</FilterButton>
+							<FilterButton {...createTimeFilter("30d")}>Last 30 days</FilterButton>
+						</div>
+					)
+				}
 				columns={[
 					{
 						key: "description",
