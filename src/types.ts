@@ -14,6 +14,10 @@ export interface Identifiable {
 	readonly id: string;
 }
 
+export interface Linkable {
+	readonly href?: string;
+}
+
 export interface Pagination {
 	readonly pageSize: number;
 	/** 1-based */

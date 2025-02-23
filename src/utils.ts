@@ -16,7 +16,7 @@ export function formatTime(time: string | undefined | null) {
 		return "";
 	}
 
-	return format(new Date(time), "PPpp");
+	return format(new Date(time), "PPp");
 }
 
 export function displayDateAsTitle(date: string | undefined | null) {

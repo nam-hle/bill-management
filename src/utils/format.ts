@@ -3,5 +3,5 @@ export const formatCurrency = (amount: number) => {
 };
 
 export const formatDate = (dateString: string) => {
-	return new Date(dateString).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+	return new Date(dateString).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit" });
 };

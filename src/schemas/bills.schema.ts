@@ -10,7 +10,7 @@ export const ClientBillMemberSchema = z.object({
 	amount: z.number(),
 	fullName: z.string(),
 	role: BillMemberRoleSchema,
-	avatar: z.string().optional()
+	avatar: z.string().nullable()
 });
 export type ClientBillMember = z.infer<typeof ClientBillMemberSchema>;
 export namespace ClientBillMember {

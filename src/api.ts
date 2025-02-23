@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
 
 import { axiosInstance } from "@/services";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
@@ -252,6 +253,14 @@ export namespace API {
 
 	export namespace Storage {
 		export type BucketName = "avatars" | "receipts";
+
+		export function useFileQuery(bucketName: BucketName, fileId: string | undefined) {
+			return useQuery({
+				enabled: !!fileId,
+				queryKey: [bucketName, fileId],
+				queryFn: () => API.Storage.downloadFile(bucketName, fileId)
+			});
+		}
 
 		export async function downloadFile(bucketName: BucketName, path: string | undefined): Promise<string | undefined> {
 			if (!path) {
