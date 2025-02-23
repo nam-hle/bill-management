@@ -33,5 +33,3 @@ export const SignUpFormSchema = LoginFormPayloadSchema.extend({
 export type SignUpForm = z.infer<typeof SignUpFormSchema>;
 
 export const SignUpPayloadSchema = SignUpFormSchema.innerType().omit({ confirmPassword: true });
-// @ts-expect-error ABC
-export const SignUpPayload = z.infer<typeof SignUpPayloadSchema>;

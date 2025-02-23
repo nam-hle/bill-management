@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/shadcn/skeleton";
 
 export type ThemeToggleButton = "light" | "dark";
 
-export interface UseColorModeReturn {
+interface UseColorModeReturn {
 	toggleColorMode: () => void;
 	colorMode: ThemeToggleButton;
 	setColorMode: (colorMode: ThemeToggleButton) => void;

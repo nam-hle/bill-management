@@ -59,13 +59,6 @@ export function capitalize(text: string) {
 	return text[0].toUpperCase() + text.slice(1);
 }
 
-export function renderError(validating: boolean, error: string | undefined) {
-	return {
-		errorText: validating ? error : undefined,
-		invalid: validating ? !!error : undefined
-	};
-}
-
 export function convertVerb(verb: string) {
 	let pastTense;
 

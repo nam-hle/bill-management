@@ -4,7 +4,7 @@ import React from "react";
 
 import { Show } from "@/components/show";
 
-export interface ClientOnlyProps {
+interface ClientOnlyProps {
 	children: React.ReactNode;
 	fallback?: React.ReactNode;
 }
