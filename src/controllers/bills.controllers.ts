@@ -1,5 +1,5 @@
 import { type API } from "@/api";
-import { type ClientBill } from "@/schemas";
+import { type ClientBill, type ClientBillMember } from "@/schemas";
 import { type SupabaseInstance } from "@/services/supabase/server";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
 
@@ -16,8 +16,8 @@ export namespace BillsControllers {
     issuedAt:issued_at,
     receiptFile:receipt_file,
     totalAmount:total_amount,
-    creditor:profiles!creditor_id (userId:id, fullName:full_name),
-    billDebtors:bill_debtors (user:user_id (userId:id, fullName:full_name), amount, role)
+    creditor:profiles!creditor_id (userId:id, fullName:full_name, avatarUrl:avatar_url),
+    billDebtors:bill_debtors (user:user_id (userId:id, fullName:full_name, avatarUrl:avatar_url), amount, role)
   `;
 
 	export async function create(
@@ -111,13 +111,13 @@ export namespace BillsControllers {
 			debtors: debtors.map(toMember),
 			creator: { ...creator, timestamp: createdAt },
 			updater: updater && updatedAt ? { ...updater, timestamp: updatedAt } : undefined,
-			creditor: { amount: totalAmount, userId: creditor.userId, role: "Creditor" as const, fullName: creditor.fullName }
+			creditor: { amount: totalAmount, userId: creditor.userId, role: "Creditor" as const, avatar: creditor.avatarUrl, fullName: creditor.fullName }
 		};
 
-		function toMember(billMember: BillMemberSelectResult) {
+		function toMember(billMember: BillMemberSelectResult): ClientBillMember {
 			const { role, user, amount } = billMember;
 
-			return { role, amount, ...user };
+			return { role, amount, ...{ ...user, avatar: user.avatarUrl } };
 		}
 	}
 

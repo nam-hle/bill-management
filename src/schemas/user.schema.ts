@@ -3,7 +3,8 @@ import { z } from "zod";
 export const ClientUserSchema = z.object({
 	id: z.string(),
 	username: z.string(),
-	fullName: z.string()
+	fullName: z.string(),
+	avatar: z.string().nullable()
 });
 
 export type ClientUser = z.infer<typeof ClientUserSchema>;
@@ -32,5 +33,3 @@ export const SignUpFormSchema = LoginFormPayloadSchema.extend({
 export type SignUpForm = z.infer<typeof SignUpFormSchema>;
 
 export const SignUpPayloadSchema = SignUpFormSchema.innerType().omit({ confirmPassword: true });
-// @ts-expect-error ABC
-export const SignUpPayload = z.infer<typeof SignUpPayloadSchema>;

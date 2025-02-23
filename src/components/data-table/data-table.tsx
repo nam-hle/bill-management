@@ -1,12 +1,13 @@
 import React from "react";
+import NextLink from "next/link";
 
 import { type DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { Table, TableRow, TableBody, TableCell, TableHead, TableHeader } from "@/components/shadcn/table";
 
-import { type Identifiable } from "@/types";
+import { type Linkable, type Container, type Identifiable } from "@/types";
 
 export namespace DataTable {
-	export interface Props<RowType extends Identifiable, ColumnType extends BaseColumnType<RowType> = BaseColumnType<RowType>> {
+	export interface Props<RowType extends Identifiable & Linkable, ColumnType extends BaseColumnType<RowType> = BaseColumnType<RowType>> {
 		data: RowType[];
 		columns: ColumnType[];
 		pagination?: DataTablePagination.Props;
@@ -20,9 +21,10 @@ export namespace DataTable {
 	}
 }
 
-export function DataTable<RowType extends Identifiable, ColumnType extends DataTable.BaseColumnType<RowType> = DataTable.BaseColumnType<RowType>>(
-	props: DataTable.Props<RowType, ColumnType>
-) {
+export function DataTable<
+	RowType extends Identifiable & Linkable,
+	ColumnType extends DataTable.BaseColumnType<RowType> = DataTable.BaseColumnType<RowType>
+>(props: DataTable.Props<RowType, ColumnType>) {
 	const { data, columns } = props;
 
 	return (
@@ -37,11 +39,11 @@ export function DataTable<RowType extends Identifiable, ColumnType extends DataT
 				</TableHeader>
 				<TableBody>
 					{data.map((row) => (
-						<TableRow key={row.id}>
+						<LinkedTableRow key={row.id} href={row.href}>
 							{columns.map((column) => {
 								return <TableCell key={column.key}>{column.dataGetter({ row })}</TableCell>;
 							})}
-						</TableRow>
+						</LinkedTableRow>
 					))}
 				</TableBody>
 			</Table>
@@ -49,3 +51,27 @@ export function DataTable<RowType extends Identifiable, ColumnType extends DataT
 		</div>
 	);
 }
+
+const ForwardedTableRow = React.forwardRef<HTMLTableRowElement, Container & React.HTMLAttributes<HTMLTableRowElement>>(
+	function ForwardedRow(props, ref) {
+		const { children, ...rest } = props;
+
+		return (
+			<TableRow ref={ref} {...rest}>
+				{children}
+			</TableRow>
+		);
+	}
+);
+
+export const LinkedTableRow: React.FC<{ href?: string } & Container & React.HTMLAttributes<HTMLTableRowElement>> = ({ href, ...props }) => {
+	if (href === undefined) {
+		return <ForwardedTableRow {...props} />;
+	}
+
+	return (
+		<NextLink passHref prefetch href={href} legacyBehavior>
+			<ForwardedTableRow {...props} className="cursor-pointer" />
+		</NextLink>
+	);
+};

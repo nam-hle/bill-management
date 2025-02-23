@@ -12,9 +12,9 @@ export namespace TransactionsControllers {
     issuedAt:issued_at,
     amount,
     status,
-    sender:profiles!sender_id (userId:id, username, fullName:full_name),
+    sender:profiles!sender_id (userId:id, username, fullName:full_name, avatar:avatar_url),
     bankAccountId:bank_account_id,
-    receiver:profiles!receiver_id (userId:id, username, fullName:full_name)
+    receiver:profiles!receiver_id (userId:id, username, fullName:full_name, avatar:avatar_url)
   `;
 
 	export async function create(
@@ -140,8 +140,8 @@ export namespace TransactionsControllers {
 
 		return {
 			...rest,
-			sender: { id: sender.userId, username: sender.username, fullName: sender.fullName },
-			receiver: { id: receiver.userId, username: receiver.username, fullName: receiver.fullName }
+			sender: { id: sender.userId, avatar: sender.avatar, username: sender.username, fullName: sender.fullName },
+			receiver: { id: receiver.userId, avatar: receiver.avatar, username: receiver.username, fullName: receiver.fullName }
 		};
 	}
 

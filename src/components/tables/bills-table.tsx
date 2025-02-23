@@ -122,7 +122,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 			{/*)}*/}
 
 			<DataTable
-				data={data?.data ?? []}
+				data={(data?.data ?? []).map((row) => ({ ...row, href: `/bills/${row.id}` }))}
 				columns={[
 					{
 						key: "description",

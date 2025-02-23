@@ -16,7 +16,8 @@
 		"postgenerate-types": "pnpm lint:fix",
 		"preplaywright": "pnpm exec playwright install chromium",
 		"playwright": "pnpm exec playwright test --workers=1",
-		"playwright:ui": "pnpm playwright --ui"
+		"playwright:ui": "pnpm playwright --ui",
+		"knip": "knip"
 	},
 	"dependencies": {
 		"@emotion/react": "^11.14.0",
@@ -36,7 +37,6 @@
 		"@supabase/supabase-js": "^2.47.10",
 		"@tanstack/react-query": "^5.66.0",
 		"@uidotdev/usehooks": "^2.4.1",
-		"add": "^2.0.6",
 		"axios": "^1.7.9",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
@@ -55,7 +55,6 @@
 		"react-hook-form": "^7.54.2",
 		"react-icons": "^5.4.0",
 		"tailwind-merge": "^3.0.1",
-		"tailwindcss-animate": "^1.0.7",
 		"zod": "^3.24.1"
 	},
 	"devDependencies": {
@@ -66,9 +65,8 @@
 		"@stylistic/eslint-plugin-ts": "^2.12.0",
 		"@tanstack/eslint-plugin-query": "^5.66.0",
 		"@tanstack/react-query-devtools": "^5.66.0",
-		"@types/events": "^3.0.3",
 		"@types/lodash": "^4.17.14",
-		"@types/node": "^20",
+		"@types/node": "^20.17.12",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
 		"@types/yargs": "^17.0.33",
@@ -81,13 +79,14 @@
 		"eslint-plugin-react-hooks": "^5.1.0",
 		"eslint-plugin-unused-imports": "^4.1.4",
 		"husky": "^9.1.7",
+		"knip": "^5.44.4",
 		"lint-staged": "^15.4.3",
 		"prettier": "^3.5.1",
 		"prettier-plugin-tailwindcss": "^0.6.11",
 		"supabase": "^2.2.1",
 		"tailwindcss": "^3.4.17",
 		"tsx": "^4.19.2",
-		"typescript": "^5",
+		"typescript": "^5.7.2",
 		"yargs": "^17.7.2"
 	},
 	"packageManager": "pnpm@9.15.1+sha512.1acb565e6193efbebda772702950469150cf12bcc764262e7587e71d19dc98a423dff9536e57ea44c49bdf790ff694e83c27be5faa23d67e0c033b583be4bfcf",
