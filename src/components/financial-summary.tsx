@@ -20,23 +20,24 @@ export function FinancialSummary() {
 	});
 
 	return (
-		<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-			<StatText label="Owed" Icon={Frown} color="text-red-500" amount={data?.data.owed} description="Amount you owe to others" />
-			<StatText label="Paid" Icon={CreditCard} color="text-green-500" amount={data?.data.paid} description="Amount you paid for bills" />
-			<StatText label="Sent" Icon={ArrowUpRight} color="text-blue-500" amount={data?.data.sent} description="Amount sent in transactions" />
-			<StatText
-				label="Received"
-				Icon={ArrowDownLeft}
-				color="text-purple-500"
-				amount={data?.data.received}
-				description="Amount received in transactions"
-			/>
+		<div className="col-span-2 flex flex-col gap-4">
+			<h2 className="text-2xl font-bold">Summary</h2>
 			<StatText
 				Icon={PiggyBank}
 				label="Net Balance"
 				amount={data?.data.net}
 				description="Your current balance"
-				color={(data?.data.net ?? 0) >= 0 ? "text-green-500" : "text-red-500"}
+				color={(data?.data.net ?? 0) >= 0 ? "text-green-600" : "text-red-600"}
+			/>
+			<StatText label="Owed" Icon={Frown} color="text-red-600" amount={data?.data.owed} description="Amount you owe to others" />
+			<StatText label="Paid" Icon={CreditCard} color="text-green-600" amount={data?.data.paid} description="Amount you paid for bills" />
+			<StatText label="Sent" Icon={ArrowUpRight} color="text-red-600" amount={data?.data.sent} description="Amount sent in transactions" />
+			<StatText
+				label="Received"
+				Icon={ArrowDownLeft}
+				color="text-green-600"
+				amount={data?.data.received}
+				description="Amount received in transactions"
 			/>
 		</div>
 	);

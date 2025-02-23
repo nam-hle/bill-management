@@ -3,7 +3,8 @@ import { z } from "zod";
 export const ClientUserSchema = z.object({
 	id: z.string(),
 	username: z.string(),
-	fullName: z.string()
+	fullName: z.string(),
+	avatar: z.string().nullable()
 });
 
 export type ClientUser = z.infer<typeof ClientUserSchema>;

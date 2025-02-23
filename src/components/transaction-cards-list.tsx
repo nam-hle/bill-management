@@ -13,7 +13,7 @@ export function TransactionCardList({ currentUserId }: { currentUserId: string }
 	});
 
 	return (
-		<div className="flex-1 space-y-4">
+		<div className="col-span-2 flex-1 space-y-4">
 			<h2 className="text-2xl font-bold">Recent Transactions</h2>
 			<div className="space-y-4">
 				{data?.data.map((transaction) => <TransactionCard key={transaction.id} transaction={transaction} currentUserId={currentUserId} />)}

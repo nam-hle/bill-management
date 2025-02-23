@@ -5,6 +5,7 @@ import { useTheme } from "next-themes";
 import { usePathname } from "next/navigation";
 import React, { useRef, useState, useEffect } from "react";
 
+import { Button } from "@/components/shadcn/button";
 import { Card, CardContent } from "@/components/shadcn/card";
 
 const tabs: Tab[] = [
@@ -96,7 +97,7 @@ export const Frame = () => {
 					/>
 
 					{/* Active Indicator */}
-					<div style={activeStyle} className="absolute bottom-[-6px] h-[2px] bg-[#0e0f11] transition-all duration-300 ease-out dark:bg-white" />
+					<div style={activeStyle} className="absolute bottom-[-2px] h-[2px] bg-[#0e0f11] transition-all duration-300 ease-out dark:bg-white" />
 
 					{/* Tabs */}
 					<div className="relative flex items-center space-x-[6px]">
@@ -120,6 +121,9 @@ export const Frame = () => {
 								</div>
 							</Link>
 						))}
+						<Button asChild size="sm" variant="default">
+							<Link href="/bills/new">Create</Link>
+						</Button>
 					</div>
 				</CardContent>
 			</Card>

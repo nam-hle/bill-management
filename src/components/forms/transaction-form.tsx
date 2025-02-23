@@ -50,7 +50,7 @@ type FormState = z.infer<typeof FormStateSchema>;
 
 export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 	const { kind, users, currentUserId } = props;
-	const editing = React.useMemo(() => kind.type === "update", [kind.type]);
+	const editing = React.useMemo(() => kind.type === "create", [kind.type]);
 	const [_qrImage, setQrImage] = React.useState<string | undefined>(undefined);
 
 	const { toast } = useToast();
@@ -196,7 +196,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 								<RequiredLabel htmlFor="receiverId">Receiver</RequiredLabel>
 								<Select
 									{...register("receiverId")}
-									readonly={editing}
+									readonly={!editing}
 									value={field.value}
 									onValueChange={(value) => {
 										field.onChange(value);

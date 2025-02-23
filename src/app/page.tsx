@@ -11,16 +11,10 @@ export default async function DashboardPage() {
 
 	return (
 		<>
-			<div className="flex flex-col gap-6">
+			<div className="grid grid-cols-6 gap-4">
 				<FinancialSummary />
-				<div className="flex flex-col gap-8 lg:flex-row">
-					<div className="flex-1 space-y-4">
-						<BillCardsList currentUserId={currentUser.id} />
-					</div>
-					<div className="flex-1 space-y-4">
-						<TransactionCardList currentUserId={currentUser.id} />
-					</div>
-				</div>
+				<BillCardsList currentUserId={currentUser.id} />
+				<TransactionCardList currentUserId={currentUser.id} />
 			</div>
 		</>
 	);

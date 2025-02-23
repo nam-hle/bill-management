@@ -12,7 +12,7 @@ export function BillCardsList({ currentUserId }: { currentUserId: string }) {
 	});
 
 	return (
-		<div className="flex-1 space-y-4">
+		<div className="col-span-2 space-y-4">
 			<h2 className="text-2xl font-bold">Recent Bills</h2>
 			<div className="space-y-4">{data?.data?.map((bill) => <BillCard bill={bill} key={bill.id} currentUserId={currentUserId} />)}</div>
 		</div>

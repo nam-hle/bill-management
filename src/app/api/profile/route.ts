@@ -19,9 +19,9 @@ export async function POST(request: Request) {
 
 		revalidatePath("/", "layout");
 
-		const { fullName, avatarUrl } = await UsersControllers.updateProfile(supabase, user.id, body);
+		const { avatar, fullName } = await UsersControllers.updateProfile(supabase, user.id, body);
 
-		return new Response(JSON.stringify({ fullName, avatarUrl }), { status: 201 });
+		return new Response(JSON.stringify({ avatar, fullName }), { status: 201 });
 	} catch (error) {
 		return RouteUtils.ServerError;
 	}

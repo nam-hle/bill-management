@@ -8,7 +8,7 @@ export namespace UsersControllers {
     id,
     username,
     fullName:full_name,
-    avatarUrl:avatar_url
+    avatar:avatar_url
   `;
 
 	interface UpdateProfilePayload extends ProfileFormPayload {}

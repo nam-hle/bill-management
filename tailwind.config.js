@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
 	darkMode: ["class"],
-	plugins: [require("tailwindcss-animate")],
+	// plugins: [require("tailwindcss-animate")],
 	content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
 	theme: {
 		extend: {
@@ -35,6 +35,10 @@ module.exports = {
 				primary: {
 					DEFAULT: "hsl(var(--primary))",
 					foreground: "hsl(var(--primary-foreground))"
+				},
+				succeed: {
+					DEFAULT: "hsl(var(--succeed))",
+					foreground: "hsl(var(--succeed-foreground))"
 				},
 				secondary: {
 					DEFAULT: "hsl(var(--secondary))",
