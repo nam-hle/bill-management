@@ -109,7 +109,6 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 									items={members.map(({ id: value, fullName: label }) => ({ label, value }))}
 								/>
 							</SkeletonWrapper>
-							{/*<FormMessage>{fieldError?.amount?.message}</FormMessage>*/}
 						</FormItem>
 					)}
 				/>
@@ -124,7 +123,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 							<AmountLabel htmlFor={`${fieldKey}.amount`}>{amountLabel}</AmountLabel>
 							<FormControl>
 								<SkeletonWrapper loading={loadingAmount} skeleton={<Skeleton className="h-10 w-full" />}>
-									<Input {...field} readOnly={!editing} />
+									<Input readOnly={!editing} className={editing ? "" : "pointer-events-none"} {...field} />
 								</SkeletonWrapper>
 							</FormControl>
 							<FormMessage>{fieldError?.amount?.message}</FormMessage>
