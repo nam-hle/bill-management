@@ -53,7 +53,7 @@ export const FileUpload = ({ fileId, loading, ownerId, editing, onChange, button
 		[bucketName, ownerId, uploadFile]
 	);
 
-	const { open, getRootProps, isDragActive, getInputProps } = useDropzone({
+	const { getRootProps, isDragActive, getInputProps } = useDropzone({
 		onDrop,
 		multiple: false,
 		accept: { "image/*": [".png", ".jpg", ".jpeg", ".gif"] }

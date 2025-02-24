@@ -40,6 +40,7 @@ const eslintConfig = [
 		rules: {
 			...reactPlugin.configs.flat.recommended.rules,
 			...reactHooksPlugin.configs.recommended.rules,
+			"react/prop-types": "off",
 			"react/react-in-jsx-scope": "off",
 			"react/jsx-boolean-value": "error",
 			"react-hooks/exhaustive-deps": "error",
