@@ -234,6 +234,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 				<div className={`flex ${editing ? "justify-between" : "justify-end"}`}>
 					{editing && (
 						<Button size="sm" variant="secondary" onClick={() => appendDebtor({ amount: "", userId: "" })}>
+							<Plus />
 							Add debtor
 						</Button>
 					)}

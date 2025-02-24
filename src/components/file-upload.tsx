@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useDropzone } from "react-dropzone";
 import { useQuery } from "@tanstack/react-query";
-import { Pencil, Trash2, UploadCloud } from "lucide-react";
+import { Trash2, UploadCloud } from "lucide-react";
 
 import { Button } from "@/components/shadcn/button";
 import { Skeleton } from "@/components/shadcn/skeleton";
@@ -81,17 +81,6 @@ export const FileUpload = ({ fileId, loading, ownerId, editing, onChange, button
 
 		return (
 			<div className="absolute bottom-0 right-0 flex flex-col justify-between">
-				<Button
-					size="icon"
-					type="button"
-					variant="secondary"
-					className={buttonSize === "sm" ? "h-6 w-6" : ""}
-					onClick={(e) => {
-						e.stopPropagation();
-						open();
-					}}>
-					<Pencil className="h-4 w-4" />
-				</Button>
 				<Button size="icon" type="button" onClick={removeFile} variant="destructive" className={buttonSize === "sm" ? "h-6 w-6" : ""}>
 					<Trash2 className="h-4 w-4" />
 				</Button>
@@ -131,11 +120,7 @@ export const FileUpload = ({ fileId, loading, ownerId, editing, onChange, button
 		);
 	};
 
-	if (loading || loadingImage) {
-		return renderImagePreview();
-	}
-
-	if (fileId) {
+	if (loading || loadingImage || fileId) {
 		return renderImagePreview();
 	}
 

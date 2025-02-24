@@ -25,6 +25,10 @@ export const DataTablePagination: React.FC<DataTablePagination.Props> = (props) 
 	const hasPreviousPage = pageNumber > 1;
 	const hasNextPage = pageNumber < totalPage;
 
+	if (totalPage === 1) {
+		return null;
+	}
+
 	return (
 		<div className="flex items-center justify-end space-x-6 lg:space-x-8">
 			<div className="flex w-[100px] items-center justify-center text-sm font-medium">

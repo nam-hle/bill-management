@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/shadcn/button";
 import { Skeleton } from "@/components/shadcn/skeleton";
 
-import { TypographyH1 } from "@/components/typography";
+import { Heading } from "@/components/heading";
 import { NotificationMessage } from "@/components/notification-message";
 
 import { API } from "@/api";
@@ -31,7 +31,7 @@ export const NotificationsTable: React.FC<TransactionsTable.Props> = () => {
 
 	return (
 		<div data-testid="table-container" className="mx-auto flex w-2/3 flex-col gap-4">
-			<TypographyH1>Notifications</TypographyH1>
+			<Heading>Notifications</Heading>
 			<div className={cn("flex h-10 w-full", isFirstPage ? "justify-end" : "justify-between")}>
 				{!isFirstPage && (
 					<Button variant="secondary" onClick={() => setPage(page - 1)}>

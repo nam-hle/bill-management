@@ -8,8 +8,8 @@ import { Button } from "@/components/shadcn/button";
 import { Avatar, AvatarImage } from "@/components/shadcn/avatar";
 import { Form, FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
 
+import { Heading } from "@/components/heading";
 import { FileUpload } from "@/components/file-upload";
-import { TypographyH1 } from "@/components/typography";
 import { RequiredLabel } from "@/components/required-label";
 
 import { API } from "@/api";
@@ -58,7 +58,7 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 	return (
 		<Form {...form}>
 			<form onSubmit={onSubmit} className="mx-auto w-[60%] gap-4">
-				<TypographyH1>Profile</TypographyH1>
+				<Heading>Profile</Heading>
 				<div className="grid grid-cols-12 grid-rows-2 gap-2">
 					<div className="col-span-3 row-span-2 self-center">
 						<FormField
