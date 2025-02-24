@@ -4,10 +4,11 @@ import { Bell } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 
 import { Button } from "@/components/shadcn/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
+
 import { EmptyState } from "@/components/empty-state";
 import { CounterBadge } from "@/components/counter-badge";
 import { NotificationMessage } from "@/components/notification-message";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
 
 import { API } from "@/api";
 import { type ClientNotification } from "@/schemas";

@@ -1,6 +1,7 @@
 import React from "react";
 
 import { Toaster } from "@/components/shadcn/toaster";
+
 import { NavigationBar } from "@/components/navigation-bar";
 import { type AvatarContainer } from "@/components/avatar-container";
 

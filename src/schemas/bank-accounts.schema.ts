@@ -5,7 +5,7 @@ import type { Database } from "@/database.types";
 export const BankAccountStatusEnumSchema = z.enum(["Active", "Inactive"] as const satisfies Database["public"]["Enums"]["BankAccountStatus"][]);
 export type BankAccountStatus = z.infer<typeof BankAccountStatusEnumSchema>;
 
-export const BankAccountTypeEnumSchema = z.enum(["Bank", "Wallet"] as const satisfies Database["public"]["Enums"]["BankAccountType"][]);
+const BankAccountTypeEnumSchema = z.enum(["Bank", "Wallet"] as const satisfies Database["public"]["Enums"]["BankAccountType"][]);
 export type BankAccountType = z.infer<typeof BankAccountTypeEnumSchema>;
 
 export const BankAccountSchema = z.object({

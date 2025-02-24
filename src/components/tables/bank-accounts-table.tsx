@@ -1,11 +1,11 @@
 "use client";
 
 import React from "react";
-import { FaCheck } from "react-icons/fa6";
+import { Check } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { Badge } from "@/components/shadcn/badge";
-import { TypographyH1 } from "@/components/typography";
+
 import { DataTable } from "@/components/data-table/data-table";
 
 import { API } from "@/api";
@@ -20,19 +20,16 @@ namespace BankAccountsTable {
 export const BankAccountsTable: React.FC<BankAccountsTable.Props> = (props) => {
 	const { currentUserId } = props;
 
-	const { data, isLoading } = useQuery({
+	const { data } = useQuery({
 		queryKey: ["bank-accounts", currentUserId],
 		queryFn: () => API.BankAccounts.List.query({ userId: currentUserId })
 	});
 
 	return (
 		<div className="mx-auto flex w-[60%] flex-col gap-4">
-			<div className="w-full">
-				<TypographyH1>Accounts</TypographyH1>
-			</div>
-
 			<DataTable
 				data={data ?? []}
+				title="Bank Accounts"
 				columns={[
 					{
 						key: "provider",
@@ -63,7 +60,7 @@ export const BankAccountsTable: React.FC<BankAccountsTable.Props> = (props) => {
 					{
 						key: "default",
 						label: "Default",
-						dataGetter: ({ row }) => (row.isDefault ? <FaCheck /> : null)
+						dataGetter: ({ row }) => (row.isDefault ? <Check /> : null)
 					}
 				]}
 			/>

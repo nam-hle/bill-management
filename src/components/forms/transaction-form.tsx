@@ -1,24 +1,25 @@
 "use client";
 
 import { type z } from "zod";
+import { Plus } from "lucide-react";
 import React, { useState } from "react";
 import { parse, format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { IoIosAddCircle } from "react-icons/io";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation } from "@tanstack/react-query";
 
-import { Select } from "@/components/inputs";
 import { Input } from "@/components/shadcn/input";
 import { Button } from "@/components/shadcn/button";
-import { TypographyH1 } from "@/components/typography";
 import { Skeleton } from "@/components/shadcn/skeleton";
+import { Form, FormItem, FormField, FormMessage, FormControl } from "@/components/shadcn/form";
+
+import { Select } from "@/components/inputs";
+import { TypographyH1 } from "@/components/typography";
 import { RequiredLabel } from "@/components/required-label";
 import { SkeletonWrapper } from "@/components/skeleton-wrapper";
 import { TransactionAction } from "@/components/transaction-action";
 import { TransactionStatusBadge } from "@/components/transaction-status-badge";
-import { Form, FormItem, FormField, FormMessage, FormControl } from "@/components/shadcn/form";
 
 import { API } from "@/api";
 import { useToast } from "@/hooks/use-toast";
@@ -271,11 +272,11 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 					{kind.type === "create" && (
 						<div className="flex justify-between gap-2">
 							<Button onClick={onSubmit}>
-								<IoIosAddCircle /> Create
+								<Plus /> Create
 							</Button>
 							<div className="flex gap-2">
 								<Button variant="secondary" onClick={onGenerateQR}>
-									<IoIosAddCircle /> Generate QR
+									Generate QR
 								</Button>
 
 								<Button variant="secondary" onClick={() => fetchSuggestion()}>

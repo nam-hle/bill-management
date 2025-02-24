@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 
-import { AvatarGroup } from "@/components/avatar-group";
 import { Card, CardContent } from "@/components/shadcn/card";
+
+import { AvatarGroup } from "@/components/avatar-group";
 import { FallbackAvatar } from "@/components/fallbackable-avatar";
 
 import { formatTime } from "@/utils";

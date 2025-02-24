@@ -6,17 +6,19 @@ import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@uidotdev/usehooks";
 import { useRouter, useSearchParams, type ReadonlyURLSearchParams } from "next/navigation";
 
-import { TypographyH1 } from "@/components/typography";
+import { FilterButton } from "@/components/filter-button";
 import { DataTable } from "@/components/data-table/data-table";
+import { FallbackAvatar } from "@/components/fallbackable-avatar";
 
 import { API } from "@/api";
+import { formatCurrency } from "@/utils/format";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
 import { formatTime, formatDistanceTime } from "@/utils";
 
+import { Input } from "../shadcn/input";
+
 namespace BillsTable {
 	export interface Props {
-		readonly title?: string;
-		readonly advanced?: boolean;
 		readonly currentUserId: string;
 		readonly action?: React.ReactNode;
 	}
@@ -45,27 +47,26 @@ function toSearchParams(filters: Filters) {
 }
 
 export const BillsTable: React.FC<BillsTable.Props> = (props) => {
-	const { title, action, advanced, currentUserId } = props;
+	const { action, currentUserId } = props;
 	const searchParams = useSearchParams();
 	const [filters, setFilters] = React.useState(() => toFilters(searchParams));
 
+	const onFilterChange = React.useCallback(<T extends keyof Filters>(filterKey: T, filterValue: Filters[T]) => {
+		setFilters((prevFilters) => {
+			const nextFilters: Filters = {
+				...prevFilters,
+				[filterKey]: filterValue,
+				page: filterKey === "page" ? (filterValue as number) : DEFAULT_PAGE_NUMBER
+			};
+
+			return nextFilters;
+		});
+	}, []);
+
 	const router = useRouter();
-
-	const onFilterChange = React.useCallback(
-		<T extends keyof Filters>(filterKey: T, filterValue: Filters[T]) => {
-			setFilters((prevFilters) => {
-				const nextFilters: Filters = {
-					...prevFilters,
-					[filterKey]: filterValue,
-					page: filterKey === "page" ? (filterValue as number) : DEFAULT_PAGE_NUMBER
-				};
-				router.push(toSearchParams(nextFilters));
-
-				return nextFilters;
-			});
-		},
-		[router]
-	);
+	React.useEffect(() => {
+		router.push(toSearchParams(filters));
+	}, [filters, router]);
 
 	const createOwnerFilter = React.useCallback(
 		(filterKey: "creditor" | "debtor" | "creator") => {
@@ -88,101 +89,71 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 	);
 
 	const query = useDebounce({ ...filters, q: filters.q || undefined }, 500);
-	const { data, isSuccess, isPending } = useQuery({
+	const { data, isPending } = useQuery({
 		queryKey: ["bills", query],
 		queryFn: () => API.Bills.List.query(query)
 	});
 
 	return (
-		<div data-testid="table-container" className="flex w-full flex-col gap-4">
-			<div data-testid="table-heading" className="flex w-full flex-row justify-between">
-				<TypographyH1 data-testid="table-title">
-					{title ?? "Bills"}
-					{advanced && isSuccess ? ` (${data.fullSize})` : ""}
-				</TypographyH1>
-				{action}
-			</div>
-			{/*{advanced && (*/}
-			{/*	<HStack width="100%" data-testid="table-filters">*/}
-			{/*		<FilterButton {...createOwnerFilter("creator")}>As creator</FilterButton>*/}
-			{/*		<FilterButton {...createOwnerFilter("creditor")}>As creditor</FilterButton>*/}
-			{/*		<FilterButton {...createOwnerFilter("debtor")}>As debtor</FilterButton>*/}
-			{/*		<FilterButton {...createTimeFilter("7d")}>Last 7 days</FilterButton>*/}
-			{/*		<FilterButton {...createTimeFilter("30d")}>Last 30 days</FilterButton>*/}
-			{/*		/!*<InputGroup w="200px" marginLeft="auto" startElement={<GoSearch />}>*!/*/}
-			{/*		<Input*/}
-			{/*			name="search-bar"*/}
-			{/*			value={filters.q || ""}*/}
-			{/*			className="w-50 ml-auto"*/}
-			{/*			placeholder="Type to search.."*/}
-			{/*			onChange={(e) => onFilterChange("q", e.target.value)}*/}
-			{/*		/>*/}
-			{/*		/!*</InputGroup>*!/*/}
-			{/*	</HStack>*/}
-			{/*)}*/}
-
-			<DataTable
-				data={(data?.data ?? []).map((row) => ({ ...row, href: `/bills/${row.id}` }))}
-				columns={[
-					{
-						key: "description",
-						label: "Description",
-						dataGetter: ({ row }) => row.description
-					},
-					{
-						key: "createdAt",
-						label: "Created",
-						titleGetter: ({ row }) => formatTime(row.creator.timestamp),
-						dataGetter: ({ row }) => formatDistanceTime(row.creator.timestamp)
-					},
-					{
-						key: "creditor",
-						label: "Creditor",
-						dataGetter: ({ row }) => formatUserAmount(row.creditor, currentUserId)
-					},
-					{
-						key: "debtors",
-						label: "Debtors",
-						dataGetter: ({ row }) => (
-							<span className="truncate">
-								{_.sortBy(row.debtors, [(debtor) => debtor.userId !== currentUserId, (billMember) => billMember.userId]).map(
-									(billMember, billMemberIndex) => (
-										<React.Fragment key={billMember.userId}>
-											{formatUserAmount(billMember, currentUserId)}
-											{billMemberIndex !== row.debtors.length - 1 ? ", " : ""}
-										</React.Fragment>
-									)
-								)}
-							</span>
-						)
-					}
-				]}
-			/>
-
-			{/*{advanced && isSuccess && DEFAULT_PAGE_SIZE < data.fullSize && (*/}
-			{/*	<HStack w="100%" justifyContent="flex-end">*/}
-			{/*		<PaginationRoot*/}
-			{/*			siblingCount={1}*/}
-			{/*			page={filters.page}*/}
-			{/*			count={data.fullSize}*/}
-			{/*			pageSize={DEFAULT_PAGE_SIZE}*/}
-			{/*			onPageChange={({ page }) => onFilterChange("page", page)}>*/}
-			{/*			<PaginationPrevTrigger />*/}
-			{/*			<PaginationItems />*/}
-			{/*			<PaginationNextTrigger />*/}
-			{/*		</PaginationRoot>*/}
-			{/*	</HStack>*/}
-			{/*)}*/}
-		</div>
+		<DataTable
+			title="Bills"
+			action={action}
+			loading={isPending}
+			data={data?.data?.map((row) => ({ ...row, href: `/bills/${row.id}` }))}
+			pagination={{
+				pageNumber: query.page,
+				fullSize: data?.fullSize,
+				onPageChange: (page) => onFilterChange("page", page)
+			}}
+			toolbar={
+				<div data-testid="table-filters" className="flex flex-1 items-center space-x-2">
+					<Input
+						className="w-50"
+						name="search-bar"
+						value={filters.q || ""}
+						placeholder="Filter bills..."
+						onChange={(e) => onFilterChange("q", e.target.value)}
+					/>
+					<FilterButton {...createOwnerFilter("creator")}>As creator</FilterButton>
+					<FilterButton {...createOwnerFilter("creditor")}>As creditor</FilterButton>
+					<FilterButton {...createOwnerFilter("debtor")}>As debtor</FilterButton>
+					<FilterButton {...createTimeFilter("7d")}>Last 7 days</FilterButton>
+					<FilterButton {...createTimeFilter("30d")}>Last 30 days</FilterButton>
+				</div>
+			}
+			columns={[
+				{ key: "description", label: "Description", dataGetter: ({ row }) => row.description },
+				{
+					key: "createdAt",
+					label: "Created",
+					titleGetter: ({ row }) => formatTime(row.creator.timestamp),
+					dataGetter: ({ row }) => formatDistanceTime(row.creator.timestamp)
+				},
+				{
+					key: "creditor",
+					label: "Creditor",
+					dataGetter: ({ row }) => (
+						<div className="flex flex-row items-center space-x-2">
+							<FallbackAvatar {...row.creditor} />
+							<span>{formatCurrency(row.creditor.amount)}</span>
+						</div>
+					)
+				},
+				{
+					key: "debtors",
+					label: "Debtors",
+					dataGetter: ({ row }) => (
+						<div className="flex flex-row space-x-2">
+							{_.sortBy(row.debtors, [(debtor) => debtor.userId !== currentUserId, (billMember) => billMember.userId]).map((billMember) => (
+								<div key={billMember.userId} className="flex flex-row items-center space-x-2">
+									<FallbackAvatar {...billMember} />
+									<span>{formatCurrency(billMember.amount)}</span>
+								</div>
+							))}
+						</div>
+					)
+				}
+			]}
+		/>
 	);
 };
-
-function formatUserAmount(user: { userId: string; amount?: number; fullName: string | null }, currentUserId: string): React.ReactNode {
-	const content = user.amount ? `${user.fullName} (${user.amount})` : user.fullName;
-
-	if (user.userId === currentUserId) {
-		return <strong>{content}</strong>;
-	}
-
-	return <>{content}</>;
-}

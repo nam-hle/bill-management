@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Card, CardContent } from "@/components/shadcn/card";
+
 import { FallbackAvatar } from "@/components/fallbackable-avatar";
 import { TransactionStatusBadge } from "@/components/transaction-status-badge";
 

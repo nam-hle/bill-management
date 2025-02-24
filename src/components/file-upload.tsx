@@ -5,9 +5,10 @@ import { useDropzone } from "react-dropzone";
 import { useQuery } from "@tanstack/react-query";
 import { Pencil, Trash2, UploadCloud } from "lucide-react";
 
-import { Show } from "@/components/show";
 import { Button } from "@/components/shadcn/button";
 import { Skeleton } from "@/components/shadcn/skeleton";
+
+import { Show } from "@/components/show";
 
 import { API } from "@/api";
 import { cn } from "@/utils/cn";

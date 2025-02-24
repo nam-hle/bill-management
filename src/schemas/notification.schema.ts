@@ -6,7 +6,7 @@ import { JsonSchema } from "./base.schema";
 import { ClientTransactionSchema } from "./transactions.schema";
 import { ClientBillSchema, BillMemberRoleSchema } from "./bills.schema";
 
-export const NotificationTypeSchema = z.enum([
+const NotificationTypeSchema = z.enum([
 	"BillCreated",
 	"BillDeleted",
 	"BillUpdated",
@@ -16,61 +16,57 @@ export const NotificationTypeSchema = z.enum([
 ] as const satisfies Database["public"]["Enums"]["NotificationType"][]);
 export type NotificationType = z.infer<typeof NotificationTypeSchema>;
 
-export const ServerNotificationSchema = z.object({
+const ServerNotificationSchema = z.object({
 	id: z.string(),
 	createdAt: z.string(),
 	readStatus: z.boolean(),
 	metadata: JsonSchema.nullable()
 });
 
-export type ServerNotification = z.infer<typeof ServerNotificationSchema>;
-
-export const BaseClientNotificationSchema = ServerNotificationSchema.extend({
+const BaseClientNotificationSchema = ServerNotificationSchema.extend({
 	type: NotificationTypeSchema,
 	trigger: z.object({
 		fullName: z.string()
 	})
 });
 
-export interface BaseClientNotification extends z.infer<typeof BaseClientNotificationSchema> {}
-
 const NotificationBillSchema = ClientBillSchema.pick({ id: true, description: true }).extend({
 	creator: z.object({ fullName: z.string() })
 });
 
-export const BillCreatedNotificationMetadataSchema = z.object({
+const BillCreatedNotificationMetadataSchema = z.object({
 	previous: z.object({}),
 	current: z.object({ amount: z.number(), role: BillMemberRoleSchema })
 });
 export type BillCreatedNotificationMetadata = z.infer<typeof BillCreatedNotificationMetadataSchema>;
 
-export const BillCreatedNotificationSchema = BaseClientNotificationSchema.extend({
+const BillCreatedNotificationSchema = BaseClientNotificationSchema.extend({
 	bill: NotificationBillSchema,
 	type: z.literal("BillCreated"),
 	metadata: BillCreatedNotificationMetadataSchema
 });
 export type BillCreatedNotification = z.infer<typeof BillCreatedNotificationSchema>;
 
-export const BillDeletedNotificationMetadataSchema = z.object({
+const BillDeletedNotificationMetadataSchema = z.object({
 	current: z.object({}),
 	previous: z.object({ role: BillMemberRoleSchema })
 });
 export type BillDeletedNotificationMetadata = z.infer<typeof BillDeletedNotificationMetadataSchema>;
 
-export const BillDeletedNotificationSchema = BaseClientNotificationSchema.extend({
+const BillDeletedNotificationSchema = BaseClientNotificationSchema.extend({
 	bill: NotificationBillSchema,
 	type: z.literal("BillDeleted"),
 	metadata: BillDeletedNotificationMetadataSchema
 });
 export type BillDeletedNotification = z.infer<typeof BillDeletedNotificationSchema>;
 
-export const BillUpdatedNotificationMetadataSchema = z.object({
+const BillUpdatedNotificationMetadataSchema = z.object({
 	current: z.object({ amount: z.number() }),
 	previous: z.object({ amount: z.number() })
 });
 export type BillUpdatedNotificationMetadata = z.infer<typeof BillUpdatedNotificationMetadataSchema>;
 
-export const BillUpdatedNotificationSchema = BaseClientNotificationSchema.extend({
+const BillUpdatedNotificationSchema = BaseClientNotificationSchema.extend({
 	bill: NotificationBillSchema,
 	type: z.literal("BillUpdated"),
 	metadata: BillUpdatedNotificationMetadataSchema

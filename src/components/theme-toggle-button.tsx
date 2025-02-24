@@ -5,8 +5,9 @@ import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
 
 import { Button } from "@/components/shadcn/button";
-import { ClientOnly } from "@/components/client-only";
 import { Skeleton } from "@/components/shadcn/skeleton";
+
+import { ClientOnly } from "@/components/client-only";
 
 export type ThemeToggleButton = "light" | "dark";
 
@@ -16,7 +17,7 @@ interface UseColorModeReturn {
 	setColorMode: (colorMode: ThemeToggleButton) => void;
 }
 
-export function useColorMode(): UseColorModeReturn {
+function useColorMode(): UseColorModeReturn {
 	const { setTheme, resolvedTheme } = useTheme();
 	const toggleColorMode = () => {
 		setTheme(resolvedTheme === "light" ? "dark" : "light");
