@@ -3,7 +3,14 @@ import React from "react";
 import { Skeleton } from "@/components/shadcn/skeleton";
 import { TableRow, TableCell } from "@/components/shadcn/table";
 
-export const TableBodySkeleton: React.FC<{ numberOfCols: number; numberOfRows?: number }> = (props) => {
+namespace TableBodySkeleton {
+	export interface Props {
+		numberOfCols: number;
+		numberOfRows?: number;
+	}
+}
+
+export const TableBodySkeleton: React.FC<TableBodySkeleton.Props> = (props) => {
 	const { numberOfCols, numberOfRows = 5 } = props;
 
 	return (

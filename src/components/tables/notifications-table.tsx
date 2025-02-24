@@ -4,8 +4,9 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/shadcn/button";
-import { TypographyH1 } from "@/components/typography";
 import { Skeleton } from "@/components/shadcn/skeleton";
+
+import { TypographyH1 } from "@/components/typography";
 import { NotificationMessage } from "@/components/notification-message";
 
 import { API } from "@/api";

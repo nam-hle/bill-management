@@ -1,8 +1,9 @@
 import React from "react";
 
+import { Skeleton } from "@/components/shadcn/skeleton";
+
 import { type BillForm } from "@/components/bill-form";
 import { TypographyH1 } from "@/components/typography";
-import { Skeleton } from "@/components/shadcn/skeleton";
 import { SkeletonWrapper } from "@/components/skeleton-wrapper";
 
 import type { ClientBill } from "@/schemas";

@@ -5,20 +5,20 @@ import React from "react";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { DevTool } from "@hookform/devtools";
-import { IoIosAddCircle } from "react-icons/io";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Ban, Plus, Check, Pencil } from "lucide-react";
 import { useForm, useFieldArray } from "react-hook-form";
-import { MdEdit, MdCheck, MdCancel } from "react-icons/md";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Input } from "@/components/shadcn/input";
 import { Button } from "@/components/shadcn/button";
+import { Form, FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
+
 import { FileUpload } from "@/components/file-upload";
 import { ImageModal } from "@/components/image-modal";
 import { BillMemberInputs } from "@/components/inputs";
 import { RequiredLabel } from "@/components/required-label";
 import { BillFormHeading } from "@/components/bill-form-heading";
-import { Form, FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
 
 import { API } from "@/api";
 import { useBoolean } from "@/hooks";
@@ -264,22 +264,22 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 											endEditing();
 											reset();
 										}}>
-										<MdCancel /> Cancel
+										<Ban /> Cancel
 									</Button>
 									<Button size="sm" onClick={onSubmit}>
-										<MdCheck /> Save
+										<Check /> Save
 									</Button>
 								</>
 							) : (
 								<Button size="sm" type="submit" onClick={onSubmit} disabled={isPendingUsers}>
-									<IoIosAddCircle /> Create
+									<Plus /> Create
 								</Button>
 							)}
 						</div>
 					)}
 					{!editing && (
 						<Button size="sm" onClick={startEditing}>
-							<MdEdit /> Edit
+							<Pencil /> Edit
 						</Button>
 					)}
 				</div>

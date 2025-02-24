@@ -3,10 +3,11 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Frown, InfoIcon, PiggyBank, CreditCard, ArrowUpRight, ArrowDownLeft, type LucideIcon } from "lucide-react";
 
-import { Show } from "@/components/show";
 import { Skeleton } from "@/components/shadcn/skeleton";
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/shadcn/card";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/shadcn/tooltip";
+
+import { Show } from "@/components/show";
 
 import { cn } from "@/utils/cn";
 import type { Balance } from "@/types";

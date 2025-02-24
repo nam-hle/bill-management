@@ -77,11 +77,12 @@ const eslintConfig = [
 				{
 					type: "line-length",
 					newlinesBetween: "always",
-					groups: ["side-effect", "builtin", "external", "component", "project", ["parent", "sibling", "index"]],
+					groups: ["side-effect", "builtin", "external", "shadcn", "component", "project", ["parent", "sibling", "index"]],
 					customGroups: {
 						value: {
 							project: "^@\/(?!components)",
-							component: "^@\/components\/.*"
+							shadcn: "^@\/components\/shadcn\/.*",
+							component: "^@\/components\/(?!shadcn).*"
 						}
 					}
 				}

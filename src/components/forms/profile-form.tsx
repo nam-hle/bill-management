@@ -5,11 +5,12 @@ import { useMutation } from "@tanstack/react-query";
 
 import { Input } from "@/components/shadcn/input";
 import { Button } from "@/components/shadcn/button";
+import { Avatar, AvatarImage } from "@/components/shadcn/avatar";
+import { Form, FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
+
 import { FileUpload } from "@/components/file-upload";
 import { TypographyH1 } from "@/components/typography";
 import { RequiredLabel } from "@/components/required-label";
-import { Avatar, AvatarImage } from "@/components/shadcn/avatar";
-import { Form, FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
 
 import { API } from "@/api";
 import { useToast } from "@/hooks/use-toast";

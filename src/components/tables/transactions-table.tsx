@@ -1,8 +1,13 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import { Plus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
+import { Button } from "@/components/shadcn/button";
+
+import { FilterButton } from "@/components/filter-button";
 import { DataTable } from "@/components/data-table/data-table";
 import { TransactionAction } from "@/components/transaction-action";
 import { TransactionStatusBadge } from "@/components/transaction-status-badge";
@@ -13,22 +18,18 @@ import { displayDate, displayDateAsTitle } from "@/utils";
 
 namespace TransactionsTable {
 	export interface Props {
-		readonly title?: string;
-		readonly showFilters?: boolean;
 		readonly currentUserId: string;
-		readonly action?: React.ReactNode;
-		readonly mode: "basic" | "advance";
 	}
 }
 
 export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
-	const { mode, title, action, currentUserId } = props;
+	const { currentUserId } = props;
 
 	const [page, setPage] = React.useState(DEFAULT_PAGE_NUMBER);
 
 	const [filters, setFilters] = React.useState<"toMe" | "byMe" | undefined>(undefined);
 
-	const { data, isSuccess, isLoading } = useQuery({
+	const { data, isPending } = useQuery({
 		queryKey: ["transactions", page, currentUserId, filters],
 		queryFn: () =>
 			API.Transactions.List.query(
@@ -46,12 +47,8 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 		[filters]
 	);
 
-	const onPageChange = React.useCallback((params: { page: number }) => {
-		setPage(() => params.page);
-	}, []);
-
 	return (
-		<div className="w-full gap-4" data-testid="table-container">
+		<>
 			{/*<HStack width="100%" data-testid="table-heading" justifyContent="space-between">*/}
 			{/*	<TypographyH1 data-testid="table-title">*/}
 			{/*		{title ?? "Transactions"}*/}
@@ -67,9 +64,24 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 			{/*)}*/}
 
 			{/*{transactions.length === 0 && <EmptyState width="100%" title="You have no transactions yet." />}*/}
-
 			<DataTable
-				data={data?.data ?? []}
+				loading={isPending}
+				title="Transactions"
+				data={data?.data.map((row) => ({ ...row, href: `/transactions/${row.id}` }))}
+				pagination={{ pageNumber: page, onPageChange: setPage, fullSize: data?.fullSize }}
+				action={
+					<Button asChild size="sm">
+						<Link href="/transactions/new">
+							<Plus /> New
+						</Link>
+					</Button>
+				}
+				toolbar={
+					<div className="flex flex-1 items-center space-x-2">
+						<FilterButton {...createOwnerFilter("toMe")}>To Me</FilterButton>
+						<FilterButton {...createOwnerFilter("byMe")}>By Me</FilterButton>
+					</div>
+				}
 				columns={[
 					{
 						key: "id",
@@ -111,7 +123,7 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 			{/*		</PaginationRoot>*/}
 			{/*	</HStack>*/}
 			{/*)}*/}
-		</div>
+		</>
 	);
 };
 

@@ -1,17 +1,18 @@
 import React from "react";
+import { Trash2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { MdDeleteOutline } from "react-icons/md";
 import { useFormContext } from "react-hook-form";
 
-import { Select } from "@/components/inputs";
 import { Label } from "@/components/shadcn/label";
 import { Input } from "@/components/shadcn/input";
 import { Button } from "@/components/shadcn/button";
 import { Skeleton } from "@/components/shadcn/skeleton";
+import { FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
+
+import { Select } from "@/components/inputs";
 import { type BillFormState } from "@/components/bill-form";
 import { RequiredLabel } from "@/components/required-label";
 import { SkeletonWrapper } from "@/components/skeleton-wrapper";
-import { FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
 
 import { API } from "@/api";
 
@@ -135,7 +136,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 			<div className="col-span-2 self-end justify-self-end">
 				{editing && onRemove && (
 					<Button size="sm" variant="outline" onClick={onRemove}>
-						<MdDeleteOutline />
+						<Trash2 />
 					</Button>
 				)}
 			</div>
