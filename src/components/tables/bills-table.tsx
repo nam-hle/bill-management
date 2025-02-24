@@ -143,29 +143,17 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 					key: "debtors",
 					label: "Debtors",
 					dataGetter: ({ row }) => (
-						<span className="truncate">
-							{_.sortBy(row.debtors, [(debtor) => debtor.userId !== currentUserId, (billMember) => billMember.userId]).map(
-								(billMember, billMemberIndex) => (
-									<React.Fragment key={billMember.userId}>
-										{formatUserAmount(billMember, currentUserId)}
-										{billMemberIndex !== row.debtors.length - 1 ? ", " : ""}
-									</React.Fragment>
-								)
-							)}
-						</span>
+						<div className="flex flex-row space-x-2">
+							{_.sortBy(row.debtors, [(debtor) => debtor.userId !== currentUserId, (billMember) => billMember.userId]).map((billMember) => (
+								<div key={billMember.userId} className="flex flex-row items-center space-x-2">
+									<FallbackAvatar {...billMember} />
+									<span>{formatCurrency(billMember.amount)}</span>
+								</div>
+							))}
+						</div>
 					)
 				}
 			]}
 		/>
 	);
 };
-
-function formatUserAmount(user: { userId: string; amount?: number; fullName: string | null }, currentUserId: string): React.ReactNode {
-	const content = user.amount ? `${user.fullName} (${user.amount})` : user.fullName;
-
-	if (user.userId === currentUserId) {
-		return <strong>{content}</strong>;
-	}
-
-	return <>{content}</>;
-}
