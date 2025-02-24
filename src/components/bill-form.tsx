@@ -64,7 +64,7 @@ export namespace DebtorTransformer {
 	}
 }
 
-export const BillFormStateSchema = API.Bills.UpsertBillSchema.extend({
+const BillFormStateSchema = API.Bills.UpsertBillSchema.extend({
 	issuedAt: IssuedAtField,
 	creditor: CreditorSchema,
 	debtors: z.array(DebtorSchema)

@@ -36,10 +36,6 @@ export namespace Pagination {
 	}
 }
 
-export interface UserFormState {
-	username?: string;
-}
-
 export interface Balance {
 	readonly net: number;
 	readonly owed: number;

@@ -17,7 +17,7 @@ interface UseColorModeReturn {
 	setColorMode: (colorMode: ThemeToggleButton) => void;
 }
 
-export function useColorMode(): UseColorModeReturn {
+function useColorMode(): UseColorModeReturn {
 	const { setTheme, resolvedTheme } = useTheme();
 	const toggleColorMode = () => {
 		setTheme(resolvedTheme === "light" ? "dark" : "light");

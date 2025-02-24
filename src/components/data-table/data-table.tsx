@@ -95,10 +95,7 @@ const ForwardedTableRow = React.forwardRef<HTMLTableRowElement, Container & Reac
 	}
 );
 
-export const LinkedTableRow: React.FC<{ href?: string } & ClassName & Container & React.HTMLAttributes<HTMLTableRowElement>> = ({
-	href,
-	...props
-}) => {
+const LinkedTableRow: React.FC<{ href?: string } & ClassName & Container & React.HTMLAttributes<HTMLTableRowElement>> = ({ href, ...props }) => {
 	if (href === undefined) {
 		return <ForwardedTableRow {...props} />;
 	}

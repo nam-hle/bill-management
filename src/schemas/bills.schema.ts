@@ -5,7 +5,7 @@ import type { Database } from "@/database.types";
 export const BillMemberRoleSchema = z.enum(["Creditor", "Debtor"] as const satisfies Database["public"]["Enums"]["BillMemberRole"][]);
 export type BillMemberRole = z.infer<typeof BillMemberRoleSchema>;
 
-export const ClientBillMemberSchema = z.object({
+const ClientBillMemberSchema = z.object({
 	userId: z.string(),
 	amount: z.number(),
 	fullName: z.string(),
