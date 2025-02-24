@@ -51,23 +51,22 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 	const searchParams = useSearchParams();
 	const [filters, setFilters] = React.useState(() => toFilters(searchParams));
 
+	const onFilterChange = React.useCallback(<T extends keyof Filters>(filterKey: T, filterValue: Filters[T]) => {
+		setFilters((prevFilters) => {
+			const nextFilters: Filters = {
+				...prevFilters,
+				[filterKey]: filterValue,
+				page: filterKey === "page" ? (filterValue as number) : DEFAULT_PAGE_NUMBER
+			};
+
+			return nextFilters;
+		});
+	}, []);
+
 	const router = useRouter();
-
-	const onFilterChange = React.useCallback(
-		<T extends keyof Filters>(filterKey: T, filterValue: Filters[T]) => {
-			setFilters((prevFilters) => {
-				const nextFilters: Filters = {
-					...prevFilters,
-					[filterKey]: filterValue,
-					page: filterKey === "page" ? (filterValue as number) : DEFAULT_PAGE_NUMBER
-				};
-				router.push(toSearchParams(nextFilters));
-
-				return nextFilters;
-			});
-		},
-		[router]
-	);
+	React.useEffect(() => {
+		router.push(toSearchParams(filters));
+	}, [filters, router]);
 
 	const createOwnerFilter = React.useCallback(
 		(filterKey: "creditor" | "debtor" | "creator") => {
