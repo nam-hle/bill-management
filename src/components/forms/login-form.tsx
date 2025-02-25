@@ -49,7 +49,7 @@ export function LoginForm() {
 						<form onSubmit={handleSubmit(onLogin)}>
 							<div className="flex flex-col gap-6">
 								{errors.root && (
-									<Alert className="py-2" variant="destructive">
+									<Alert className="py-2" variant="destructive" data-testid="form-root-error">
 										<AlertDescription>{errors.root.message}</AlertDescription>
 									</Alert>
 								)}
