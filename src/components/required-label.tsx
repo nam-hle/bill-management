@@ -1,9 +1,11 @@
 import React from "react";
 
-import { Label } from "@/components/shadcn/label";
+import { FormLabel } from "@/components/shadcn/form";
 
-export const RequiredLabel = ({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) => (
-	<Label htmlFor={htmlFor}>
+import { type Container } from "@/types";
+
+export const RequiredLabel = ({ children }: Container) => (
+	<FormLabel>
 		{children} <span className="text-red-500">*</span>
-	</Label>
+	</FormLabel>
 );

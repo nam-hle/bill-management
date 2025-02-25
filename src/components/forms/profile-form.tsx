@@ -67,7 +67,7 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 							control={control}
 							render={({ field }) => (
 								<FormItem>
-									<RequiredLabel htmlFor="email">Email</RequiredLabel>
+									<RequiredLabel>Email</RequiredLabel>
 									<FormControl>
 										<Input {...field} disabled />
 									</FormControl>
@@ -90,7 +90,7 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 									fileId={field.value ?? undefined}
 									imageRenderer={(src) => (
 										<Avatar className="h-20 w-20 cursor-pointer">
-											<AvatarImage src={src} />
+											<AvatarImage src={src} className="object-cover" />
 											<AvatarFallback className="text-sm">{getAvatarFallback(getValues("fullName"))}</AvatarFallback>
 										</Avatar>
 									)}
@@ -105,7 +105,7 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 							control={control}
 							render={({ field }) => (
 								<FormItem>
-									<RequiredLabel htmlFor="fullName">Full Name</RequiredLabel>
+									<RequiredLabel>Full Name</RequiredLabel>
 									<FormControl>
 										<Input placeholder="Enter full name" {...field} />
 									</FormControl>

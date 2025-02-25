@@ -99,11 +99,11 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 					name={`${fieldKey}.userId`}
 					render={({ field }) => (
 						<FormItem>
-							<RequiredLabel htmlFor={`${fieldKey}.userId`}>{selectLabel}</RequiredLabel>
+							<RequiredLabel>{selectLabel}</RequiredLabel>
 							<SkeletonWrapper loading={loadingUsers} skeleton={<Skeleton className="h-10 w-full" />}>
 								<Select
 									{...register(`${fieldKey}.userId`)}
-									readonly={!editing}
+									disabled={!editing}
 									value={field.value}
 									onValueChange={field.onChange}
 									items={members.map(({ id: value, fullName: label }) => ({ label, value }))}

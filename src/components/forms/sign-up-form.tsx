@@ -60,7 +60,7 @@ export function SignUpForm() {
 									control={control}
 									render={({ field }) => (
 										<FormItem>
-											<RequiredLabel htmlFor="fullName">Display Name</RequiredLabel>
+											<RequiredLabel>Display Name</RequiredLabel>
 											<FormControl>
 												<Input placeholder="John Doe" {...field} />
 											</FormControl>
@@ -73,7 +73,7 @@ export function SignUpForm() {
 									control={control}
 									render={({ field }) => (
 										<FormItem>
-											<RequiredLabel htmlFor="email">Email</RequiredLabel>
+											<RequiredLabel>Email</RequiredLabel>
 											<FormControl>
 												<Input placeholder="john.doe@example.com" {...field} />
 											</FormControl>
@@ -86,7 +86,7 @@ export function SignUpForm() {
 									control={control}
 									render={({ field }) => (
 										<FormItem>
-											<RequiredLabel htmlFor="password">Password</RequiredLabel>
+											<RequiredLabel>Password</RequiredLabel>
 											<FormControl>
 												<Input id="password" type="password" {...field} />
 											</FormControl>
@@ -99,7 +99,7 @@ export function SignUpForm() {
 									name="confirmPassword"
 									render={({ field }) => (
 										<FormItem>
-											<RequiredLabel htmlFor="confirmPassword">Confirm Password</RequiredLabel>
+											<RequiredLabel>Confirm Password</RequiredLabel>
 											<FormControl>
 												<Input type="password" id="confirm-password" {...field} />
 											</FormControl>

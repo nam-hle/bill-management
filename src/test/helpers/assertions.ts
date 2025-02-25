@@ -7,10 +7,15 @@ import { type TableLocator } from "@/test/locators/table-locator";
 export namespace Assertions {
 	const StateLabels = ["Owed", "Received", "Paid", "Sent", "Net Balance"] as const;
 	export type StatsExpectation = Partial<Record<(typeof StateLabels)[number], string>>;
+
+	export async function assertToast(page: Page, message: string) {
+		await expect(page.getByRole("status").getByText(message, { exact: true })).toBeVisible();
+	}
+
 	export async function assertStats(page: Page, expected: Partial<Record<(typeof StateLabels)[number], string>>) {
 		await test.step("Assert Stats", async () => {
 			for (const label of StateLabels) {
-				await expect(Locators.locateStatValue(page, label)).toHaveText(expected[label] ?? "0");
+				await expect(Locators.locateStatValue(page, label)).toHaveText(`${expected[label] ?? "0"} ₫`);
 			}
 		});
 	}
@@ -43,14 +48,15 @@ export namespace Assertions {
 			}
 
 			if (params.pagination !== undefined) {
-				const pagination = table.getContainer().locator(`[aria-label="pagination"]`);
+				const pagination = table.getContainer().getByTestId("table-pagination");
 
 				if (params.pagination === null) {
 					await expect(pagination).not.toBeVisible();
 				} else {
 					await expect(pagination).toBeVisible();
-					await expect(pagination.locator(`[aria-label$="page ${params.pagination.currentPage}"][aria-current="page"]`)).toBeVisible();
-					await expect(pagination.locator(`[aria-label="last page, page ${params.pagination.totalPages}"]`)).toBeVisible();
+					await expect(pagination.getByTestId("table-pagination-label")).toHaveText(
+						`Page ${params.pagination.currentPage} of ${params.pagination.totalPages}`
+					);
 				}
 			}
 

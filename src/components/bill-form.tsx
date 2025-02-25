@@ -163,7 +163,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 									name="description"
 									render={({ field }) => (
 										<FormItem>
-											<RequiredLabel htmlFor="description">Description</RequiredLabel>
+											<RequiredLabel>Description</RequiredLabel>
 											<FormControl>
 												<SkeletonWrapper loading={loading} skeleton={<Skeleton className="h-10 w-full" />}>
 													<Input
@@ -203,7 +203,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 									control={control}
 									render={({ field }) => (
 										<FormItem>
-											<RequiredLabel htmlFor="issuedAt">Issued At</RequiredLabel>
+											<RequiredLabel>Issued At</RequiredLabel>
 											<FormControl>
 												<SkeletonWrapper loading={loading} skeleton={<Skeleton className="h-10 w-full" />}>
 													<Input readOnly={!editing} placeholder={CLIENT_DATE_FORMAT} className={editing ? "" : "pointer-events-none"} {...field} />
