@@ -81,8 +81,8 @@ export const FileUpload = ({ fileId, loading, ownerId, editing, onChange, button
 
 		return (
 			<div className="absolute bottom-0 right-0 flex flex-col justify-between">
-				<Button size="icon" type="button" onClick={removeFile} variant="destructive" className={buttonSize === "sm" ? "h-6 w-6" : ""}>
-					<Trash2 className="h-4 w-4" />
+				<Button size="icon" type="button" onClick={removeFile} variant="destructive" className={buttonSize === "sm" ? "h-8 w-8" : ""}>
+					<Trash2 />
 				</Button>
 			</div>
 		);

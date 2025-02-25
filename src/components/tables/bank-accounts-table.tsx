@@ -26,42 +26,25 @@ export const BankAccountsTable: React.FC<BankAccountsTable.Props> = (props) => {
 	});
 
 	return (
-		<div className="mx-auto flex w-[60%] flex-col gap-4">
+		<div className="mx-auto mt-6 flex w-[60%] flex-col gap-4">
 			<DataTable
-				data={data ?? []}
+				data={data}
 				title="Bank Accounts"
 				columns={[
-					{
-						key: "provider",
-						label: "Provider",
-						dataGetter: ({ row }) => row.providerName
-					},
-					{
-						key: "accountNumber",
-						label: "Account number",
-						dataGetter: ({ row }) => row.accountNumber
-					},
-					{
-						key: "accountHolder",
-						label: "Account holder",
-						dataGetter: ({ row }) => row.accountHolder
-					},
+					{ key: "provider", label: "Provider", dataGetter: ({ row }) => row.providerName },
+					{ key: "accountNumber", label: "Account number", dataGetter: ({ row }) => row.accountNumber },
+					{ key: "accountHolder", label: "Account holder", dataGetter: ({ row }) => row.accountHolder },
 					{
 						key: "status",
 						label: "Status",
-						dataGetter: ({ row }) => {
-							return row.status === BankAccountStatusEnumSchema.enum.Active ? (
+						dataGetter: ({ row }) =>
+							row.status === BankAccountStatusEnumSchema.enum.Active ? (
 								<Badge>{BankAccountStatusEnumSchema.enum.Active}</Badge>
 							) : (
 								<Badge>{BankAccountStatusEnumSchema.enum.Inactive}</Badge>
-							);
-						}
+							)
 					},
-					{
-						key: "default",
-						label: "Default",
-						dataGetter: ({ row }) => (row.isDefault ? <Check /> : null)
-					}
+					{ key: "default", label: "Default", dataGetter: ({ row }) => (row.isDefault ? <Check /> : null) }
 				]}
 			/>
 		</div>
