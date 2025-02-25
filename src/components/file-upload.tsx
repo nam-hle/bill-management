@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { useDropzone } from "react-dropzone";
-import { useQuery } from "@tanstack/react-query";
 import { Trash2, UploadCloud } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 
 import { Button } from "@/components/shadcn/button";
 import { Skeleton } from "@/components/shadcn/skeleton";
@@ -12,15 +12,18 @@ import { Show } from "@/components/show";
 
 import { API } from "@/api";
 import { cn } from "@/utils/cn";
-import { useFileUploader } from "@/services/file-uploader";
+import { generateUid } from "@/utils";
+import { type BucketName } from "@/types";
+import { useToast } from "@/hooks/use-toast";
+import { createSupabaseClient } from "@/services/supabase/client";
 
 interface FileUploadProps {
 	fileId?: string;
 	ownerId?: string;
 	editing?: boolean;
 	loading?: boolean;
+	bucketName: BucketName;
 	buttonSize: "md" | "sm";
-	bucketName: API.Storage.BucketName;
 	onChange: (fileId: string | null) => void;
 	imageRenderer: (src: string) => React.ReactNode;
 }
@@ -130,3 +133,42 @@ export const FileUpload = ({ fileId, loading, ownerId, editing, onChange, button
 
 	return renderEmptyState();
 };
+
+function useFileUploader(onSuccess: (filePath: string) => void) {
+	const { toast } = useToast();
+	const { mutate, isPending } = useMutation({
+		mutationFn: uploadFile,
+		onSuccess: (filePath) => {
+			toast({ title: "Image uploaded", description: "The image has been uploaded successfully." });
+			onSuccess(filePath);
+		},
+		onError: () => {
+			toast({
+				variant: "destructive",
+				title: "Failed to upload avatar",
+				description: "An error occurred while uploading the avatar. Please try again."
+			});
+		}
+	});
+
+	return React.useMemo(() => ({ uploadFile: mutate, isUploading: isPending }), [isPending, mutate]);
+}
+
+interface UploadImagePayload {
+	readonly file: File;
+	readonly ownerId?: string;
+	readonly bucketName: BucketName;
+}
+
+async function uploadFile(payload: UploadImagePayload) {
+	const { file, ownerId, bucketName } = payload;
+	const extension = file.name.split(".").pop();
+	const filePath = [ownerId, generateUid()].filter(Boolean).join("-") + `.${extension}`;
+	const { error: uploadError } = await createSupabaseClient().storage.from(bucketName).upload(filePath, file);
+
+	if (uploadError) {
+		throw uploadError;
+	}
+
+	return filePath;
+}

@@ -49,3 +49,5 @@ export interface UserInfo {
 	readonly fullName: string;
 	readonly avatarUrl?: string;
 }
+
+export type BucketName = "avatars" | "receipts";

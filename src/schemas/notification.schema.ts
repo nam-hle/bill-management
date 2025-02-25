@@ -73,19 +73,19 @@ const BillUpdatedNotificationSchema = BaseClientNotificationSchema.extend({
 });
 export type BillUpdatedNotification = z.infer<typeof BillUpdatedNotificationSchema>;
 
-export const TransactionWaitingNotificationSchema = BaseClientNotificationSchema.extend({
+const TransactionWaitingNotificationSchema = BaseClientNotificationSchema.extend({
 	transaction: ClientTransactionSchema,
 	type: z.literal("TransactionWaiting")
 });
 export type TransactionWaitingNotification = z.infer<typeof TransactionWaitingNotificationSchema>;
 
-export const TransactionConfirmedNotificationSchema = BaseClientNotificationSchema.extend({
+const TransactionConfirmedNotificationSchema = BaseClientNotificationSchema.extend({
 	transaction: ClientTransactionSchema,
 	type: z.literal("TransactionConfirmed")
 });
 export type TransactionConfirmedNotification = z.infer<typeof TransactionConfirmedNotificationSchema>;
 
-export const TransactionDeclinedNotificationSchema = BaseClientNotificationSchema.extend({
+const TransactionDeclinedNotificationSchema = BaseClientNotificationSchema.extend({
 	transaction: ClientTransactionSchema,
 	type: z.literal("TransactionDeclined")
 });
