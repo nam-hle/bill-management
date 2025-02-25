@@ -8,6 +8,7 @@ import { Card, CardTitle, CardHeader, CardContent } from "@/components/shadcn/ca
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/shadcn/tooltip";
 
 import { Show } from "@/components/show";
+import { Heading } from "@/components/heading";
 
 import { cn } from "@/utils/cn";
 import type { Balance } from "@/types";
@@ -22,7 +23,7 @@ export function FinancialSummary() {
 
 	return (
 		<div className="col-span-2 flex flex-col gap-4">
-			<h2 className="text-2xl font-bold">Summary</h2>
+			<Heading>Summary</Heading>
 			<StatText
 				Icon={PiggyBank}
 				label="Net Balance"

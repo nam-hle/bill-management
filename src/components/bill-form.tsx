@@ -12,12 +12,14 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Input } from "@/components/shadcn/input";
 import { Button } from "@/components/shadcn/button";
+import { Skeleton } from "@/components/shadcn/skeleton";
 import { Form, FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
 
 import { FileUpload } from "@/components/file-upload";
 import { ImageModal } from "@/components/image-modal";
 import { BillMemberInputs } from "@/components/inputs";
 import { RequiredLabel } from "@/components/required-label";
+import { SkeletonWrapper } from "@/components/skeleton-wrapper";
 import { BillFormHeading } from "@/components/bill-form-heading";
 
 import { API } from "@/api";
@@ -163,9 +165,14 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 										<FormItem>
 											<RequiredLabel htmlFor="description">Description</RequiredLabel>
 											<FormControl>
-												<Input placeholder="Enter bill description" {...field} />
-												{/*readOnly={!editing}*/}
-												{/*pointerEvents={editing ? undefined : "none"}*/}
+												<SkeletonWrapper loading={loading} skeleton={<Skeleton className="h-10 w-full" />}>
+													<Input
+														readOnly={!editing}
+														placeholder="Enter bill description"
+														className={editing ? "" : "pointer-events-none"}
+														{...field}
+													/>
+												</SkeletonWrapper>
 											</FormControl>
 											<FormMessage>{errors.description?.message}</FormMessage>
 										</FormItem>
@@ -189,20 +196,6 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 										/>
 									)}
 								/>
-
-								{/*<Controller*/}
-								{/*	control={control}*/}
-								{/*	name="receiptFile"*/}
-								{/*	render={({ field }) => (*/}
-								{/*		<ReceiptUpload*/}
-								{/*			loading={loading}*/}
-								{/*			editing={editing}*/}
-								{/*			onChange={field.onChange}*/}
-								{/*			fileId={field.value ?? undefined}*/}
-								{/*			ownerId={kind.type === "update" ? kind.billId : undefined}*/}
-								{/*		/>*/}
-								{/*	)}*/}
-								{/*/>*/}
 							</div>
 							<div className="col-span-5">
 								<FormField
@@ -212,23 +205,14 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 										<FormItem>
 											<RequiredLabel htmlFor="issuedAt">Issued At</RequiredLabel>
 											<FormControl>
-												<Input placeholder={CLIENT_DATE_FORMAT} {...field} />
-												{/*readOnly={!editing}*/}
+												<SkeletonWrapper loading={loading} skeleton={<Skeleton className="h-10 w-full" />}>
+													<Input readOnly={!editing} placeholder={CLIENT_DATE_FORMAT} className={editing ? "" : "pointer-events-none"} {...field} />
+												</SkeletonWrapper>
 											</FormControl>
 											<FormMessage>{errors.issuedAt?.message}</FormMessage>
 										</FormItem>
 									)}
 								/>
-								{/*<Field required label="Issued at" invalid={!!errors.issuedAt} errorText={errors.issuedAt?.message}>*/}
-								{/*	<SkeletonWrapper loading={loading} skeleton={<Skeleton width="100%" height="40px" />}>*/}
-								{/*		<Input*/}
-								{/*			{...register("issuedAt")}*/}
-								{/*			readOnly={!editing}*/}
-								{/*			placeholder={CLIENT_DATE_FORMAT}*/}
-								{/*			pointerEvents={editing ? undefined : "none"}*/}
-								{/*		/>*/}
-								{/*	</SkeletonWrapper>*/}
-								{/*</Field>*/}
 							</div>
 						</div>
 					</div>
@@ -250,6 +234,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 				<div className={`flex ${editing ? "justify-between" : "justify-end"}`}>
 					{editing && (
 						<Button size="sm" variant="secondary" onClick={() => appendDebtor({ amount: "", userId: "" })}>
+							<Plus />
 							Add debtor
 						</Button>
 					)}

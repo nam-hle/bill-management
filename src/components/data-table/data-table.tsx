@@ -3,8 +3,8 @@ import NextLink from "next/link";
 
 import { Table, TableRow, TableBody, TableCell, TableHead, TableHeader } from "@/components/shadcn/table";
 
+import { Heading } from "@/components/heading";
 import { EmptyState } from "@/components/empty-state";
-import { TypographyH1 } from "@/components/typography";
 import { TableBodySkeleton } from "@/components/data-table/table-body-skeleton";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 
@@ -40,14 +40,18 @@ export function DataTable<
 	return (
 		<div className="w-full space-y-4">
 			<div data-testid="table-heading" className="flex w-full flex-row items-center justify-between">
-				<TypographyH1>{title + (pagination?.fullSize ? ` (${pagination.fullSize})` : "")}</TypographyH1>
+				<Heading>{title + (pagination?.fullSize ? ` (${pagination.fullSize})` : "")}</Heading>
 				{action}
 			</div>
-			{toolbar}
+			{toolbar && (
+				<div data-testid="table-toolbar" className="flex flex-1 items-center space-x-2">
+					{toolbar}
+				</div>
+			)}
 			<div className="rounded-md border">
 				<Table data-testid="table__settled">
 					<TableHeader>
-						<TableRow className="h-16">
+						<TableRow className="h-12">
 							{columns.map((column) => {
 								return <TableHead key={column.key}>{column.label}</TableHead>;
 							})}
@@ -67,7 +71,7 @@ export function DataTable<
 								<LinkedTableRow key={row.id} href={row.href} className="h-16">
 									{columns.map((column) => {
 										return (
-											<TableCell key={column.key} title={column.titleGetter?.({ row })}>
+											<TableCell className="p-2" key={column.key} title={column.titleGetter?.({ row })}>
 												{column.dataGetter({ row })}
 											</TableCell>
 										);

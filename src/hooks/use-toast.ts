@@ -14,6 +14,7 @@ type ToasterToast = ToastProps & {
 	description?: React.ReactNode;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const actionTypes = {
 	ADD_TOAST: "ADD_TOAST",
 	UPDATE_TOAST: "UPDATE_TOAST",
@@ -139,7 +140,7 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">;
 
-export function toast({ ...props }: Toast) {
+function toast({ ...props }: Toast) {
 	const id = genId();
 
 	const update = (props: ToasterToast) =>

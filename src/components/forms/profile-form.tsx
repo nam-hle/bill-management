@@ -4,17 +4,18 @@ import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 
 import { Input } from "@/components/shadcn/input";
-import { Button } from "@/components/shadcn/button";
-import { Avatar, AvatarImage } from "@/components/shadcn/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/shadcn/avatar";
 import { Form, FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
 
+import { Heading } from "@/components/heading";
 import { FileUpload } from "@/components/file-upload";
-import { TypographyH1 } from "@/components/typography";
 import { RequiredLabel } from "@/components/required-label";
+import { LoadingButton } from "@/components/loading-button";
 
 import { API } from "@/api";
 import { useToast } from "@/hooks/use-toast";
 import { type ProfileFormPayload } from "@/schemas";
+import { getAvatarFallback } from "@/utils/avatar-fallback";
 
 namespace ProfileForm {
 	export interface Props {
@@ -32,7 +33,7 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 	const {
 		reset,
 		control,
-		register,
+		getValues,
 		handleSubmit,
 		formState: { errors, isDirty, isSubmitting }
 	} = form;
@@ -57,35 +58,9 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 
 	return (
 		<Form {...form}>
-			<form onSubmit={onSubmit} className="mx-auto w-[60%] gap-4">
-				<TypographyH1>Profile</TypographyH1>
+			<form onSubmit={onSubmit} className="mx-auto w-[60%] space-y-4">
+				<Heading>Profile</Heading>
 				<div className="grid grid-cols-12 grid-rows-2 gap-2">
-					<div className="col-span-3 row-span-2 self-center">
-						<FormField
-							name="avatarUrl"
-							control={control}
-							render={({ field }) => {
-								return (
-									<FileUpload
-										editing
-										buttonSize="sm"
-										bucketName="avatars"
-										ownerId={props.userId}
-										onChange={field.onChange}
-										fileId={field.value ?? undefined}
-										imageRenderer={(src) => (
-											<Avatar className="h-20 w-20 cursor-pointer">
-												<AvatarImage src={src} />
-												{/*<AvatarFallback className="text-sm">{getAvatarFallback(userInfo.fullName)}</AvatarFallback>*/}
-											</Avatar>
-										)}
-									/>
-								);
-								// return <ProfileAvatar ownerId={props.userId} onChange={field.onChange} fileId={field.value ?? undefined} />;
-							}}
-						/>
-					</div>
-
 					<div className="col-span-9">
 						<FormField
 							name="email"
@@ -100,6 +75,30 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 							)}
 						/>
 					</div>
+
+					<div className="col-span-3 row-span-2 flex items-center justify-center self-center">
+						<FormField
+							name="avatarUrl"
+							control={control}
+							render={({ field }) => (
+								<FileUpload
+									editing
+									buttonSize="sm"
+									bucketName="avatars"
+									ownerId={props.userId}
+									onChange={field.onChange}
+									fileId={field.value ?? undefined}
+									imageRenderer={(src) => (
+										<Avatar className="h-20 w-20 cursor-pointer">
+											<AvatarImage src={src} />
+											<AvatarFallback className="text-sm">{getAvatarFallback(getValues("fullName"))}</AvatarFallback>
+										</Avatar>
+									)}
+								/>
+							)}
+						/>
+					</div>
+
 					<div className="col-span-9">
 						<FormField
 							name="fullName"
@@ -117,14 +116,10 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 					</div>
 				</div>
 
-				<div className="flex justify-end">
-					<Button
-						type="submit"
-						disabled={!isDirty}
-						// loading={isSubmitting || isPending}
-					>
-						Save
-					</Button>
+				<div className="flex justify-start">
+					<LoadingButton size="sm" type="submit" disabled={!isDirty} loadingText="Updating..." loading={isSubmitting || isPending}>
+						Update
+					</LoadingButton>
 				</div>
 			</form>
 		</Form>

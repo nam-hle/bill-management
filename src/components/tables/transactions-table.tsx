@@ -48,82 +48,39 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 	);
 
 	return (
-		<>
-			{/*<HStack width="100%" data-testid="table-heading" justifyContent="space-between">*/}
-			{/*	<TypographyH1 data-testid="table-title">*/}
-			{/*		{title ?? "Transactions"}*/}
-			{/*		{mode === "advance" && isSuccess ? ` (${data.fullSize})` : ""}*/}
-			{/*	</TypographyH1>*/}
-			{/*	{action}*/}
-			{/*</HStack>*/}
-			{/*{mode === "advance" && (*/}
-			{/*	<HStack width="100%" data-testid="table-filters">*/}
-			{/*		<FilterButton {...createOwnerFilter("toMe")}>To Me</FilterButton>*/}
-			{/*		<FilterButton {...createOwnerFilter("byMe")}>By Me</FilterButton>*/}
-			{/*	</HStack>*/}
-			{/*)}*/}
-
-			{/*{transactions.length === 0 && <EmptyState width="100%" title="You have no transactions yet." />}*/}
-			<DataTable
-				loading={isPending}
-				title="Transactions"
-				data={data?.data.map((row) => ({ ...row, href: `/transactions/${row.id}` }))}
-				pagination={{ pageNumber: page, onPageChange: setPage, fullSize: data?.fullSize }}
-				action={
-					<Button asChild size="sm">
-						<Link href="/transactions/new">
-							<Plus /> New
-						</Link>
-					</Button>
-				}
-				toolbar={
-					<div className="flex flex-1 items-center space-x-2">
-						<FilterButton {...createOwnerFilter("toMe")}>To Me</FilterButton>
-						<FilterButton {...createOwnerFilter("byMe")}>By Me</FilterButton>
-					</div>
-				}
-				columns={[
-					{
-						key: "id",
-						label: "ID",
-						dataGetter: ({ row }) => row.id.slice(0, 6)
-					},
-					{
-						key: "issuedAt",
-						label: "Issued At",
-						dataGetter: ({ row }) => displayDate(row.issuedAt),
-						titleGetter: ({ row }) => displayDateAsTitle(row.issuedAt)
-					},
-					{
-						key: "sender",
-						label: "Sender",
-						dataGetter: ({ row }) => formatUser(row.sender, currentUserId)
-					},
-					{
-						key: "receiver",
-						label: "Receiver",
-						dataGetter: ({ row }) => formatUser(row.receiver, currentUserId)
-					},
-					{ key: "amount", label: "Amount", dataGetter: ({ row }) => row.amount },
-					{
-						key: "status",
-						label: "Status",
-						dataGetter: ({ row }) => <TransactionStatusBadge status={row.status} />
-					},
-					{ key: "action", label: "Action", dataGetter: ({ row }) => <TransactionAction transaction={row} currentUserId={currentUserId} /> }
-				]}
-			/>
-
-			{/*{mode === "advance" && DEFAULT_PAGE_SIZE < (data?.fullSize ?? 0) && (*/}
-			{/*	<HStack w="100%" justifyContent="flex-end">*/}
-			{/*		<PaginationRoot page={page} siblingCount={1} count={data?.fullSize ?? 0} onPageChange={onPageChange} pageSize={DEFAULT_PAGE_SIZE}>*/}
-			{/*			<PaginationPrevTrigger />*/}
-			{/*			<PaginationItems />*/}
-			{/*			<PaginationNextTrigger />*/}
-			{/*		</PaginationRoot>*/}
-			{/*	</HStack>*/}
-			{/*)}*/}
-		</>
+		<DataTable
+			loading={isPending}
+			title="Transactions"
+			data={data?.data.map((row) => ({ ...row, href: `/transactions/${row.id}` }))}
+			pagination={{ pageNumber: page, onPageChange: setPage, fullSize: data?.fullSize }}
+			action={
+				<Button asChild size="sm">
+					<Link href="/transactions/new">
+						<Plus /> New
+					</Link>
+				</Button>
+			}
+			toolbar={
+				<>
+					<FilterButton {...createOwnerFilter("toMe")}>To Me</FilterButton>
+					<FilterButton {...createOwnerFilter("byMe")}>By Me</FilterButton>
+				</>
+			}
+			columns={[
+				{ key: "id", label: "ID", dataGetter: ({ row }) => row.id.slice(0, 6) },
+				{
+					key: "issuedAt",
+					label: "Issued At",
+					dataGetter: ({ row }) => displayDate(row.issuedAt),
+					titleGetter: ({ row }) => displayDateAsTitle(row.issuedAt)
+				},
+				{ key: "sender", label: "Sender", dataGetter: ({ row }) => formatUser(row.sender, currentUserId) },
+				{ key: "receiver", label: "Receiver", dataGetter: ({ row }) => formatUser(row.receiver, currentUserId) },
+				{ key: "amount", label: "Amount", dataGetter: ({ row }) => row.amount },
+				{ key: "status", label: "Status", dataGetter: ({ row }) => <TransactionStatusBadge status={row.status} /> },
+				{ key: "action", label: "Action", dataGetter: ({ row }) => <TransactionAction transaction={row} currentUserId={currentUserId} /> }
+			]}
+		/>
 	);
 };
 

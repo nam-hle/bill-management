@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 import { AspectRatio } from "@/components/shadcn/aspect-ratio";
-import { Dialog, DialogTitle, DialogHeader, DialogContent, DialogTrigger } from "@/components/shadcn/dialog";
+import { Dialog, DialogTitle, DialogHeader, DialogContent, DialogTrigger, DialogDescription } from "@/components/shadcn/dialog";
 
 namespace ImageModal {
 	export interface Props {
@@ -17,8 +17,9 @@ export const ImageModal = ({ src }: ImageModal.Props) => (
 			</div>
 		</DialogTrigger>
 		<DialogContent className="sm:max-w-[800px]">
-			<DialogHeader>
+			<DialogHeader className="hidden">
 				<DialogTitle>Bill Receipt</DialogTitle>
+				<DialogDescription>Bill receipt details</DialogDescription>
 			</DialogHeader>
 			<div className="relative">
 				<AspectRatio ratio={16 / 9}>

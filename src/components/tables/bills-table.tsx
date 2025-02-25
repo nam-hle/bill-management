@@ -106,7 +106,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 				onPageChange: (page) => onFilterChange("page", page)
 			}}
 			toolbar={
-				<div data-testid="table-filters" className="flex flex-1 items-center space-x-2">
+				<>
 					<Input
 						className="w-50"
 						name="search-bar"
@@ -119,7 +119,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 					<FilterButton {...createOwnerFilter("debtor")}>As debtor</FilterButton>
 					<FilterButton {...createTimeFilter("7d")}>Last 7 days</FilterButton>
 					<FilterButton {...createTimeFilter("30d")}>Last 30 days</FilterButton>
-				</div>
+				</>
 			}
 			columns={[
 				{ key: "description", label: "Description", dataGetter: ({ row }) => row.description },

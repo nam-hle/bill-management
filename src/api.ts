@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
 
+import { type BucketName } from "@/types";
 import { axiosInstance } from "@/services";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
 import {
@@ -252,8 +253,6 @@ export namespace API {
 	}
 
 	export namespace Storage {
-		export type BucketName = "avatars" | "receipts";
-
 		export function useFileQuery(bucketName: BucketName, fileId: string | undefined) {
 			return useQuery({
 				enabled: !!fileId,

@@ -30,7 +30,7 @@ export const TransactionCard = ({ transaction, currentUserId }: { currentUserId:
 						</div>
 					</div>
 					<div className="mt-2 flex items-center justify-between">
-						<p className="truncate text-xs text-muted-foreground">{formatTime(transaction.issuedAt)}</p>
+						<p className="truncate text-xs text-muted-foreground">{formatTime(transaction.createdAt)}</p>
 						<TransactionStatusBadge status={transaction.status} />
 					</div>
 				</CardContent>
