@@ -51,7 +51,7 @@ export function SignUpForm() {
 						<CardContent>
 							<div className="flex flex-col gap-6">
 								{errors.root && (
-									<Alert className="py-2" variant="destructive">
+									<Alert className="py-2" variant="destructive" data-testid="form-root-error">
 										<AlertDescription>{errors.root.message}</AlertDescription>
 									</Alert>
 								)}
@@ -117,7 +117,7 @@ export function SignUpForm() {
 							<p className="text-sm text-gray-600">
 								Already have an account?{" "}
 								<Link href="/login" className="text-primary underline underline-offset-4">
-									Log in here
+									Login here
 								</Link>
 							</p>
 						</CardFooter>

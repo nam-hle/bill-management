@@ -5,23 +5,32 @@ import { Actions } from "@/test/helpers/actions";
 import { seedUser } from "@/test/functions/seed-user";
 import { FULL_NAMES, DEFAULT_PASSWORD } from "@/test/utils";
 
-// TODO: Validate login form
-
-test("Login should fail with incorrect credentials", async ({ page }) => {
-	await page.goto("/");
+test.only("Login", async ({ page }) => {
+	await Actions.goToHomePage(page);
 
 	await expect(page).toHaveURL("/login");
 
-	await Actions.fillInput(page, "email", "harry@example.com");
-	await Actions.fillInput(page, "password", DEFAULT_PASSWORD);
-	await Actions.submit(page);
+	await Actions.LoginForm.submit(page);
+	await expect(page.getByText("Email is require")).toBeVisible();
+	await expect(page.getByText("Password is required")).toBeVisible();
 
-	await expect(page.getByTestId("form-error")).toHaveText("Invalid login credentials");
+	await Actions.LoginForm.fillEmail(page, "harry@example.com");
+	await expect(page.getByText("Email is require")).not.toBeVisible();
+
+	await Actions.LoginForm.fillPassword(page, "1234");
+	await expect(page.getByText("Password must be at least 6 characters")).toBeVisible();
+
+	await Actions.fillInput(page, "password", DEFAULT_PASSWORD);
+	await expect(page.getByText("Password must be at least 6 characters")).not.toBeVisible();
+
+	await Actions.LoginForm.submit(page);
+
+	await expect(page.getByTestId("form-root-error")).toHaveText("Invalid login credentials");
 
 	await seedUser({ email: "harry", fullName: FULL_NAMES.HARRY });
 
 	await Actions.submit(page);
 
 	await expect(page).toHaveURL("/");
-	await expect(page.locator("h1").first()).toHaveText("Balance");
+	await expect(page.locator("h2").first()).toHaveText("Summary");
 });

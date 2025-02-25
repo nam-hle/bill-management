@@ -4,6 +4,12 @@ import { test } from "@/test/setup";
 import { type BillMember, DEFAULT_PASSWORD } from "@/test/utils";
 
 export namespace Actions {
+	export async function goToSignUpPage(page: Page) {
+		await test.step(`Go to Sign up page`, async () => {
+			await page.goto("/signup");
+		});
+	}
+
 	export async function goToHomePage(page: Page) {
 		await test.step(`Go to Home page`, async () => {
 			await page.goto("/");
@@ -67,6 +73,58 @@ export namespace Actions {
 		await test.step("Submit", async () => {
 			await page.locator(`button[type="submit"]`).click();
 		});
+	}
+
+	export namespace SignUpForm {
+		export async function submit(page: Page) {
+			await test.step("Submit", async () => {
+				await page.locator(`button[type="submit"]`).click();
+			});
+		}
+
+		export async function fillDisplayName(page: Page, name: string) {
+			await test.step(`Fill display name with ${name}`, async () => {
+				await Actions.fillInput(page, "fullName", name);
+			});
+		}
+
+		export async function fillEmail(page: Page, email: string) {
+			await test.step(`Fill email with ${email}`, async () => {
+				await Actions.fillInput(page, "email", email);
+			});
+		}
+
+		export async function fillPassword(page: Page, password: string) {
+			await test.step(`Fill password with ${password}`, async () => {
+				await Actions.fillInput(page, "password", password);
+			});
+		}
+
+		export async function fillConfirmPassword(page: Page, confirmPassword: string) {
+			await test.step(`Fill confirm password with ${confirmPassword}`, async () => {
+				await Actions.fillInput(page, "confirmPassword", confirmPassword);
+			});
+		}
+	}
+
+	export namespace LoginForm {
+		export async function submit(page: Page) {
+			await test.step("Submit", async () => {
+				await page.locator(`button[type="submit"]`).click();
+			});
+		}
+
+		export async function fillEmail(page: Page, email: string) {
+			await test.step(`Fill email with ${email}`, async () => {
+				await Actions.fillInput(page, "email", email);
+			});
+		}
+
+		export async function fillPassword(page: Page, password: string) {
+			await test.step(`Fill password with ${password}`, async () => {
+				await Actions.fillInput(page, "password", password);
+			});
+		}
 	}
 
 	export namespace TransactionForm {
