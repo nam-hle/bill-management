@@ -13,9 +13,11 @@ export function BillCardsList({ currentUserId }: { currentUserId: string }) {
 	});
 
 	return (
-		<div className="col-span-2 space-y-4">
-			<Heading>Recent Bills</Heading>
-			<div className="space-y-4">{data?.data?.map((bill) => <BillCard bill={bill} key={bill.id} currentUserId={currentUserId} />)}</div>
+		<div className="col-span-2 space-y-4" data-testid="card-list-container">
+			<Heading data-testid="card-list-heading">Recent Bills</Heading>
+			<div className="space-y-4" data-testid="card-list-content">
+				{data?.data?.map((bill) => <BillCard bill={bill} key={bill.id} currentUserId={currentUserId} />)}
+			</div>
 		</div>
 	);
 }

@@ -10,6 +10,10 @@ export interface ClassName {
 	className?: string;
 }
 
+export interface TestId {
+	"data-testid"?: string;
+}
+
 export interface Identifiable {
 	readonly id: string;
 }

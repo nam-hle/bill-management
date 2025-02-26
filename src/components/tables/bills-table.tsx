@@ -12,6 +12,7 @@ import { FallbackAvatar } from "@/components/fallbackable-avatar";
 
 import { API } from "@/api";
 import { formatCurrency } from "@/utils/format";
+import { type ClientBillMember } from "@/schemas";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
 import { formatTime, formatDistanceTime } from "@/utils";
 
@@ -44,6 +45,15 @@ function toSearchParams(filters: Filters) {
 	}
 
 	return `?${params.toString()}`;
+}
+
+function UserAvatarAmount(props: { row: ClientBillMember }) {
+	return (
+		<div data-testid="avatar-amount" className="flex flex-row items-center space-x-2">
+			<FallbackAvatar {...props.row} />
+			<span data-testid="amount">{formatCurrency(props.row.amount)}</span>
+		</div>
+	);
 }
 
 export const BillsTable: React.FC<BillsTable.Props> = (props) => {
@@ -132,12 +142,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 				{
 					key: "creditor",
 					label: "Creditor",
-					dataGetter: ({ row }) => (
-						<div className="flex flex-row items-center space-x-2">
-							<FallbackAvatar {...row.creditor} />
-							<span>{formatCurrency(row.creditor.amount)}</span>
-						</div>
-					)
+					dataGetter: ({ row }) => <UserAvatarAmount row={row.creditor} />
 				},
 				{
 					key: "debtors",
@@ -145,10 +150,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 					dataGetter: ({ row }) => (
 						<div className="flex flex-row space-x-2">
 							{_.sortBy(row.debtors, [(debtor) => debtor.userId !== currentUserId, (billMember) => billMember.userId]).map((billMember) => (
-								<div key={billMember.userId} className="flex flex-row items-center space-x-2">
-									<FallbackAvatar {...billMember} />
-									<span>{formatCurrency(billMember.amount)}</span>
-								</div>
+								<UserAvatarAmount row={billMember} key={billMember.userId} />
 							))}
 						</div>
 					)
