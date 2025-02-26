@@ -75,6 +75,7 @@ test("basic", async ({ page }) => {
 
 	await Actions.goToHomePage(page);
 	await Assertions.assertStats(page, { Sent: "89.000", Received: "166.000", "Net Balance": "77.000" });
+	// TODO: Enable
 	// const recentTable = await Locators.locateTable(page, 1);
 	// await Assertions.assertTransactionsTable(recentTable, { pagination: null, rows: firstRows.map((row) => _.omit(row, "action")) });
 

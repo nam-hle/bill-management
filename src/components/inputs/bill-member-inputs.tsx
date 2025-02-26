@@ -3,11 +3,10 @@ import { Trash2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useFormContext } from "react-hook-form";
 
-import { Label } from "@/components/shadcn/label";
 import { Input } from "@/components/shadcn/input";
 import { Button } from "@/components/shadcn/button";
 import { Skeleton } from "@/components/shadcn/skeleton";
-import { FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
+import { FormItem, FormField, FormLabel, FormControl, FormMessage } from "@/components/shadcn/form";
 
 import { Select } from "@/components/inputs";
 import { type BillFormState } from "@/components/bill-form";
@@ -38,14 +37,6 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 
 		return `debtors.${member.debtorIndex}` as const;
 	}, [member]);
-
-	// const fieldError = React.useMemo(() => {
-	// 	if (member.type === "creditor") {
-	// 		return errors["creditor"];
-	// 	}
-	//
-	// 	return errors["debtors"]?.[member.debtorIndex];
-	// }, [member, errors]);
 
 	watch("debtors");
 
@@ -83,7 +74,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 
 	const loadingAmount = props.loading;
 
-	const AmountLabel = member.type === "creditor" ? Label : RequiredLabel;
+	const AmountLabel = member.type === "creditor" ? FormLabel : RequiredLabel;
 
 	return (
 		<>
@@ -114,7 +105,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 					name={`${fieldKey}.amount`}
 					render={({ field }) => (
 						<FormItem>
-							<AmountLabel htmlFor={`${fieldKey}.amount`}>{amountLabel}</AmountLabel>
+							<AmountLabel>{amountLabel}</AmountLabel>
 							<FormControl>
 								<SkeletonWrapper loading={loadingAmount} skeleton={<Skeleton className="h-10 w-full" />}>
 									<Input readOnly={!editing} className={editing ? "" : "pointer-events-none"} {...field} />
