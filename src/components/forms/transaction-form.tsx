@@ -108,8 +108,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 		// reset,
 		control,
 		setValue,
-		handleSubmit,
-		formState: { errors }
+		handleSubmit
 	} = form;
 
 	// const { mutate: fetchSuggestion } = useMutation({
@@ -260,7 +259,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 								<FormControl>
 									<Input placeholder={CLIENT_DATE_FORMAT} {...field} className={editing ? "" : "pointer-events-none"} />
 								</FormControl>
-								<FormMessage>{errors.issuedAt?.message}</FormMessage>
+								<FormMessage />
 							</FormItem>
 						)}
 					/>

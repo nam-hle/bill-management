@@ -63,7 +63,7 @@ export function LoginForm() {
 												<FormControl>
 													<Input placeholder="Enter your email" {...field} />
 												</FormControl>
-												<FormMessage>{errors.email?.message}</FormMessage>
+												<FormMessage />
 											</FormItem>
 										)}
 									/>
@@ -82,7 +82,7 @@ export function LoginForm() {
 											<FormControl>
 												<Input id="password" type="password" {...field} />
 											</FormControl>
-											<FormMessage>{errors.password?.message}</FormMessage>
+											<FormMessage />
 										</FormItem>
 									)}
 								/>

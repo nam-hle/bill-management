@@ -35,7 +35,7 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 		control,
 		getValues,
 		handleSubmit,
-		formState: { errors, isDirty, isSubmitting }
+		formState: { isDirty, isSubmitting }
 	} = form;
 
 	const { toast } = useToast();
@@ -109,7 +109,7 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 									<FormControl>
 										<Input placeholder="Enter full name" {...field} />
 									</FormControl>
-									<FormMessage>{errors.fullName?.message}</FormMessage>
+									<FormMessage />
 								</FormItem>
 							)}
 						/>

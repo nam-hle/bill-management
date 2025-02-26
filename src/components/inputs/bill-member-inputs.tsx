@@ -27,13 +27,7 @@ namespace BillMemberInputs {
 
 export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 	const { member, editing, onRemove } = props;
-	const {
-		watch,
-		control,
-		register,
-		getValues,
-		formState: { errors }
-	} = useFormContext<BillFormState>();
+	const { watch, control, register, getValues } = useFormContext<BillFormState>();
 
 	const { isSuccess, data: usersResponse, isPending: isPendingUsers } = useQuery({ queryKey: ["users"], queryFn: API.Users.List.query });
 
@@ -45,13 +39,13 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 		return `debtors.${member.debtorIndex}` as const;
 	}, [member]);
 
-	const fieldError = React.useMemo(() => {
-		if (member.type === "creditor") {
-			return errors["creditor"];
-		}
-
-		return errors["debtors"]?.[member.debtorIndex];
-	}, [member, errors]);
+	// const fieldError = React.useMemo(() => {
+	// 	if (member.type === "creditor") {
+	// 		return errors["creditor"];
+	// 	}
+	//
+	// 	return errors["debtors"]?.[member.debtorIndex];
+	// }, [member, errors]);
 
 	watch("debtors");
 
@@ -126,7 +120,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 									<Input readOnly={!editing} className={editing ? "" : "pointer-events-none"} {...field} />
 								</SkeletonWrapper>
 							</FormControl>
-							<FormMessage>{fieldError?.amount?.message}</FormMessage>
+							<FormMessage />
 						</FormItem>
 					)}
 				/>
