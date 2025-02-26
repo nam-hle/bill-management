@@ -6,8 +6,8 @@ import { Plus } from "lucide-react";
 import { parse, format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Input } from "@/components/shadcn/input";
 import { Button } from "@/components/shadcn/button";
@@ -74,6 +74,8 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 	// 	}
 	// });
 
+	const queryClient = useQueryClient();
+
 	const { mutate } = useMutation({
 		mutationFn: API.Transactions.Create.mutation,
 		onError: () => {
@@ -89,7 +91,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 				description: "A new transaction has been created and saved successfully. Redirecting to transactions page..."
 			});
 
-			router.push("/transactions");
+			queryClient.invalidateQueries({ queryKey: ["transactions"] }).then(() => router.push("/transactions"));
 		}
 	});
 
@@ -105,10 +107,8 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 		// watch,
 		// reset,
 		control,
-		register,
 		setValue,
-		handleSubmit,
-		formState: { errors }
+		handleSubmit
 	} = form;
 
 	// const { mutate: fetchSuggestion } = useMutation({
@@ -177,10 +177,10 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 			{/*	</DialogRoot>*/}
 			{/*)}*/}
 			<Form {...form}>
-				<div className="flex flex-col gap-4">
+				<div className="mx-auto flex w-1/3 flex-col gap-4">
 					<div className="flex flex-row justify-between align-middle">
 						<Heading className="flex align-middle">
-							{editing ? "Transaction Details" : "New Transaction"}
+							{kind.type === "update" ? "Transaction Details" : "New Transaction"}
 							{kind.type === "update" && <TransactionStatusBadge className="ml-2" status={kind.transaction.status} />}
 						</Heading>
 
@@ -192,24 +192,22 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 						name="receiverId"
 						render={({ field }) => (
 							<FormItem>
-								<RequiredLabel htmlFor="receiverId">Receiver</RequiredLabel>
+								<RequiredLabel>Receiver</RequiredLabel>
 								<Select
-									{...register("receiverId")}
-									readonly={!editing}
-									value={field.value}
+									{...field}
+									disabled={!editing}
 									onValueChange={(value) => {
 										field.onChange(value);
 										setValue("bankAccountId", undefined);
 									}}
 									items={users.flatMap((user) => {
-										if (editing || user.id !== currentUserId) {
+										if (user.id !== currentUserId) {
 											return { value: user.id, label: user.fullName };
 										}
 
 										return [];
 									})}
 								/>
-								<FormMessage>{errors.receiverId?.message}</FormMessage>
 							</FormItem>
 						)}
 					/>
@@ -243,11 +241,11 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 						control={control}
 						render={({ field }) => (
 							<FormItem>
-								<RequiredLabel htmlFor="amount">Amount</RequiredLabel>
+								<RequiredLabel>Amount</RequiredLabel>
 								<FormControl>
 									<Input {...field} readOnly={!editing} className={editing ? "" : "pointer-events-none"} />
 								</FormControl>
-								<FormMessage>{errors?.amount?.message}</FormMessage>
+								<FormMessage />
 							</FormItem>
 						)}
 					/>
@@ -257,11 +255,11 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 						control={control}
 						render={({ field }) => (
 							<FormItem>
-								<RequiredLabel htmlFor="issuedAt">Issued At</RequiredLabel>
+								<RequiredLabel>Issued At</RequiredLabel>
 								<FormControl>
 									<Input placeholder={CLIENT_DATE_FORMAT} {...field} className={editing ? "" : "pointer-events-none"} />
 								</FormControl>
-								<FormMessage>{errors.issuedAt?.message}</FormMessage>
+								<FormMessage />
 							</FormItem>
 						)}
 					/>

@@ -49,9 +49,9 @@ const StatText: React.FC<{ label: string; color: string; amount?: number; Icon: 
 	const { Icon, label, color, amount, description } = props;
 
 	return (
-		<Card>
+		<Card data-testid="card">
 			<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-				<CardTitle className="text-sm font-medium">
+				<CardTitle data-testid="card-title" className="text-sm font-medium">
 					{label}
 					<TooltipProvider>
 						<Tooltip>
@@ -66,7 +66,7 @@ const StatText: React.FC<{ label: string; color: string; amount?: number; Icon: 
 				</CardTitle>
 				<Icon className={cn("h-4 w-4", color)} />
 			</CardHeader>
-			<CardContent>
+			<CardContent data-testid="card-content">
 				<Show when={amount} fallback={<Skeleton className="h-8 w-32" />}>
 					{(amount) => <div className={cn("text-2xl font-bold", color)}>{formatCurrency(amount)}</div>}
 				</Show>

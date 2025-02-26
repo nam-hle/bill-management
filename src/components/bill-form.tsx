@@ -122,8 +122,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 	const loading = React.useMemo(() => kind.type === "update" && loadingBill, [kind.type, loadingBill]);
 
 	const form = useBillForm();
-	const { watch, reset, control, getValues, formState, handleSubmit } = form;
-	const { errors } = formState;
+	const { watch, reset, control, getValues, handleSubmit } = form;
 
 	React.useEffect(() => {
 		if (bill) {
@@ -163,7 +162,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 									name="description"
 									render={({ field }) => (
 										<FormItem>
-											<RequiredLabel htmlFor="description">Description</RequiredLabel>
+											<RequiredLabel>Description</RequiredLabel>
 											<FormControl>
 												<SkeletonWrapper loading={loading} skeleton={<Skeleton className="h-10 w-full" />}>
 													<Input
@@ -174,7 +173,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 													/>
 												</SkeletonWrapper>
 											</FormControl>
-											<FormMessage>{errors.description?.message}</FormMessage>
+											<FormMessage />
 										</FormItem>
 									)}
 								/>
@@ -203,13 +202,13 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 									control={control}
 									render={({ field }) => (
 										<FormItem>
-											<RequiredLabel htmlFor="issuedAt">Issued At</RequiredLabel>
+											<RequiredLabel>Issued At</RequiredLabel>
 											<FormControl>
 												<SkeletonWrapper loading={loading} skeleton={<Skeleton className="h-10 w-full" />}>
 													<Input readOnly={!editing} placeholder={CLIENT_DATE_FORMAT} className={editing ? "" : "pointer-events-none"} {...field} />
 												</SkeletonWrapper>
 											</FormControl>
-											<FormMessage>{errors.issuedAt?.message}</FormMessage>
+											<FormMessage />
 										</FormItem>
 									)}
 								/>

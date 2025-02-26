@@ -25,7 +25,7 @@ const ERRORS = {
 
 const INITIAL_ERRORS = [ERRORS.MISSING_RECEIVER, ERRORS.MISSING_AMOUNT];
 
-test.describe("validation", () => {
+test.describe.only("validation", () => {
 	test("Empty form", async ({ page }) => {
 		await Actions.TransactionForm.submit(page);
 

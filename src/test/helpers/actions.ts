@@ -3,6 +3,8 @@ import { expect, type Page } from "@playwright/test";
 import { test } from "@/test/setup";
 import { type BillMember, DEFAULT_PASSWORD } from "@/test/utils";
 
+import { Assertions } from "./assertions";
+
 export namespace Actions {
 	export async function goToSignUpPage(page: Page) {
 		await test.step(`Go to Sign up page`, async () => {
@@ -56,9 +58,18 @@ export namespace Actions {
 		});
 	}
 
-	export async function selectOption(page: Page, label: string, option: string) {
+	export async function selectOption(page: Page, label: string, option: string, optionsList?: string[]) {
 		await test.step(`Select ${option} in ${label}`, async () => {
 			await page.getByRole("combobox", { name: label }).click();
+
+			if (optionsList) {
+				await expect(page.getByRole("option")).toHaveCount(optionsList.length);
+
+				for (const option of optionsList) {
+					await expect(page.getByRole("option", { name: option })).toBeVisible();
+				}
+			}
+
 			await page.getByRole("option", { name: option }).click();
 		});
 	}
@@ -134,25 +145,26 @@ export namespace Actions {
 			});
 		}
 
-		export async function selectReceiver(page: Page, name: string) {
-			await selectOption(page, "Receiver", name);
+		export async function selectReceiver(page: Page, receiver: string, candidateReceivers?: string[]) {
+			await selectOption(page, "Receiver", receiver, candidateReceivers);
 		}
 
 		export async function fillAmount(page: Page, amount: string) {
 			await fillInput(page, "amount", amount);
 		}
 
-		export async function fill(page: Page, params: { amount: string; receiver: string }) {
+		export async function fill(page: Page, params: { amount: string; receiver: string; candidateReceivers?: string[] }) {
 			await test.step(`Fill transaction form: receiver=${params.receiver}, amount= ${params.amount}`, async () => {
 				await expect(page).toHaveURL("/transactions");
 
 				await page.getByRole("link", { name: "New" }).click();
+				await expect(page.getByRole("main").getByText("New Transaction")).toBeVisible();
 
-				await selectReceiver(page, params.receiver);
+				await selectReceiver(page, params.receiver, params.candidateReceivers);
 				await fillAmount(page, params.amount);
-
 				await Actions.TransactionForm.submit(page);
 
+				await Assertions.assertToast(page, "Transaction created successfully");
 				await expect(page).toHaveURL("/transactions");
 			});
 		}

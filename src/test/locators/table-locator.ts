@@ -34,7 +34,7 @@ export class TableLocator {
 	}
 
 	getHeading() {
-		return this.page.getByTestId("table-title").nth(this.tableIndex);
+		return this.page.getByRole("heading").nth(this.tableIndex);
 	}
 
 	getRow(rowIndex: number): Row {
@@ -42,10 +42,10 @@ export class TableLocator {
 	}
 
 	get nextPageButton() {
-		return this.tableContainer.getByRole("button", { name: "Next page" });
+		return this.tableContainer.getByRole("button", { name: "Go to next page" });
 	}
 	get previousPageButton() {
-		return this.tableContainer.getByRole("button", { name: "Previous page" });
+		return this.tableContainer.getByRole("button", { name: "Go to previous page" });
 	}
 }
 

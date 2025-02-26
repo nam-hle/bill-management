@@ -38,9 +38,9 @@ export function DataTable<
 	const { data, title, action, columns, toolbar, loading, filtering, pagination } = props;
 
 	return (
-		<div className="w-full space-y-4">
-			<div data-testid="table-heading" className="flex w-full flex-row items-center justify-between">
-				<Heading>{title + (pagination?.fullSize ? ` (${pagination.fullSize})` : "")}</Heading>
+		<div className="w-full space-y-4" data-testid="table-container">
+			<div className="flex w-full flex-row items-center justify-between">
+				<Heading data-testid="table-heading">{title + (pagination?.fullSize ? ` (${pagination.fullSize})` : "")}</Heading>
 				{action}
 			</div>
 			{toolbar && (
@@ -49,7 +49,7 @@ export function DataTable<
 				</div>
 			)}
 			<div className="rounded-md border">
-				<Table data-testid="table__settled">
+				<Table data-testid={`table__${loading ? "loading" : "settled"}`}>
 					<TableHeader>
 						<TableRow className="h-12">
 							{columns.map((column) => {
