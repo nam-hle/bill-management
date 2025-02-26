@@ -5,7 +5,7 @@ import { USERNAMES, FULL_NAMES } from "@/test/utils";
 import { Assertions } from "@/test/helpers/assertions";
 import { seedGroup } from "@/test/functions/seed-group";
 
-test("basic", async ({ page }) => {
+test.only("basic", async ({ page }) => {
 	await seedGroup();
 
 	await test.step("Create transactions from Ron to Harry", async () => {

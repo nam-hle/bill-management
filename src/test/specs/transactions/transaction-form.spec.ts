@@ -5,7 +5,7 @@ import { USERNAMES, FULL_NAMES } from "@/test/utils";
 import { Assertions } from "@/test/helpers/assertions";
 import { seedGroup } from "@/test/functions/seed-group";
 
-test("basic", async ({ page, browser }) => {
+test.only("basic", async ({ page, browser }) => {
 	await seedGroup();
 
 	await Actions.login(page, USERNAMES.HARRY);
