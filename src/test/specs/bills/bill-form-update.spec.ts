@@ -20,16 +20,16 @@ const expectedBillsTable: Assertions.BillsTableExpectation = {
 					name: FULL_NAMES.DUMBLEDORE
 				},
 				{
-					amount: "45.000",
-					name: FULL_NAMES.SNAPE
-				},
-				{
 					amount: "50.000",
 					name: FULL_NAMES.HERMIONE
 				},
 				{
 					amount: "60.000",
 					name: FULL_NAMES.RON
+				},
+				{
+					amount: "45.000",
+					name: FULL_NAMES.SNAPE
 				}
 			]
 		}
@@ -107,6 +107,8 @@ test("basic", async ({ page }, testInfo) => {
 		await Assertions.assertBillsTable(billsTable, expectedBillsTable);
 
 		await billsTable.getRow(0).click();
+		await expect(page.getByRole("heading", { name: "Bill Details" })).toBeVisible();
+
 		await Actions.BillForm.edit(page);
 		await Actions.BillForm.fillDescription(page, "Team building");
 		await Actions.BillForm.cancel(page);

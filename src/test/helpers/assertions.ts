@@ -1,5 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 
+import { VND } from "@/test/utils";
 import { test } from "@/test/setup";
 import { Locators } from "@/test/helpers/locators";
 import { type TableLocator } from "@/test/locators/table-locator";
@@ -15,7 +16,7 @@ export namespace Assertions {
 	export async function assertStats(page: Page, expected: Partial<Record<(typeof StateLabels)[number], string>>) {
 		await test.step("Assert Stats", async () => {
 			for (const label of StateLabels) {
-				await expect(Locators.locateStatValue(page, label)).toHaveText(`${expected[label] ?? "0"} ₫`);
+				await expect(Locators.locateStatValue(page, label)).toHaveText(`${expected[label] ?? "0"} ${VND}`);
 			}
 		});
 	}
@@ -147,13 +148,15 @@ export namespace Assertions {
 							row.creditor.name
 						);
 
-						await expect(table.getRow(rowIndex).getCell("Debtors").locator.getByTestId("avatar-amount")).toHaveCount(row.debtors.length);
+						const debtorsCellLocator = table.getRow(rowIndex).getCell("Debtors").locator;
+						await expect(debtorsCellLocator.getByTestId("avatar-amount")).toHaveCount(row.debtors.length);
 
 						for (let debtorIndex = 0; debtorIndex < row.debtors.length; debtorIndex++) {
 							const debtor = row.debtors[debtorIndex];
-							const avatarAmount = table.getRow(rowIndex).getCell("Debtors").locator.getByTestId("avatar-amount").nth(debtorIndex);
-							await expect(avatarAmount.getByTestId("avatar-fallback")).toHaveAccessibleDescription(debtor.name);
-							await expect(avatarAmount.getByTestId("amount")).toHaveText(debtor.amount);
+							const avatarAmount = debtorsCellLocator.locator(`[data-testid="avatar-amount"]`, {
+								has: table.page.locator(`[data-testid="avatar-fallback"][title="${debtor.name}"]`)
+							});
+							await expect(avatarAmount.getByTestId("amount")).toHaveText(`${debtor.amount} ${VND}`);
 						}
 					});
 				}

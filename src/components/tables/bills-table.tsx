@@ -149,7 +149,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 					label: "Debtors",
 					dataGetter: ({ row }) => (
 						<div className="flex flex-row space-x-2">
-							{_.sortBy(row.debtors, [(debtor) => debtor.userId !== currentUserId, (billMember) => billMember.userId]).map((billMember) => (
+							{_.sortBy(row.debtors, [(debtor) => debtor.userId !== currentUserId, (billMember) => billMember.fullName]).map((billMember) => (
 								<UserAvatarAmount row={billMember} key={billMember.userId} />
 							))}
 						</div>
