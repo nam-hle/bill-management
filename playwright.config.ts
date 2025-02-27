@@ -8,7 +8,7 @@ const profiles = {
 		retries: 2,
 		timeout: 60_000,
 		reporter: "list",
-		forbidOnly: false,
+		forbidOnly: true,
 		command: "pnpm start",
 		expectTimeout: 20_000,
 		reuseExistingServer: false,

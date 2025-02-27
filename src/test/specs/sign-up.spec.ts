@@ -4,7 +4,7 @@ import { test } from "@/test/setup";
 import { Actions } from "@/test/helpers/actions";
 import { FULL_NAMES, DEFAULT_PASSWORD } from "@/test/utils";
 
-test.only("Sign up", async ({ page }) => {
+test("Sign up", async ({ page }) => {
 	await Actions.goToHomePage(page);
 	await expect(page).toHaveURL("/login");
 

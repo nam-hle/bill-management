@@ -5,12 +5,6 @@ export function noop() {}
 export const CLIENT_DATE_FORMAT = "dd/MM/yy";
 export const SERVER_DATE_FORMAT = "yyyy-MM-dd";
 
-export function formatDate(date?: string | null) {
-	const value = date ?? new Date();
-
-	return { server: format(value, SERVER_DATE_FORMAT), client: format(value, CLIENT_DATE_FORMAT) };
-}
-
 export function formatTime(time: string | undefined | null) {
 	if (time === undefined || time === null) {
 		return "";

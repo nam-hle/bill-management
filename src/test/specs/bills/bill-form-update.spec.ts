@@ -13,8 +13,25 @@ const expectedBillsTable: Assertions.BillsTableExpectation = {
 	rows: [
 		{
 			description: "Party",
-			creditor: `${FULL_NAMES.SNAPE} (150)`,
-			debtors: [`${FULL_NAMES.DUMBLEDORE} (40)`, `${FULL_NAMES.SNAPE} (45)`, `${FULL_NAMES.HERMIONE} (50)`, `${FULL_NAMES.RON} (60)`]
+			creditor: { amount: "150.000", name: `${FULL_NAMES.SNAPE}` },
+			debtors: [
+				{
+					amount: "40.000",
+					name: FULL_NAMES.DUMBLEDORE
+				},
+				{
+					amount: "50.000",
+					name: FULL_NAMES.HERMIONE
+				},
+				{
+					amount: "60.000",
+					name: FULL_NAMES.RON
+				},
+				{
+					amount: "45.000",
+					name: FULL_NAMES.SNAPE
+				}
+			]
 		}
 	]
 };
@@ -39,7 +56,7 @@ test("basic", async ({ page }, testInfo) => {
 		});
 		await Actions.submit(page);
 
-		await expect(page.getByRole("status", { name: "Bill created successfully" })).toBeVisible();
+		await Assertions.assertToast(page, "Bill created successfully");
 		await expect(page).toHaveURL("/bills");
 
 		await Actions.logout(page);
@@ -77,7 +94,7 @@ test("basic", async ({ page }, testInfo) => {
 
 		await Actions.BillForm.save(page);
 
-		await expect(page.getByRole("status", { name: "Bill updated successfully" })).toBeVisible();
+		await Assertions.assertToast(page, "Bill updated successfully");
 
 		await Actions.logout(page);
 	});
@@ -90,6 +107,8 @@ test("basic", async ({ page }, testInfo) => {
 		await Assertions.assertBillsTable(billsTable, expectedBillsTable);
 
 		await billsTable.getRow(0).click();
+		await expect(page.getByRole("heading", { name: "Bill Details" })).toBeVisible();
+
 		await Actions.BillForm.edit(page);
 		await Actions.BillForm.fillDescription(page, "Team building");
 		await Actions.BillForm.cancel(page);

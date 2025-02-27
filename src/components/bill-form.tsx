@@ -25,8 +25,8 @@ import { BillFormHeading } from "@/components/bill-form-heading";
 import { API } from "@/api";
 import { useBoolean } from "@/hooks";
 import { useToast } from "@/hooks/use-toast";
+import { CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
 import { type ClientBill, type ClientBillMember } from "@/schemas";
-import { formatDate, CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
 import {
 	IssuedAtField,
 	IssuedAtFieldTransformer,
@@ -104,6 +104,12 @@ function useBillForm() {
 			issuedAt: formatDate(format(new Date(), SERVER_DATE_FORMAT)).client
 		}
 	});
+}
+
+function formatDate(date?: string | null) {
+	const value = date ?? new Date();
+
+	return { server: format(value, SERVER_DATE_FORMAT), client: format(value, CLIENT_DATE_FORMAT) };
 }
 
 export const BillForm: React.FC<BillForm.Props> = (props) => {

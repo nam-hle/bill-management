@@ -119,7 +119,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 
 			<div className="col-span-2 self-end justify-self-end">
 				{editing && onRemove && (
-					<Button size="sm" variant="outline" onClick={onRemove}>
+					<Button size="sm" variant="outline" onClick={onRemove} title="Delete debtor">
 						<Trash2 />
 					</Button>
 				)}

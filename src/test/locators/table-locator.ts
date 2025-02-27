@@ -6,7 +6,7 @@ export class TableLocator {
 	private headerCells: string[];
 
 	constructor(
-		private page: Page,
+		public page: Page,
 		private tableIndex: number = 0
 	) {
 		this.tableContainer = page.getByTestId("table-container").nth(tableIndex);

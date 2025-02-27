@@ -179,7 +179,7 @@ export namespace Actions {
 
 		export async function save(page: Page) {
 			await test.step("Save bill", async () => {
-				await page.getByRole("button", { name: "Done" }).click();
+				await page.getByRole("button", { name: "Save" }).click();
 			});
 		}
 
@@ -197,7 +197,7 @@ export namespace Actions {
 
 		export async function removeDebtor(page: Page, debtorIndex: number) {
 			await test.step(`Remove debtor`, async () => {
-				await page.getByRole("button", { name: "Delete" }).nth(debtorIndex).click();
+				await page.getByRole("button", { name: "Delete debtor" }).nth(debtorIndex).click();
 			});
 		}
 

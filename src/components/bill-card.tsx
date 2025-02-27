@@ -16,15 +16,19 @@ export const BillCard = ({ bill, currentUserId }: { bill: ClientBill; currentUse
 
 	return (
 		<Link passHref prefetch legacyBehavior href={`/bills/${bill.id}`}>
-			<Card className="w-full cursor-pointer hover:border-gray-500">
-				<CardContent className="p-4">
-					<div className="flex items-start space-x-4">
-						<FallbackAvatar {...bill.creditor} />
+			<Card data-testid="card" className="w-full cursor-pointer hover:border-gray-500">
+				<CardContent className="p-4" data-testid="card-content">
+					<div data-testid="card-body" className="flex items-start space-x-4">
+						<FallbackAvatar {...bill.creditor} data-testid="bill-creditor" />
 						<div className="min-w-0 flex-1">
-							<h3 className="truncate text-sm font-medium">{bill.description}</h3>
-							<span className="text-xs font-medium">{formatCurrency(bill.creditor.amount)}</span>
+							<h3 data-testid="bill-description" className="truncate text-sm font-medium">
+								{bill.description}
+							</h3>
+							<span data-testid="creditor-amount" className="text-xs font-medium">
+								{formatCurrency(bill.creditor.amount)}
+							</span>
 						</div>
-						<div className="flex flex-col items-start">
+						<div data-testid="debtors" className="flex flex-col items-start">
 							{currentUserDebtor && <span className="text-sm font-medium text-red-600">-{formatCurrency(currentUserDebtor.amount)}</span>}
 						</div>
 					</div>
