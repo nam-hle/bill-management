@@ -5,7 +5,7 @@ import { Actions } from "@/test/helpers/actions";
 import { seedUser } from "@/test/functions/seed-user";
 import { FULL_NAMES, DEFAULT_PASSWORD } from "@/test/utils";
 
-test.only("Login", async ({ page }) => {
+test("Login", async ({ page }) => {
 	await Actions.goToHomePage(page);
 
 	await expect(page).toHaveURL("/login");

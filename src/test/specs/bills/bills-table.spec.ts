@@ -36,56 +36,88 @@ const presetBills: Omit<Actions.BillForm.FillParams, "description">[] = [
 const expectedRows: Assertions.BillsTableExpectation["rows"] = [
 	{
 		description: "Breakfast 0",
-		creditor: `${FULL_NAMES.HARRY} (90)`,
-		debtors: [`${FULL_NAMES.RON} (20)`, `${FULL_NAMES.HERMIONE} (70)`]
+		creditor: { amount: "90.000", name: FULL_NAMES.HARRY },
+		debtors: [
+			{ amount: "20.000", name: FULL_NAMES.RON },
+			{ amount: "70.000", name: FULL_NAMES.HERMIONE }
+		]
 	},
 	{
 		description: "Breakfast 1",
-		creditor: `${FULL_NAMES.RON} (90)`,
-		debtors: [`${FULL_NAMES.HARRY} (20)`, `${FULL_NAMES.HERMIONE} (70)`]
+		creditor: { amount: "90.000", name: FULL_NAMES.RON },
+		debtors: [
+			{ amount: "20.000", name: FULL_NAMES.HARRY },
+			{ amount: "70.000", name: FULL_NAMES.HERMIONE }
+		]
 	},
 	{
 		description: "Breakfast 2",
-		creditor: `${FULL_NAMES.HERMIONE} (90)`,
-		debtors: [`${FULL_NAMES.HARRY} (20)`, `${FULL_NAMES.RON} (70)`]
+		creditor: { amount: "90.000", name: FULL_NAMES.HERMIONE },
+		debtors: [
+			{ amount: "20.000", name: FULL_NAMES.HARRY },
+			{ amount: "70.000", name: FULL_NAMES.RON }
+		]
 	},
 	{
 		description: "Lunch 3",
-		creditor: `${FULL_NAMES.HARRY} (90)`,
-		debtors: [`${FULL_NAMES.RON} (20)`, `${FULL_NAMES.HERMIONE} (70)`]
+		creditor: { amount: "90.000", name: FULL_NAMES.HARRY },
+		debtors: [
+			{ amount: "20.000", name: FULL_NAMES.RON },
+			{ amount: "70.000", name: FULL_NAMES.HERMIONE }
+		]
 	},
 	{
 		description: "Lunch 4",
-		creditor: `${FULL_NAMES.RON} (90)`,
-		debtors: [`${FULL_NAMES.HARRY} (20)`, `${FULL_NAMES.HERMIONE} (70)`]
+		creditor: { amount: "90.000", name: FULL_NAMES.RON },
+		debtors: [
+			{ amount: "20.000", name: FULL_NAMES.HARRY },
+			{ amount: "70.000", name: FULL_NAMES.HERMIONE }
+		]
 	},
 	{
 		description: "Lunch 5",
-		creditor: `${FULL_NAMES.HERMIONE} (90)`,
-		debtors: [`${FULL_NAMES.HARRY} (20)`, `${FULL_NAMES.RON} (70)`]
+		creditor: { amount: "90.000", name: FULL_NAMES.HERMIONE },
+		debtors: [
+			{ amount: "20.000", name: FULL_NAMES.HARRY },
+			{ amount: "70.000", name: FULL_NAMES.RON }
+		]
 	},
 	{
 		description: "Dinner 6",
-		creditor: `${FULL_NAMES.HARRY} (90)`,
-		debtors: [`${FULL_NAMES.RON} (20)`, `${FULL_NAMES.HERMIONE} (70)`]
+		creditor: { amount: "90.000", name: FULL_NAMES.HARRY },
+		debtors: [
+			{ amount: "20.000", name: FULL_NAMES.RON },
+			{ amount: "70.000", name: FULL_NAMES.HERMIONE }
+		]
 	},
 	{
 		description: "Dinner 7",
-		creditor: `${FULL_NAMES.RON} (90)`,
-		debtors: [`${FULL_NAMES.HARRY} (20)`, `${FULL_NAMES.HERMIONE} (70)`]
+		creditor: { amount: "90.000", name: FULL_NAMES.RON },
+		debtors: [
+			{ amount: "20.000", name: FULL_NAMES.HARRY },
+			{ amount: "70.000", name: FULL_NAMES.HERMIONE }
+		]
 	},
 	{
 		description: "Dinner 8",
-		creditor: `${FULL_NAMES.HERMIONE} (90)`,
-		debtors: [`${FULL_NAMES.HARRY} (20)`, `${FULL_NAMES.RON} (70)`]
+		creditor: { amount: "90.000", name: FULL_NAMES.HERMIONE },
+		debtors: [
+			{ amount: "20.000", name: FULL_NAMES.HARRY },
+			{ amount: "70.000", name: FULL_NAMES.RON }
+		]
 	},
 	{
 		description: "Party",
-		creditor: `${FULL_NAMES.HARRY} (90)`,
-		debtors: [`${FULL_NAMES.HARRY} (20)`, `${FULL_NAMES.RON} (30)`, `${FULL_NAMES.HERMIONE} (40)`]
+		creditor: { amount: "90.000", name: FULL_NAMES.HARRY },
+		debtors: [
+			{ amount: "20.000", name: FULL_NAMES.HARRY },
+			{ amount: "30.000", name: FULL_NAMES.RON },
+			{ amount: "40.000", name: FULL_NAMES.HERMIONE }
+		]
 	}
 ];
 
+// TODO: Call API to seed instead
 test.beforeAll("Seed bills", async ({ browser }, testInfo) => {
 	test.setTimeout(testInfo.timeout * 1.5);
 	await truncate();
@@ -100,6 +132,7 @@ test.beforeAll("Seed bills", async ({ browser }, testInfo) => {
 		for (const index of [0, 1, 2]) {
 			await Actions.BillForm.fill(page, { description: `Breakfast ${index}`, ...presetBills[index % 3] });
 			await Actions.submit(page);
+			await Assertions.assertToast(page, "Bill created successfully");
 		}
 
 		await Actions.logout(page);
@@ -112,6 +145,7 @@ test.beforeAll("Seed bills", async ({ browser }, testInfo) => {
 		for (const index of [3, 4, 5]) {
 			await Actions.BillForm.fill(page, { description: `Lunch ${index}`, ...presetBills[index % 3] });
 			await Actions.submit(page);
+			await Assertions.assertToast(page, "Bill created successfully");
 		}
 
 		await Actions.logout(page);
@@ -124,6 +158,7 @@ test.beforeAll("Seed bills", async ({ browser }, testInfo) => {
 		for (const index of [6, 7, 8]) {
 			await Actions.BillForm.fill(page, { description: `Dinner ${index}`, ...presetBills[index % 3] });
 			await Actions.submit(page);
+			await Assertions.assertToast(page, "Bill created successfully");
 		}
 
 		await Actions.logout(page);
@@ -142,6 +177,7 @@ test.beforeAll("Seed bills", async ({ browser }, testInfo) => {
 			]
 		});
 		await Actions.submit(page);
+		await Assertions.assertToast(page, "Bill created successfully");
 
 		await Actions.logout(page);
 	});
@@ -315,5 +351,5 @@ testBillsPage("Navigate with query", async ({ page, billsTableLocator }) => {
 testBillsPage("Balance", async ({ page }) => {
 	await Actions.goToHomePage(page);
 
-	await Assertions.assertStats(page, { Paid: "340", Owed: "120", "Net Balance": "220" });
+	await Assertions.assertStats(page, { Paid: "340.000", Owed: "120.000", "Net Balance": "220.000" });
 });
