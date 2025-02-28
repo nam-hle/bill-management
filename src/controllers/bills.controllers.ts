@@ -73,8 +73,8 @@ export namespace BillsControllers {
 		const params = {
 			page_size: limit,
 			page_number: page,
-			since_timestamp: sinceDate,
-			text_search: textSearch ?? null,
+			text_search: textSearch ?? undefined,
+			since_timestamp: sinceDate ?? undefined,
 
 			member,
 			debtor,

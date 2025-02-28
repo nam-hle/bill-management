@@ -56,6 +56,8 @@ export type Database = {
 					page_size: number;
 					creditor?: string;
 					page_number: number;
+					text_search?: string;
+					since_timestamp?: string;
 				};
 			};
 		};
@@ -146,10 +148,9 @@ export type Database = {
 					user_id: string;
 					created_at: string;
 					is_default: boolean;
-					provider_name: string;
 					account_holder: string;
 					account_number: string;
-					provider_number: number;
+					provider_number: string;
 					type: Database["public"]["Enums"]["BankAccountType"];
 					status: Database["public"]["Enums"]["BankAccountStatus"];
 				};
@@ -158,11 +159,10 @@ export type Database = {
 					user_id: string;
 					created_at?: string;
 					is_default?: boolean;
-					provider_name: string;
 					account_holder: string;
 					account_number: string;
-					provider_number: number;
-					type: Database["public"]["Enums"]["BankAccountType"];
+					provider_number: string;
+					type?: Database["public"]["Enums"]["BankAccountType"];
 					status?: Database["public"]["Enums"]["BankAccountStatus"];
 				};
 				Update: {
@@ -170,10 +170,9 @@ export type Database = {
 					user_id?: string;
 					created_at?: string;
 					is_default?: boolean;
-					provider_name?: string;
 					account_holder?: string;
 					account_number?: string;
-					provider_number?: number;
+					provider_number?: string;
 					type?: Database["public"]["Enums"]["BankAccountType"];
 					status?: Database["public"]["Enums"]["BankAccountStatus"];
 				};

@@ -31,7 +31,7 @@ export const BankAccountsTable: React.FC<BankAccountsTable.Props> = (props) => {
 				data={data}
 				title="Bank Accounts"
 				columns={[
-					{ key: "provider", label: "Provider", dataGetter: ({ row }) => row.providerName },
+					// { key: "provider", label: "Provider", dataGetter: ({ row }) => row.providerName },
 					{ key: "accountNumber", label: "Account number", dataGetter: ({ row }) => row.accountNumber },
 					{ key: "accountHolder", label: "Account holder", dataGetter: ({ row }) => row.accountHolder },
 					{

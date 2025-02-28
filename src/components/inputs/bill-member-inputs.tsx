@@ -9,9 +9,9 @@ import { Skeleton } from "@/components/shadcn/skeleton";
 import { FormItem, FormField, FormLabel, FormControl, FormMessage } from "@/components/shadcn/form";
 
 import { Select } from "@/components/inputs";
-import { type BillFormState } from "@/components/bill-form";
 import { RequiredLabel } from "@/components/required-label";
 import { SkeletonWrapper } from "@/components/skeleton-wrapper";
+import { type BillFormState } from "@/components/forms/bill-form";
 
 import { API } from "@/api";
 
