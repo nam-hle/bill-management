@@ -93,11 +93,11 @@ export const Frame = () => {
 					{/* Hover Highlight */}
 					<div
 						style={{ ...hoverStyle, opacity: hoveredIndex !== null ? 1 : 0 }}
-						className="absolute flex h-[30px] items-center rounded-[6px] bg-[#0e0f1114] transition-all duration-300 ease-out dark:bg-[#ffffff1a]"
+						className="absolute flex h-[30px] items-center rounded-[6px] bg-[#0e0f1114] transition-all duration-200 ease-out dark:bg-[#ffffff1a]"
 					/>
 
 					{/* Active Indicator */}
-					<div style={activeStyle} className="absolute bottom-[-2px] h-[2px] bg-[#0e0f11] transition-all duration-300 ease-out dark:bg-white" />
+					<div style={activeStyle} className="absolute bottom-[-2px] h-[2px] bg-[#0e0f11] transition-all duration-200 ease-out dark:bg-white" />
 
 					{/* Tabs */}
 					<div className="relative flex items-center space-x-[6px]">

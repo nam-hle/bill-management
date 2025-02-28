@@ -95,7 +95,7 @@ export const NotificationContainer = () => {
 					<CounterBadge count={unreadCount} />
 				</Button>
 			</PopoverTrigger>
-			<PopoverContent align="end" className="w-90 p-2">
+			<PopoverContent align="end" className="w-90 w-[400px] p-2">
 				{notifications.length === 0 ? (
 					<EmptyState title="You have no notifications" />
 				) : (
