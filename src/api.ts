@@ -11,7 +11,8 @@ import {
 	BankAccountSchema,
 	ClientTransactionSchema,
 	type ProfileFormPayload,
-	ClientNotificationSchema
+	ClientNotificationSchema,
+	type BankAccountCreatePayload
 } from "@/schemas";
 
 export namespace API {
@@ -242,12 +243,38 @@ export namespace API {
 		}
 	}
 
+	export namespace Banks {
+		export namespace List {
+			export const BankSchema = z.object({
+				providerName: z.string(),
+				providerNumber: z.string()
+			});
+
+			export const ResponseSchema = z.array(BankSchema);
+			export type Response = z.infer<typeof ResponseSchema>;
+
+			export async function query() {
+				const { data } = await axiosInstance<Response>("/banks");
+
+				return data;
+			}
+		}
+	}
+
 	export namespace Profile {
 		export namespace Update {
 			export async function mutate(payload: ProfileFormPayload): Promise<ProfileFormPayload> {
 				const { data } = await axiosInstance.post("/profile", payload);
 
 				return data;
+			}
+		}
+
+		export namespace Bank {
+			export namespace Create {
+				export async function mutate(payload: BankAccountCreatePayload): Promise<void> {
+					await axiosInstance.post("/profile/banks", payload);
+				}
 			}
 		}
 	}

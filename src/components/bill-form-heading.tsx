@@ -3,7 +3,7 @@ import React from "react";
 import { Skeleton } from "@/components/shadcn/skeleton";
 
 import { Heading } from "@/components/heading";
-import { type BillForm } from "@/components/bill-form";
+import { type BillForm } from "@/components/forms/bill-form";
 import { SkeletonWrapper } from "@/components/skeleton-wrapper";
 
 import type { ClientBill } from "@/schemas";

@@ -1,5 +1,5 @@
-import { type BankAccount } from "@/schemas";
 import { type SupabaseInstance } from "@/services/supabase/server";
+import { type BankAccount, type BankAccountCreatePayload } from "@/schemas";
 
 export namespace BankAccountsController {
 	const BANK_ACCOUNT_SELECT = `
@@ -8,12 +8,28 @@ export namespace BankAccountsController {
     userId:user_id,
     isDefault:is_default,
     providerNumber:provider_number,
-    providerName:provider_name,
     accountNumber:account_number,
     accountHolder:account_holder,
     type,
     status
   `;
+
+	export async function create(supabase: SupabaseInstance, userId: string, bankAccount: BankAccountCreatePayload): Promise<void> {
+		const { error } = await supabase
+			.from("bank_accounts")
+			.insert({
+				type: "Bank",
+				user_id: userId,
+				account_holder: bankAccount.accountHolder,
+				account_number: bankAccount.accountNumber,
+				provider_number: bankAccount.providerNumber
+			})
+			.select(BANK_ACCOUNT_SELECT);
+
+		if (error) {
+			throw error;
+		}
+	}
 
 	export async function getById(supabase: SupabaseInstance, id: string): Promise<BankAccount | null> {
 		const { data, error } = await supabase.from("bank_accounts").select(BANK_ACCOUNT_SELECT).eq("id", id).single();
