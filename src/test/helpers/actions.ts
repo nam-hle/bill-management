@@ -1,9 +1,8 @@
 import { expect, type Page } from "@playwright/test";
 
 import { test } from "@/test/setup";
+import { Assertions } from "@/test/helpers/assertions";
 import { type BillMember, DEFAULT_PASSWORD } from "@/test/utils";
-
-import { Assertions } from "./assertions";
 
 export namespace Actions {
 	export async function goToSignUpPage(page: Page) {

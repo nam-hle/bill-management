@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import "./globals.css";
 
 import React from "react";
@@ -8,8 +9,8 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Application } from "@/components/application";
 import { ThemeProvider } from "@/components/theme-provider";
 
+import { TrpcProvider } from "@/services";
 import { UsersControllers } from "@/controllers";
-import { ReactQueryClientProvider } from "@/services";
 import { createSupabaseServer } from "@/services/supabase/server";
 
 const interSans = Inter({
@@ -39,7 +40,7 @@ export default async function RootLayout({
 	const userInfo = user ? UsersControllers.getUserInfo(supabase, user.id) : undefined;
 
 	return (
-		<ReactQueryClientProvider>
+		<TrpcProvider>
 			<html lang="en" suppressHydrationWarning>
 				<body suppressHydrationWarning className={interSans.variable}>
 					<ThemeProvider enableSystem attribute="class" defaultTheme="system" disableTransitionOnChange>
@@ -48,6 +49,6 @@ export default async function RootLayout({
 					<ReactQueryDevtools initialIsOpen={false} />
 				</body>
 			</html>
-		</ReactQueryClientProvider>
+		</TrpcProvider>
 	);
 }

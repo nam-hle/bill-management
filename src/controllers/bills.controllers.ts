@@ -49,7 +49,7 @@ export namespace BillsControllers {
 		return data;
 	}
 
-	export interface GetManyByMemberIdPayload extends Omit<API.Bills.List.SearchParams, "debtor" | "creator" | "creditor"> {
+	export interface GetManyByMemberIdPayload extends Omit<API.Bills.List.Payload, "debtor" | "creator" | "creditor"> {
 		readonly limit: number;
 		readonly member: string;
 		readonly debtor?: string;

@@ -1,10 +1,9 @@
 import React from "react";
 import { useRouter } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/shadcn/button";
 
-import { API } from "@/api";
+import { trpc } from "@/services";
 import { useToast } from "@/hooks/use-toast";
 import { capitalize, convertVerb } from "@/utils";
 import { type ClientTransaction, TransactionStatusEnumSchema } from "@/schemas";
@@ -18,27 +17,24 @@ namespace TransactionAction {
 
 export const TransactionAction: React.FC<TransactionAction.Props> = ({ transaction, currentUserId }) => {
 	const router = useRouter();
-	const queryClient = useQueryClient();
+	const utils = trpc.useUtils();
 
 	const { toast } = useToast();
-	const mutation = useMutation({
-		mutationFn: API.Transactions.Update.mutate,
-		onError: (_, { action }) => {
+	const mutation = trpc.transactions.update.useMutation({
+		onError: (_, { status }) => {
 			toast({
-				title: "Error",
 				variant: "destructive",
-				description: `An error occurred while ${convertVerb(action).vIng} the transaction`
+				title: `Transaction ${capitalize(convertVerb(status).pastTense)}`,
+				description: `An error occurred while ${convertVerb(status).vIng} the transaction`
 			});
 		},
-		onSuccess: (_, { action }) => {
+		onSuccess: (_, { status }) => {
 			toast({
-				// type: "success",
-				title: `Transaction ${capitalize(convertVerb(action).pastTense)}`,
-				description: `The transaction has been ${convertVerb(action).pastTense} successfully`
+				title: `Transaction ${capitalize(convertVerb(status).pastTense)}`,
+				description: `The transaction has been ${convertVerb(status).pastTense} successfully`
 			});
-			queryClient.invalidateQueries({ queryKey: ["transactions"] }).then(() => {
-				router.refresh();
-			});
+
+			utils.transactions.get.invalidate().then(() => router.refresh());
 		}
 	});
 
@@ -48,7 +44,7 @@ export const TransactionAction: React.FC<TransactionAction.Props> = ({ transacti
 				size="sm"
 				onClick={(event) => {
 					event.stopPropagation();
-					mutation.mutate({ action: "confirm", transactionId: transaction.id });
+					mutation.mutate({ status: "Confirmed", transactionId: transaction.id });
 				}}>
 				Confirm
 			</Button>
@@ -62,7 +58,7 @@ export const TransactionAction: React.FC<TransactionAction.Props> = ({ transacti
 				variant="destructive"
 				onClick={(event) => {
 					event.stopPropagation();
-					mutation.mutate({ action: "decline", transactionId: transaction.id });
+					mutation.mutate({ status: "Declined", transactionId: transaction.id });
 				}}>
 				Decline
 			</Button>

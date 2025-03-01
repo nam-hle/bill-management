@@ -1,14 +1,15 @@
 "use client";
 
 import React from "react";
-import { Check } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+import { Plus, Check } from "lucide-react";
 
 import { Badge } from "@/components/shadcn/badge";
+import { Button } from "@/components/shadcn/button";
 
 import { DataTable } from "@/components/data-table/data-table";
 
-import { API } from "@/api";
+import { trpc } from "@/services";
 import { BankAccountStatusEnumSchema } from "@/schemas";
 
 namespace BankAccountsTable {
@@ -20,16 +21,20 @@ namespace BankAccountsTable {
 export const BankAccountsTable: React.FC<BankAccountsTable.Props> = (props) => {
 	const { currentUserId } = props;
 
-	const { data } = useQuery({
-		queryKey: ["bank-accounts", currentUserId],
-		queryFn: () => API.BankAccounts.List.query({ userId: currentUserId })
-	});
+	const { data } = trpc.profile.getBankAccounts.useQuery({ userId: currentUserId });
 
 	return (
 		<div className="mx-auto mt-6 flex w-[60%] flex-col gap-4">
 			<DataTable
 				data={data}
 				title="Bank Accounts"
+				action={
+					<Button asChild size="sm">
+						<Link href="/profile/banks/new">
+							<Plus /> New
+						</Link>
+					</Button>
+				}
 				columns={[
 					// { key: "provider", label: "Provider", dataGetter: ({ row }) => row.providerName },
 					{ key: "accountNumber", label: "Account number", dataGetter: ({ row }) => row.accountNumber },

@@ -1,2 +1,1 @@
-export * from "./axios";
-export * from "./react-query";
+export { trpc, TrpcProvider } from "@/services/trpc/client";

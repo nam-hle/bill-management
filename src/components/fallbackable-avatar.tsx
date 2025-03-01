@@ -2,8 +2,8 @@ import React from "react";
 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/shadcn/avatar";
 
-import { API } from "@/api";
 import { cn } from "@/utils/cn";
+import { trpc } from "@/services";
 import { type TestId, type ClassName } from "@/types";
 import { getAvatarFallback } from "@/utils/avatar-fallback";
 
@@ -16,11 +16,11 @@ export namespace FallbackAvatar {
 
 export const FallbackAvatar: React.FC<FallbackAvatar.Props> = (props) => {
 	const { avatar, fullName, className } = props;
-	const avatarFallback = API.Storage.useFileQuery("avatars", avatar ?? undefined);
+	const { data } = trpc.storage.get.useQuery({ bucketName: "avatars", fileName: avatar || "" }, { enabled: !!avatar });
 
 	return (
 		<Avatar data-testid={props["data-testid"]} className={cn("h-10 w-10", className)}>
-			<AvatarImage alt={fullName} title={fullName} src={avatarFallback.data} />
+			<AvatarImage src={data} alt={fullName} title={fullName} />
 			<AvatarFallback title={fullName} data-testid="avatar-fallback">
 				{getAvatarFallback(fullName)}
 			</AvatarFallback>

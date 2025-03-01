@@ -1,16 +1,12 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
 
 import { Heading } from "@/components/heading";
 import { BillCard } from "@/components/bill-card";
 
-import { API } from "@/api";
+import { trpc } from "@/services";
 
 export function BillCardsList({ currentUserId }: { currentUserId: string }) {
-	const { data } = useQuery({
-		queryKey: ["bills"],
-		queryFn: () => API.Bills.List.query({ page: 1 })
-	});
+	const { data } = trpc.bills.getMany.useQuery({ page: 1 });
 
 	return (
 		<div className="col-span-2 space-y-4" data-testid="card-list-container">

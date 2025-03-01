@@ -8,7 +8,6 @@ import { DevTool } from "@hookform/devtools";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Ban, Plus, Check, Pencil } from "lucide-react";
 import { useForm, useFieldArray } from "react-hook-form";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Input } from "@/components/shadcn/input";
 import { Button } from "@/components/shadcn/button";
@@ -23,6 +22,7 @@ import { SkeletonWrapper } from "@/components/skeleton-wrapper";
 import { BillFormHeading } from "@/components/bill-form-heading";
 
 import { API } from "@/api";
+import { trpc } from "@/services";
 import { useBoolean } from "@/hooks";
 import { useToast } from "@/hooks/use-toast";
 import { CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
@@ -119,11 +119,10 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 	const createBill = useCreateBill();
 	const updateBill = useUpdateBill(endEditing);
 
-	const { data: bill, isPending: loadingBill } = useQuery<ClientBill>({
-		queryKey: ["bill", kind],
-		enabled: kind.type === "update",
-		queryFn: () => API.Bills.Get.query({ billId: kind.type === "update" ? kind.billId : "" })
-	});
+	const { data: bill, isPending: loadingBill } = trpc.bills.get.useQuery<ClientBill>(
+		{ id: kind.type === "update" ? kind.billId : "" },
+		{ enabled: kind.type === "update" }
+	);
 
 	const loading = React.useMemo(() => kind.type === "update" && loadingBill, [kind.type, loadingBill]);
 
@@ -144,16 +143,16 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 			const bill = BillFormStateTransformer.toServer(data);
 
 			if (kind.type === "create") {
-				createBill({ bill });
+				createBill(bill);
 			} else if (kind.type === "update") {
-				updateBill({ bill, id: kind.billId });
+				updateBill({ ...bill, id: kind.billId });
 			} else {
 				throw new Error("Invalid form type");
 			}
 		});
 	}, [createBill, handleSubmit, kind, updateBill]);
 
-	const { isPending: isPendingUsers } = useQuery({ queryKey: ["users"], queryFn: API.Users.List.query });
+	const { isPending: isPendingUsers } = trpc.users.get.useQuery();
 
 	return (
 		<Form {...form}>
@@ -280,12 +279,11 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 };
 
 function useCreateBill() {
-	const queryClient = useQueryClient();
-	const router = useRouter();
-
 	const { toast } = useToast();
-	const { mutate } = useMutation({
-		mutationFn: API.Bills.Create.mutate,
+	const router = useRouter();
+	const utils = trpc.useUtils();
+
+	const { mutate } = trpc.bills.create.useMutation({
 		onError: () => {
 			toast({
 				variant: "destructive",
@@ -299,7 +297,7 @@ function useCreateBill() {
 				description: "A new bill has been created and saved successfully."
 			});
 
-			queryClient.invalidateQueries({ queryKey: ["bills"] }).then(() => router.push("/bills"));
+			utils.bills.get.invalidate().then(() => router.push("/bills"));
 		}
 	});
 
@@ -307,11 +305,10 @@ function useCreateBill() {
 }
 
 function useUpdateBill(onSuccess: () => void) {
-	const queryClient = useQueryClient();
+	const utils = trpc.useUtils();
 
 	const { toast } = useToast();
-	const { mutate } = useMutation({
-		mutationFn: API.Bills.Update.mutate,
+	const { mutate } = trpc.bills.update.useMutation({
 		onError: () => {
 			toast({
 				variant: "destructive",
@@ -325,7 +322,7 @@ function useUpdateBill(onSuccess: () => void) {
 				description: "The bill details have been updated successfully."
 			});
 
-			queryClient.invalidateQueries({ queryKey: ["bills"] }).then(onSuccess);
+			utils.bills.get.invalidate().then(onSuccess);
 		}
 	});
 

@@ -3,37 +3,34 @@
 import * as React from "react";
 import { useDropzone } from "react-dropzone";
 import { Trash2, UploadCloud } from "lucide-react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
 import { Button } from "@/components/shadcn/button";
 import { Skeleton } from "@/components/shadcn/skeleton";
 
 import { Show } from "@/components/show";
 
-import { API } from "@/api";
 import { cn } from "@/utils/cn";
+import { trpc } from "@/services";
 import { generateUid } from "@/utils";
-import { type BucketName } from "@/types";
+import { type BucketName } from "@/schemas";
 import { useToast } from "@/hooks/use-toast";
 import { createSupabaseClient } from "@/services/supabase/client";
 
-interface FileUploadProps {
-	fileId?: string;
-	ownerId?: string;
-	editing?: boolean;
-	loading?: boolean;
-	bucketName: BucketName;
-	buttonSize: "md" | "sm";
-	onChange: (fileId: string | null) => void;
-	imageRenderer: (src: string) => React.ReactNode;
+namespace FileUpload {
+	export interface Props {
+		readonly fileId?: string;
+		readonly ownerId?: string;
+		readonly editing?: boolean;
+		readonly loading?: boolean;
+		readonly bucketName: BucketName;
+		readonly buttonSize: "md" | "sm";
+		onChange: (fileId: string | null) => void;
+		imageRenderer: (src: string) => React.ReactNode;
+	}
 }
-
-export const FileUpload = ({ fileId, loading, ownerId, editing, onChange, buttonSize, bucketName, imageRenderer }: FileUploadProps) => {
-	const { data: url, isLoading: loadingImage } = useQuery({
-		enabled: !!fileId,
-		queryKey: [bucketName, fileId],
-		queryFn: () => API.Storage.downloadFile(bucketName, fileId)
-	});
+export const FileUpload = ({ fileId, loading, ownerId, editing, onChange, buttonSize, bucketName, imageRenderer }: FileUpload.Props) => {
+	const { data: url, isLoading: loadingImage } = trpc.storage.get.useQuery({ bucketName, fileName: fileId || "" }, { enabled: !!fileId });
 	const [, setPreviewUrl] = React.useState<string | null>(null);
 
 	const { uploadFile } = useFileUploader(onChange);

@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type React from "react";
 
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
@@ -40,18 +41,18 @@ export namespace Pagination {
 	}
 }
 
-export interface Balance {
-	readonly net: number;
-	readonly owed: number;
-	readonly paid: number;
-	readonly sent: number;
-	readonly received: number;
-}
+export const BalanceSchema = z.object({
+	net: z.number(),
+	owed: z.number(),
+	paid: z.number(),
+	sent: z.number(),
+	received: z.number()
+});
+
+export type Balance = z.infer<typeof BalanceSchema>;
 
 export interface UserInfo {
 	readonly email: string;
 	readonly fullName: string;
 	readonly avatarUrl?: string;
 }
-
-export type BucketName = "avatars" | "receipts";

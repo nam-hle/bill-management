@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Frown, InfoIcon, PiggyBank, CreditCard, ArrowUpRight, ArrowDownLeft, type LucideIcon } from "lucide-react";
 
 import { Skeleton } from "@/components/shadcn/skeleton";
@@ -11,36 +10,26 @@ import { Show } from "@/components/show";
 import { Heading } from "@/components/heading";
 
 import { cn } from "@/utils/cn";
-import type { Balance } from "@/types";
-import { axiosInstance } from "@/services";
+import { trpc } from "@/services";
 import { formatCurrency } from "@/utils/format";
 
 export function FinancialSummary() {
-	const { data } = useQuery<{ data: Balance }>({
-		queryKey: ["balance-report"],
-		queryFn: () => axiosInstance.get("/profile/balance")
-	});
+	const { data } = trpc.profile.getBalance.useQuery();
 
 	return (
 		<div className="col-span-2 flex flex-col gap-4">
 			<Heading>Summary</Heading>
 			<StatText
 				Icon={PiggyBank}
+				amount={data?.net}
 				label="Net Balance"
-				amount={data?.data.net}
 				description="Your current balance"
-				color={(data?.data.net ?? 0) >= 0 ? "text-green-600" : "text-red-600"}
+				color={(data?.net ?? 0) >= 0 ? "text-green-600" : "text-red-600"}
 			/>
-			<StatText label="Owed" Icon={Frown} color="text-red-600" amount={data?.data.owed} description="Amount you owe to others" />
-			<StatText label="Paid" Icon={CreditCard} color="text-green-600" amount={data?.data.paid} description="Amount you paid for bills" />
-			<StatText label="Sent" Icon={ArrowUpRight} color="text-red-600" amount={data?.data.sent} description="Amount sent in transactions" />
-			<StatText
-				label="Received"
-				Icon={ArrowDownLeft}
-				color="text-green-600"
-				amount={data?.data.received}
-				description="Amount received in transactions"
-			/>
+			<StatText label="Owed" Icon={Frown} amount={data?.owed} color="text-red-600" description="Amount you owe to others" />
+			<StatText label="Paid" Icon={CreditCard} amount={data?.paid} color="text-green-600" description="Amount you paid for bills" />
+			<StatText label="Sent" Icon={ArrowUpRight} amount={data?.sent} color="text-red-600" description="Amount sent in transactions" />
+			<StatText label="Received" Icon={ArrowDownLeft} color="text-green-600" amount={data?.received} description="Amount received in transactions" />
 		</div>
 	);
 }
