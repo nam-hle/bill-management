@@ -3,7 +3,6 @@
 import React from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/shadcn/button";
 
@@ -12,7 +11,7 @@ import { DataTable } from "@/components/data-table/data-table";
 import { TransactionAction } from "@/components/transaction-action";
 import { TransactionStatusBadge } from "@/components/transaction-status-badge";
 
-import { API } from "@/api";
+import { trpc } from "@/services";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
 import { displayDate, displayDateAsTitle } from "@/utils";
 
@@ -29,13 +28,9 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 
 	const [filters, setFilters] = React.useState<"toMe" | "byMe" | undefined>(undefined);
 
-	const { data, isPending } = useQuery({
-		queryKey: ["transactions", page, currentUserId, filters],
-		queryFn: () =>
-			API.Transactions.List.query(
-				filters === "toMe" ? { page, receiverId: currentUserId } : filters === "byMe" ? { page, senderId: currentUserId } : { page }
-			)
-	});
+	const { data, isPending } = trpc.transactions.get.useQuery(
+		filters === "toMe" ? { page, receiverId: currentUserId } : filters === "byMe" ? { page, senderId: currentUserId } : { page }
+	);
 
 	const createOwnerFilter = React.useCallback(
 		(filterKey: "toMe" | "byMe") => {

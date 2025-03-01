@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/shadcn/button";
 import { Skeleton } from "@/components/shadcn/skeleton";
@@ -9,9 +8,9 @@ import { Skeleton } from "@/components/shadcn/skeleton";
 import { Heading } from "@/components/heading";
 import { NotificationMessage } from "@/components/notification-message";
 
-import { API } from "@/api";
 import { noop } from "@/utils";
 import { cn } from "@/utils/cn";
+import { trpc } from "@/services";
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
 
 namespace TransactionsTable {
@@ -22,10 +21,7 @@ export const NotificationsTable: React.FC<TransactionsTable.Props> = () => {
 	const [page, setPage] = React.useState(DEFAULT_PAGE_NUMBER);
 	const isFirstPage = React.useMemo(() => page === DEFAULT_PAGE_NUMBER, [page]);
 
-	const { data, isPending } = useQuery({
-		queryKey: ["notifications", "list", page],
-		queryFn: () => API.Notifications.List.query({ page })
-	});
+	const { data, isPending } = trpc.notifications.getQuery.useQuery({ page });
 
 	const maxPage = React.useMemo(() => (data?.fullSize ? Math.ceil(data?.fullSize / DEFAULT_PAGE_SIZE) : 1), [data?.fullSize]);
 

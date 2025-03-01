@@ -1,17 +1,20 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import React from "react";
 
 import { Heading } from "@/components/heading";
 import { TransactionCard } from "@/components/transaction-card";
 
-import { API } from "@/api";
+import { trpc } from "@/services/trpc/client";
 
-export function TransactionCardList({ currentUserId }: { currentUserId: string }) {
-	const { data } = useQuery({
-		queryKey: ["transactions"],
-		queryFn: () => API.Transactions.List.query({ page: 1 })
-	});
+namespace TransactionCardList {
+	export interface Props {
+		readonly currentUserId: string;
+	}
+}
+
+export const TransactionCardList: React.FC<TransactionCardList.Props> = ({ currentUserId }) => {
+	const { data } = trpc.transactions.get.useQuery({ page: 1 });
 
 	return (
 		<div className="col-span-2 flex-1 space-y-4">
@@ -21,4 +24,4 @@ export function TransactionCardList({ currentUserId }: { currentUserId: string }
 			</div>
 		</div>
 	);
-}
+};

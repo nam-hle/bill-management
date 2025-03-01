@@ -1,7 +1,7 @@
 import { type API } from "@/api";
 import { Pagination } from "@/types";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
-import { type TransactionStatus, type ClientTransaction } from "@/schemas";
+import { type ClientTransaction } from "@/schemas";
 import { getCurrentUser, type SupabaseInstance } from "@/services/supabase/server";
 import { UsersControllers, BankAccountsController, NotificationsControllers } from "@/controllers";
 
@@ -145,14 +145,9 @@ export namespace TransactionsControllers {
 		};
 	}
 
-	export interface UpdatePayload {
-		readonly id: string;
-		readonly status: Exclude<TransactionStatus, "Waiting">;
-	}
-
-	export async function update(supabase: SupabaseInstance, payload: UpdatePayload) {
-		const { id, status } = payload;
-		const { data, error } = await supabase.from("transactions").update({ status }).eq("id", id).select(TRANSACTIONS_SELECT).single();
+	export async function update(supabase: SupabaseInstance, payload: API.Transactions.Update.Payload) {
+		const { status, transactionId } = payload;
+		const { data, error } = await supabase.from("transactions").update({ status }).eq("id", transactionId).select(TRANSACTIONS_SELECT).single();
 
 		if (error) {
 			throw error;
@@ -161,14 +156,14 @@ export namespace TransactionsControllers {
 		if (status === "Confirmed") {
 			await NotificationsControllers.createTransaction(supabase, {
 				status,
-				transactionId: id,
+				transactionId,
 				userId: data.sender.userId,
 				triggerId: data.receiver.userId
 			});
 		} else if (status === "Declined") {
 			await NotificationsControllers.createTransaction(supabase, {
 				status,
-				transactionId: id,
+				transactionId,
 				userId: data.receiver.userId,
 				triggerId: data.sender.userId
 			});

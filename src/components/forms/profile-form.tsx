@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
 
 import { Input } from "@/components/shadcn/input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/shadcn/avatar";
@@ -12,7 +11,7 @@ import { FileUpload } from "@/components/file-upload";
 import { RequiredLabel } from "@/components/required-label";
 import { LoadingButton } from "@/components/loading-button";
 
-import { API } from "@/api";
+import { trpc } from "@/services";
 import { useToast } from "@/hooks/use-toast";
 import { type ProfileFormPayload } from "@/schemas";
 import { getAvatarFallback } from "@/utils/avatar-fallback";
@@ -39,8 +38,7 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 	} = form;
 
 	const { toast } = useToast();
-	const { mutate, isPending } = useMutation({
-		mutationFn: API.Profile.Update.mutate,
+	const { mutate, isPending } = trpc.profile.update.useMutation({
 		onSuccess: (data) => {
 			reset(data);
 			toast({ title: "Profile updated", description: "Your profile has been updated successfully." });

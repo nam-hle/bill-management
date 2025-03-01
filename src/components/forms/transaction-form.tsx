@@ -7,7 +7,7 @@ import { parse, format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { Input } from "@/components/shadcn/input";
 import { Button } from "@/components/shadcn/button";
@@ -20,6 +20,7 @@ import { TransactionAction } from "@/components/transaction-action";
 import { TransactionStatusBadge } from "@/components/transaction-status-badge";
 
 import { API } from "@/api";
+import { trpc } from "@/services";
 import { useToast } from "@/hooks/use-toast";
 import { CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
 import { type ClientUser, type ClientTransaction } from "@/schemas";
@@ -40,7 +41,7 @@ namespace TransactionForm {
 	}
 }
 
-const FormStateSchema = API.Transactions.Create.BodySchema.omit({ amount: true, issuedAt: true }).extend({
+const FormStateSchema = API.Transactions.Create.PayloadSchema.omit({ amount: true, issuedAt: true }).extend({
 	issuedAt: IssuedAtField,
 	amount: RequiredAmountFieldSchema("Amount is required")
 });
@@ -76,8 +77,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 
 	const queryClient = useQueryClient();
 
-	const { mutate } = useMutation({
-		mutationFn: API.Transactions.Create.mutation,
+	const { mutate } = trpc.transactions.create.useMutation({
 		onError: () => {
 			toast({
 				variant: "destructive",

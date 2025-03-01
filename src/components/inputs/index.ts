@@ -1,2 +1,2 @@
-export * from "./select";
-export * from "./bill-member-inputs";
+export * from "@/components/inputs/select";
+export * from "@/components/inputs/bill-member-inputs";

@@ -1,7 +1,6 @@
 import React from "react";
 import Link from "next/link";
 import { Bell } from "lucide-react";
-import { useQuery, useMutation } from "@tanstack/react-query";
 
 import { Button } from "@/components/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
@@ -10,24 +9,23 @@ import { EmptyState } from "@/components/empty-state";
 import { CounterBadge } from "@/components/counter-badge";
 import { NotificationMessage } from "@/components/notification-message";
 
-import { API } from "@/api";
+import { type API } from "@/api";
+import { trpc } from "@/services";
 import { type ClientNotification } from "@/schemas";
 
 export const NotificationContainer = () => {
 	const [unreadCount, setUnreadCount] = React.useState(0);
 	const [notifications, setNotifications] = React.useState<ClientNotification[]>([]);
 	const [hasOlder, setHasOlder] = React.useState(true);
-	const [initialized, setInitialize] = React.useState(false);
+	const [_initialized, setInitialize] = React.useState(false);
 
-	const { mutate: readAll } = useMutation({
-		mutationFn: API.Notifications.ReadAll.mutate,
+	const { mutate: readAll } = trpc.notifications.readAll.useMutation({
 		onSuccess() {
 			setUnreadCount(0);
 			setNotifications((prev) => prev.map((notification) => ({ ...notification, readStatus: true })));
 		}
 	});
-	const { mutate: read } = useMutation({
-		mutationFn: API.Notifications.ReadSingle.mutate,
+	const { mutate: read } = trpc.notifications.read.useMutation({
 		onSuccess({ unreadCount }, { notificationId }) {
 			setUnreadCount(() => unreadCount);
 			setNotifications((prev) =>
@@ -44,7 +42,7 @@ export const NotificationContainer = () => {
 		});
 	}, []);
 
-	const { oldestTimestamp, latestTimestamp } = React.useMemo(() => {
+	const { oldestTimestamp } = React.useMemo(() => {
 		if (notifications.length === 0) {
 			return { oldestTimestamp: undefined, latestTimestamp: undefined };
 		}
@@ -52,21 +50,19 @@ export const NotificationContainer = () => {
 		return { latestTimestamp: notifications[0].createdAt, oldestTimestamp: notifications[notifications.length - 1].createdAt };
 	}, [notifications]);
 
-	const { data: initialData } = useQuery<API.Notifications.List.Response>({
-		queryKey: ["notifications"],
-		queryFn: () => API.Notifications.List.query({})
-	});
+	const { data: initialData } = trpc.notifications.getQuery.useQuery({});
 
-	const { data: fetchData } = useQuery({
-		enabled: initialized,
-		refetchOnMount: false,
-		refetchInterval: 10000,
-		queryKey: ["notifications", "refetch", latestTimestamp],
-		queryFn: () => API.Notifications.List.query({ after: latestTimestamp })
-	});
+	// const { data: fetchData } = trpc.notifications.get.useMutation(
+	// 	{ after: latestTimestamp },
+	// 	{
+	// 		enabled: initialized,
+	// 		refetchOnMount: false,
+	// 		refetchInterval: 10000,
+	// 		queryKey: ["notifications", "refetch", latestTimestamp]
+	// 	}
+	// );
 
-	const { mutate: loadMore, isPending: isLoadingOlderNotifications } = useMutation({
-		mutationFn: API.Notifications.List.query,
+	const { mutate: loadMore, isPending: isLoadingOlderNotifications } = trpc.notifications.getMutation.useMutation({
 		onSuccess: (olderData) => {
 			updateNotifications("append", olderData);
 		}
@@ -79,11 +75,11 @@ export const NotificationContainer = () => {
 		}
 	}, [initialData, updateNotifications]);
 
-	React.useEffect(() => {
-		if (fetchData) {
-			updateNotifications("prepend", fetchData);
-		}
-	}, [fetchData, initialData, updateNotifications]);
+	// React.useEffect(() => {
+	// 	if (fetchData) {
+	// 		updateNotifications("prepend", fetchData);
+	// 	}
+	// }, [fetchData, initialData, updateNotifications]);
 
 	const [open, setOpen] = React.useState(false);
 

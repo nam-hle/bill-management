@@ -54,6 +54,7 @@ const eslintConfig = [
 			"unusedImports/no-unused-imports": "error",
 			"@typescript-eslint/no-explicit-any": "warn",
 			"@typescript-eslint/no-empty-object-type": "off",
+			"no-restricted-imports": ["error", { patterns: ["./**", "../**"] }],
 			"@typescript-eslint/consistent-type-imports": ["error", { prefer: "type-imports", fixStyle: "inline-type-imports" }],
 			"@typescript-eslint/no-unused-vars": [
 				"error",

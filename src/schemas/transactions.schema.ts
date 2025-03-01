@@ -1,8 +1,7 @@
 import { z } from "zod";
 
 import type { Database } from "@/database.types";
-
-import { ClientUserSchema } from "./user.schema";
+import { ClientUserSchema } from "@/schemas/user.schema";
 
 export const TransactionStatusEnumSchema = z.enum([
 	"Waiting",

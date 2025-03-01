@@ -42,7 +42,7 @@ export namespace NotificationsControllers {
 	export async function getByUserId(
 		supabase: SupabaseInstance,
 		userId: string,
-		payload: API.Notifications.List.SearchParams
+		payload: API.Notifications.List.Payload
 	): Promise<API.Notifications.List.Response> {
 		let query = supabase.from("notifications").select(NOTIFICATIONS_SELECT).eq("user_id", userId).order("created_at", { ascending: false });
 		const before = "page" in payload ? undefined : payload.before;

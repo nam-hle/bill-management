@@ -4,7 +4,6 @@ import * as z from "zod";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery, useMutation } from "@tanstack/react-query";
 
 import { Input } from "@/components/shadcn/input";
 import { Button } from "@/components/shadcn/button";
@@ -12,7 +11,7 @@ import { Card, CardTitle, CardHeader, CardContent } from "@/components/shadcn/ca
 import { Form, FormItem, FormField, FormLabel, FormControl, FormMessage } from "@/components/shadcn/form";
 import { Select, SelectItem, SelectValue, SelectContent, SelectTrigger } from "@/components/shadcn/select";
 
-import { API } from "@/api";
+import { trpc } from "@/services";
 import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
@@ -38,14 +37,10 @@ export const BankAccountForm = () => {
 		formState: { errors }
 	} = form;
 
-	const { data: banks = [] } = useQuery({
-		queryKey: ["banks"],
-		queryFn: API.Banks.List.query
-	});
+	const { data: banks = [] } = trpc.banks.get.useQuery();
 
 	const { toast } = useToast();
-	const { mutate } = useMutation({
-		mutationFn: API.Profile.Bank.Create.mutate,
+	const { mutate } = trpc.profile.createBankAccount.useMutation({
 		onSuccess: () => {
 			toast({ title: "Bank account added" });
 		},

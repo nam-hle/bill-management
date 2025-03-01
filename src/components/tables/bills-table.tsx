@@ -2,21 +2,21 @@
 
 import _ from "lodash";
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@uidotdev/usehooks";
 import { useRouter, useSearchParams, type ReadonlyURLSearchParams } from "next/navigation";
+
+import { Input } from "@/components/shadcn/input";
 
 import { FilterButton } from "@/components/filter-button";
 import { DataTable } from "@/components/data-table/data-table";
 import { FallbackAvatar } from "@/components/fallbackable-avatar";
 
 import { API } from "@/api";
+import { trpc } from "@/services";
 import { formatCurrency } from "@/utils/format";
 import { type ClientBillMember } from "@/schemas";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
 import { formatTime, formatDistanceTime } from "@/utils";
-
-import { Input } from "../shadcn/input";
 
 namespace BillsTable {
 	export interface Props {
@@ -25,10 +25,10 @@ namespace BillsTable {
 	}
 }
 
-type Filters = API.Bills.List.SearchParams;
+type Filters = API.Bills.List.Payload;
 
 function toFilters(searchParams: ReadonlyURLSearchParams): Filters {
-	return API.Bills.List.SearchParamsSchema.parse(Object.fromEntries(searchParams.entries()));
+	return API.Bills.List.PayloadSchema.parse(Object.fromEntries(searchParams.entries()));
 }
 
 function toSearchParams(filters: Filters) {
@@ -99,10 +99,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 	);
 
 	const query = useDebounce({ ...filters, q: filters.q || undefined }, 500);
-	const { data, isPending } = useQuery({
-		queryKey: ["bills", query],
-		queryFn: () => API.Bills.List.query(query)
-	});
+	const { data, isPending } = trpc.bills.getMany.useQuery(query);
 
 	return (
 		<DataTable

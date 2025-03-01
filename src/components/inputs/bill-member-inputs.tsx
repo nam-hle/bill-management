@@ -1,6 +1,5 @@
 import React from "react";
 import { Trash2 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import { useFormContext } from "react-hook-form";
 
 import { Input } from "@/components/shadcn/input";
@@ -13,7 +12,7 @@ import { RequiredLabel } from "@/components/required-label";
 import { SkeletonWrapper } from "@/components/skeleton-wrapper";
 import { type BillFormState } from "@/components/forms/bill-form";
 
-import { API } from "@/api";
+import { trpc } from "@/services";
 
 namespace BillMemberInputs {
 	export interface Props {
@@ -28,7 +27,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 	const { member, editing, onRemove } = props;
 	const { watch, control, register, getValues } = useFormContext<BillFormState>();
 
-	const { isSuccess, data: usersResponse, isPending: isPendingUsers } = useQuery({ queryKey: ["users"], queryFn: API.Users.List.query });
+	const { isSuccess, data: usersResponse, isPending: isPendingUsers } = trpc.users.get.useQuery();
 
 	const fieldKey = React.useMemo(() => {
 		if (member.type === "creditor") {
