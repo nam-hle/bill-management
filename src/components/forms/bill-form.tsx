@@ -6,7 +6,6 @@ import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { DevTool } from "@hookform/devtools";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQueryClient } from "@tanstack/react-query";
 import { Ban, Plus, Check, Pencil } from "lucide-react";
 import { useForm, useFieldArray } from "react-hook-form";
 
@@ -280,10 +279,10 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 };
 
 function useCreateBill() {
-	const queryClient = useQueryClient();
-	const router = useRouter();
-
 	const { toast } = useToast();
+	const router = useRouter();
+	const utils = trpc.useUtils();
+
 	const { mutate } = trpc.bills.create.useMutation({
 		onError: () => {
 			toast({
@@ -298,7 +297,7 @@ function useCreateBill() {
 				description: "A new bill has been created and saved successfully."
 			});
 
-			queryClient.invalidateQueries({ queryKey: ["bills"] }).then(() => router.push("/bills"));
+			utils.bills.get.invalidate().then(() => router.push("/bills"));
 		}
 	});
 
@@ -306,7 +305,7 @@ function useCreateBill() {
 }
 
 function useUpdateBill(onSuccess: () => void) {
-	const queryClient = useQueryClient();
+	const utils = trpc.useUtils();
 
 	const { toast } = useToast();
 	const { mutate } = trpc.bills.update.useMutation({
@@ -323,7 +322,7 @@ function useUpdateBill(onSuccess: () => void) {
 				description: "The bill details have been updated successfully."
 			});
 
-			queryClient.invalidateQueries({ queryKey: ["bills"] }).then(onSuccess);
+			utils.bills.get.invalidate().then(onSuccess);
 		}
 	});
 

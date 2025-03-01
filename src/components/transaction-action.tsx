@@ -1,6 +1,5 @@
 import React from "react";
 import { useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/shadcn/button";
 
@@ -18,7 +17,7 @@ namespace TransactionAction {
 
 export const TransactionAction: React.FC<TransactionAction.Props> = ({ transaction, currentUserId }) => {
 	const router = useRouter();
-	const queryClient = useQueryClient();
+	const utils = trpc.useUtils();
 
 	const { toast } = useToast();
 	const mutation = trpc.transactions.update.useMutation({
@@ -34,9 +33,8 @@ export const TransactionAction: React.FC<TransactionAction.Props> = ({ transacti
 				title: `Transaction ${capitalize(convertVerb(status).pastTense)}`,
 				description: `The transaction has been ${convertVerb(status).pastTense} successfully`
 			});
-			queryClient.invalidateQueries({ queryKey: ["transactions"] }).then(() => {
-				router.refresh();
-			});
+
+			utils.transactions.get.invalidate().then(() => router.refresh());
 		}
 	});
 

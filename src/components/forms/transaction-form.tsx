@@ -7,7 +7,6 @@ import { parse, format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQueryClient } from "@tanstack/react-query";
 
 import { Input } from "@/components/shadcn/input";
 import { Button } from "@/components/shadcn/button";
@@ -75,8 +74,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 	// 	}
 	// });
 
-	const queryClient = useQueryClient();
-
+	const utils = trpc.useUtils();
 	const { mutate } = trpc.transactions.create.useMutation({
 		onError: () => {
 			toast({
@@ -91,7 +89,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 				description: "A new transaction has been created and saved successfully. Redirecting to transactions page..."
 			});
 
-			queryClient.invalidateQueries({ queryKey: ["transactions"] }).then(() => router.push("/transactions"));
+			utils.transactions.get.invalidate().then(() => router.push("/transactions"));
 		}
 	});
 
