@@ -12,7 +12,7 @@ test.beforeAll("Setup", async () => {
 });
 
 test.beforeEach(async ({ page }) => {
-	await Actions.login(page, USERNAMES.HARRY);
+	await Actions.login(page, USERNAMES.harry);
 	await Actions.goToTransactionsPage(page);
 	await page.getByRole("link", { name: "New" }).click();
 });
@@ -36,7 +36,7 @@ test.describe("validation", () => {
 
 	test("Receiver", async ({ page }) => {
 		await Actions.TransactionForm.submit(page);
-		await Actions.TransactionForm.selectReceiver(page, FULL_NAMES.HERMIONE);
+		await Actions.TransactionForm.selectReceiver(page, FULL_NAMES.hermione);
 
 		const errors = Locators.locateErrors(page);
 

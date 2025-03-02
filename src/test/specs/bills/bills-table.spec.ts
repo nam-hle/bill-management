@@ -1,34 +1,37 @@
+import { type TRPCClient } from "@trpc/client";
 // Import from playwright instead of the setup file to avoid truncate function
 import { test, expect, type Page } from "@playwright/test";
 
 import { Actions } from "@/test/helpers/actions";
 import { Locators } from "@/test/helpers/locators";
-import { USERNAMES, FULL_NAMES } from "@/test/utils";
 import { truncate } from "@/test/functions/truncate";
+import { type AppRouter } from "@/routers/app.router";
 import { Assertions } from "@/test/helpers/assertions";
 import { seedGroup } from "@/test/functions/seed-group";
+import { createRequester } from "@/test/helpers/requester";
 import { type TableLocator } from "@/test/locators/table-locator";
+import { USERNAMES, FULL_NAMES, getCurrentDate, type BillMember } from "@/test/utils";
 
 const presetBills: Omit<Actions.BillForm.FillParams, "description">[] = [
 	{
-		creditor: { amount: "90", name: FULL_NAMES.HARRY },
+		creditor: { amount: "90", name: FULL_NAMES.harry },
 		debtors: [
-			{ amount: "20", name: FULL_NAMES.RON },
-			{ amount: "70", name: FULL_NAMES.HERMIONE }
+			{ amount: "20", name: FULL_NAMES.ron },
+			{ amount: "70", name: FULL_NAMES.hermione }
 		]
 	},
 	{
-		creditor: { amount: "90", name: FULL_NAMES.RON },
+		creditor: { amount: "90", name: FULL_NAMES.ron },
 		debtors: [
-			{ amount: "20", name: FULL_NAMES.HARRY },
-			{ amount: "70", name: FULL_NAMES.HERMIONE }
+			{ amount: "20", name: FULL_NAMES.harry },
+			{ amount: "70", name: FULL_NAMES.hermione }
 		]
 	},
 	{
-		creditor: { amount: "90", name: FULL_NAMES.HERMIONE },
+		creditor: { amount: "90", name: FULL_NAMES.hermione },
 		debtors: [
-			{ amount: "20", name: FULL_NAMES.HARRY },
-			{ amount: "70", name: FULL_NAMES.RON }
+			{ amount: "20", name: FULL_NAMES.harry },
+			{ amount: "70", name: FULL_NAMES.ron }
 		]
 	}
 ];
@@ -36,173 +39,164 @@ const presetBills: Omit<Actions.BillForm.FillParams, "description">[] = [
 const expectedRows: Assertions.BillsTableExpectation["rows"] = [
 	{
 		description: "Breakfast 0",
-		creditor: { amount: "90.000", name: FULL_NAMES.HARRY },
+		creditor: { amount: "90.000", name: FULL_NAMES.harry },
 		debtors: [
-			{ amount: "20.000", name: FULL_NAMES.RON },
-			{ amount: "70.000", name: FULL_NAMES.HERMIONE }
+			{ amount: "20.000", name: FULL_NAMES.ron },
+			{ amount: "70.000", name: FULL_NAMES.hermione }
 		]
 	},
 	{
 		description: "Breakfast 1",
-		creditor: { amount: "90.000", name: FULL_NAMES.RON },
+		creditor: { amount: "90.000", name: FULL_NAMES.ron },
 		debtors: [
-			{ amount: "20.000", name: FULL_NAMES.HARRY },
-			{ amount: "70.000", name: FULL_NAMES.HERMIONE }
+			{ amount: "20.000", name: FULL_NAMES.harry },
+			{ amount: "70.000", name: FULL_NAMES.hermione }
 		]
 	},
 	{
 		description: "Breakfast 2",
-		creditor: { amount: "90.000", name: FULL_NAMES.HERMIONE },
+		creditor: { amount: "90.000", name: FULL_NAMES.hermione },
 		debtors: [
-			{ amount: "20.000", name: FULL_NAMES.HARRY },
-			{ amount: "70.000", name: FULL_NAMES.RON }
+			{ amount: "20.000", name: FULL_NAMES.harry },
+			{ amount: "70.000", name: FULL_NAMES.ron }
 		]
 	},
 	{
 		description: "Lunch 3",
-		creditor: { amount: "90.000", name: FULL_NAMES.HARRY },
+		creditor: { amount: "90.000", name: FULL_NAMES.harry },
 		debtors: [
-			{ amount: "20.000", name: FULL_NAMES.RON },
-			{ amount: "70.000", name: FULL_NAMES.HERMIONE }
+			{ amount: "20.000", name: FULL_NAMES.ron },
+			{ amount: "70.000", name: FULL_NAMES.hermione }
 		]
 	},
 	{
 		description: "Lunch 4",
-		creditor: { amount: "90.000", name: FULL_NAMES.RON },
+		creditor: { amount: "90.000", name: FULL_NAMES.ron },
 		debtors: [
-			{ amount: "20.000", name: FULL_NAMES.HARRY },
-			{ amount: "70.000", name: FULL_NAMES.HERMIONE }
+			{ amount: "20.000", name: FULL_NAMES.harry },
+			{ amount: "70.000", name: FULL_NAMES.hermione }
 		]
 	},
 	{
 		description: "Lunch 5",
-		creditor: { amount: "90.000", name: FULL_NAMES.HERMIONE },
+		creditor: { amount: "90.000", name: FULL_NAMES.hermione },
 		debtors: [
-			{ amount: "20.000", name: FULL_NAMES.HARRY },
-			{ amount: "70.000", name: FULL_NAMES.RON }
+			{ amount: "20.000", name: FULL_NAMES.harry },
+			{ amount: "70.000", name: FULL_NAMES.ron }
 		]
 	},
 	{
 		description: "Dinner 6",
-		creditor: { amount: "90.000", name: FULL_NAMES.HARRY },
+		creditor: { amount: "90.000", name: FULL_NAMES.harry },
 		debtors: [
-			{ amount: "20.000", name: FULL_NAMES.RON },
-			{ amount: "70.000", name: FULL_NAMES.HERMIONE }
+			{ amount: "20.000", name: FULL_NAMES.ron },
+			{ amount: "70.000", name: FULL_NAMES.hermione }
 		]
 	},
 	{
 		description: "Dinner 7",
-		creditor: { amount: "90.000", name: FULL_NAMES.RON },
+		creditor: { amount: "90.000", name: FULL_NAMES.ron },
 		debtors: [
-			{ amount: "20.000", name: FULL_NAMES.HARRY },
-			{ amount: "70.000", name: FULL_NAMES.HERMIONE }
+			{ amount: "20.000", name: FULL_NAMES.harry },
+			{ amount: "70.000", name: FULL_NAMES.hermione }
 		]
 	},
 	{
 		description: "Dinner 8",
-		creditor: { amount: "90.000", name: FULL_NAMES.HERMIONE },
+		creditor: { amount: "90.000", name: FULL_NAMES.hermione },
 		debtors: [
-			{ amount: "20.000", name: FULL_NAMES.HARRY },
-			{ amount: "70.000", name: FULL_NAMES.RON }
+			{ amount: "20.000", name: FULL_NAMES.harry },
+			{ amount: "70.000", name: FULL_NAMES.ron }
 		]
 	},
 	{
 		description: "Party",
-		creditor: { amount: "90.000", name: FULL_NAMES.HARRY },
+		creditor: { amount: "90.000", name: FULL_NAMES.harry },
 		debtors: [
-			{ amount: "20.000", name: FULL_NAMES.HARRY },
-			{ amount: "30.000", name: FULL_NAMES.RON },
-			{ amount: "40.000", name: FULL_NAMES.HERMIONE }
+			{ amount: "20.000", name: FULL_NAMES.harry },
+			{ amount: "30.000", name: FULL_NAMES.ron },
+			{ amount: "40.000", name: FULL_NAMES.hermione }
 		]
 	}
 ];
 
-// TODO: Call API to seed instead
-test.beforeAll("Seed bills", async ({ browser }, testInfo) => {
-	test.setTimeout(testInfo.timeout * 1.5);
+test.beforeAll("Seed bills", async () => {
 	await truncate();
-	await seedGroup();
-
-	const page = await browser.newPage();
+	const { userNames } = await seedGroup();
 
 	await test.step("Ron creates bills", async () => {
-		await Actions.login(page, USERNAMES.RON);
-		await Actions.goToBillsPage(page);
+		const requester = await createRequester(USERNAMES.ron);
 
 		for (const index of [0, 1, 2]) {
-			await Actions.BillForm.fill(page, { description: `Breakfast ${index}`, ...presetBills[index % 3] });
-			await Actions.submit(page);
-			await Assertions.assertToast(page, "Bill created successfully");
+			await requester.bills.create.mutate(toCreationPayload({ ...presetBills[index % 3], description: `Breakfast ${index}` }));
 		}
-
-		await Actions.logout(page);
 	});
 
 	await test.step("Hermione creates bills", async () => {
-		await Actions.login(page, USERNAMES.HERMIONE);
-		await Actions.goToBillsPage(page);
+		const requester = await createRequester(USERNAMES.hermione);
 
 		for (const index of [3, 4, 5]) {
-			await Actions.BillForm.fill(page, { description: `Lunch ${index}`, ...presetBills[index % 3] });
-			await Actions.submit(page);
-			await Assertions.assertToast(page, "Bill created successfully");
+			await requester.bills.create.mutate(toCreationPayload({ ...presetBills[index % 3], description: `Lunch ${index}` }));
 		}
-
-		await Actions.logout(page);
 	});
 
 	await test.step("Harry creates bills", async () => {
-		await Actions.login(page, USERNAMES.HARRY);
-		await Actions.goToBillsPage(page);
+		const requester = await createRequester(USERNAMES.harry);
 
 		for (const index of [6, 7, 8]) {
-			await Actions.BillForm.fill(page, { description: `Dinner ${index}`, ...presetBills[index % 3] });
-			await Actions.submit(page);
-			await Assertions.assertToast(page, "Bill created successfully");
+			await requester.bills.create.mutate(toCreationPayload({ ...presetBills[index % 3], description: `Dinner ${index}` }));
 		}
-
-		await Actions.logout(page);
 	});
 
 	await test.step("Ron creates a bill with Hermione only", async () => {
-		await Actions.login(page, USERNAMES.RON);
-		await Actions.goToBillsPage(page);
+		const requester = await createRequester(USERNAMES.ron);
 
-		await Actions.BillForm.fill(page, {
-			description: `Coffee`,
-			creditor: { amount: "90", name: FULL_NAMES.RON },
-			debtors: [
-				{ amount: "20", name: FULL_NAMES.RON },
-				{ amount: "70", name: FULL_NAMES.HERMIONE }
-			]
-		});
-		await Actions.submit(page);
-		await Assertions.assertToast(page, "Bill created successfully");
-
-		await Actions.logout(page);
+		await requester.bills.create.mutate(
+			toCreationPayload({
+				description: `Coffee`,
+				creditor: { amount: "90", name: FULL_NAMES.ron },
+				debtors: [
+					{ amount: "20", name: FULL_NAMES.ron },
+					{ amount: "70", name: FULL_NAMES.hermione }
+				]
+			})
+		);
 	});
 
 	await test.step("Harry creates a self bill", async () => {
-		await Actions.login(page, USERNAMES.HARRY);
-		await Actions.goToBillsPage(page);
+		const requester = await createRequester(USERNAMES.harry);
 
-		await Actions.BillForm.fill(page, {
-			description: `Party`,
-			creditor: { amount: "90", name: FULL_NAMES.HARRY },
-			debtors: [
-				{ amount: "20", name: FULL_NAMES.HARRY },
-				{ amount: "30", name: FULL_NAMES.RON },
-				{ amount: "40", name: FULL_NAMES.HERMIONE }
-			]
-		});
-		await Actions.submit(page);
-
-		await Actions.logout(page);
+		await requester.bills.create.mutate(
+			toCreationPayload({
+				description: `Party`,
+				creditor: { amount: "90", name: FULL_NAMES.harry },
+				debtors: [
+					{ amount: "20", name: FULL_NAMES.harry },
+					{ amount: "30", name: FULL_NAMES.ron },
+					{ amount: "40", name: FULL_NAMES.hermione }
+				]
+			})
+		);
 	});
+
+	function toCreationPayload(bill: Actions.BillForm.FillParams): Parameters<TRPCClient<AppRouter>["bills"]["create"]["mutate"]>[0] {
+		const fromMember = (member: BillMember) => ({
+			userId: userNames[member.name],
+			amount: parseInt(member.amount)
+		});
+
+		return {
+			...bill,
+			receiptFile: null,
+			issuedAt: getCurrentDate(),
+			creditor: fromMember(bill.creditor),
+			debtors: bill.debtors.map(fromMember)
+		};
+	}
 });
 
 test.beforeEach(async ({ page }) => {
-	await Actions.login(page, USERNAMES.HARRY);
+	await Actions.login(page, USERNAMES.harry);
 	await Actions.goToBillsPage(page);
 });
 

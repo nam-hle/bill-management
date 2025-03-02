@@ -3,6 +3,7 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
+import { type UserName } from "@/test/utils";
 import { seedUser } from "@/test/functions/seed-user";
 
 const argv = yargs(hideBin(process.argv))
@@ -14,7 +15,7 @@ const argv = yargs(hideBin(process.argv))
 
 async function main() {
 	try {
-		const userId = await seedUser(argv);
+		const userId = await seedUser({ ...argv, email: argv.email as UserName });
 		console.log("Created user with ID:", userId);
 	} catch (error) {
 		console.error("Error creating user:", error);

@@ -8,20 +8,20 @@ import { seedGroup } from "@/test/functions/seed-group";
 test("basic", async ({ page, browser }) => {
 	await seedGroup();
 
-	await Actions.login(page, USERNAMES.HARRY);
+	await Actions.login(page, USERNAMES.harry);
 
 	await Actions.goToTransactionsPage(page);
 	await Actions.TransactionForm.fill(page, {
 		amount: "42",
-		receiver: FULL_NAMES.RON,
-		candidateReceivers: [FULL_NAMES.DUMBLEDORE, FULL_NAMES.HERMIONE, FULL_NAMES.RON, FULL_NAMES.SNAPE]
+		receiver: FULL_NAMES.ron,
+		candidateReceivers: [FULL_NAMES.dumbledore, FULL_NAMES.hermione, FULL_NAMES.ron, FULL_NAMES.snape]
 	});
 
 	const transactionsTable = await Locators.locateTable(page, 0);
 
 	await Assertions.assertTransactionsTable(transactionsTable, {
 		pagination: null,
-		rows: [{ amount: "42", status: "Waiting", action: "Decline", issuedAt: "Today", receiver: FULL_NAMES.RON, sender: FULL_NAMES.HARRY }]
+		rows: [{ amount: "42", status: "Waiting", action: "Decline", issuedAt: "Today", receiver: FULL_NAMES.ron, sender: FULL_NAMES.harry }]
 	});
 
 	await Actions.goToHomePage(page);
