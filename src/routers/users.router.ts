@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import { API } from "@/api";
 import { UsersControllers } from "@/controllers";
 import { router, privateProcedure } from "@/services/trpc/server";
@@ -7,5 +9,10 @@ export const usersRouter = router({
 		const users = await UsersControllers.getUsers(supabase);
 
 		return { data: users, fullSize: users.length } satisfies API.Users.List.Response;
-	})
+	}),
+
+	findByName: privateProcedure
+		.input(z.object({ textSearch: z.string() }))
+		.output(API.Users.List.ResponseSchema)
+		.query(({ input, ctx: { supabase } }) => UsersControllers.findByName(supabase, input))
 });

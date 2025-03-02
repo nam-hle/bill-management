@@ -7,6 +7,8 @@ import { getUrl } from "@/services/trpc/client";
 import { type USERNAMES, DEFAULT_PASSWORD } from "@/test/utils";
 import { SUPABASE_STORAGE_KEY } from "@/services/supabase/config";
 
+export type Requester = Awaited<ReturnType<typeof createRequester>>;
+
 export async function createRequester(user: (typeof USERNAMES)[keyof typeof USERNAMES]) {
 	const { data, error } = await supabaseTest.auth.signInWithPassword({
 		password: DEFAULT_PASSWORD,

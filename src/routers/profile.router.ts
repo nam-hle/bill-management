@@ -1,7 +1,9 @@
+import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
 import { API } from "@/api";
 import { BalanceSchema } from "@/types";
+import { GroupSchema } from "@/schemas/group.schema";
 import { router, privateProcedure } from "@/services/trpc/server";
 import { UsersControllers, BankAccountsController } from "@/controllers";
 import { ProfileFormPayloadSchema, BankAccountCreatePayloadSchema } from "@/schemas";
@@ -15,6 +17,7 @@ export const profileRouter = router({
 		.input(API.BankAccounts.List.SearchParamsSchema)
 		.output(API.BankAccounts.List.ResponseSchema)
 		.query(({ input, ctx: { supabase } }) => BankAccountsController.getByUserId(supabase, input.userId)),
+
 	update: privateProcedure
 		.input(ProfileFormPayloadSchema)
 		.output(ProfileFormPayloadSchema)
@@ -25,5 +28,15 @@ export const profileRouter = router({
 			const { avatar, fullName } = await UsersControllers.updateProfile(supabase, user.id, input);
 
 			return { fullName, avatarUrl: avatar };
-		})
+		}),
+
+	groups: privateProcedure
+		.output(z.array(GroupSchema))
+		.query(({ ctx: { user, supabase } }) => UsersControllers.getGroups(supabase, { userId: user.id })),
+	selectedGroup: privateProcedure
+		.output(GroupSchema.nullable())
+		.query(({ ctx: { user, supabase } }) => UsersControllers.getSelectedGroup(supabase, user.id)),
+	selectGroup: privateProcedure
+		.input(z.object({ groupId: z.string() }))
+		.mutation(({ input, ctx: { user, supabase } }) => UsersControllers.selectGroup(supabase, { userId: user.id, groupId: input.groupId }))
 });
