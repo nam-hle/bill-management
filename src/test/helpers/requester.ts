@@ -5,6 +5,7 @@ import { trpc } from "@/services";
 import { supabaseTest } from "@/test/setup";
 import { getUrl } from "@/services/trpc/client";
 import { type USERNAMES, DEFAULT_PASSWORD } from "@/test/utils";
+import { SUPABASE_STORAGE_KEY } from "@/services/supabase/config";
 
 export async function createRequester(user: (typeof USERNAMES)[keyof typeof USERNAMES]) {
 	const { data, error } = await supabaseTest.auth.signInWithPassword({
@@ -26,8 +27,7 @@ export async function createRequester(user: (typeof USERNAMES)[keyof typeof USER
 				},
 				headers: {
 					"Content-Type": "application/json",
-					// FIXME: Why 127?
-					Cookie: `sb-127-auth-token=base64-${btoa(JSON.stringify(data.session))}`
+					Cookie: `${SUPABASE_STORAGE_KEY}=base64-${btoa(JSON.stringify(data.session))}`
 				}
 			})
 		]
