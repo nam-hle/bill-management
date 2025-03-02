@@ -4,6 +4,7 @@ import { type SupabaseClient } from "@supabase/supabase-js";
 
 import { Environments } from "@/environments";
 import { type Database } from "@/database.types";
+import { supabaseClientOptions } from "@/services/supabase/config";
 
 export type SupabaseInstance = SupabaseClient<Database, "public", Database["public"]>;
 
@@ -25,6 +26,7 @@ export async function createSupabaseServer(): Promise<SupabaseInstance> {
 	const cookieStore = await cookies();
 
 	return createServerClient<Database>(Environments.PUBLIC.SUPABASE.URL, Environments.PUBLIC.SUPABASE.ANON_KEY, {
+		...supabaseClientOptions,
 		cookies: {
 			getAll() {
 				return cookieStore.getAll();

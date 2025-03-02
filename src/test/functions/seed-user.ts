@@ -1,7 +1,7 @@
 import { supabaseTest } from "@/test/setup";
-import { DEFAULT_PASSWORD } from "@/test/utils";
+import { type UserName, DEFAULT_PASSWORD } from "@/test/utils";
 
-export async function seedUser(params: { email: string; fullName: string; password?: string }): Promise<string> {
+export async function seedUser(params: { email: UserName; fullName: string; password?: string }): Promise<string> {
 	const { email, fullName, password = DEFAULT_PASSWORD } = params;
 	const fullEmail = `${email}@example.com`;
 

@@ -17,7 +17,7 @@ test("Sign up", async ({ page }) => {
 	await expect(page.getByText("Password is required", { exact: true })).toBeVisible();
 	await expect(page.getByText("Confirm password is required")).toBeVisible();
 
-	await Actions.SignUpForm.fillDisplayName(page, FULL_NAMES.HARRY);
+	await Actions.SignUpForm.fillDisplayName(page, FULL_NAMES.harry);
 	await expect(page.getByText("Display name is required")).not.toBeVisible();
 
 	await Actions.SignUpForm.fillEmail(page, "harry");
@@ -43,7 +43,7 @@ test("Sign up", async ({ page }) => {
 
 	await Actions.logout(page);
 	await Actions.goToSignUpPage(page);
-	await Actions.SignUpForm.fillDisplayName(page, FULL_NAMES.HARRY);
+	await Actions.SignUpForm.fillDisplayName(page, FULL_NAMES.harry);
 	await Actions.SignUpForm.fillEmail(page, "harry@example.com");
 	await Actions.fillInput(page, "password", DEFAULT_PASSWORD);
 	await Actions.SignUpForm.fillConfirmPassword(page, DEFAULT_PASSWORD);

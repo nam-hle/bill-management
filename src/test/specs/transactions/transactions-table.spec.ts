@@ -1,57 +1,46 @@
 import { test } from "@/test/setup";
 import { Actions } from "@/test/helpers/actions";
 import { Locators } from "@/test/helpers/locators";
-import { USERNAMES, FULL_NAMES } from "@/test/utils";
 import { Assertions } from "@/test/helpers/assertions";
 import { seedGroup } from "@/test/functions/seed-group";
+import { createRequester } from "@/test/helpers/requester";
+import { USERNAMES, FULL_NAMES, getCurrentDate } from "@/test/utils";
 
 test("basic", async ({ page }) => {
-	await seedGroup();
+	const { userIds } = await seedGroup();
 
 	await test.step("Create transactions from Ron to Harry", async () => {
-		await Actions.login(page, USERNAMES.RON);
+		const requester = await createRequester(USERNAMES.ron);
 
-		await page.getByRole("link", { name: "Transactions" }).click();
-		await Actions.TransactionForm.fill(page, { amount: "40", receiver: FULL_NAMES.HARRY });
-
-		await page.getByRole("link", { name: "Transactions" }).click();
-		await Actions.TransactionForm.fill(page, { amount: "41", receiver: FULL_NAMES.HARRY });
-
-		await Actions.logout(page);
+		await requester.transactions.create.mutate({ amount: 40, receiverId: userIds.harry, issuedAt: getCurrentDate() });
+		await requester.transactions.create.mutate({ amount: 41, receiverId: userIds.harry, issuedAt: getCurrentDate() });
 	});
 
 	await test.step("Create transactions from Hermione to Harry", async () => {
-		await Actions.login(page, USERNAMES.HERMIONE);
+		const requester = await createRequester(USERNAMES.hermione);
 
-		await page.getByRole("link", { name: "Transactions" }).click();
-		await Actions.TransactionForm.fill(page, { amount: "42", receiver: FULL_NAMES.HARRY });
-
-		await page.getByRole("link", { name: "Transactions" }).click();
-		await Actions.TransactionForm.fill(page, { amount: "43", receiver: FULL_NAMES.HARRY });
-
-		await Actions.logout(page);
+		await requester.transactions.create.mutate({ amount: 42, receiverId: userIds.harry, issuedAt: getCurrentDate() });
+		await requester.transactions.create.mutate({ amount: 43, receiverId: userIds.harry, issuedAt: getCurrentDate() });
 	});
 
 	await test.step("Create transactions from Harry to others", async () => {
-		await Actions.login(page, USERNAMES.HARRY);
+		const requester = await createRequester(USERNAMES.harry);
 
-		await page.getByRole("link", { name: "Transactions" }).click();
-		await Actions.TransactionForm.fill(page, { amount: "44", receiver: FULL_NAMES.RON });
-
-		await page.getByRole("link", { name: "Transactions" }).click();
-		await Actions.TransactionForm.fill(page, { amount: "45", receiver: FULL_NAMES.HERMIONE });
-
-		await page.getByRole("link", { name: "Transactions" }).click();
+		await requester.transactions.create.mutate({ amount: 44, receiverId: userIds.ron, issuedAt: getCurrentDate() });
+		await requester.transactions.create.mutate({ amount: 45, issuedAt: getCurrentDate(), receiverId: userIds.hermione });
 	});
 
+	await Actions.login(page, USERNAMES.harry);
+
+	await page.getByRole("link", { name: "Transactions" }).click();
 	const transactionsTable = await Locators.locateTable(page, 0);
 
 	const firstRows = [
-		{ amount: "40", status: "Waiting", action: "Confirm", issuedAt: "Today", sender: FULL_NAMES.RON, receiver: FULL_NAMES.HARRY },
-		{ amount: "41", status: "Waiting", action: "Confirm", issuedAt: "Today", sender: FULL_NAMES.RON, receiver: FULL_NAMES.HARRY },
-		{ amount: "42", status: "Waiting", action: "Confirm", issuedAt: "Today", receiver: FULL_NAMES.HARRY, sender: FULL_NAMES.HERMIONE },
-		{ amount: "43", status: "Waiting", action: "Confirm", issuedAt: "Today", receiver: FULL_NAMES.HARRY, sender: FULL_NAMES.HERMIONE },
-		{ amount: "44", status: "Waiting", action: "Decline", issuedAt: "Today", receiver: FULL_NAMES.RON, sender: FULL_NAMES.HARRY }
+		{ amount: "40", status: "Waiting", action: "Confirm", issuedAt: "Today", sender: FULL_NAMES.ron, receiver: FULL_NAMES.harry },
+		{ amount: "41", status: "Waiting", action: "Confirm", issuedAt: "Today", sender: FULL_NAMES.ron, receiver: FULL_NAMES.harry },
+		{ amount: "42", status: "Waiting", action: "Confirm", issuedAt: "Today", receiver: FULL_NAMES.harry, sender: FULL_NAMES.hermione },
+		{ amount: "43", status: "Waiting", action: "Confirm", issuedAt: "Today", receiver: FULL_NAMES.harry, sender: FULL_NAMES.hermione },
+		{ amount: "44", status: "Waiting", action: "Decline", issuedAt: "Today", receiver: FULL_NAMES.ron, sender: FULL_NAMES.harry }
 	];
 	await Assertions.assertTransactionsTable(transactionsTable, {
 		rows: firstRows,
@@ -70,7 +59,7 @@ test("basic", async ({ page }) => {
 			totalPages: 2,
 			currentPage: 2
 		},
-		rows: [{ amount: "45", status: "Waiting", action: "Decline", issuedAt: "Today", sender: FULL_NAMES.HARRY, receiver: FULL_NAMES.HERMIONE }]
+		rows: [{ amount: "45", status: "Waiting", action: "Decline", issuedAt: "Today", sender: FULL_NAMES.harry, receiver: FULL_NAMES.hermione }]
 	});
 
 	await Actions.goToHomePage(page);

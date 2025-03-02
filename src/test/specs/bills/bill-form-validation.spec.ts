@@ -12,7 +12,7 @@ test.beforeAll("Setup", async () => {
 });
 
 test.beforeEach(async ({ page }) => {
-	await Actions.login(page, USERNAMES.HARRY);
+	await Actions.login(page, USERNAMES.harry);
 	await Actions.goToBillsPage(page);
 	await page.getByRole("link", { name: "New" }).click();
 });
@@ -50,7 +50,7 @@ test.describe("validation", () => {
 
 	test("Creditor", async ({ page }) => {
 		await Actions.submit(page);
-		await Actions.BillForm.selectCreditor(page, FULL_NAMES.RON);
+		await Actions.BillForm.selectCreditor(page, FULL_NAMES.ron);
 
 		const errors = Locators.locateErrors(page);
 
@@ -79,7 +79,7 @@ test.describe("validation", () => {
 
 	test("Debtor", async ({ page }) => {
 		await Actions.submit(page);
-		await Actions.BillForm.selectDebtor(page, 0, FULL_NAMES.HERMIONE);
+		await Actions.BillForm.selectDebtor(page, 0, FULL_NAMES.hermione);
 
 		const errors = Locators.locateErrors(page);
 

@@ -29,6 +29,9 @@ const profiles = {
 
 const profile = profiles[process.env.CI ? "CI" : "LOCAL"];
 
+// To calculate url for test trpc requests
+process.env.PORT = String(profile.port);
+
 export default defineConfig({
 	fullyParallel: false,
 	timeout: profile.timeout,

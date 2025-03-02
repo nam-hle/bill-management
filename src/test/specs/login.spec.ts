@@ -27,7 +27,7 @@ test("Login", async ({ page }) => {
 
 	await expect(page.getByTestId("form-root-error")).toHaveText("Invalid login credentials");
 
-	await seedUser({ email: "harry", fullName: FULL_NAMES.HARRY });
+	await seedUser({ email: "harry", fullName: FULL_NAMES.harry });
 
 	await Actions.submit(page);
 
