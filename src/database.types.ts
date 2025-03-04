@@ -66,11 +66,32 @@ export type Database = {
 			BillMemberRole: "Creditor" | "Debtor";
 			BankAccountStatus: "Active" | "Inactive";
 			TransactionStatus: "Waiting" | "Confirmed" | "Declined";
+			MembershipStatus: "Idle" | "Active" | "Requesting" | "Inviting";
 			NotificationType: "BillCreated" | "BillUpdated" | "BillDeleted" | "TransactionWaiting" | "TransactionConfirmed" | "TransactionDeclined";
 		};
 		Tables: {
-			profiles: {
+			groups: {
 				Relationships: [];
+				Row: {
+					id: string;
+					name: string;
+					created_at: string;
+					display_id: string;
+				};
+				Insert: {
+					id?: string;
+					name: string;
+					display_id: string;
+					created_at?: string;
+				};
+				Update: {
+					id?: string;
+					name?: string;
+					created_at?: string;
+					display_id?: string;
+				};
+			};
+			profiles: {
 				Row: {
 					id: string;
 					username: string;
@@ -78,6 +99,7 @@ export type Database = {
 					website: string | null;
 					avatar_url: string | null;
 					updated_at: string | null;
+					selected_group_id: string | null;
 				};
 				Insert: {
 					id: string;
@@ -86,6 +108,7 @@ export type Database = {
 					website?: string | null;
 					avatar_url?: string | null;
 					updated_at?: string | null;
+					selected_group_id?: string | null;
 				};
 				Update: {
 					id?: string;
@@ -94,7 +117,17 @@ export type Database = {
 					website?: string | null;
 					avatar_url?: string | null;
 					updated_at?: string | null;
+					selected_group_id?: string | null;
 				};
+				Relationships: [
+					{
+						isOneToOne: false;
+						referencedColumns: ["id"];
+						referencedRelation: "groups";
+						columns: ["selected_group_id"];
+						foreignKeyName: "profiles_selected_group_id_fkey";
+					}
+				];
 			};
 			bill_debtors: {
 				Row: {
@@ -138,6 +171,52 @@ export type Database = {
 						columns: ["user_id"];
 						referencedColumns: ["user_id"];
 						foreignKeyName: "bill_members_user_id_fkey";
+						referencedRelation: "user_financial_summary";
+					}
+				];
+			};
+			memberships: {
+				Row: {
+					id: string;
+					user_id: string;
+					group_id: string;
+					created_at: string;
+					status: Database["public"]["Enums"]["MembershipStatus"];
+				};
+				Insert: {
+					id?: string;
+					user_id: string;
+					group_id: string;
+					created_at?: string;
+					status?: Database["public"]["Enums"]["MembershipStatus"];
+				};
+				Update: {
+					id?: string;
+					user_id?: string;
+					group_id?: string;
+					created_at?: string;
+					status?: Database["public"]["Enums"]["MembershipStatus"];
+				};
+				Relationships: [
+					{
+						isOneToOne: false;
+						columns: ["group_id"];
+						referencedColumns: ["id"];
+						referencedRelation: "groups";
+						foreignKeyName: "users_groups_group_id_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["user_id"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "users_groups_user_id_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["user_id"];
+						referencedColumns: ["user_id"];
+						foreignKeyName: "users_groups_user_id_fkey";
 						referencedRelation: "user_financial_summary";
 					}
 				];

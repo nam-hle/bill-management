@@ -1,0 +1,139 @@
+import { type ClientUser } from "@/schemas";
+import { pickUniqueId } from "@/controllers/utils";
+import { assert, generateNumberDisplayId } from "@/utils";
+import { type SupabaseInstance } from "@/services/supabase/server";
+import { UsersControllers } from "@/controllers/users.controllers";
+import { type MemberAction, changeMemberStatus } from "@/controllers/member-transition";
+import {
+	type Group,
+	type Membership,
+	type MembershipKey,
+	type MembershipStatus,
+	MembershipStatusSchema,
+	type MembershipResponseChange
+} from "@/schemas/group.schema";
+
+export namespace GroupController {
+	export const GROUP_SELECT = `
+    id,
+    name,
+    displayId:display_id
+  `;
+
+	export const MEMBERSHIP_SELECT = `	
+		status,
+		user:profiles!user_id (id, fullName:full_name, avatar:avatar_url),
+		group:groups!group_id (${GROUP_SELECT})
+	`;
+
+	export interface CreationPayload {
+		name: string;
+		creatorId: string;
+	}
+
+	export async function create(supabase: SupabaseInstance, payload: CreationPayload): Promise<Group> {
+		const displayId = await pickUniqueId(supabase, "groups", "display_id", generateNumberDisplayId);
+		const { data, error } = await supabase.from("groups").insert({ name: payload.name, display_id: displayId }).select(GROUP_SELECT).single();
+
+		if (error) {
+			throw error;
+		}
+
+		assert(data);
+
+		await supabase.from("memberships").insert({ group_id: data.id, user_id: payload.creatorId, status: MembershipStatusSchema.enum.Active });
+
+		return data;
+	}
+
+	export async function getMembers(supabase: SupabaseInstance, payload: { groupId: string }): Promise<ClientUser[]> {
+		const members = await getMembershipsByStatus(supabase, { ...payload, status: MembershipStatusSchema.enum.Active });
+
+		return members.map(({ user }) => user);
+	}
+
+	export async function findGroupByDisplayId(supabase: SupabaseInstance, payload: { displayId: string }): Promise<Group | null> {
+		const { data } = await supabase.from("groups").select(GROUP_SELECT).eq("display_id", payload.displayId).single();
+
+		return data;
+	}
+
+	export async function getMembershipsByStatus(
+		supabase: SupabaseInstance,
+		payload: { groupId: string; status: MembershipStatus }
+	): Promise<Membership[]> {
+		const { data, error } = await supabase
+			.from("memberships")
+			.select(`id, status, user:profiles!user_id (${UsersControllers.USERS_SELECT})`)
+			.eq("group_id", payload.groupId)
+			.eq("status", payload.status);
+
+		if (error) {
+			throw error;
+		}
+
+		return data;
+	}
+
+	async function findMembershipByKey(
+		supabase: SupabaseInstance,
+		payload: { userId: string; groupId: string }
+	): Promise<{ id: string; status: MembershipStatus } | null> {
+		const { data } = await supabase.from("memberships").select("id, status").eq("group_id", payload.groupId).eq("user_id", payload.userId).single();
+
+		return data;
+	}
+
+	export async function findMembershipById(
+		supabase: SupabaseInstance,
+		payload: { membershipId: string }
+	): Promise<{ id: string; status: MembershipStatus }> {
+		const { data } = await supabase.from("memberships").select("id, status").eq("id", payload.membershipId).single();
+
+		if (!data) {
+			throw new Error("Membership not found");
+		}
+
+		return data;
+	}
+
+	async function getCurrentMembershipStatus(supabase: SupabaseInstance, payload: MembershipKey): Promise<MembershipStatus> {
+		const membership = await findMembershipByKey(supabase, payload);
+
+		return membership?.status ?? MembershipStatusSchema.enum.Idle;
+	}
+
+	// TODO: Verify user and group existence
+	export async function changeMembershipStatus(
+		supabase: SupabaseInstance,
+		payload: MembershipKey & { action: MemberAction }
+	): Promise<MembershipResponseChange> {
+		const currentStatus = await getCurrentMembershipStatus(supabase, payload);
+		const result = changeMemberStatus(currentStatus, payload.action);
+
+		if (!result.ok) {
+			return result;
+		}
+
+		await supabase.from("memberships").upsert({ user_id: payload.userId, status: result.newStatus, group_id: payload.groupId });
+
+		return { ok: true };
+	}
+
+	export async function resolvePendingStatus(
+		supabase: SupabaseInstance,
+		payload: { membershipId: string; action: MemberAction }
+	): Promise<MembershipResponseChange> {
+		const membership = await findMembershipById(supabase, payload);
+
+		const result = changeMemberStatus(membership.status, payload.action);
+
+		if (!result.ok) {
+			return result;
+		}
+
+		await supabase.from("memberships").update({ status: result.newStatus }).eq("id", membership.id);
+
+		return { ok: true };
+	}
+}

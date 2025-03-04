@@ -1,6 +1,16 @@
 import { supabaseTest } from "@/test/setup";
+import { type TableName } from "@/controllers/utils";
 
-const PUBLIC_TABLES = ["bills", "transactions", "bill_debtors", "bank_accounts", "profiles", "notifications"] as const;
+const PUBLIC_TABLES = [
+	"bills",
+	"transactions",
+	"bill_debtors",
+	"bank_accounts",
+	"memberships",
+	"groups",
+	"profiles",
+	"notifications"
+] satisfies TableName[];
 
 export async function truncate() {
 	try {

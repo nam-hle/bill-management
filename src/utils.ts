@@ -1,3 +1,4 @@
+import { customAlphabet } from "nanoid";
 import { format, isToday, isThisWeek, isYesterday, formatDistanceToNow, differenceInCalendarDays } from "date-fns";
 
 export function noop() {}
@@ -85,4 +86,14 @@ export function generateUid(): string {
 
 export function wait(duration: number) {
 	return new Promise((resolve) => setTimeout(resolve, duration));
+}
+
+export function assert(condition: unknown, onFailedMessage = "Condition return a falsely value."): asserts condition {
+	if (!condition) {
+		throw new Error(onFailedMessage);
+	}
+}
+
+export function generateNumberDisplayId(length = 8) {
+	return customAlphabet("1234567890", length)();
 }
