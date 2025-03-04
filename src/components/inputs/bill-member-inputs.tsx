@@ -51,11 +51,11 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 		const debtors = getValues("debtors");
 
 		return usersResponse.data.filter((user) => {
-			if (user.id === debtors[member.debtorIndex]?.userId) {
+			if (user.userId === debtors[member.debtorIndex]?.userId) {
 				return true;
 			}
 
-			return !debtors.some(({ userId }) => userId === user.id);
+			return !debtors.some(({ userId }) => userId === user.userId);
 		});
 	}, [getValues, member, isSuccess, usersResponse]);
 
@@ -90,7 +90,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 									disabled={!editing}
 									value={field.value}
 									onValueChange={field.onChange}
-									items={members.map(({ id: value, fullName: label }) => ({ label, value }))}
+									items={members.map(({ userId: value, fullName: label }) => ({ label, value }))}
 								/>
 							</SkeletonWrapper>
 						</FormItem>

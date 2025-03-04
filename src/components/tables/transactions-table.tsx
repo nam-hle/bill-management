@@ -28,7 +28,7 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 
 	const [filters, setFilters] = React.useState<"toMe" | "byMe" | undefined>(undefined);
 
-	const { data, isPending } = trpc.transactions.get.useQuery(
+	const { data } = trpc.transactions.get.useQuery(
 		filters === "toMe" ? { page, receiverId: currentUserId } : filters === "byMe" ? { page, senderId: currentUserId } : { page }
 	);
 
@@ -44,7 +44,6 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 
 	return (
 		<DataTable
-			loading={isPending}
 			title="Transactions"
 			data={data?.data.map((row) => ({ ...row, href: `/transactions/${row.id}` }))}
 			pagination={{ pageNumber: page, onPageChange: setPage, fullSize: data?.fullSize }}
@@ -79,8 +78,8 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 	);
 };
 
-function formatUser(user: { id: string; fullName: string | null }, currentUserId: string): React.ReactNode {
-	if (user.id === currentUserId) {
+function formatUser(user: { userId: string; fullName: string | null }, currentUserId: string): React.ReactNode {
+	if (user.userId === currentUserId) {
 		return <strong>{user.fullName}</strong>;
 	}
 

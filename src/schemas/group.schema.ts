@@ -3,13 +3,24 @@ import { z } from "zod";
 import type { Database } from "@/database.types";
 import { ClientUserSchema } from "@/schemas/user.schema";
 
+const NewGroupFormStateSchema = z.object({
+	name: z.string().min(1, "Group name is required")
+});
+export type NewGroupFormState = z.infer<typeof NewGroupFormStateSchema>;
+
 export const GroupSchema = z.object({
 	id: z.string(),
 	name: z.string(),
 	displayId: z.string()
 });
-
 export type Group = z.infer<typeof GroupSchema>;
+
+export const GroupDetailsSchema = NewGroupFormStateSchema.extend({
+	id: z.string(),
+	displayId: z.string(),
+	members: z.array(ClientUserSchema)
+});
+export type GroupDetails = z.infer<typeof GroupDetailsSchema>;
 
 export const MembershipStatusSchema = z.enum([
 	"Idle",
@@ -32,3 +43,16 @@ export const MembershipSchema = z.object({
 	user: ClientUserSchema
 });
 export type Membership = z.infer<typeof MembershipSchema>;
+
+export const InviteSchema = z.object({
+	id: z.string(),
+	group: GroupSchema
+});
+export type Invite = z.infer<typeof InviteSchema>;
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const RequestFormSchema = z.object({
+	groupDisplayId: z.string().min(1, "Group ID is required")
+});
+
+export type RequestFormState = z.infer<typeof RequestFormSchema>;

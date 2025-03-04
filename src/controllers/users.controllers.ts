@@ -3,11 +3,11 @@ import { type Balance, type UserInfo } from "@/types";
 import { GroupController } from "@/controllers/group.controller";
 import { type SupabaseInstance } from "@/services/supabase/server";
 import { type ClientUser, type ProfileFormPayload } from "@/schemas";
-import { type Group, MembershipStatusSchema } from "@/schemas/group.schema";
+import { type Group, type Invite, MembershipStatusSchema } from "@/schemas/group.schema";
 
 export namespace UsersControllers {
 	export const USERS_SELECT = `
-    id,
+    userId:id,
     fullName:full_name,
     avatar:avatar_url
   `;
@@ -133,11 +133,36 @@ export namespace UsersControllers {
 		return data.group;
 	}
 
+	export async function getGroupRequests(supabase: SupabaseInstance, payload: { userId: string }): Promise<Group[]> {
+		const { data, error } = await supabase
+			.from("memberships")
+			.select(`group:groups!group_id (${GroupController.GROUP_SELECT})`)
+			.eq("user_id", payload.userId)
+			.eq("status", MembershipStatusSchema.enum.Requesting);
+
+		if (error) {
+			throw error;
+		}
+
+		return data.map(({ group }) => group);
+	}
+
+	export async function getGroupInvites(supabase: SupabaseInstance, payload: { userId: string }): Promise<Invite[]> {
+		const { data, error } = await supabase
+			.from("memberships")
+			.select(`id, group:groups!group_id (${GroupController.GROUP_SELECT})`)
+			.eq("user_id", payload.userId)
+			.eq("status", MembershipStatusSchema.enum.Inviting);
+
+		if (error) {
+			throw error;
+		}
+
+		return data;
+	}
+
 	export async function findByName(supabase: SupabaseInstance, payload: { textSearch: string }) {
-		const { data, count } = await supabase
-			.from("profiles")
-			.select(USERS_SELECT, { count: "exact" })
-			.filter("full_name", "fts", `${payload.textSearch}:*`);
+		const { data, count } = await supabase.from("profiles").select(USERS_SELECT).filter("full_name", "ilike", `%${payload.textSearch}%`);
 
 		return { data: data ?? [], fullSize: count ?? 0 };
 	}

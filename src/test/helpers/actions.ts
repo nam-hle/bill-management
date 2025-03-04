@@ -17,6 +17,12 @@ export namespace Actions {
 		});
 	}
 
+	export async function goToGroupsPage(page: Page) {
+		await test.step(`Go to Groups page`, async () => {
+			await page.goto("/groups");
+		});
+	}
+
 	export async function goToNotificationsPage(page: Page) {
 		await test.step(`Go to Notifications page`, async () => {
 			await page.goto("/notifications");

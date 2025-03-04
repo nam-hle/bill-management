@@ -97,7 +97,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 		resolver: zodResolver(FormStateSchema),
 		defaultValues: {
 			amount: kind.type === "update" ? String(kind.transaction.amount) : "",
-			receiverId: kind.type === "update" ? kind.transaction.receiver.id : "",
+			receiverId: kind.type === "update" ? kind.transaction.receiver.userId : "",
 			issuedAt: IssuedAtFieldTransformer.fromServer(kind.type === "update" ? kind.transaction.issuedAt : undefined)
 		}
 	});
@@ -199,8 +199,8 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 										setValue("bankAccountId", undefined);
 									}}
 									items={users.flatMap((user) => {
-										if (user.id !== currentUserId) {
-											return { value: user.id, label: user.fullName };
+										if (user.userId !== currentUserId) {
+											return { value: user.userId, label: user.fullName };
 										}
 
 										return [];

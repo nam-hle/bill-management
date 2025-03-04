@@ -29,10 +29,6 @@ export class TableLocator {
 		return this.tableContainer;
 	}
 
-	getLocator() {
-		return this.table;
-	}
-
 	getHeading() {
 		return this.page.getByRole("heading").nth(this.tableIndex);
 	}
@@ -43,9 +39,6 @@ export class TableLocator {
 
 	get nextPageButton() {
 		return this.tableContainer.getByRole("button", { name: "Go to next page" });
-	}
-	get previousPageButton() {
-		return this.tableContainer.getByRole("button", { name: "Go to previous page" });
 	}
 }
 
@@ -62,7 +55,11 @@ export class Row {
 		this.headerCells = headerCells;
 	}
 
-	getCell(columnLabel: string): Cell {
+	getCell(columnLabel: string | number): Cell {
+		if (typeof columnLabel === "number") {
+			return new Cell(this.row, columnLabel);
+		}
+
 		const columnIndex = this.headerCells.indexOf(columnLabel);
 
 		if (columnIndex === -1) {
@@ -91,13 +88,8 @@ export class Cell {
 		return this.cell;
 	}
 
-	async assertEqual(expected: string) {
+	async assertEqual(expected: string | RegExp) {
 		const actualText = (await this.cell.innerText()).trim();
-		expect(actualText).toBe(expected);
-	}
-
-	async assertContain(expected: string) {
-		const actualText = (await this.cell.innerText()).trim();
-		expect(actualText).toContain(expected);
+		expect(actualText).toMatch(expected);
 	}
 }

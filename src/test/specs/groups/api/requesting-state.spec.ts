@@ -63,7 +63,7 @@ test("Reject the request", async () => {
 });
 
 test("Invite", async () => {
-	expect(await usersInfo.requesters.harry.groups.invite.mutate({ groupId: group.id, userId: usersInfo.userIds.ron })).toEqual({
+	expect(await usersInfo.requesters.harry.groups.invite.mutate({ groupId: group.id, userIds: [usersInfo.userIds.ron] })).toEqual({
 		ok: false,
 		error: "User is already requested."
 	});

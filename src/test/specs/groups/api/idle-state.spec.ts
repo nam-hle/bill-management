@@ -16,7 +16,7 @@ test.beforeEach(async () => {
 test("Request to non-existing group", async () => {
 	await expect(usersInfo.requesters.ron.groups.request.mutate({ groupDisplayId: "12345678" })).resolves.toEqual({
 		ok: false,
-		error: "Group not found"
+		error: "Group 12345678 does not exist"
 	});
 });
 
@@ -36,7 +36,7 @@ test("Request to existing group", async () => {
 });
 
 test("Invite", async () => {
-	expect(await usersInfo.requesters.harry.groups.invite.mutate({ groupId: group.id, userId: usersInfo.userIds.ron })).toEqual({ ok: true });
+	expect(await usersInfo.requesters.harry.groups.invite.mutate({ groupId: group.id, userIds: [usersInfo.userIds.ron] })).toEqual({ ok: true });
 
 	expect(await usersInfo.requesters.harry.groups.invites.query({ groupId: group.id })).toEqual([
 		{
