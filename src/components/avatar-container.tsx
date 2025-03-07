@@ -1,6 +1,6 @@
 import { useRouter } from "next/navigation";
-import { User, LogOut } from "lucide-react";
 import React, { use, Suspense } from "react";
+import { User, Users, LogOut } from "lucide-react";
 
 import { Skeleton } from "@/components/shadcn/skeleton";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/shadcn/avatar";
@@ -30,7 +30,7 @@ function UserNav(props: AvatarContainer.Props) {
 		<DropdownMenuTrigger asChild>
 			<Avatar className="h-8 w-8 cursor-pointer">
 				<AvatarImage src={userInfo?.avatarUrl} />
-				<AvatarFallback className="text-sm">{getAvatarFallback(userInfo.fullName)}</AvatarFallback>
+				<AvatarFallback className="text-xs">{getAvatarFallback(userInfo.fullName)}</AvatarFallback>
 			</Avatar>
 		</DropdownMenuTrigger>
 	);
@@ -68,7 +68,11 @@ export const AvatarContainer: React.FC<AvatarContainer.Props> = ({ pendingUserIn
 				<DropdownMenuGroup>
 					<DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/profile")}>
 						<User className="mr-2 h-4 w-4" />
-						<span>Profile</span>
+						<span>Your profile</span>
+					</DropdownMenuItem>
+					<DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/groups")}>
+						<Users className="mr-2 h-4 w-4" />
+						<span>Your groups</span>
 					</DropdownMenuItem>
 					<DropdownMenuItem onClick={signOut} className="cursor-pointer">
 						<LogOut className="mr-2 h-4 w-4" />

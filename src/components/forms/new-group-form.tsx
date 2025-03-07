@@ -1,0 +1,91 @@
+"use client";
+
+import { Plus } from "lucide-react";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+
+import { Input } from "@/components/shadcn/input";
+import { Button } from "@/components/shadcn/button";
+import { Form, FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
+import { Dialog, DialogTitle, DialogHeader, DialogContent, DialogTrigger, DialogDescription } from "@/components/shadcn/dialog";
+
+import { RequiredLabel } from "@/components/required-label";
+import { LoadingButton } from "@/components/loading-button";
+
+import { cn } from "@/utils/cn";
+import { trpc } from "@/services";
+import { useToast } from "@/hooks/use-toast";
+import { type NewGroupFormState } from "@/schemas/group.schema";
+
+export const NewGroupDialog = () => {
+	const [open, setOpen] = useState(false);
+
+	const form = useForm<NewGroupFormState>({
+		defaultValues: { name: "" }
+	});
+
+	const {
+		control,
+		handleSubmit,
+		formState: { isSubmitting }
+	} = form;
+
+	const { toast } = useToast();
+	const utils = trpc.useUtils();
+	const { mutate, isPending } = trpc.groups.create.useMutation({
+		onSuccess: () => {
+			utils.groups.groups.invalidate().then(() => {
+				toast({ title: "Group created", description: "New group has been created." });
+				setOpen(false);
+			});
+		},
+		onError: () => {
+			toast({
+				variant: "destructive",
+				title: "Failed to create the group",
+				description: "An error occurred while creating the group. Please try again."
+			});
+		}
+	});
+
+	const onSubmit = React.useMemo(() => handleSubmit((data) => mutate(data)), [handleSubmit, mutate]);
+
+	return (
+		<Dialog open={open} onOpenChange={setOpen}>
+			<DialogTrigger asChild>
+				<Button size="sm">
+					<Plus className="h-4 w-4" />
+					New
+				</Button>
+			</DialogTrigger>
+			<DialogContent className="sm:max-w-[425px]">
+				<DialogHeader>
+					<DialogTitle>Create Group</DialogTitle>
+					<DialogDescription>Create a new group and invite people to join.</DialogDescription>
+				</DialogHeader>
+
+				<Form {...form}>
+					<form onSubmit={onSubmit} className={cn("grid items-start gap-4")}>
+						<FormField
+							name="name"
+							control={control}
+							render={({ field }) => (
+								<FormItem>
+									<RequiredLabel>Name</RequiredLabel>
+									<FormControl>
+										<Input {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<LoadingButton size="sm" type="submit" loadingText="Creating..." loading={isSubmitting || isPending}>
+							Create
+						</LoadingButton>
+					</form>
+				</Form>
+			</DialogContent>
+		</Dialog>
+	);
+};

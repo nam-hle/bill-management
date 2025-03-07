@@ -16,7 +16,7 @@ test.beforeEach(async () => {
 test("Request to non-existing group", async () => {
 	await expect(usersInfo.requesters.ron.groups.request.mutate({ groupDisplayId: "12345678" })).resolves.toEqual({
 		ok: false,
-		error: "Group not found"
+		error: "Group 12345678 does not exist"
 	});
 });
 
@@ -26,26 +26,26 @@ test("Request to existing group", async () => {
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([
 		{
 			id: expect.any(String),
-			user: { avatar: null, id: expect.any(String), fullName: FULL_NAMES.ron }
+			user: { avatar: null, fullName: FULL_NAMES.ron, userId: expect.any(String) }
 		}
 	]);
 
 	expect(await usersInfo.requesters.harry.groups.members.query({ groupId: group.id })).toEqual([
-		{ avatar: null, id: expect.any(String), fullName: FULL_NAMES.harry }
+		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });
 
 test("Invite", async () => {
-	expect(await usersInfo.requesters.harry.groups.invite.mutate({ groupId: group.id, userId: usersInfo.userIds.ron })).toEqual({ ok: true });
+	expect(await usersInfo.requesters.harry.groups.invite.mutate({ groupId: group.id, userIds: [usersInfo.userIds.ron] })).toEqual([{ ok: true }]);
 
 	expect(await usersInfo.requesters.harry.groups.invites.query({ groupId: group.id })).toEqual([
 		{
 			id: expect.any(String),
-			user: { avatar: null, id: expect.any(String), fullName: FULL_NAMES.ron }
+			user: { avatar: null, fullName: FULL_NAMES.ron, userId: expect.any(String) }
 		}
 	]);
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.members.query({ groupId: group.id })).toEqual([
-		{ avatar: null, id: expect.any(String), fullName: FULL_NAMES.harry }
+		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });

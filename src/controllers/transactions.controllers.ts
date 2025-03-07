@@ -140,8 +140,8 @@ export namespace TransactionsControllers {
 
 		return {
 			...rest,
-			sender: { id: sender.userId, avatar: sender.avatar, fullName: sender.fullName },
-			receiver: { id: receiver.userId, avatar: receiver.avatar, fullName: receiver.fullName }
+			sender: { userId: sender.userId, avatar: sender.avatar, fullName: sender.fullName },
+			receiver: { userId: receiver.userId, avatar: receiver.avatar, fullName: receiver.fullName }
 		};
 	}
 

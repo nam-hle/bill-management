@@ -99,13 +99,12 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 	);
 
 	const query = useDebounce({ ...filters, q: filters.q || undefined }, 500);
-	const { data, isPending } = trpc.bills.getMany.useQuery(query);
+	const { data } = trpc.bills.getMany.useQuery(query);
 
 	return (
 		<DataTable
 			title="Bills"
 			action={action}
-			loading={isPending}
 			data={data?.data?.map((row) => ({ ...row, href: `/bills/${row.id}` }))}
 			pagination={{
 				pageNumber: query.page,

@@ -2,9 +2,9 @@ import { Avatar, AvatarFallback } from "@/components/shadcn/avatar";
 
 import { FallbackAvatar } from "@/components/fallbackable-avatar";
 
-import type { ClientBillMember } from "@/schemas";
+import type { ClientUser } from "@/schemas";
 
-export const AvatarGroup = ({ users, max = 3 }: { max?: number; users: ClientBillMember[] }) => {
+export const AvatarGroup = ({ users, max = 3 }: { max?: number; users: ClientUser[] }) => {
 	const totalUsers = users.length;
 	const displayUsers = totalUsers === max + 1 ? users : users.slice(0, max);
 	const remaining = totalUsers - displayUsers.length;

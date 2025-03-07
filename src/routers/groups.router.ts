@@ -4,24 +4,37 @@ import { ClientUserSchema } from "@/schemas";
 import { MemberAction } from "@/controllers/member-transition";
 import { GroupController } from "@/controllers/group.controller";
 import { router, privateProcedure } from "@/services/trpc/server";
-import { GroupSchema, MembershipSchema, MembershipStatusSchema, MembershipChangeResponseSchema } from "@/schemas/group.schema";
+import { GroupSchema, MembershipSchema, GroupDetailsSchema, MembershipStatusSchema, MembershipChangeResponseSchema } from "@/schemas/group.schema";
 
 export const groupsRouter = router({
+	group: privateProcedure
+		.input(z.object({ displayId: z.string() }))
+		.output(GroupDetailsSchema)
+		.query(({ input, ctx: { supabase } }) => GroupController.getGroupDetailsByDisplayId(supabase, input)),
+
+	groups: privateProcedure
+		.output(z.array(GroupDetailsSchema))
+		.query(({ ctx: { user, supabase } }) => GroupController.getGroups(supabase, { userId: user.id })),
+
 	members: privateProcedure
 		.input(z.object({ groupId: z.string() }))
 		.output(z.array(ClientUserSchema))
-		.query(({ input, ctx: { supabase } }) => GroupController.getMembers(supabase, input)),
+		.query(({ input, ctx: { supabase } }) => GroupController.getActiveMembers(supabase, input)),
+	candidateMembers: privateProcedure
+		.input(z.object({ groupId: z.string(), textSearch: z.string() }))
+		.output(z.array(ClientUserSchema))
+		.query(({ input, ctx: { supabase } }) => GroupController.getCandidateMembers(supabase, input)),
 	invites: privateProcedure
 		.input(z.object({ groupId: z.string() }))
 		.output(z.array(MembershipSchema))
 		.query(({ input, ctx: { supabase } }) =>
-			GroupController.getMembershipsByStatus(supabase, { ...input, status: MembershipStatusSchema.enum.Inviting })
+			GroupController.getMembershipsByStatus(supabase, { ...input, statuses: [MembershipStatusSchema.enum.Inviting] })
 		),
 	requests: privateProcedure
 		.input(z.object({ groupId: z.string() }))
 		.output(z.array(MembershipSchema))
 		.query(({ input, ctx: { supabase } }) =>
-			GroupController.getMembershipsByStatus(supabase, { ...input, status: MembershipStatusSchema.enum.Requesting })
+			GroupController.getMembershipsByStatus(supabase, { ...input, statuses: [MembershipStatusSchema.enum.Requesting] })
 		),
 
 	create: privateProcedure
@@ -48,16 +61,12 @@ export const groupsRouter = router({
 			const group = await GroupController.findGroupByDisplayId(supabase, { displayId: input.groupDisplayId });
 
 			if (!group) {
-				return { ok: false, error: "Group not found" };
+				return { ok: false, error: `Group ${input.groupDisplayId} does not exist` };
 			}
 
 			return GroupController.changeMembershipStatus(supabase, { userId: user.id, groupId: group?.id, action: MemberAction.REQUEST });
 		}),
 
-	invite: privateProcedure
-		.input(z.object({ userId: z.string(), groupId: z.string() }))
-		.output(MembershipChangeResponseSchema)
-		.mutation(({ input, ctx: { supabase } }) => GroupController.changeMembershipStatus(supabase, { ...input, action: MemberAction.INVITE })),
 	acceptInvite: privateProcedure
 		.input(z.object({ invitationId: z.string() }))
 		.output(MembershipChangeResponseSchema)
@@ -69,5 +78,15 @@ export const groupsRouter = router({
 		.output(MembershipChangeResponseSchema)
 		.mutation(({ input, ctx: { supabase } }) =>
 			GroupController.resolvePendingStatus(supabase, { membershipId: input.invitationId, action: MemberAction.REJECT_INVITE })
-		)
+		),
+	invite: privateProcedure
+		.input(z.object({ groupId: z.string(), userIds: z.array(z.string()) }))
+		.output(z.array(MembershipChangeResponseSchema))
+		.mutation(({ input, ctx: { supabase } }) => {
+			return Promise.all(
+				input.userIds.map((userId) => {
+					return GroupController.changeMembershipStatus(supabase, { ...input, userId, action: MemberAction.INVITE });
+				})
+			);
+		})
 });

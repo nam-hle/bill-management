@@ -38,7 +38,7 @@ export const TransactionAction: React.FC<TransactionAction.Props> = ({ transacti
 		}
 	});
 
-	if (transaction.status === TransactionStatusEnumSchema.enum.Waiting && transaction.receiver.id === currentUserId) {
+	if (transaction.status === TransactionStatusEnumSchema.enum.Waiting && transaction.receiver.userId === currentUserId) {
 		return (
 			<Button
 				size="sm"
@@ -51,7 +51,7 @@ export const TransactionAction: React.FC<TransactionAction.Props> = ({ transacti
 		);
 	}
 
-	if (transaction.status === TransactionStatusEnumSchema.enum.Waiting && transaction.sender.id === currentUserId) {
+	if (transaction.status === TransactionStatusEnumSchema.enum.Waiting && transaction.sender.userId === currentUserId) {
 		return (
 			<Button
 				size="sm"

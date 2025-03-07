@@ -19,7 +19,7 @@ test.beforeEach(async () => {
 	expect(requests).toEqual([
 		{
 			id: expect.any(String),
-			user: { avatar: null, id: expect.any(String), fullName: FULL_NAMES.ron }
+			user: { avatar: null, fullName: FULL_NAMES.ron, userId: expect.any(String) }
 		}
 	]);
 
@@ -29,15 +29,15 @@ test.beforeEach(async () => {
 test("Request again", async () => {
 	expect(await usersInfo.requesters.ron.groups.request.mutate({ groupDisplayId: group.displayId })).toEqual({
 		ok: false,
-		error: "User is already requested."
+		error: "Your request to join this group has already been submitted. Please wait for approval."
 	});
 
 	expect(await usersInfo.requesters.harry.groups.invites.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([
-		{ id: requestId, user: { avatar: null, id: expect.any(String), fullName: FULL_NAMES.ron } }
+		{ id: requestId, user: { avatar: null, fullName: FULL_NAMES.ron, userId: expect.any(String) } }
 	]);
 	expect(await usersInfo.requesters.harry.groups.members.query({ groupId: group.id })).toEqual([
-		{ avatar: null, id: expect.any(String), fullName: FULL_NAMES.harry }
+		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });
 
@@ -47,8 +47,8 @@ test("Accept the request", async () => {
 	expect(await usersInfo.requesters.harry.groups.invites.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.members.query({ groupId: group.id })).toEqual([
-		{ avatar: null, id: expect.any(String), fullName: FULL_NAMES.harry },
-		{ avatar: null, id: expect.any(String), fullName: FULL_NAMES.ron }
+		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry },
+		{ avatar: null, fullName: FULL_NAMES.ron, userId: expect.any(String) }
 	]);
 });
 
@@ -58,22 +58,24 @@ test("Reject the request", async () => {
 	expect(await usersInfo.requesters.harry.groups.invites.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.members.query({ groupId: group.id })).toEqual([
-		{ avatar: null, id: expect.any(String), fullName: FULL_NAMES.harry }
+		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });
 
 test("Invite", async () => {
-	expect(await usersInfo.requesters.harry.groups.invite.mutate({ groupId: group.id, userId: usersInfo.userIds.ron })).toEqual({
-		ok: false,
-		error: "User is already requested."
-	});
+	expect(await usersInfo.requesters.harry.groups.invite.mutate({ groupId: group.id, userIds: [usersInfo.userIds.ron] })).toEqual([
+		{
+			ok: false,
+			error: "User is already requested."
+		}
+	]);
 
 	expect(await usersInfo.requesters.harry.groups.invites.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([
-		{ id: requestId, user: { avatar: null, id: expect.any(String), fullName: FULL_NAMES.ron } }
+		{ id: requestId, user: { avatar: null, fullName: FULL_NAMES.ron, userId: expect.any(String) } }
 	]);
 	expect(await usersInfo.requesters.harry.groups.members.query({ groupId: group.id })).toEqual([
-		{ avatar: null, id: expect.any(String), fullName: FULL_NAMES.harry }
+		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });
 
@@ -85,10 +87,10 @@ test("Accept the invitation", async () => {
 
 	expect(await usersInfo.requesters.harry.groups.invites.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([
-		{ id: requestId, user: { avatar: null, id: expect.any(String), fullName: FULL_NAMES.ron } }
+		{ id: requestId, user: { avatar: null, fullName: FULL_NAMES.ron, userId: expect.any(String) } }
 	]);
 	expect(await usersInfo.requesters.harry.groups.members.query({ groupId: group.id })).toEqual([
-		{ avatar: null, id: expect.any(String), fullName: FULL_NAMES.harry }
+		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });
 
@@ -100,9 +102,9 @@ test("Reject the invitation", async () => {
 
 	expect(await usersInfo.requesters.harry.groups.invites.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([
-		{ id: requestId, user: { avatar: null, id: expect.any(String), fullName: FULL_NAMES.ron } }
+		{ id: requestId, user: { avatar: null, fullName: FULL_NAMES.ron, userId: expect.any(String) } }
 	]);
 	expect(await usersInfo.requesters.harry.groups.members.query({ groupId: group.id })).toEqual([
-		{ avatar: null, id: expect.any(String), fullName: FULL_NAMES.harry }
+		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });

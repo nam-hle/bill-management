@@ -18,6 +18,6 @@ test("Create group", async () => {
 	]);
 
 	expect(await requester.groups.members.query({ groupId: firstGroup.id })).toEqual([
-		{ avatar: null, id: expect.any(String), fullName: FULL_NAMES.harry }
+		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });

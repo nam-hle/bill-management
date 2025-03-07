@@ -7,6 +7,7 @@ import { type MemberAction, changeMemberStatus } from "@/controllers/member-tran
 import {
 	type Group,
 	type Membership,
+	type GroupDetails,
 	type MembershipKey,
 	type MembershipStatus,
 	MembershipStatusSchema,
@@ -46,10 +47,44 @@ export namespace GroupController {
 		return data;
 	}
 
-	export async function getMembers(supabase: SupabaseInstance, payload: { groupId: string }): Promise<ClientUser[]> {
-		const members = await getMembershipsByStatus(supabase, { ...payload, status: MembershipStatusSchema.enum.Active });
+	export async function getCandidateMembers(supabase: SupabaseInstance, payload: { groupId: string; textSearch: string }): Promise<ClientUser[]> {
+		const activeOrPendingMemberIds = (
+			await getMembershipsByStatus(supabase, {
+				...payload,
+				statuses: [MembershipStatusSchema.enum.Active, MembershipStatusSchema.enum.Requesting, MembershipStatusSchema.enum.Inviting]
+			})
+		).map((e) => e.user.userId);
+		const users = await UsersControllers.findByName(supabase, payload);
+
+		return users.data.filter(({ userId }) => !activeOrPendingMemberIds.includes(userId));
+	}
+
+	export async function getActiveMembers(supabase: SupabaseInstance, payload: { groupId: string }): Promise<ClientUser[]> {
+		const members = await getMembershipsByStatus(supabase, { ...payload, statuses: [MembershipStatusSchema.enum.Active] });
 
 		return members.map(({ user }) => user);
+	}
+
+	export async function getGroups(supabase: SupabaseInstance, payload: { userId: string }): Promise<GroupDetails[]> {
+		const { data: groups } = await supabase
+			.from("memberships")
+			.select(`group:groups!group_id (${GROUP_SELECT})`)
+			.eq("user_id", payload.userId)
+			.eq("status", MembershipStatusSchema.enum.Active);
+
+		return await Promise.all(groups?.map((group) => getGroupDetailsByDisplayId(supabase, { displayId: group.group.displayId })) ?? []);
+	}
+
+	export async function getGroupDetailsByDisplayId(supabase: SupabaseInstance, payload: { displayId: string }): Promise<GroupDetails> {
+		const { data: group } = await supabase.from("groups").select(GROUP_SELECT).eq("display_id", payload.displayId).single();
+
+		if (!group) {
+			throw new Error(`Group ${payload.displayId} does not exist`);
+		}
+
+		const members = await getActiveMembers(supabase, { groupId: group.id });
+
+		return { ...group, members };
 	}
 
 	export async function findGroupByDisplayId(supabase: SupabaseInstance, payload: { displayId: string }): Promise<Group | null> {
@@ -60,13 +95,14 @@ export namespace GroupController {
 
 	export async function getMembershipsByStatus(
 		supabase: SupabaseInstance,
-		payload: { groupId: string; status: MembershipStatus }
+		payload: { groupId: string; statuses: [MembershipStatus, ...MembershipStatus[]] }
 	): Promise<Membership[]> {
 		const { data, error } = await supabase
 			.from("memberships")
 			.select(`id, status, user:profiles!user_id (${UsersControllers.USERS_SELECT})`)
 			.eq("group_id", payload.groupId)
-			.eq("status", payload.status);
+			.in("status", payload.statuses)
+			.order("created_at", { ascending: true });
 
 		if (error) {
 			throw error;

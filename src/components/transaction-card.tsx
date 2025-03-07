@@ -10,7 +10,7 @@ import { formatCurrency } from "@/utils/format";
 import { type ClientTransaction } from "@/schemas";
 
 export const TransactionCard = ({ transaction, currentUserId }: { currentUserId: string; transaction: ClientTransaction }) => {
-	const isReceived = transaction.receiver.id === currentUserId;
+	const isReceived = transaction.receiver.userId === currentUserId;
 	const other = isReceived ? transaction.sender : transaction.receiver;
 
 	return (

@@ -46,6 +46,7 @@ export function changeMemberStatus(
 					return { ok: true, newStatus: MembershipStatusSchema.enum.Idle };
 
 				case MemberAction.REQUEST:
+					return { ok: false, error: `You are already a member of this group and do not need to send a request.` };
 				case MemberAction.ACCEPT_REQUEST:
 				case MemberAction.REJECT_REQUEST:
 				case MemberAction.INVITE:
@@ -59,7 +60,7 @@ export function changeMemberStatus(
 		case MembershipStatusSchema.enum.Requesting:
 			switch (action) {
 				case MemberAction.REQUEST:
-					return { ok: false, error: `User is already requested.` };
+					return { ok: false, error: "Your request to join this group has already been submitted. Please wait for approval." };
 				case MemberAction.ACCEPT_REQUEST:
 					return { ok: true, newStatus: MembershipStatusSchema.enum.Active };
 				case MemberAction.REJECT_REQUEST:
@@ -81,6 +82,7 @@ export function changeMemberStatus(
 		case MembershipStatusSchema.enum.Inviting:
 			switch (action) {
 				case MemberAction.REQUEST:
+					return { ok: false, error: "You have already received an invitation to join this group. Please check your pending invitations." };
 				case MemberAction.ACCEPT_REQUEST:
 				case MemberAction.REJECT_REQUEST:
 					return { ok: false, error: `User is already invited. Please wait for the response.` };
