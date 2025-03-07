@@ -2,6 +2,7 @@
 
 import React from "react";
 import { type z } from "zod";
+import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { parse, format } from "date-fns";
 import { useForm } from "react-hook-form";
@@ -20,7 +21,6 @@ import { TransactionStatusBadge } from "@/components/mics/transaction-status-bad
 
 import { API } from "@/api";
 import { trpc } from "@/services";
-import { useToast } from "@/hooks/use-toast";
 import { CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
 import { type ClientUser, type ClientTransaction } from "@/schemas";
 import { IssuedAtField, IssuedAtFieldTransformer, RequiredAmountFieldSchema } from "@/schemas/form.schema";
@@ -52,7 +52,6 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 	const editing = React.useMemo(() => kind.type === "create", [kind.type]);
 	// const [_qrImage, setQrImage] = React.useState<string | undefined>(undefined);
 
-	const { toast } = useToast();
 	const router = useRouter();
 	// const { mutate: generateQR } = useMutation({
 	// 	mutationFn: API.QR.Create.mutate,
@@ -77,15 +76,10 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 	const utils = trpc.useUtils();
 	const { mutate } = trpc.transactions.create.useMutation({
 		onError: () => {
-			toast({
-				variant: "destructive",
-				title: "Failed to create transaction",
-				description: "An error occurred while creating the transaction. Please try again."
-			});
+			toast.error("Failed to create transaction");
 		},
 		onSuccess: () => {
-			toast({
-				title: "Transaction created successfully",
+			toast.success("Transaction created successfully", {
 				description: "A new transaction has been created and saved successfully. Redirecting to transactions page..."
 			});
 

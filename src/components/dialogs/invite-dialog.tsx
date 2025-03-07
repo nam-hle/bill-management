@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import React, { useState } from "react";
 import { useDebounce } from "@uidotdev/usehooks";
 import { X, Check, Loader2, UserPlus } from "lucide-react";
@@ -14,7 +15,6 @@ import { UserDisplay } from "@/components/avatars/user-display";
 
 import { trpc } from "@/services";
 import { type ClientUser } from "@/schemas";
-import { useToast } from "@/hooks/use-toast";
 
 namespace InviteDialog {
 	export interface Props {
@@ -35,19 +35,18 @@ export const InviteDialog: React.FC<InviteDialog.Props> = ({ groupId }) => {
 		{ enabled: searchQuery !== "" }
 	);
 
-	const { toast } = useToast();
 	const utils = trpc.useUtils();
 	const mutation = trpc.groups.invite.useMutation({
 		onSuccess: (data) => {
 			if (data.every((result) => result.ok)) {
-				toast({ title: "Send invites successfully" });
+				toast.success("Send invites successfully");
 
 				utils.groups.invites.invalidate({ groupId }).then(() => {
 					setIsOpen(false);
 					setInvitedUsers([]);
 				});
 			} else {
-				toast({ title: "Send invites failed" });
+				toast.error("Send invites failed");
 			}
 		}
 	});

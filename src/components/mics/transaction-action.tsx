@@ -1,10 +1,10 @@
 import React from "react";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/shadcn/button";
 
 import { trpc } from "@/services";
-import { useToast } from "@/hooks/use-toast";
 import { capitalize, convertVerb } from "@/utils";
 import { type ClientTransaction, TransactionStatusEnumSchema } from "@/schemas";
 
@@ -19,18 +19,12 @@ export const TransactionAction: React.FC<TransactionAction.Props> = ({ transacti
 	const router = useRouter();
 	const utils = trpc.useUtils();
 
-	const { toast } = useToast();
 	const mutation = trpc.transactions.update.useMutation({
 		onError: (_, { status }) => {
-			toast({
-				variant: "destructive",
-				title: `Transaction ${capitalize(convertVerb(status).pastTense)}`,
-				description: `An error occurred while ${convertVerb(status).vIng} the transaction`
-			});
+			toast.error(`Transaction ${capitalize(convertVerb(status).pastTense)}`);
 		},
 		onSuccess: (_, { status }) => {
-			toast({
-				title: `Transaction ${capitalize(convertVerb(status).pastTense)}`,
+			toast.success(`Transaction ${capitalize(convertVerb(status).pastTense)}`, {
 				description: `The transaction has been ${convertVerb(status).pastTense} successfully`
 			});
 

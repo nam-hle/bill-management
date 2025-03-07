@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import React from "react";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { DevTool } from "@hookform/devtools";
@@ -24,7 +25,6 @@ import { BillMemberInputs } from "@/components/forms/inputs/bill-member-inputs";
 import { API } from "@/api";
 import { trpc } from "@/services";
 import { useBoolean } from "@/hooks";
-import { useToast } from "@/hooks/use-toast";
 import { CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
 import { type ClientBill, type ClientBillMember } from "@/schemas";
 import {
@@ -279,23 +279,15 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 };
 
 function useCreateBill() {
-	const { toast } = useToast();
 	const router = useRouter();
 	const utils = trpc.useUtils();
 
 	const { mutate } = trpc.bills.create.useMutation({
 		onError: () => {
-			toast({
-				variant: "destructive",
-				title: "Failed to create bill",
-				description: "An error occurred while creating the bill. Please try again."
-			});
+			toast.error("Failed to create bill");
 		},
 		onSuccess: () => {
-			toast({
-				title: "Bill created successfully",
-				description: "A new bill has been created and saved successfully."
-			});
+			toast.success("A new bill has been created and saved successfully.");
 
 			utils.bills.get.invalidate().then(() => router.push("/bills"));
 		}
@@ -307,20 +299,12 @@ function useCreateBill() {
 function useUpdateBill(onSuccess: () => void) {
 	const utils = trpc.useUtils();
 
-	const { toast } = useToast();
 	const { mutate } = trpc.bills.update.useMutation({
 		onError: () => {
-			toast({
-				variant: "destructive",
-				title: "Failed to update bill",
-				description: "Unable to update the bill. Please verify your input and retry."
-			});
+			toast.error("Failed to update bill");
 		},
 		onSuccess: () => {
-			toast({
-				title: "Bill updated successfully",
-				description: "The bill details have been updated successfully."
-			});
+			toast.success("The bill details have been updated successfully.");
 
 			utils.bills.get.invalidate().then(onSuccess);
 		}

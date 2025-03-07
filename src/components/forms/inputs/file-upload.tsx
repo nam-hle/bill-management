@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { toast } from "sonner";
 import { useDropzone } from "react-dropzone";
 import { Trash2, UploadCloud } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
@@ -14,7 +15,6 @@ import { cn } from "@/utils/cn";
 import { trpc } from "@/services";
 import { generateUid } from "@/utils";
 import { type BucketName } from "@/schemas";
-import { useToast } from "@/hooks/use-toast";
 import { createSupabaseClient } from "@/services/supabase/client";
 
 namespace FileUpload {
@@ -132,19 +132,14 @@ export const FileUpload = ({ fileId, loading, ownerId, editing, onChange, button
 };
 
 function useFileUploader(onSuccess: (filePath: string) => void) {
-	const { toast } = useToast();
 	const { mutate, isPending } = useMutation({
 		mutationFn: uploadFile,
-		onSuccess: (filePath) => {
-			toast({ title: "Image uploaded", description: "The image has been uploaded successfully." });
-			onSuccess(filePath);
-		},
 		onError: () => {
-			toast({
-				variant: "destructive",
-				title: "Failed to upload avatar",
-				description: "An error occurred while uploading the avatar. Please try again."
-			});
+			toast.error("Failed to upload avatar");
+		},
+		onSuccess: (filePath) => {
+			toast.success("Image uploaded", { description: "The image has been uploaded successfully." });
+			onSuccess(filePath);
 		}
 	});
 

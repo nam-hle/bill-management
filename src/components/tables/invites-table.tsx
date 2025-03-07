@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { toast } from "sonner";
 import { X, Check } from "lucide-react";
 
 import { Button } from "@/components/shadcn/button";
@@ -8,7 +9,6 @@ import { Button } from "@/components/shadcn/button";
 import { DataTable } from "@/components/tables/data-table";
 
 import { trpc } from "@/services";
-import { useToast } from "@/hooks/use-toast";
 
 namespace InvitesTable {
 	export interface Props {
@@ -21,23 +21,22 @@ export const InvitesTable: React.FC<InvitesTable.Props> = (props) => {
 
 	const { data } = trpc.users.invites.useQuery();
 
-	const { toast } = useToast();
 	const utils = trpc.useUtils();
 	const accept = trpc.groups.acceptInvite.useMutation({
 		onError: () => {
-			toast({ title: "Error", variant: "destructive", description: "An error occurred while joining the group" });
+			toast.error("An error occurred while joining the group");
 		},
 		onSuccess: () => {
-			toast({ title: "Congratulation", description: "You have successfully joined the group!" });
+			toast.success("You have successfully joined the group!");
 			utils.groups.groups.invalidate().then(() => utils.users.invites.invalidate());
 		}
 	});
 	const reject = trpc.groups.rejectInvite.useMutation({
 		onError: () => {
-			toast({ title: "Error", variant: "destructive", description: "An error occurred while rejecting the group" });
+			toast.error("An error occurred while rejecting the group");
 		},
 		onSuccess: () => {
-			utils.users.invites.invalidate().then(() => toast({ title: "Rejected", description: "You have successfully rejected the invitation!" }));
+			utils.users.invites.invalidate().then(() => toast.success("You have successfully rejected the invitation!"));
 		}
 	});
 

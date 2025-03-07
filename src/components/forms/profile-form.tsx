@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 
 import { Input } from "@/components/shadcn/input";
@@ -12,7 +13,6 @@ import { FileUpload } from "@/components/forms/inputs/file-upload";
 import { LoadingButton } from "@/components/buttons/loading-button";
 
 import { trpc } from "@/services";
-import { useToast } from "@/hooks/use-toast";
 import { type ProfileFormPayload } from "@/schemas";
 import { getAvatarFallback } from "@/utils/avatar-fallback";
 
@@ -37,18 +37,13 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 		formState: { isDirty, isSubmitting }
 	} = form;
 
-	const { toast } = useToast();
 	const { mutate, isPending } = trpc.profile.update.useMutation({
+		onError: () => {
+			toast.error("Failed to update profile");
+		},
 		onSuccess: (data) => {
 			reset(data);
-			toast({ title: "Profile updated", description: "Your profile has been updated successfully." });
-		},
-		onError: () => {
-			toast({
-				variant: "destructive",
-				title: "Failed to update profile",
-				description: "An error occurred while updating the profile. Please try again."
-			});
+			toast.success("Profile updated", { description: "Your profile has been updated successfully." });
 		}
 	});
 
