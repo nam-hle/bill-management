@@ -10,6 +10,7 @@ import { Command, CommandItem, CommandList, CommandEmpty, CommandGroup, CommandI
 
 import { cn } from "@/utils/cn";
 import { trpc } from "@/services";
+import { useToast } from "@/hooks/use-toast";
 
 export const GroupSwitcher = () => {
 	const [open, setOpen] = React.useState(false);
@@ -17,10 +18,13 @@ export const GroupSwitcher = () => {
 	const { data: groups } = trpc.groups.groups.useQuery();
 	const { data: selectedGroup } = trpc.profile.selectedGroup.useQuery();
 
+	const { toast } = useToast();
 	const utils = trpc.useUtils();
 	const selectGroup = trpc.profile.selectGroup.useMutation({
 		onSuccess: () => {
-			utils.profile.selectedGroup.invalidate();
+			utils.profile.selectedGroup.invalidate().then(() => {
+				toast({ title: "Change group", description: "You have successfully changed the group" });
+			});
 		}
 	});
 
