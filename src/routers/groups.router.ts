@@ -7,6 +7,9 @@ import { router, privateProcedure } from "@/services/trpc/server";
 import { GroupSchema, MembershipSchema, GroupDetailsSchema, MembershipStatusSchema, MembershipChangeResponseSchema } from "@/schemas/group.schema";
 
 export const groupsRouter = router({
+	updateName: privateProcedure
+		.input(z.object({ name: z.string(), groupId: z.string() }))
+		.mutation(({ input, ctx: { supabase } }) => GroupController.updateName(supabase, input)),
 	group: privateProcedure
 		.input(z.object({ displayId: z.string() }))
 		.output(GroupDetailsSchema)

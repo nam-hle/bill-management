@@ -71,7 +71,14 @@ export const GroupForm: React.FC<{
 		defaultValues: { name: "", members: [], displayId: "" }
 	});
 
-	const { reset, control, getValues } = form;
+	const updateName = trpc.groups.updateName.useMutation();
+
+	const { reset, control, getValues, handleSubmit } = form;
+
+	const onSubmit = React.useMemo(
+		() => handleSubmit((data) => updateName.mutate({ name: data.name, groupId: group?.id ?? "" })),
+		[group?.id, handleSubmit, updateName]
+	);
 
 	React.useEffect(() => {
 		if (group) {
@@ -84,39 +91,43 @@ export const GroupForm: React.FC<{
 			<Heading>Group Details</Heading>
 
 			<Form {...form}>
-				<FormField
-					name="displayId"
-					control={control}
-					render={({ field }) => (
-						<div className="flex items-end justify-between gap-2">
-							<FormItem className="w-full">
-								<RequiredLabel>ID</RequiredLabel>
-								<FormControl>
-									<Input readOnly className="pointer-events-none" {...field} />
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-							<CopyButton text={field.value} />
-						</div>
-					)}
-				/>
-
-				<div className="flex items-end justify-between gap-2">
+				<form onSubmit={onSubmit}>
 					<FormField
-						name="name"
+						name="displayId"
 						control={control}
 						render={({ field }) => (
-							<FormItem className="w-full">
-								<RequiredLabel>Name </RequiredLabel>
-								<FormControl>
-									<Input placeholder="My group" {...field} />
-								</FormControl>
-								<FormMessage />
-							</FormItem>
+							<div className="flex items-end justify-between gap-2">
+								<FormItem className="w-full">
+									<RequiredLabel>ID</RequiredLabel>
+									<FormControl>
+										<Input readOnly className="pointer-events-none" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+								<CopyButton text={field.value} />
+							</div>
 						)}
 					/>
-					<Button size="sm">Save</Button>
-				</div>
+
+					<div className="flex items-end justify-between gap-2">
+						<FormField
+							name="name"
+							control={control}
+							render={({ field }) => (
+								<FormItem className="w-full">
+									<RequiredLabel>Name </RequiredLabel>
+									<FormControl>
+										<Input placeholder="My group" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<Button size="sm" type="submit">
+							Save
+						</Button>
+					</div>
+				</form>
 			</Form>
 
 			<Tabs className="w-full" defaultValue="members">

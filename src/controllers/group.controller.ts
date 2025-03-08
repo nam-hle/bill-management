@@ -47,6 +47,10 @@ export namespace GroupController {
 		return data;
 	}
 
+	export async function updateName(supabase: SupabaseInstance, payload: { name: string; groupId: string }): Promise<void> {
+		await supabase.from("groups").update({ name: payload.name }).eq("id", payload.groupId);
+	}
+
 	export async function getCandidateMembers(supabase: SupabaseInstance, payload: { groupId: string; textSearch: string }): Promise<ClientUser[]> {
 		const activeOrPendingMemberIds = (
 			await getMembershipsByStatus(supabase, {
