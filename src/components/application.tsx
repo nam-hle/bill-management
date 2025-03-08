@@ -16,7 +16,7 @@ export const Application: React.FC<Container & Partial<AvatarContainer.Props>> =
 			<ThemeProvider enableSystem attribute="class" defaultTheme="system" disableTransitionOnChange>
 				<NavigationBar pendingUserInfo={pendingUserInfo} />
 				<main className="mx-auto min-h-[calc(100vh-64px)] max-w-screen-2xl px-8 py-4">{children}</main>
-				<Toaster expand richColors closeButton duration={10000} position="top-right" offset={{ top: "4.5rem" }} />
+				<Toaster expand richColors closeButton duration={10000} position="bottom-left" offset={{ top: "4.5rem" }} />
 			</ThemeProvider>
 			<ReactQueryDevtools initialIsOpen={false} />
 		</TrpcProvider>

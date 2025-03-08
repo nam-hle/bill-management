@@ -21,14 +21,13 @@ import { TransactionStatusBadge } from "@/components/mics/transaction-status-bad
 
 import { API } from "@/api";
 import { trpc } from "@/services";
+import { type ClientTransaction } from "@/schemas";
 import { CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
-import { type ClientUser, type ClientTransaction } from "@/schemas";
 import { IssuedAtField, IssuedAtFieldTransformer, RequiredAmountFieldSchema } from "@/schemas/form.schema";
 
 namespace TransactionForm {
 	export interface Props {
 		readonly currentUserId: string;
-		readonly users: readonly ClientUser[];
 		readonly kind:
 			| {
 					readonly type: "create";
@@ -48,8 +47,11 @@ const FormStateSchema = API.Transactions.Create.PayloadSchema.omit({ amount: tru
 type FormState = z.infer<typeof FormStateSchema>;
 
 export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
-	const { kind, users, currentUserId } = props;
+	const { kind, currentUserId } = props;
 	const editing = React.useMemo(() => kind.type === "create", [kind.type]);
+
+	const { data: users } = trpc.groups.members.useQuery({ excludeMe: true });
+
 	// const [_qrImage, setQrImage] = React.useState<string | undefined>(undefined);
 
 	const router = useRouter();
@@ -83,7 +85,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 				description: "A new transaction has been created and saved successfully. Redirecting to transactions page..."
 			});
 
-			utils.transactions.get.invalidate().then(() => router.push("/transactions"));
+			utils.transactions.getMany.invalidate().then(() => router.push("/transactions"));
 		}
 	});
 
@@ -188,17 +190,11 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 								<Select
 									{...field}
 									disabled={!editing}
+									items={users?.map((user) => ({ value: user.userId, label: user.fullName })) ?? []}
 									onValueChange={(value) => {
 										field.onChange(value);
 										setValue("bankAccountId", undefined);
 									}}
-									items={users.flatMap((user) => {
-										if (user.userId !== currentUserId) {
-											return { value: user.userId, label: user.fullName };
-										}
-
-										return [];
-									})}
 								/>
 							</FormItem>
 						)}

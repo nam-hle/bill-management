@@ -2,6 +2,7 @@ import React from "react";
 import { type Metadata } from "next";
 
 import { TransactionsTable } from "@/components/tables";
+import { GroupSelectionGuard } from "@/components/layouts/group-selection-guard";
 
 import { getCurrentUser } from "@/services/supabase/server";
 
@@ -10,7 +11,11 @@ export const metadata: Metadata = {
 };
 
 export default async function TransactionsPage() {
-	const currentUser = await getCurrentUser();
+	const { id } = await getCurrentUser();
 
-	return <TransactionsTable currentUserId={currentUser.id} />;
+	return (
+		<GroupSelectionGuard>
+			<TransactionsTable currentUserId={id} />
+		</GroupSelectionGuard>
+	);
 }

@@ -27,7 +27,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 	const { member, editing, onRemove } = props;
 	const { watch, control, register, getValues } = useFormContext<BillFormState>();
 
-	const { isSuccess, data: usersResponse, isPending: isPendingUsers } = trpc.users.get.useQuery();
+	const { isSuccess, data: usersResponse, isPending: isPendingUsers } = trpc.groups.members.useQuery();
 
 	const fieldKey = React.useMemo(() => {
 		if (member.type === "creditor") {
@@ -45,12 +45,12 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 		}
 
 		if (member.type === "creditor") {
-			return usersResponse.data;
+			return usersResponse;
 		}
 
 		const debtors = getValues("debtors");
 
-		return usersResponse.data.filter((user) => {
+		return usersResponse.filter((user) => {
 			if (user.userId === debtors[member.debtorIndex]?.userId) {
 				return true;
 			}

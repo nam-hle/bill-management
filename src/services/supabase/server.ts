@@ -4,11 +4,16 @@ import { type SupabaseClient } from "@supabase/supabase-js";
 
 import { Environments } from "@/environments";
 import { type Database } from "@/database.types";
+import { UsersControllers } from "@/controllers";
+import { type Group } from "@/schemas/group.schema";
 import { supabaseClientOptions } from "@/services/supabase/config";
 
 export type SupabaseInstance = SupabaseClient<Database, "public", Database["public"]>;
 
-export async function getCurrentUser() {
+export type UserContext = Awaited<ReturnType<typeof getCurrentUser>>;
+export type MemberContext = Omit<UserContext, "group"> & { group: Group };
+
+export async function getCurrentUser(): Promise<{ id: string; email?: string; group: Group | undefined }> {
 	const supabase = await createSupabaseServer();
 
 	const {
@@ -16,10 +21,13 @@ export async function getCurrentUser() {
 	} = await supabase.auth.getUser();
 
 	if (!currentUser) {
+		// TODO: Redirect to something
 		throw new Error("User not found");
 	}
 
-	return currentUser;
+	const group = await UsersControllers.getSelectedGroup(supabase, currentUser.id);
+
+	return { ...currentUser, group: group ?? undefined };
 }
 
 export async function createSupabaseServer(): Promise<SupabaseInstance> {

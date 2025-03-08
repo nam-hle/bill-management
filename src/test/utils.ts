@@ -6,6 +6,7 @@ export const DEFAULT_PASSWORD = "123456";
 
 export type UserName = keyof typeof USERNAMES;
 export type FullName = (typeof FULL_NAMES)[UserName];
+export type GroupName = "Gryffindor" | "Hogwarts";
 
 export const VND = "₫";
 

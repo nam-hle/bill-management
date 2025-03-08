@@ -1,13 +1,18 @@
+import { TRPCError } from "@trpc/server";
+
 import { type API } from "@/api";
+import { ensureAuthorized } from "@/controllers/utils";
+import { GroupController } from "@/controllers/group.controller";
 import { type ClientBill, type ClientBillMember } from "@/schemas";
-import { type SupabaseInstance } from "@/services/supabase/server";
 import { NotificationsControllers } from "@/controllers/notifications.controllers";
+import { type MemberContext, type SupabaseInstance } from "@/services/supabase/server";
 
 export namespace BillsControllers {
 	const BILLS_SELECT = `
     id,
     creator:profiles!creator_id   (userId:id, fullName:full_name),
     createdAt:created_at,
+    group:groups!group_id (${GroupController.GROUP_SELECT}),
     
     updater:profiles!updater_id   (userId:id, fullName:full_name),
     updatedAt:updated_at,
@@ -22,10 +27,19 @@ export namespace BillsControllers {
 
 	export async function create(
 		supabase: SupabaseInstance,
-		payload: { issuedAt: string; creatorId: string; creditorId: string; totalAmount: number; description: string; receiptFile: string | null }
+		payload: {
+			groupId: string;
+			issuedAt: string;
+			creatorId: string;
+			creditorId: string;
+			totalAmount: number;
+			description: string;
+			receiptFile: string | null;
+		}
 	) {
 		const {
 			description,
+			groupId: group_id,
 			issuedAt: issued_at,
 			creatorId: creator_id,
 			creditorId: creditor_id,
@@ -34,7 +48,7 @@ export namespace BillsControllers {
 		} = payload;
 		const { data } = await supabase
 			.from("bills")
-			.insert({ issued_at, creator_id, description, creditor_id, receipt_file, total_amount })
+			.insert({ group_id, issued_at, creator_id, description, creditor_id, receipt_file, total_amount })
 			.select("id")
 			.single();
 
@@ -57,7 +71,11 @@ export namespace BillsControllers {
 		readonly creditor?: string;
 	}
 
-	export async function getManyByMemberId(supabase: SupabaseInstance, payload: GetManyByMemberIdPayload): Promise<API.Bills.List.Response> {
+	export async function getManyByMemberId(
+		supabase: SupabaseInstance,
+		userContext: MemberContext,
+		payload: GetManyByMemberIdPayload
+	): Promise<API.Bills.List.Response> {
 		const { page, limit, since, debtor, member, creator, creditor, q: textSearch } = payload;
 
 		let sinceDate: string | null = null;
@@ -135,14 +153,17 @@ export namespace BillsControllers {
 	type BillSelectResult = Awaited<ReturnType<typeof __get>>;
 	type BillMemberSelectResult = BillSelectResult["billDebtors"][number];
 
-	export async function getById(supabase: SupabaseInstance, id: string): Promise<ClientBill> {
-		const { data } = await supabase.from("bills").select(BILLS_SELECT).eq("id", id).single();
+	export async function getById(supabase: SupabaseInstance, payload: { userId: string; billId: string }): Promise<ClientBill> {
+		const { data: bill } = await supabase.from("bills").select(BILLS_SELECT).eq("id", payload.billId).single();
 
-		if (!data) {
-			throw `Bill with id ${id} not found`;
+		if (!bill) {
+			throw new TRPCError({ code: "NOT_FOUND", message: "Bill not found" });
 		}
 
-		return toClientBill(data);
+		// TODO: Remove this after implementing RLS
+		await ensureAuthorized(supabase, { userId: payload.userId, groupId: bill.group.id });
+
+		return toClientBill(bill);
 	}
 
 	export async function updateById(

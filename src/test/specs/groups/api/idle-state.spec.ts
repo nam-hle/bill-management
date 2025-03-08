@@ -3,13 +3,14 @@ import { expect } from "@playwright/test";
 import { test } from "@/test/setup";
 import { FULL_NAMES } from "@/test/utils";
 import { type Group } from "@/schemas/group.schema";
-import { seedGroup, type UsersInfo } from "@/test/functions/seed-group";
+import { type UsersInfo } from "@/test/functions/seed-users";
+import { seedBasicPreset } from "@/test/functions/seed-basic-preset";
 
 let usersInfo: UsersInfo;
 let group: Group;
 
 test.beforeEach(async () => {
-	usersInfo = await seedGroup();
+	usersInfo = await seedBasicPreset();
 	group = await usersInfo.requesters.harry.groups.create.mutate({ name: "First group" });
 });
 
@@ -30,7 +31,7 @@ test("Request to existing group", async () => {
 		}
 	]);
 
-	expect(await usersInfo.requesters.harry.groups.members.query({ groupId: group.id })).toEqual([
+	expect(await usersInfo.requesters.harry.groups.membersByGroupId.query({ groupId: group.id })).toEqual([
 		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });
@@ -38,14 +39,14 @@ test("Request to existing group", async () => {
 test("Invite", async () => {
 	expect(await usersInfo.requesters.harry.groups.invite.mutate({ groupId: group.id, userIds: [usersInfo.userIds.ron] })).toEqual([{ ok: true }]);
 
-	expect(await usersInfo.requesters.harry.groups.invites.query({ groupId: group.id })).toEqual([
+	expect(await usersInfo.requesters.harry.groups.invitations.query({ groupId: group.id })).toEqual([
 		{
 			id: expect.any(String),
 			user: { avatar: null, fullName: FULL_NAMES.ron, userId: expect.any(String) }
 		}
 	]);
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([]);
-	expect(await usersInfo.requesters.harry.groups.members.query({ groupId: group.id })).toEqual([
+	expect(await usersInfo.requesters.harry.groups.membersByGroupId.query({ groupId: group.id })).toEqual([
 		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });

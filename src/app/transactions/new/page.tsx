@@ -2,18 +2,20 @@ import React from "react";
 import type { Metadata } from "next";
 
 import { TransactionForm } from "@/components/forms";
+import { GroupSelectionGuard } from "@/components/layouts/group-selection-guard";
 
-import { UsersControllers } from "@/controllers";
-import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
+import { getCurrentUser } from "@/services/supabase/server";
 
 export const metadata: Metadata = {
 	title: "New Transaction"
 };
 
 export default async function NewTransactionPage() {
-	const supabase = await createSupabaseServer();
-	const users = await UsersControllers.getUsers(supabase);
-	const currentUser = await getCurrentUser();
+	const { id } = await getCurrentUser();
 
-	return <TransactionForm users={users} kind={{ type: "create" }} currentUserId={currentUser.id} />;
+	return (
+		<GroupSelectionGuard>
+			<TransactionForm currentUserId={id} kind={{ type: "create" }} />
+		</GroupSelectionGuard>
+	);
 }

@@ -4,7 +4,7 @@ import NextLink from "next/link";
 import { Table, TableRow, TableBody, TableCell, TableHead, TableHeader } from "@/components/shadcn/table";
 
 import { Heading } from "@/components/mics/heading";
-import { EmptyState } from "@/components/mics/empty-state";
+import { Message } from "@/components/mics/message";
 import { TableBodySkeleton } from "@/components/tables/data-table/table-body-skeleton";
 import { DataTablePagination } from "@/components/tables/data-table/data-table-pagination";
 
@@ -71,7 +71,7 @@ export function DataTable<
 						) : data.length === 0 ? (
 							<TableRow>
 								<TableCell colSpan={columns.length}>
-									<EmptyState title={filtering ? `No matched ${title.toLowerCase()} found` : `You have no ${title.toLowerCase()} yet`} />
+									<Message title={filtering ? `No matched ${title.toLowerCase()} found` : `You have no ${title.toLowerCase()} yet`} />
 								</TableCell>
 							</TableRow>
 						) : (

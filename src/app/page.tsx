@@ -7,14 +7,14 @@ import { TransactionCardList } from "@/components/cards/transaction-cards-list";
 import { getCurrentUser } from "@/services/supabase/server";
 
 export default async function DashboardPage() {
-	const currentUser = await getCurrentUser();
+	const { id } = await getCurrentUser();
 
 	return (
 		<>
 			<div className="grid grid-cols-6 gap-4">
 				<FinancialSummary />
-				<BillCardsList currentUserId={currentUser.id} />
-				<TransactionCardList currentUserId={currentUser.id} />
+				<BillCardsList currentUserId={id} />
+				<TransactionCardList currentUserId={id} />
 			</div>
 		</>
 	);

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type { Database } from "@/database.types";
+import { GroupSchema } from "@/schemas/group.schema";
 
 export const BillMemberRoleSchema = z.enum(["Creditor", "Debtor"] as const satisfies Database["public"]["Enums"]["BillMemberRole"][]);
 export type BillMemberRole = z.infer<typeof BillMemberRoleSchema>;
@@ -21,6 +22,7 @@ export namespace ClientBillMember {
 
 export const ClientBillSchema = z.object({
 	id: z.string(),
+	group: GroupSchema,
 	issuedAt: z.string(),
 	creditor: ClientBillMemberSchema,
 	receiptFile: z.string().nullable(),

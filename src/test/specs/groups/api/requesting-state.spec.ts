@@ -3,14 +3,15 @@ import { expect } from "@playwright/test";
 import { test } from "@/test/setup";
 import { FULL_NAMES } from "@/test/utils";
 import { type Group } from "@/schemas/group.schema";
-import { seedGroup, type UsersInfo } from "@/test/functions/seed-group";
+import { type UsersInfo } from "@/test/functions/seed-users";
+import { seedBasicPreset } from "@/test/functions/seed-basic-preset";
 
 let usersInfo: UsersInfo;
 let group: Group;
 let requestId: string;
 
 test.beforeEach(async () => {
-	usersInfo = await seedGroup();
+	usersInfo = await seedBasicPreset();
 	group = await usersInfo.requesters.harry.groups.create.mutate({ name: "First group" });
 	await usersInfo.requesters.ron.groups.request.mutate({ groupDisplayId: group.displayId });
 
@@ -32,11 +33,11 @@ test("Request again", async () => {
 		error: "Your request to join this group has already been submitted. Please wait for approval."
 	});
 
-	expect(await usersInfo.requesters.harry.groups.invites.query({ groupId: group.id })).toEqual([]);
+	expect(await usersInfo.requesters.harry.groups.invitations.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([
 		{ id: requestId, user: { avatar: null, fullName: FULL_NAMES.ron, userId: expect.any(String) } }
 	]);
-	expect(await usersInfo.requesters.harry.groups.members.query({ groupId: group.id })).toEqual([
+	expect(await usersInfo.requesters.harry.groups.membersByGroupId.query({ groupId: group.id })).toEqual([
 		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });
@@ -44,9 +45,9 @@ test("Request again", async () => {
 test("Accept the request", async () => {
 	await expect(usersInfo.requesters.harry.groups.acceptRequest.mutate({ requestId })).resolves.toEqual({ ok: true });
 
-	expect(await usersInfo.requesters.harry.groups.invites.query({ groupId: group.id })).toEqual([]);
+	expect(await usersInfo.requesters.harry.groups.invitations.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([]);
-	expect(await usersInfo.requesters.harry.groups.members.query({ groupId: group.id })).toEqual([
+	expect(await usersInfo.requesters.harry.groups.membersByGroupId.query({ groupId: group.id })).toEqual([
 		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry },
 		{ avatar: null, fullName: FULL_NAMES.ron, userId: expect.any(String) }
 	]);
@@ -55,9 +56,9 @@ test("Accept the request", async () => {
 test("Reject the request", async () => {
 	await expect(usersInfo.requesters.harry.groups.rejectRequest.mutate({ requestId })).resolves.toEqual({ ok: true });
 
-	expect(await usersInfo.requesters.harry.groups.invites.query({ groupId: group.id })).toEqual([]);
+	expect(await usersInfo.requesters.harry.groups.invitations.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([]);
-	expect(await usersInfo.requesters.harry.groups.members.query({ groupId: group.id })).toEqual([
+	expect(await usersInfo.requesters.harry.groups.membersByGroupId.query({ groupId: group.id })).toEqual([
 		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });
@@ -70,41 +71,41 @@ test("Invite", async () => {
 		}
 	]);
 
-	expect(await usersInfo.requesters.harry.groups.invites.query({ groupId: group.id })).toEqual([]);
+	expect(await usersInfo.requesters.harry.groups.invitations.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([
 		{ id: requestId, user: { avatar: null, fullName: FULL_NAMES.ron, userId: expect.any(String) } }
 	]);
-	expect(await usersInfo.requesters.harry.groups.members.query({ groupId: group.id })).toEqual([
+	expect(await usersInfo.requesters.harry.groups.membersByGroupId.query({ groupId: group.id })).toEqual([
 		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });
 
 test("Accept the invitation", async () => {
-	await expect(usersInfo.requesters.ron.groups.acceptInvite.mutate({ invitationId: requestId })).resolves.toEqual({
+	await expect(usersInfo.requesters.ron.groups.acceptInvitation.mutate({ invitationId: requestId })).resolves.toEqual({
 		ok: false,
 		error: "User is already requested."
 	});
 
-	expect(await usersInfo.requesters.harry.groups.invites.query({ groupId: group.id })).toEqual([]);
+	expect(await usersInfo.requesters.harry.groups.invitations.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([
 		{ id: requestId, user: { avatar: null, fullName: FULL_NAMES.ron, userId: expect.any(String) } }
 	]);
-	expect(await usersInfo.requesters.harry.groups.members.query({ groupId: group.id })).toEqual([
+	expect(await usersInfo.requesters.harry.groups.membersByGroupId.query({ groupId: group.id })).toEqual([
 		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });
 
 test("Reject the invitation", async () => {
-	await expect(usersInfo.requesters.ron.groups.rejectInvite.mutate({ invitationId: requestId })).resolves.toEqual({
+	await expect(usersInfo.requesters.ron.groups.rejectInvitation.mutate({ invitationId: requestId })).resolves.toEqual({
 		ok: false,
 		error: "User is already requested."
 	});
 
-	expect(await usersInfo.requesters.harry.groups.invites.query({ groupId: group.id })).toEqual([]);
+	expect(await usersInfo.requesters.harry.groups.invitations.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([
 		{ id: requestId, user: { avatar: null, fullName: FULL_NAMES.ron, userId: expect.any(String) } }
 	]);
-	expect(await usersInfo.requesters.harry.groups.members.query({ groupId: group.id })).toEqual([
+	expect(await usersInfo.requesters.harry.groups.membersByGroupId.query({ groupId: group.id })).toEqual([
 		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });

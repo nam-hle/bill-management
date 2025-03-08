@@ -1,5 +1,8 @@
+import { TRPCError } from "@trpc/server";
+
 import { assert } from "@/utils";
 import { type Database } from "@/database.types";
+import { GroupController } from "@/controllers/group.controller";
 import { type SupabaseInstance } from "@/services/supabase/server";
 
 export type TableName = keyof Database["public"]["Tables"];
@@ -36,4 +39,12 @@ export async function pickUniqueId<Table extends TableName = "groups">(
 	assert(found, "Failed to find unique id");
 
 	return id;
+}
+
+export async function ensureAuthorized(supabase: SupabaseInstance, payload: { userId: string; groupId: string }) {
+	const isMember = await GroupController.isMember(supabase, payload);
+
+	if (!isMember) {
+		throw new TRPCError({ code: "UNAUTHORIZED", message: "You do not have the necessary permissions to access this resource" });
+	}
 }

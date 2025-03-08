@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import * as React from "react";
-import { toast } from "sonner";
 import { Check, Users, Settings, ChevronsUpDown } from "lucide-react";
 
 import { Button } from "@/components/shadcn/button";
@@ -11,6 +10,7 @@ import { Command, CommandItem, CommandList, CommandEmpty, CommandGroup, CommandI
 
 import { cn } from "@/utils/cn";
 import { trpc } from "@/services";
+import { useSwitchGroup } from "@/utils/use-switch-group";
 
 export const GroupSwitcher = () => {
 	const [open, setOpen] = React.useState(false);
@@ -18,33 +18,31 @@ export const GroupSwitcher = () => {
 	const { data: groups } = trpc.groups.groups.useQuery();
 	const { data: selectedGroup } = trpc.profile.selectedGroup.useQuery();
 
-	const utils = trpc.useUtils();
-	const selectGroup = trpc.profile.selectGroup.useMutation({
-		onSuccess: () => {
-			utils.profile.selectedGroup.invalidate().then(() => {
-				toast.success("You have successfully changed the group");
-			});
-		}
-	});
+	const switchGroup = useSwitchGroup();
 
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
-				<Button role="combobox" variant="outline" aria-expanded={open} aria-label="Select a group" className={cn("h-12 w-[250px] justify-between")}>
+				<Button
+					role="combobox"
+					variant="outline"
+					aria-expanded={open}
+					aria-label="No selected group"
+					className={cn("h-12 w-[250px] justify-between")}>
 					{selectedGroup ? (
 						<div className="flex flex-col items-start">
 							<span className="text-sm font-medium">{selectedGroup.name}</span>
 							<span className="text-xs text-muted-foreground">Balance: ${(1.2).toFixed(2)}</span>
 						</div>
 					) : (
-						<span className="text-muted-foreground">Select a group</span>
+						<span className="text-muted-foreground">No selected group</span>
 					)}
 					<ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent className="w-[250px] p-0">
 				<Command>
-					{groups?.length && <CommandInput placeholder="Search group..." />}
+					{groups?.length ? <CommandInput placeholder="Search group..." /> : null}
 					<CommandList>
 						<CommandEmpty>No group found.</CommandEmpty>
 						{groups?.length ? (
@@ -54,7 +52,7 @@ export const GroupSwitcher = () => {
 										<div
 											className="flex flex-1 cursor-pointer items-center"
 											onClick={() => {
-												selectGroup.mutate({ groupId: group.id });
+												switchGroup.mutate({ groupId: group.id });
 												setOpen(false);
 											}}>
 											<div className="flex flex-col">

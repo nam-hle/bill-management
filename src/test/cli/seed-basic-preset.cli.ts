@@ -1,10 +1,10 @@
 #!/usr/bin/env tsx
 
-import { seedGroup } from "@/test/functions/seed-group";
+import { seedBasicPreset } from "@/test/functions/seed-basic-preset";
 
 async function main() {
 	try {
-		await seedGroup();
+		await seedBasicPreset();
 	} catch (error) {
 		console.error("Error creating user:", error);
 	}

@@ -33,7 +33,7 @@ export namespace BillMembersControllers {
 	export async function updateMany(supabase: SupabaseInstance, triggerId: string, payload: UpdatePayload) {
 		const { billId, nextDebtors } = payload;
 
-		const bill = await BillsControllers.getById(supabase, billId);
+		const bill = await BillsControllers.getById(supabase, { billId, userId: triggerId });
 		const currentDebtors = bill.debtors.map((member) => pick(member, ["userId", "amount", "role"]));
 
 		const comparisonResult = diffMembers(currentDebtors, nextDebtors);

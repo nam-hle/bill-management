@@ -4,10 +4,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
 export const createContext = async () => {
-	const user = await getCurrentUser();
-	const supabase = await createSupabaseServer();
-
-	return { user, supabase };
+	return { user: await getCurrentUser(), supabase: await createSupabaseServer() };
 };
 
 const t = initTRPC.context<typeof createContext>().create({ transformer: superjson });
@@ -20,6 +17,16 @@ const withAuth = t.middleware(async ({ ctx, next }) => {
 	}
 
 	return next({ ctx });
+});
+
+export const withSelectedGroup = withAuth.unstable_pipe(async ({ ctx, next }) => {
+	const { group, ...rest } = ctx.user;
+
+	if (!group) {
+		throw new TRPCError({ code: "PRECONDITION_FAILED" });
+	}
+
+	return next({ ctx: { ...ctx, user: { ...rest, group } } });
 });
 
 const withErrorHandler = t.middleware(async ({ ctx, next }) => {

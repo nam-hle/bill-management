@@ -14,7 +14,7 @@ namespace TransactionCardList {
 }
 
 export const TransactionCardList: React.FC<TransactionCardList.Props> = ({ currentUserId }) => {
-	const { data } = trpc.transactions.get.useQuery({ page: 1 });
+	const { data } = trpc.transactions.getMany.useQuery({ page: 1 });
 
 	return (
 		<div className="col-span-2 flex-1 space-y-4">

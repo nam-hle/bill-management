@@ -8,7 +8,7 @@ export namespace Locators {
 	}
 
 	export function locateNotifications(page: Page) {
-		return page.getByTestId("table").getByTestId("notification-text");
+		return page.getByTestId("table_settled").getByTestId("notification-text");
 	}
 
 	export function locateStatValue(page: Page, statLabel: string) {

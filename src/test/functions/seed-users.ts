@@ -2,9 +2,9 @@ import { seedUser } from "@/test/functions/seed-user";
 import { type Requester, createRequester } from "@/test/helpers/requester";
 import { USERNAMES, FULL_NAMES, type FullName, type UserName } from "@/test/utils";
 
-export type UsersInfo = Awaited<ReturnType<typeof seedGroup>>;
+export type UsersInfo = Awaited<ReturnType<typeof seedUsers>>;
 
-export async function seedGroup() {
+export async function seedUsers() {
 	const userIds: Record<string, string> = {};
 	const userNames: Record<string, string> = {};
 	const requesters: Record<string, Requester> = {};

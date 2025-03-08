@@ -4,11 +4,11 @@ import { Actions } from "@/test/helpers/actions";
 import { Locators } from "@/test/helpers/locators";
 import { USERNAMES, FULL_NAMES } from "@/test/utils";
 import { truncate } from "@/test/functions/truncate";
-import { seedGroup } from "@/test/functions/seed-group";
+import { seedBasicPreset } from "@/test/functions/seed-basic-preset";
 
 test.beforeAll("Setup", async () => {
 	await truncate();
-	await seedGroup();
+	await seedBasicPreset();
 });
 
 test.beforeEach(async ({ page }) => {
