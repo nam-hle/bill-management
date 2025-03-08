@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { toast } from "sonner";
 import { X, Check } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,7 +20,6 @@ import { InviteDialog } from "@/components/dialogs/invite-dialog";
 import { RequiredLabel } from "@/components/forms/required-label";
 
 import { trpc } from "@/services";
-import { useToast } from "@/hooks/use-toast";
 import { type GroupDetails, GroupDetailsSchema } from "@/schemas/group.schema";
 
 const TabLabels = {
@@ -42,27 +42,24 @@ export const GroupForm: React.FC<{
 	const { data: requests } = trpc.groups.requests.useQuery({ groupId: group?.id ?? "" }, { enabled: !!group });
 	const { data: invites } = trpc.groups.invites.useQuery({ groupId: group?.id ?? "" }, { enabled: !!group });
 
-	const { toast } = useToast();
 	const utils = trpc.useUtils();
 	const accept = trpc.groups.acceptRequest.useMutation({
 		onError: () => {
-			toast({ title: "Error", variant: "destructive", description: "An error occurred while accepting the request" });
+			toast.error("An error occurred while accepting the request");
 		},
 		onSuccess: () => {
 			utils.groups.group
 				.invalidate({ displayId })
 				.then(() => utils.groups.requests.invalidate({ groupId: group?.id ?? "" }))
-				.then(() => toast({ title: "Accepted", description: "You have successfully accepted the request!" }));
+				.then(() => toast.success("You have successfully accepted the request!"));
 		}
 	});
 	const reject = trpc.groups.rejectRequest.useMutation({
 		onError: () => {
-			toast({ title: "Error", variant: "destructive", description: "An error occurred while rejecting the request" });
+			toast.error("An error occurred while rejecting the request");
 		},
 		onSuccess: () => {
-			utils.groups.requests
-				.invalidate({ groupId: group?.id ?? "" })
-				.then(() => toast({ title: "Rejected", description: "You have successfully rejected the request!" }));
+			utils.groups.requests.invalidate({ groupId: group?.id ?? "" }).then(() => toast.success("You have successfully rejected the request!"));
 		}
 	});
 
@@ -71,7 +68,11 @@ export const GroupForm: React.FC<{
 		defaultValues: { name: "", members: [], displayId: "" }
 	});
 
-	const updateName = trpc.groups.updateName.useMutation();
+	const updateName = trpc.groups.updateName.useMutation({
+		onSuccess: () => {
+			utils.groups.group.invalidate({ displayId }).then(() => toast.success("Group name has been updated successfully!"));
+		}
+	});
 
 	const { reset, control, getValues, handleSubmit } = form;
 

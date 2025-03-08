@@ -56,7 +56,7 @@ test("basic", async ({ page }, testInfo) => {
 		});
 		await Actions.submit(page);
 
-		await Assertions.assertToast(page, "Bill created successfully");
+		await Assertions.assertToast(page, "A new bill has been created and saved successfully.");
 		await expect(page).toHaveURL("/bills");
 
 		await Actions.logout(page);
@@ -94,7 +94,7 @@ test("basic", async ({ page }, testInfo) => {
 
 		await Actions.BillForm.save(page);
 
-		await Assertions.assertToast(page, "Bill updated successfully");
+		await Assertions.assertToast(page, "The bill details have been updated successfully.");
 
 		await Actions.logout(page);
 	});

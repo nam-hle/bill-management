@@ -105,13 +105,7 @@ export namespace UsersControllers {
 		return data.map(({ group }) => group);
 	}
 
-	export async function selectGroup(
-		supabase: SupabaseInstance,
-		payload: {
-			userId: string;
-			groupId: string;
-		}
-	): Promise<void> {
+	export async function selectGroup(supabase: SupabaseInstance, payload: { userId: string; groupId: string }): Promise<void> {
 		const { error } = await supabase.from("profiles").update({ selected_group_id: payload.groupId }).eq("id", payload.userId);
 
 		if (error) {

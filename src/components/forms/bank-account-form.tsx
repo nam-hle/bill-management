@@ -2,6 +2,7 @@
 
 import * as z from "zod";
 import React from "react";
+import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -12,7 +13,6 @@ import { Form, FormItem, FormField, FormLabel, FormControl, FormMessage } from "
 import { Select, SelectItem, SelectValue, SelectContent, SelectTrigger } from "@/components/shadcn/select";
 
 import { trpc } from "@/services";
-import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
 	providerNumber: z.string().min(1, "Please select a bank"),
@@ -39,16 +39,12 @@ export const BankAccountForm = () => {
 
 	const { data: banks = [] } = trpc.banks.get.useQuery();
 
-	const { toast } = useToast();
 	const { mutate } = trpc.profile.createBankAccount.useMutation({
 		onSuccess: () => {
-			toast({ title: "Bank account added" });
+			toast.success("Bank account added");
 		},
 		onError: () => {
-			toast({
-				variant: "destructive",
-				title: "Failed to add bank account"
-			});
+			toast.error("Failed to add bank account");
 		}
 	});
 

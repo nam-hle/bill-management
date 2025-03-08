@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -14,7 +15,6 @@ import { LoadingButton } from "@/components/buttons/loading-button";
 
 import { cn } from "@/utils/cn";
 import { trpc } from "@/services";
-import { useToast } from "@/hooks/use-toast";
 import { type NewGroupFormState } from "@/schemas/group.schema";
 
 export const NewGroupDialog = () => {
@@ -30,20 +30,15 @@ export const NewGroupDialog = () => {
 		formState: { isSubmitting }
 	} = form;
 
-	const { toast } = useToast();
 	const utils = trpc.useUtils();
 	const { mutate, isPending } = trpc.groups.create.useMutation({
+		onError: () => {
+			toast.error("Failed to create the group");
+		},
 		onSuccess: () => {
 			utils.groups.groups.invalidate().then(() => {
-				toast({ title: "Group created", description: "New group has been created." });
+				toast.success("Group created", { description: "New group has been created." });
 				setOpen(false);
-			});
-		},
-		onError: () => {
-			toast({
-				variant: "destructive",
-				title: "Failed to create the group",
-				description: "An error occurred while creating the group. Please try again."
 			});
 		}
 	});

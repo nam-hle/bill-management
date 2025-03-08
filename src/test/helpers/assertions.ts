@@ -10,7 +10,7 @@ export namespace Assertions {
 	export type StatsExpectation = Partial<Record<(typeof StateLabels)[number], string>>;
 
 	export async function assertToast(page: Page, message: string) {
-		await expect(page.getByRole("status").getByText(message, { exact: true })).toBeVisible();
+		await expect(page.getByText(message, { exact: true })).toBeVisible();
 	}
 
 	export async function assertStats(page: Page, expected: Partial<Record<(typeof StateLabels)[number], string>>) {

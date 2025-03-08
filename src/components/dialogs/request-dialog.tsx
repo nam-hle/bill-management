@@ -1,6 +1,7 @@
 "use client";
 
 import { z } from "zod";
+import { toast } from "sonner";
 import { Send } from "lucide-react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -14,7 +15,6 @@ import { Dialog, DialogTitle, DialogHeader, DialogContent, DialogTrigger, Dialog
 import { RequiredLabel } from "@/components/forms/required-label";
 
 import { trpc } from "@/services";
-import { useToast } from "@/hooks/use-toast";
 
 const JoinGroupFormSchema = z.object({
 	groupDisplayId: z.string().min(1, "Please enter a group ID")
@@ -22,8 +22,6 @@ const JoinGroupFormSchema = z.object({
 
 export const RequestDialog = () => {
 	const [isOpen, setIsOpen] = useState(false);
-
-	const { toast } = useToast();
 
 	const form = useForm<z.infer<typeof JoinGroupFormSchema>>({
 		defaultValues: { groupDisplayId: "" },
@@ -35,15 +33,11 @@ export const RequestDialog = () => {
 	const { control, setError, handleSubmit } = form;
 	const mutation = trpc.groups.request.useMutation({
 		onError: () => {
-			toast({
-				variant: "destructive",
-				title: "Failed to update profile",
-				description: "An error occurred while updating the profile. Please try again."
-			});
+			toast.error("Failed to update profile");
 		},
 		onSuccess: (data) => {
 			if (data.ok) {
-				toast({ title: "Request sent", description: "Your request to join the group has been sent successfully. Please wait for approval." });
+				toast.success("Request sent", { description: "Your request to join the group has been sent successfully. Please wait for approval." });
 
 				utils.users.requests.invalidate().then(() => setIsOpen(false));
 
