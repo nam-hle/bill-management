@@ -8,7 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/shadcn/button";
 import { Skeleton } from "@/components/shadcn/skeleton";
 
-import { Show } from "@/components/show";
+import { Show } from "@/components/mics/show";
 
 import { cn } from "@/utils/cn";
 import { trpc } from "@/services";

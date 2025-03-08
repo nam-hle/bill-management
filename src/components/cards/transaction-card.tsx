@@ -2,8 +2,8 @@ import Link from "next/link";
 
 import { Card, CardContent } from "@/components/shadcn/card";
 
-import { FallbackAvatar } from "@/components/fallbackable-avatar";
-import { TransactionStatusBadge } from "@/components/transaction-status-badge";
+import { FallbackAvatar } from "@/components/avatars/fallbackable-avatar";
+import { TransactionStatusBadge } from "@/components/mics/transaction-status-badge";
 
 import { formatTime } from "@/utils";
 import { formatCurrency } from "@/utils/format";

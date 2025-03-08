@@ -2,9 +2,9 @@ import React from "react";
 
 import { Skeleton } from "@/components/shadcn/skeleton";
 
-import { Heading } from "@/components/heading";
+import { Heading } from "@/components/mics/heading";
 import { type BillForm } from "@/components/forms/bill-form";
-import { SkeletonWrapper } from "@/components/skeleton-wrapper";
+import { SkeletonWrapper } from "@/components/mics/skeleton-wrapper";
 
 import type { ClientBill } from "@/schemas";
 import { formatTime, formatDistanceTime } from "@/utils";

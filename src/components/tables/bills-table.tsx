@@ -7,9 +7,9 @@ import { useRouter, useSearchParams, type ReadonlyURLSearchParams } from "next/n
 
 import { Input } from "@/components/shadcn/input";
 
-import { FilterButton } from "@/components/filter-button";
-import { DataTable } from "@/components/data-table/data-table";
-import { FallbackAvatar } from "@/components/fallbackable-avatar";
+import { DataTable } from "@/components/tables/data-table";
+import { FilterButton } from "@/components/buttons/filter-button";
+import { FallbackAvatar } from "@/components/avatars/fallbackable-avatar";
 
 import { API } from "@/api";
 import { trpc } from "@/services";

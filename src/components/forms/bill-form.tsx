@@ -14,12 +14,12 @@ import { Button } from "@/components/shadcn/button";
 import { Skeleton } from "@/components/shadcn/skeleton";
 import { Form, FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
 
-import { FileUpload } from "@/components/file-upload";
-import { ImageModal } from "@/components/image-modal";
-import { BillMemberInputs } from "@/components/inputs";
-import { RequiredLabel } from "@/components/required-label";
-import { SkeletonWrapper } from "@/components/skeleton-wrapper";
-import { BillFormHeading } from "@/components/bill-form-heading";
+import { ImageDialog } from "@/components/dialogs/image-dialog";
+import { RequiredLabel } from "@/components/forms/required-label";
+import { FileUpload } from "@/components/forms/inputs/file-upload";
+import { SkeletonWrapper } from "@/components/mics/skeleton-wrapper";
+import { BillFormHeading } from "@/components/forms/bill-form-heading";
+import { BillMemberInputs } from "@/components/forms/inputs/bill-member-inputs";
 
 import { API } from "@/api";
 import { trpc } from "@/services";
@@ -195,7 +195,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 											bucketName="receipts"
 											onChange={field.onChange}
 											fileId={field.value ?? undefined}
-											imageRenderer={(src) => <ImageModal src={src} />}
+											imageRenderer={(src) => <ImageDialog src={src} />}
 											ownerId={kind.type === "update" ? kind.billId : undefined}
 										/>
 									)}

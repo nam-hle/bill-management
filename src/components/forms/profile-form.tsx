@@ -6,10 +6,10 @@ import { Input } from "@/components/shadcn/input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/shadcn/avatar";
 import { Form, FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
 
-import { Heading } from "@/components/heading";
-import { FileUpload } from "@/components/file-upload";
-import { RequiredLabel } from "@/components/required-label";
-import { LoadingButton } from "@/components/loading-button";
+import { Heading } from "@/components/mics/heading";
+import { RequiredLabel } from "@/components/forms/required-label";
+import { FileUpload } from "@/components/forms/inputs/file-upload";
+import { LoadingButton } from "@/components/buttons/loading-button";
 
 import { trpc } from "@/services";
 import { useToast } from "@/hooks/use-toast";

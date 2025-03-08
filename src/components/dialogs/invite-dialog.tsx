@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/pop
 import { Command, CommandItem, CommandList, CommandEmpty, CommandGroup, CommandInput } from "@/components/shadcn/command";
 import { Dialog, DialogTitle, DialogFooter, DialogHeader, DialogContent, DialogTrigger, DialogDescription } from "@/components/shadcn/dialog";
 
-import { UserDisplay } from "@/components/user-display";
+import { UserDisplay } from "@/components/avatars/user-display";
 
 import { trpc } from "@/services";
 import { type ClientUser } from "@/schemas";

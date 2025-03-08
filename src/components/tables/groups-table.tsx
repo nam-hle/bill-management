@@ -2,8 +2,8 @@
 
 import React from "react";
 
-import { AvatarGroup } from "@/components/avatar-group";
-import { DataTable } from "@/components/data-table/data-table";
+import { DataTable } from "@/components/tables/data-table";
+import { AvatarGroup } from "@/components/avatars/avatar-group";
 import { NewGroupDialog } from "@/components/forms/new-group-form";
 
 import { trpc } from "@/services";

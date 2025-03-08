@@ -7,7 +7,7 @@ import { Sun, Moon } from "lucide-react";
 import { Button } from "@/components/shadcn/button";
 import { Skeleton } from "@/components/shadcn/skeleton";
 
-import { ClientOnly } from "@/components/client-only";
+import { ClientOnly } from "@/components/mics/client-only";
 
 export type ThemeToggleButton = "light" | "dark";
 

@@ -3,13 +3,13 @@ import Image from "next/image";
 import { AspectRatio } from "@/components/shadcn/aspect-ratio";
 import { Dialog, DialogTitle, DialogHeader, DialogContent, DialogTrigger, DialogDescription } from "@/components/shadcn/dialog";
 
-namespace ImageModal {
+namespace ImageDialog {
 	export interface Props {
 		readonly src: string;
 	}
 }
 
-export const ImageModal = ({ src }: ImageModal.Props) => (
+export const ImageDialog = ({ src }: ImageDialog.Props) => (
 	<Dialog>
 		<DialogTrigger asChild>
 			<div className="cursor-pointer">

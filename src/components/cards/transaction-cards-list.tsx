@@ -2,8 +2,8 @@
 
 import React from "react";
 
-import { Heading } from "@/components/heading";
-import { TransactionCard } from "@/components/transaction-card";
+import { Heading } from "@/components/mics/heading";
+import { TransactionCard } from "@/components/cards/transaction-card";
 
 import { trpc } from "@/services/trpc/client";
 
