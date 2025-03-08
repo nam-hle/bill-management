@@ -6,10 +6,10 @@ import { Plus } from "lucide-react";
 
 import { Button } from "@/components/shadcn/button";
 
-import { FilterButton } from "@/components/filter-button";
-import { DataTable } from "@/components/data-table/data-table";
-import { TransactionAction } from "@/components/transaction-action";
-import { TransactionStatusBadge } from "@/components/transaction-status-badge";
+import { DataTable } from "@/components/tables/data-table";
+import { FilterButton } from "@/components/buttons/filter-button";
+import { TransactionAction } from "@/components/mics/transaction-action";
+import { TransactionStatusBadge } from "@/components/mics/transaction-status-badge";
 
 import { trpc } from "@/services";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";

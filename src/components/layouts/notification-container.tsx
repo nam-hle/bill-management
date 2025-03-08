@@ -5,9 +5,9 @@ import { Bell } from "lucide-react";
 import { Button } from "@/components/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
 
-import { EmptyState } from "@/components/empty-state";
-import { CounterBadge } from "@/components/counter-badge";
-import { NotificationMessage } from "@/components/notification-message";
+import { EmptyState } from "@/components/mics/empty-state";
+import { CounterBadge } from "@/components/mics/counter-badge";
+import { NotificationMessage } from "@/components/mics/notification-message";
 
 import { type API } from "@/api";
 import { trpc } from "@/services";

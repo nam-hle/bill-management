@@ -5,7 +5,7 @@ import { X, Check } from "lucide-react";
 
 import { Button } from "@/components/shadcn/button";
 
-import { DataTable } from "@/components/data-table/data-table";
+import { DataTable } from "@/components/tables/data-table";
 
 import { trpc } from "@/services";
 import { useToast } from "@/hooks/use-toast";

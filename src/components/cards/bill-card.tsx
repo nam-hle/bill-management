@@ -4,8 +4,8 @@ import Link from "next/link";
 
 import { Card, CardContent } from "@/components/shadcn/card";
 
-import { AvatarGroup } from "@/components/avatar-group";
-import { FallbackAvatar } from "@/components/fallbackable-avatar";
+import { AvatarGroup } from "@/components/avatars/avatar-group";
+import { FallbackAvatar } from "@/components/avatars/fallbackable-avatar";
 
 import { formatTime } from "@/utils";
 import { type ClientBill } from "@/schemas";

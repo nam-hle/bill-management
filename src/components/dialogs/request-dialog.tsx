@@ -11,7 +11,7 @@ import { Button } from "@/components/shadcn/button";
 import { Form, FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
 import { Dialog, DialogTitle, DialogHeader, DialogContent, DialogTrigger, DialogDescription } from "@/components/shadcn/dialog";
 
-import { RequiredLabel } from "@/components/required-label";
+import { RequiredLabel } from "@/components/forms/required-label";
 
 import { trpc } from "@/services";
 import { useToast } from "@/hooks/use-toast";

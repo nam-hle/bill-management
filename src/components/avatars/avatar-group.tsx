@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback } from "@/components/shadcn/avatar";
 
-import { FallbackAvatar } from "@/components/fallbackable-avatar";
+import { FallbackAvatar } from "@/components/avatars/fallbackable-avatar";
 
 import type { ClientUser } from "@/schemas";
 

@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/shadcn/alert";
 import { Form, FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
 import { Card, CardTitle, CardHeader, CardFooter, CardContent, CardDescription } from "@/components/shadcn/card";
 
-import { RequiredLabel } from "@/components/required-label";
+import { RequiredLabel } from "@/components/forms/required-label";
 
 import { cn } from "@/utils/cn";
 import { signup } from "@/app/login/actions";

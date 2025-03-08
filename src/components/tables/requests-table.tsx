@@ -2,8 +2,8 @@
 
 import React from "react";
 
-import { RequestDialog } from "@/components/request-dialog";
-import { DataTable } from "@/components/data-table/data-table";
+import { DataTable } from "@/components/tables/data-table";
+import { RequestDialog } from "@/components/dialogs/request-dialog";
 
 import { trpc } from "@/services";
 

@@ -11,12 +11,12 @@ import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/shadcn/ta
 import { Form, FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
 import { Card, CardTitle, CardHeader, CardFooter, CardContent, CardDescription } from "@/components/shadcn/card";
 
-import { Heading } from "@/components/heading";
-import { CopyButton } from "@/components/copy-button";
-import { UserDisplay } from "@/components/user-display";
-import { InviteDialog } from "@/components/invite-dialog";
-import { RequiredLabel } from "@/components/required-label";
-import { DataTable } from "@/components/data-table/data-table";
+import { Heading } from "@/components/mics/heading";
+import { DataTable } from "@/components/tables/data-table";
+import { CopyButton } from "@/components/buttons/copy-button";
+import { UserDisplay } from "@/components/avatars/user-display";
+import { InviteDialog } from "@/components/dialogs/invite-dialog";
+import { RequiredLabel } from "@/components/forms/required-label";
 
 import { trpc } from "@/services";
 import { useToast } from "@/hooks/use-toast";

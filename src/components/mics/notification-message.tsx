@@ -1,7 +1,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 
-import { StatusDot } from "@/components/status-dot";
+import { StatusDot } from "@/components/mics/status-dot";
 
 import { formatDistanceTime } from "@/utils";
 import {

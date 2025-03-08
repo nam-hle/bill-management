@@ -4,12 +4,9 @@ import "./globals.css";
 import React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { Application } from "@/components/application";
-import { ThemeProvider } from "@/components/theme-provider";
 
-import { TrpcProvider } from "@/services";
 import { UsersControllers } from "@/controllers";
 import { createSupabaseServer } from "@/services/supabase/server";
 
@@ -40,15 +37,10 @@ export default async function RootLayout({
 	const userInfo = user ? UsersControllers.getUserInfo(supabase, user.id) : undefined;
 
 	return (
-		<TrpcProvider>
-			<html lang="en" suppressHydrationWarning>
-				<body suppressHydrationWarning className={interSans.variable}>
-					<ThemeProvider enableSystem attribute="class" defaultTheme="system" disableTransitionOnChange>
-						<Application pendingUserInfo={userInfo}>{children}</Application>
-					</ThemeProvider>
-					<ReactQueryDevtools initialIsOpen={false} />
-				</body>
-			</html>
-		</TrpcProvider>
+		<html lang="en" suppressHydrationWarning>
+			<body suppressHydrationWarning className={interSans.variable}>
+				<Application pendingUserInfo={userInfo}>{children}</Application>
+			</body>
+		</html>
 	);
 }

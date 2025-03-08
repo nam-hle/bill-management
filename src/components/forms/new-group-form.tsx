@@ -9,8 +9,8 @@ import { Button } from "@/components/shadcn/button";
 import { Form, FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
 import { Dialog, DialogTitle, DialogHeader, DialogContent, DialogTrigger, DialogDescription } from "@/components/shadcn/dialog";
 
-import { RequiredLabel } from "@/components/required-label";
-import { LoadingButton } from "@/components/loading-button";
+import { RequiredLabel } from "@/components/forms/required-label";
+import { LoadingButton } from "@/components/buttons/loading-button";
 
 import { cn } from "@/utils/cn";
 import { trpc } from "@/services";

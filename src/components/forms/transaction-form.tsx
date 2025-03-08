@@ -12,11 +12,11 @@ import { Input } from "@/components/shadcn/input";
 import { Button } from "@/components/shadcn/button";
 import { Form, FormItem, FormField, FormMessage, FormControl } from "@/components/shadcn/form";
 
-import { Select } from "@/components/inputs";
-import { Heading } from "@/components/heading";
-import { RequiredLabel } from "@/components/required-label";
-import { TransactionAction } from "@/components/transaction-action";
-import { TransactionStatusBadge } from "@/components/transaction-status-badge";
+import { Heading } from "@/components/mics/heading";
+import { Select } from "@/components/forms/inputs/select";
+import { RequiredLabel } from "@/components/forms/required-label";
+import { TransactionAction } from "@/components/mics/transaction-action";
+import { TransactionStatusBadge } from "@/components/mics/transaction-status-badge";
 
 import { API } from "@/api";
 import { trpc } from "@/services";

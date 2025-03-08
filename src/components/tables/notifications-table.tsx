@@ -5,8 +5,8 @@ import React from "react";
 import { Button } from "@/components/shadcn/button";
 import { Skeleton } from "@/components/shadcn/skeleton";
 
-import { Heading } from "@/components/heading";
-import { NotificationMessage } from "@/components/notification-message";
+import { Heading } from "@/components/mics/heading";
+import { NotificationMessage } from "@/components/mics/notification-message";
 
 import { noop } from "@/utils";
 import { cn } from "@/utils/cn";

@@ -7,7 +7,7 @@ import { Plus, Check } from "lucide-react";
 import { Badge } from "@/components/shadcn/badge";
 import { Button } from "@/components/shadcn/button";
 
-import { DataTable } from "@/components/data-table/data-table";
+import { DataTable } from "@/components/tables/data-table";
 
 import { trpc } from "@/services";
 import { BankAccountStatusEnumSchema } from "@/schemas";

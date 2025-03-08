@@ -7,10 +7,10 @@ import { Button } from "@/components/shadcn/button";
 import { Skeleton } from "@/components/shadcn/skeleton";
 import { FormItem, FormField, FormLabel, FormControl, FormMessage } from "@/components/shadcn/form";
 
-import { Select } from "@/components/inputs";
-import { RequiredLabel } from "@/components/required-label";
-import { SkeletonWrapper } from "@/components/skeleton-wrapper";
+import { Select } from "@/components/forms/inputs/select";
+import { RequiredLabel } from "@/components/forms/required-label";
 import { type BillFormState } from "@/components/forms/bill-form";
+import { SkeletonWrapper } from "@/components/mics/skeleton-wrapper";
 
 import { trpc } from "@/services";
 

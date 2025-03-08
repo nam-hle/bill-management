@@ -3,10 +3,10 @@ import NextLink from "next/link";
 
 import { Table, TableRow, TableBody, TableCell, TableHead, TableHeader } from "@/components/shadcn/table";
 
-import { Heading } from "@/components/heading";
-import { EmptyState } from "@/components/empty-state";
-import { TableBodySkeleton } from "@/components/data-table/table-body-skeleton";
-import { DataTablePagination } from "@/components/data-table/data-table-pagination";
+import { Heading } from "@/components/mics/heading";
+import { EmptyState } from "@/components/mics/empty-state";
+import { TableBodySkeleton } from "@/components/tables/data-table/table-body-skeleton";
+import { DataTablePagination } from "@/components/tables/data-table/data-table-pagination";
 
 import { cn } from "@/utils/cn";
 import { type Linkable, type ClassName, type Container, type Identifiable } from "@/types";

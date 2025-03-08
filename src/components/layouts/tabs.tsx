@@ -32,7 +32,7 @@ interface Tab {
 	match: (path: string) => boolean;
 }
 
-export const Frame = () => {
+export const Tabs = () => {
 	const pathname = usePathname();
 	const pageName = pathname.split("/")[1];
 

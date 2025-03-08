@@ -49,10 +49,3 @@ export const InviteSchema = z.object({
 	group: GroupSchema
 });
 export type Invite = z.infer<typeof InviteSchema>;
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const RequestFormSchema = z.object({
-	groupDisplayId: z.string().min(1, "Group ID is required")
-});
-
-export type RequestFormState = z.infer<typeof RequestFormSchema>;

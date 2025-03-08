@@ -1,7 +1,7 @@
 "use client";
 
-import { Heading } from "@/components/heading";
-import { BillCard } from "@/components/bill-card";
+import { Heading } from "@/components/mics/heading";
+import { BillCard } from "@/components/cards/bill-card";
 
 import { trpc } from "@/services";
 

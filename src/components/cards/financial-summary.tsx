@@ -6,8 +6,8 @@ import { Skeleton } from "@/components/shadcn/skeleton";
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/shadcn/card";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/shadcn/tooltip";
 
-import { Show } from "@/components/show";
-import { Heading } from "@/components/heading";
+import { Show } from "@/components/mics/show";
+import { Heading } from "@/components/mics/heading";
 
 import { cn } from "@/utils/cn";
 import { trpc } from "@/services";
