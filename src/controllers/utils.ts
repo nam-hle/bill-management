@@ -45,6 +45,6 @@ export async function ensureAuthorized(supabase: SupabaseInstance, payload: { us
 	const isMember = await GroupController.isMember(supabase, payload);
 
 	if (!isMember) {
-		throw new TRPCError({ code: "UNAUTHORIZED", message: "You do not have the necessary permissions to access this resource" });
+		throw new TRPCError({ code: "FORBIDDEN", message: "You do not have the necessary permissions to access this resource" });
 	}
 }

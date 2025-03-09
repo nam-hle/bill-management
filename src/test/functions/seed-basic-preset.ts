@@ -1,7 +1,10 @@
+import { type GroupName } from "@/test/utils";
 import { seedUsers } from "@/test/functions/seed-users";
-import { type Membership } from "@/schemas/group.schema";
+import { type Group, type Membership } from "@/schemas/group.schema";
 
 const findInvitations = (memberships: Membership[], userId: string) => memberships.find((invitation) => invitation.user.userId === userId)!;
+
+export type BasicPreset = Awaited<ReturnType<typeof seedBasicPreset>>;
 
 export async function seedBasicPreset() {
 	try {
@@ -47,12 +50,14 @@ export async function seedBasicPreset() {
 		});
 
 		for (const requester of Object.values(usersInfo.requesters)) {
-			requester.profile.selectGroup.mutate({ groupId: hogwartsGroup.id });
+			await requester.profile.selectGroup.mutate({ groupId: hogwartsGroup.id });
 		}
 
-		return usersInfo;
+		const groups: Record<GroupName, Group> = { Hogwarts: hogwartsGroup, Gryffindor: gryffindorGroup };
+
+		return { ...usersInfo, groups };
 	} catch (error) {
-		console.error("Error creating user:", error);
+		console.error("Error while setup basic preset:", error);
 		throw error;
 	}
 }
