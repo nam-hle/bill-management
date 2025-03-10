@@ -1,6 +1,6 @@
 import { devices, defineConfig } from "@playwright/test";
 
-const LOCAL_PORT: number = 3000;
+const LOCAL_PORT: number = 4000;
 const PROD = LOCAL_PORT === 4000;
 const profiles = {
 	CI: {
@@ -20,9 +20,9 @@ const profiles = {
 		port: LOCAL_PORT,
 		reporter: "html",
 		forbidOnly: false,
+		expectTimeout: 30_000,
 		reuseExistingServer: true,
 		timeout: PROD ? 30_000 : 90_000,
-		expectTimeout: PROD ? 30_000 : 60_000,
 		command: PROD ? "pnpm start" : "pnpm dev"
 	}
 } as const;

@@ -44,6 +44,22 @@ test.describe("Transactions Page", () => {
 
 		await expect(page.getByText("Group Selection Required")).toBeVisible();
 	});
+
+	test("Show no transactions when select Hogwarts group", async ({ page }) => {
+		await selectGroup(preset, { harry: "Hogwarts" });
+		await Actions.login(page, USERNAMES.harry);
+		await page.goto(url);
+
+		await expect(page.getByText("Transactions (0)")).toBeVisible();
+	});
+
+	test("Show one transaction when select Gryffindor group", async ({ page }) => {
+		await selectGroup(preset, { harry: "Gryffindor" });
+		await Actions.login(page, USERNAMES.harry);
+		await page.goto(url);
+
+		await expect(page.getByText("Transactions (1)")).toBeVisible();
+	});
 });
 
 test.describe("Create Transaction Page", () => {
@@ -84,12 +100,27 @@ test.describe("Transaction Details Page", () => {
 		await expect(page.getByText("Access Denied")).toBeVisible();
 	});
 
+	// TODO: Check if we can allow sender and receiver to access the page only
+	test("Group members can access the page but require select that group", async ({ page }) => {
+		for (const username of [USERNAMES.harry, USERNAMES.ron, USERNAMES.hermione]) {
+			await preset.requesters[username].profile.selectGroup.mutate({ groupId: null });
+			await Actions.login(page, username);
+			await page.goto(`/transactions/${transactionId}`);
+
+			await expect(page.getByText("Switch Group Required")).toBeVisible();
+			await expect(page.getByText("Transaction Details")).not.toBeVisible();
+
+			await Actions.logout(page);
+		}
+	});
+
 	test("Group members can access the page", async ({ page }) => {
 		for (const username of [USERNAMES.harry, USERNAMES.ron, USERNAMES.hermione]) {
 			await preset.requesters[username].profile.selectGroup.mutate({ groupId: preset.groups.Gryffindor.id });
 			await Actions.login(page, username);
 			await page.goto(`/transactions/${transactionId}`);
 
+			await expect(page.getByText("Switch Group Required")).not.toBeVisible();
 			await expect(page.getByText("Transaction Details")).toBeVisible();
 			await Actions.logout(page);
 		}
