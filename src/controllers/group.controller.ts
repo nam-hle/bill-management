@@ -11,6 +11,7 @@ import {
 	type MembershipKey,
 	type MembershipStatus,
 	MembershipStatusSchema,
+	type GroupDetailsWithBalance,
 	type MembershipResponseChange
 } from "@/schemas/group.schema";
 
@@ -95,6 +96,18 @@ export namespace GroupController {
 			.eq("status", MembershipStatusSchema.enum.Active);
 
 		return await Promise.all(groups?.map((group) => getGroupDetailsByDisplayId(supabase, { displayId: group.group.displayId })) ?? []);
+	}
+
+	export async function getGroupsWithBalance(supabase: SupabaseInstance, payload: { userId: string }): Promise<GroupDetailsWithBalance[]> {
+		const groupDetails = await getGroups(supabase, payload);
+
+		return Promise.all(
+			groupDetails.map(async (e) => {
+				const report = await UsersControllers.reportUsingView(supabase, payload.userId, e.id);
+
+				return { ...e, balance: report.net };
+			})
+		);
 	}
 
 	export async function getGroupDetailsByDisplayId(supabase: SupabaseInstance, payload: { displayId: string }): Promise<GroupDetails> {

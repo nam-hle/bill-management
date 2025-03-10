@@ -1,7 +1,7 @@
+import { type ProfileFormPayload } from "@/schemas";
 import { type Balance, type UserInfo } from "@/types";
 import { GroupController } from "@/controllers/group.controller";
 import { type SupabaseInstance } from "@/services/supabase/server";
-import { type ClientUser, type ProfileFormPayload } from "@/schemas";
 import { type Group, type Invite, MembershipStatusSchema } from "@/schemas/group.schema";
 
 export namespace UsersControllers {
@@ -32,18 +32,8 @@ export namespace UsersControllers {
 		return data;
 	}
 
-	export async function getGroupMembers(supabase: SupabaseInstance): Promise<ClientUser[]> {
-		const { data: users } = await supabase.from("profiles").select(USERS_SELECT);
-
-		if (!users) {
-			throw new Error("Error fetching users");
-		}
-
-		return users;
-	}
-
-	export async function reportUsingView(supabase: SupabaseInstance, userId: string): Promise<Balance> {
-		const { data, error } = await supabase.from("user_financial_summary").select("*").eq("user_id", userId).single();
+	export async function reportUsingView(supabase: SupabaseInstance, userId: string, groupId: string): Promise<Balance> {
+		const { data, error } = await supabase.from("user_financial_summary").select("*").eq("user_id", userId).eq("group_id", groupId).single();
 
 		if (error) {
 			throw error;
@@ -110,7 +100,7 @@ export namespace UsersControllers {
 		}
 	}
 
-	export async function getSelectedGroup(supabase: SupabaseInstance, userId: string): Promise<Group | null> {
+	export async function getSelectedGroup(supabase: SupabaseInstance, userId: string): Promise<(Group & { balance: number }) | null> {
 		const { data, error } = await supabase
 			.from("profiles")
 			.select(`group:groups!selected_group_id (${GroupController.GROUP_SELECT})`)
@@ -121,7 +111,13 @@ export namespace UsersControllers {
 			throw error;
 		}
 
-		return data.group;
+		if (!data.group) {
+			return data.group;
+		}
+
+		const { net } = await reportUsingView(supabase, userId, data.group.id);
+
+		return { ...data.group, balance: net };
 	}
 
 	export async function getGroupRequests(supabase: SupabaseInstance, payload: { userId: string }): Promise<Group[]> {

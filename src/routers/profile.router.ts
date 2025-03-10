@@ -4,15 +4,18 @@ import { revalidatePath } from "next/cache";
 import { API } from "@/api";
 import { BalanceSchema } from "@/types";
 import { GroupSchema } from "@/schemas/group.schema";
-import { router, privateProcedure } from "@/services/trpc/server";
 import { UsersControllers, BankAccountsController } from "@/controllers";
+import { router, privateProcedure, withSelectedGroup } from "@/services/trpc/server";
 import { ProfileFormPayloadSchema, BankAccountCreatePayloadSchema } from "@/schemas";
 
 export const profileRouter = router({
-	getBalance: privateProcedure.output(BalanceSchema).query(({ ctx: { user, supabase } }) => UsersControllers.reportUsingView(supabase, user.id)),
 	createBankAccount: privateProcedure
 		.input(BankAccountCreatePayloadSchema)
 		.mutation(({ input, ctx: { user, supabase } }) => BankAccountsController.create(supabase, user.id, input)),
+	getBalance: privateProcedure
+		.use(withSelectedGroup)
+		.output(BalanceSchema)
+		.query(({ ctx: { user, supabase } }) => UsersControllers.reportUsingView(supabase, user.id, user.group.id)),
 	getBankAccounts: privateProcedure
 		.input(API.BankAccounts.List.SearchParamsSchema)
 		.output(API.BankAccounts.List.ResponseSchema)
@@ -34,7 +37,7 @@ export const profileRouter = router({
 		.output(z.array(GroupSchema))
 		.query(({ ctx: { user, supabase } }) => UsersControllers.getGroups(supabase, { userId: user.id })),
 	selectedGroup: privateProcedure
-		.output(GroupSchema.nullable())
+		.output(GroupSchema.extend({ balance: z.number() }).nullable())
 		.query(({ ctx: { user, supabase } }) => UsersControllers.getSelectedGroup(supabase, user.id)),
 	selectGroup: privateProcedure
 		.input(z.object({ groupId: z.string().nullable() }))

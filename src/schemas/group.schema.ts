@@ -22,6 +22,11 @@ export const GroupDetailsSchema = NewGroupFormStateSchema.extend({
 });
 export type GroupDetails = z.infer<typeof GroupDetailsSchema>;
 
+export const GroupDetailsWithBalanceSchema = GroupDetailsSchema.extend({
+	balance: z.number()
+});
+export type GroupDetailsWithBalance = z.infer<typeof GroupDetailsWithBalanceSchema>;
+
 export const MembershipStatusSchema = z.enum([
 	"Idle",
 	"Inviting",

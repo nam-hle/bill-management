@@ -10,12 +10,13 @@ import { Command, CommandItem, CommandList, CommandEmpty, CommandGroup, CommandI
 
 import { cn } from "@/utils/cn";
 import { trpc } from "@/services";
+import { formatCurrency } from "@/utils/format";
 import { useSwitchGroup } from "@/utils/use-switch-group";
 
 export const GroupSwitcher = () => {
 	const [open, setOpen] = React.useState(false);
 
-	const { data: groups } = trpc.groups.groups.useQuery();
+	const { data: groups } = trpc.groups.groupsWithBalance.useQuery();
 	const { data: selectedGroup } = trpc.profile.selectedGroup.useQuery();
 
 	const switchGroup = useSwitchGroup();
@@ -32,7 +33,7 @@ export const GroupSwitcher = () => {
 					{selectedGroup ? (
 						<div className="flex flex-col items-start">
 							<span className="text-sm font-medium">{selectedGroup.name}</span>
-							<span className="text-xs text-muted-foreground">Balance: ${(1.2).toFixed(2)}</span>
+							<span className="text-xs text-muted-foreground">Balance: {formatCurrency(selectedGroup.balance)}</span>
 						</div>
 					) : (
 						<span className="text-muted-foreground">No selected group</span>
@@ -57,7 +58,7 @@ export const GroupSwitcher = () => {
 											}}>
 											<div className="flex flex-col">
 												<span>{group.name}</span>
-												<span className="text-xs text-muted-foreground">Balance: ${(1.2).toFixed(2)}</span>
+												<span className="text-xs text-muted-foreground">Balance: {formatCurrency(group.balance)}</span>
 											</div>
 											<span className="ml-auto mr-2 flex items-center text-xs text-muted-foreground">
 												<Users className="mr-1 h-3 w-3" />

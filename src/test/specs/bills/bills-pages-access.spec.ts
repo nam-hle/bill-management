@@ -54,7 +54,7 @@ test.describe("Bills Page", () => {
 		await expect(page.getByText("Group Selection Required")).toBeVisible();
 	});
 
-	test.skip("Show no bills when select Hogwarts group", async ({ page }) => {
+	test("Show no bills when select Hogwarts group", async ({ page }) => {
 		await selectGroup(preset, { harry: "Hogwarts" });
 		await Actions.login(page, USERNAMES.harry);
 		await page.goto(url);
