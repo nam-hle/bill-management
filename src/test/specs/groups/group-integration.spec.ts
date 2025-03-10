@@ -5,10 +5,10 @@ import { Actions } from "@/test/helpers/actions";
 import { Locators } from "@/test/helpers/locators";
 import { USERNAMES, FULL_NAMES } from "@/test/utils";
 import { Assertions } from "@/test/helpers/assertions";
-import { seedBasicPreset } from "@/test/functions/seed-basic-preset";
+import { seedUsers } from "@/test/functions/seed-users";
 
-test("Request", async ({ page }) => {
-	await seedBasicPreset();
+test("Group Integration", async ({ page }) => {
+	await seedUsers();
 
 	await test.step("Harry creates group", async () => {
 		await Actions.login(page, USERNAMES.harry);

@@ -3,14 +3,13 @@ import { expect } from "@playwright/test";
 import { test } from "@/test/setup";
 import { FULL_NAMES } from "@/test/utils";
 import { type Group } from "@/schemas/group.schema";
-import { type UsersInfo } from "@/test/functions/seed-users";
-import { seedBasicPreset } from "@/test/functions/seed-basic-preset";
+import { seedUsers, type UsersInfo } from "@/test/functions/seed-users";
 
 let usersInfo: UsersInfo;
 let group: Group;
 
 test.beforeEach(async () => {
-	usersInfo = await seedBasicPreset();
+	usersInfo = await seedUsers();
 	group = await usersInfo.requesters.harry.groups.create.mutate({ name: "First group" });
 });
 
