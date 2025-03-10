@@ -8,7 +8,7 @@
 		"build": "next build --no-lint",
 		"start": "next start --port 4000",
 		"start:server": "supabase start --exclude realtime,inbucket,edge-runtime",
-		"generate:env": "tsx src/test/cli/generate-env.tsx",
+		"generate:env": "tsx src/test/cli/generate-env.ts",
 		"watch": "tsc -watch",
 		"lint": "next lint --quiet && prettier --check .",
 		"lint:fix": "next lint --fix && prettier --write .",

@@ -28,7 +28,7 @@ export const TransactionAction: React.FC<TransactionAction.Props> = ({ transacti
 				description: `The transaction has been ${convertVerb(status).pastTense} successfully`
 			});
 
-			utils.transactions.get.invalidate().then(() => router.refresh());
+			utils.transactions.getMany.invalidate().then(() => router.refresh());
 		}
 	});
 

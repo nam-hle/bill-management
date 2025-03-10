@@ -40,7 +40,7 @@ export const NotificationsTable: React.FC<TransactionsTable.Props> = () => {
 					</Button>
 				)}
 			</div>
-			<div data-testid="table" className="flex flex-col gap-2">
+			<div data-testid="table" className={cn("flex flex-col gap-2", isPending ? "loading" : "")}>
 				{isPending ? (
 					<>
 						{Array.from({ length: DEFAULT_PAGE_SIZE }).map((_, index) => {

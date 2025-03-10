@@ -47,6 +47,18 @@ export namespace GroupController {
 		return data;
 	}
 
+	export async function isMember(supabase: SupabaseInstance, payload: { userId: string; groupId: string }): Promise<boolean> {
+		const { data } = await supabase
+			.from("memberships")
+			.select("id")
+			.eq("group_id", payload.groupId)
+			.eq("user_id", payload.userId)
+			.eq("status", MembershipStatusSchema.enum.Active)
+			.single();
+
+		return !!data;
+	}
+
 	export async function updateName(supabase: SupabaseInstance, payload: { name: string; groupId: string }): Promise<void> {
 		await supabase.from("groups").update({ name: payload.name }).eq("id", payload.groupId);
 	}
@@ -63,10 +75,16 @@ export namespace GroupController {
 		return users.data.filter(({ userId }) => !activeOrPendingMemberIds.includes(userId));
 	}
 
-	export async function getActiveMembers(supabase: SupabaseInstance, payload: { groupId: string }): Promise<ClientUser[]> {
+	export async function getActiveMembers(supabase: SupabaseInstance, payload: { groupId: string; exclusions?: string[] }): Promise<ClientUser[]> {
 		const members = await getMembershipsByStatus(supabase, { ...payload, statuses: [MembershipStatusSchema.enum.Active] });
 
-		return members.map(({ user }) => user);
+		return members.flatMap(({ user }) => {
+			if (payload.exclusions?.includes(user.userId)) {
+				return [];
+			}
+
+			return user;
+		});
 	}
 
 	export async function getGroups(supabase: SupabaseInstance, payload: { userId: string }): Promise<GroupDetails[]> {

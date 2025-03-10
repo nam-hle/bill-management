@@ -7,9 +7,9 @@ import { Locators } from "@/test/helpers/locators";
 import { truncate } from "@/test/functions/truncate";
 import { type AppRouter } from "@/routers/app.router";
 import { Assertions } from "@/test/helpers/assertions";
-import { seedGroup } from "@/test/functions/seed-group";
 import { createRequester } from "@/test/helpers/requester";
 import { type TableLocator } from "@/test/locators/table-locator";
+import { seedBasicPreset } from "@/test/functions/seed-basic-preset";
 import { USERNAMES, FULL_NAMES, getCurrentDate, type BillMember } from "@/test/utils";
 
 const presetBills: Omit<Actions.BillForm.FillParams, "description">[] = [
@@ -122,7 +122,7 @@ const expectedRows: Assertions.BillsTableExpectation["rows"] = [
 
 test.beforeAll("Seed bills", async () => {
 	await truncate();
-	const { userNames } = await seedGroup();
+	const { userNames } = await seedBasicPreset();
 
 	await test.step("Ron creates bills", async () => {
 		const requester = await createRequester(USERNAMES.ron);

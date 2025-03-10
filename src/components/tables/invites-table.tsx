@@ -22,7 +22,7 @@ export const InvitesTable: React.FC<InvitesTable.Props> = (props) => {
 	const { data } = trpc.users.invites.useQuery();
 
 	const utils = trpc.useUtils();
-	const accept = trpc.groups.acceptInvite.useMutation({
+	const accept = trpc.groups.acceptInvitation.useMutation({
 		onError: () => {
 			toast.error("An error occurred while joining the group");
 		},
@@ -31,7 +31,7 @@ export const InvitesTable: React.FC<InvitesTable.Props> = (props) => {
 			utils.groups.groups.invalidate().then(() => utils.users.invites.invalidate());
 		}
 	});
-	const reject = trpc.groups.rejectInvite.useMutation({
+	const reject = trpc.groups.rejectInvitation.useMutation({
 		onError: () => {
 			toast.error("An error occurred while rejecting the group");
 		},

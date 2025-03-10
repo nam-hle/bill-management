@@ -5,7 +5,7 @@ import { Bell } from "lucide-react";
 import { Button } from "@/components/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
 
-import { EmptyState } from "@/components/mics/empty-state";
+import { Message } from "@/components/mics/message";
 import { CounterBadge } from "@/components/mics/counter-badge";
 import { NotificationMessage } from "@/components/mics/notification-message";
 
@@ -93,7 +93,7 @@ export const NotificationContainer = () => {
 			</PopoverTrigger>
 			<PopoverContent align="end" className="w-90 w-[400px] p-2">
 				{notifications.length === 0 ? (
-					<EmptyState title="You have no notifications" />
+					<Message title="You have no notifications" />
 				) : (
 					<div className="flex max-h-[500px] flex-col gap-2 overflow-y-auto">
 						<div className="flex justify-between">

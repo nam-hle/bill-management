@@ -1,15 +1,21 @@
+import { TRPCError } from "@trpc/server";
+
 import { type API } from "@/api";
 import { Pagination } from "@/types";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
 import { type ClientTransaction } from "@/schemas";
-import { getCurrentUser, type SupabaseInstance } from "@/services/supabase/server";
+import { ensureAuthorized } from "@/controllers/utils";
+import { GroupController } from "@/controllers/group.controller";
+import { type MemberContext, type SupabaseInstance } from "@/services/supabase/server";
 import { UsersControllers, BankAccountsController, NotificationsControllers } from "@/controllers";
 
 export namespace TransactionsControllers {
 	const TRANSACTIONS_SELECT = `
     id,
+    group:groups!group_id (${GroupController.GROUP_SELECT}),
     createdAt:created_at,
     issuedAt:issued_at,
+    
     amount,
     status,
     sender:profiles!sender_id (userId:id, username, fullName:full_name, avatar:avatar_url),
@@ -19,12 +25,12 @@ export namespace TransactionsControllers {
 
 	export async function create(
 		supabase: SupabaseInstance,
-		payload: { amount: number; issuedAt: string; senderId: string; receiverId: string; bankAccountId: string | undefined }
+		payload: { amount: number; groupId: string; issuedAt: string; senderId: string; receiverId: string; bankAccountId: string | undefined }
 	) {
-		const { issuedAt: issued_at, senderId: sender_id, receiverId: receiver_id, bankAccountId: bank_account_id, ...rest } = payload;
+		const { groupId: group_id, issuedAt: issued_at, senderId: sender_id, receiverId: receiver_id, bankAccountId: bank_account_id, ...rest } = payload;
 		const { data, error } = await supabase
 			.from("transactions")
-			.insert({ ...rest, issued_at, sender_id, receiver_id, bank_account_id })
+			.insert({ ...rest, group_id, issued_at, sender_id, receiver_id, bank_account_id })
 			.select("id")
 			.single();
 
@@ -87,16 +93,14 @@ export namespace TransactionsControllers {
 
 	export async function getMany(
 		supabase: SupabaseInstance,
+		userContext: MemberContext,
 		filters?: {
 			page?: number;
 			senderId?: string;
 			receiverId?: string;
 		}
 	): Promise<API.Transactions.List.Response> {
-		const finalQuery = supabase.from("transactions").select(TRANSACTIONS_SELECT, { count: "exact" });
-
-		const currentUser = await getCurrentUser();
-
+		const finalQuery = supabase.from("transactions").select(TRANSACTIONS_SELECT, { count: "exact" }).eq("group_id", userContext.group.id);
 		const { page, senderId, receiverId } = filters ?? {};
 
 		if (senderId) {
@@ -104,7 +108,7 @@ export namespace TransactionsControllers {
 		} else if (receiverId) {
 			finalQuery.eq("receiver_id", receiverId);
 		} else {
-			finalQuery.or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`);
+			finalQuery.or(`sender_id.eq.${userContext.id},receiver_id.eq.${userContext.id}`);
 		}
 
 		const {
@@ -172,12 +176,15 @@ export namespace TransactionsControllers {
 		}
 	}
 
-	export async function getById(supabase: SupabaseInstance, id: string): Promise<ClientTransaction> {
-		const { data } = await supabase.from("transactions").select(TRANSACTIONS_SELECT).eq("id", id).single();
+	export async function getById(supabase: SupabaseInstance, payload: { userId: string; transactionId: string }): Promise<ClientTransaction> {
+		const { data } = await supabase.from("transactions").select(TRANSACTIONS_SELECT).eq("id", payload.transactionId).single();
 
 		if (!data) {
-			throw `Bill with id ${id} not found`;
+			throw new TRPCError({ code: "NOT_FOUND", message: "Transaction not found" });
 		}
+
+		// TODO: Remove this after implementing RLS
+		await ensureAuthorized(supabase, { userId: payload.userId, groupId: data.group.id });
 
 		return toClientTransaction(data);
 	}

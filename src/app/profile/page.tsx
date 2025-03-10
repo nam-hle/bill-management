@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 	title: "Profile"
 };
 
-export default async function Profile() {
+export default async function ProfilePage() {
 	const currentUser = await getCurrentUser();
 	const supabase = await createSupabaseServer();
 

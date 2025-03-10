@@ -40,7 +40,7 @@ export const GroupForm: React.FC<{
 
 	const { data: group } = trpc.groups.group.useQuery({ displayId });
 	const { data: requests } = trpc.groups.requests.useQuery({ groupId: group?.id ?? "" }, { enabled: !!group });
-	const { data: invites } = trpc.groups.invites.useQuery({ groupId: group?.id ?? "" }, { enabled: !!group });
+	const { data: invites } = trpc.groups.invitations.useQuery({ groupId: group?.id ?? "" }, { enabled: !!group });
 
 	const utils = trpc.useUtils();
 	const accept = trpc.groups.acceptRequest.useMutation({
@@ -68,7 +68,7 @@ export const GroupForm: React.FC<{
 		defaultValues: { name: "", members: [], displayId: "" }
 	});
 
-	const updateName = trpc.groups.updateName.useMutation({
+	const update = trpc.groups.update.useMutation({
 		onSuccess: () => {
 			utils.groups.group.invalidate({ displayId }).then(() => toast.success("Group name has been updated successfully!"));
 		}
@@ -77,8 +77,8 @@ export const GroupForm: React.FC<{
 	const { reset, control, getValues, handleSubmit } = form;
 
 	const onSubmit = React.useMemo(
-		() => handleSubmit((data) => updateName.mutate({ name: data.name, groupId: group?.id ?? "" })),
-		[group?.id, handleSubmit, updateName]
+		() => handleSubmit((data) => update.mutate({ name: data.name, groupId: group?.id ?? "" })),
+		[group?.id, handleSubmit, update]
 	);
 
 	React.useEffect(() => {

@@ -6,6 +6,7 @@ import { type Metadata } from "next";
 import { Button } from "@/components/shadcn/button";
 
 import { BillsTable } from "@/components/tables";
+import { GroupSelectionGuard } from "@/components/layouts/group-selection-guard";
 
 import { getCurrentUser } from "@/services/supabase/server";
 
@@ -14,18 +15,20 @@ export const metadata: Metadata = {
 };
 
 export default async function BillsPage() {
-	const currentUser = await getCurrentUser();
+	const { id } = await getCurrentUser();
 
 	return (
-		<BillsTable
-			currentUserId={currentUser.id}
-			action={
-				<Button asChild size="sm">
-					<Link href="/bills/new">
-						<Plus /> New
-					</Link>
-				</Button>
-			}
-		/>
+		<GroupSelectionGuard>
+			<BillsTable
+				currentUserId={id}
+				action={
+					<Button asChild size="sm">
+						<Link href="/bills/new">
+							<Plus /> New
+						</Link>
+					</Button>
+				}
+			/>
+		</GroupSelectionGuard>
 	);
 }

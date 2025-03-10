@@ -37,6 +37,6 @@ export const profileRouter = router({
 		.output(GroupSchema.nullable())
 		.query(({ ctx: { user, supabase } }) => UsersControllers.getSelectedGroup(supabase, user.id)),
 	selectGroup: privateProcedure
-		.input(z.object({ groupId: z.string() }))
+		.input(z.object({ groupId: z.string().nullable() }))
 		.mutation(({ input, ctx: { user, supabase } }) => UsersControllers.selectGroup(supabase, { userId: user.id, groupId: input.groupId }))
 });

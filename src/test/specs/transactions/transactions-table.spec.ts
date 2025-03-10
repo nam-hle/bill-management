@@ -2,12 +2,12 @@ import { test } from "@/test/setup";
 import { Actions } from "@/test/helpers/actions";
 import { Locators } from "@/test/helpers/locators";
 import { Assertions } from "@/test/helpers/assertions";
-import { seedGroup } from "@/test/functions/seed-group";
 import { createRequester } from "@/test/helpers/requester";
 import { USERNAMES, FULL_NAMES, getCurrentDate } from "@/test/utils";
+import { seedBasicPreset } from "@/test/functions/seed-basic-preset";
 
 test("basic", async ({ page }) => {
-	const { userIds } = await seedGroup();
+	const { userIds } = await seedBasicPreset();
 
 	await test.step("Create transactions from Ron to Harry", async () => {
 		const requester = await createRequester(USERNAMES.ron);

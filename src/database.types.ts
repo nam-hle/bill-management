@@ -276,6 +276,7 @@ export type Database = {
 				Row: {
 					id: string;
 					amount: number;
+					group_id: string;
 					issued_at: string;
 					sender_id: string;
 					created_at: string;
@@ -286,6 +287,7 @@ export type Database = {
 				Insert: {
 					id?: string;
 					amount: number;
+					group_id: string;
 					issued_at: string;
 					sender_id: string;
 					created_at?: string;
@@ -296,6 +298,7 @@ export type Database = {
 				Update: {
 					id?: string;
 					amount?: number;
+					group_id?: string;
 					issued_at?: string;
 					sender_id?: string;
 					created_at?: string;
@@ -313,6 +316,13 @@ export type Database = {
 					},
 					{
 						isOneToOne: false;
+						columns: ["group_id"];
+						referencedColumns: ["id"];
+						referencedRelation: "groups";
+						foreignKeyName: "transactions_group_id_fkey";
+					},
+					{
+						isOneToOne: false;
 						columns: ["receiver_id"];
 						referencedColumns: ["id"];
 						referencedRelation: "profiles";
@@ -338,88 +348,6 @@ export type Database = {
 						referencedColumns: ["user_id"];
 						referencedRelation: "user_financial_summary";
 						foreignKeyName: "transactions_sender_id_fkey";
-					}
-				];
-			};
-			bills: {
-				Row: {
-					id: string;
-					issued_at: string;
-					created_at: string;
-					creator_id: string;
-					creditor_id: string;
-					description: string;
-					total_amount: number;
-					updated_at: string | null;
-					updater_id: string | null;
-					receipt_file: string | null;
-				};
-				Insert: {
-					id?: string;
-					issued_at: string;
-					creator_id: string;
-					created_at?: string;
-					creditor_id: string;
-					description: string;
-					total_amount: number;
-					updated_at?: string | null;
-					updater_id?: string | null;
-					receipt_file?: string | null;
-				};
-				Update: {
-					id?: string;
-					issued_at?: string;
-					created_at?: string;
-					creator_id?: string;
-					creditor_id?: string;
-					description?: string;
-					total_amount?: number;
-					updated_at?: string | null;
-					updater_id?: string | null;
-					receipt_file?: string | null;
-				};
-				Relationships: [
-					{
-						isOneToOne: false;
-						columns: ["creator_id"];
-						referencedColumns: ["id"];
-						referencedRelation: "profiles";
-						foreignKeyName: "bills_creator_id_fkey";
-					},
-					{
-						isOneToOne: false;
-						columns: ["creator_id"];
-						referencedColumns: ["user_id"];
-						foreignKeyName: "bills_creator_id_fkey";
-						referencedRelation: "user_financial_summary";
-					},
-					{
-						isOneToOne: false;
-						columns: ["creditor_id"];
-						referencedColumns: ["id"];
-						referencedRelation: "profiles";
-						foreignKeyName: "bills_creditor_id_fkey";
-					},
-					{
-						isOneToOne: false;
-						columns: ["creditor_id"];
-						referencedColumns: ["user_id"];
-						foreignKeyName: "bills_creditor_id_fkey";
-						referencedRelation: "user_financial_summary";
-					},
-					{
-						isOneToOne: false;
-						columns: ["updater_id"];
-						referencedColumns: ["id"];
-						referencedRelation: "profiles";
-						foreignKeyName: "bills_updater_id_fkey";
-					},
-					{
-						isOneToOne: false;
-						columns: ["updater_id"];
-						referencedColumns: ["user_id"];
-						foreignKeyName: "bills_updater_id_fkey";
-						referencedRelation: "user_financial_summary";
 					}
 				];
 			};
@@ -498,6 +426,98 @@ export type Database = {
 						columns: ["user_id"];
 						referencedColumns: ["user_id"];
 						foreignKeyName: "notifications_user_id_fkey";
+						referencedRelation: "user_financial_summary";
+					}
+				];
+			};
+			bills: {
+				Row: {
+					id: string;
+					group_id: string;
+					issued_at: string;
+					created_at: string;
+					creator_id: string;
+					creditor_id: string;
+					description: string;
+					total_amount: number;
+					updated_at: string | null;
+					updater_id: string | null;
+					receipt_file: string | null;
+				};
+				Insert: {
+					id?: string;
+					group_id: string;
+					issued_at: string;
+					creator_id: string;
+					created_at?: string;
+					creditor_id: string;
+					description: string;
+					total_amount: number;
+					updated_at?: string | null;
+					updater_id?: string | null;
+					receipt_file?: string | null;
+				};
+				Update: {
+					id?: string;
+					group_id?: string;
+					issued_at?: string;
+					created_at?: string;
+					creator_id?: string;
+					creditor_id?: string;
+					description?: string;
+					total_amount?: number;
+					updated_at?: string | null;
+					updater_id?: string | null;
+					receipt_file?: string | null;
+				};
+				Relationships: [
+					{
+						isOneToOne: false;
+						columns: ["creator_id"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "bills_creator_id_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["creator_id"];
+						referencedColumns: ["user_id"];
+						foreignKeyName: "bills_creator_id_fkey";
+						referencedRelation: "user_financial_summary";
+					},
+					{
+						isOneToOne: false;
+						columns: ["creditor_id"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "bills_creditor_id_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["creditor_id"];
+						referencedColumns: ["user_id"];
+						foreignKeyName: "bills_creditor_id_fkey";
+						referencedRelation: "user_financial_summary";
+					},
+					{
+						isOneToOne: false;
+						columns: ["group_id"];
+						referencedColumns: ["id"];
+						referencedRelation: "groups";
+						foreignKeyName: "bills_group_id_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["updater_id"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "bills_updater_id_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["updater_id"];
+						referencedColumns: ["user_id"];
+						foreignKeyName: "bills_updater_id_fkey";
 						referencedRelation: "user_financial_summary";
 					}
 				];

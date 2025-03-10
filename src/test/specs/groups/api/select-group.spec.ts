@@ -1,11 +1,11 @@
 import { expect } from "@playwright/test";
 
 import { test } from "@/test/setup";
-import { seedGroup } from "@/test/functions/seed-group";
+import { seedUsers } from "@/test/functions/seed-users";
 import { createRequester } from "@/test/helpers/requester";
 
 test("Select group", async () => {
-	await seedGroup();
+	await seedUsers();
 	const requester = await createRequester("harry");
 
 	const group = await requester.groups.create.mutate({ name: "Harry's group" });

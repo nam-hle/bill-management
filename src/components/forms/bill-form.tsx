@@ -119,8 +119,8 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 	const createBill = useCreateBill();
 	const updateBill = useUpdateBill(endEditing);
 
-	const { data: bill, isPending: loadingBill } = trpc.bills.get.useQuery<ClientBill>(
-		{ id: kind.type === "update" ? kind.billId : "" },
+	const { data: bill, isPending: loadingBill } = trpc.bills.get.useQuery(
+		{ billId: kind.type === "update" ? kind.billId : "" },
 		{ enabled: kind.type === "update" }
 	);
 
@@ -152,7 +152,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 		});
 	}, [createBill, handleSubmit, kind, updateBill]);
 
-	const { isPending: isPendingUsers } = trpc.users.get.useQuery();
+	const { isPending: isPendingUsers } = trpc.groups.members.useQuery();
 
 	return (
 		<Form {...form}>
@@ -289,7 +289,7 @@ function useCreateBill() {
 		onSuccess: () => {
 			toast.success("A new bill has been created and saved successfully.");
 
-			utils.bills.get.invalidate().then(() => router.push("/bills"));
+			utils.bills.getMany.invalidate().then(() => router.push("/bills"));
 		}
 	});
 
@@ -306,7 +306,7 @@ function useUpdateBill(onSuccess: () => void) {
 		onSuccess: () => {
 			toast.success("The bill details have been updated successfully.");
 
-			utils.bills.get.invalidate().then(onSuccess);
+			utils.bills.getMany.invalidate().then(onSuccess);
 		}
 	});
 

@@ -1,4 +1,3 @@
-import { wait } from "@/utils";
 import { type Balance, type UserInfo } from "@/types";
 import { GroupController } from "@/controllers/group.controller";
 import { type SupabaseInstance } from "@/services/supabase/server";
@@ -33,7 +32,7 @@ export namespace UsersControllers {
 		return data;
 	}
 
-	export async function getUsers(supabase: SupabaseInstance): Promise<ClientUser[]> {
+	export async function getGroupMembers(supabase: SupabaseInstance): Promise<ClientUser[]> {
 		const { data: users } = await supabase.from("profiles").select(USERS_SELECT);
 
 		if (!users) {
@@ -72,8 +71,6 @@ export namespace UsersControllers {
 			throw new Error(userError?.message || "User not found");
 		}
 
-		await wait(2000);
-
 		const email = user.user?.email;
 
 		if (!email) {
@@ -105,7 +102,7 @@ export namespace UsersControllers {
 		return data.map(({ group }) => group);
 	}
 
-	export async function selectGroup(supabase: SupabaseInstance, payload: { userId: string; groupId: string }): Promise<void> {
+	export async function selectGroup(supabase: SupabaseInstance, payload: { userId: string; groupId: string | null }): Promise<void> {
 		const { error } = await supabase.from("profiles").update({ selected_group_id: payload.groupId }).eq("id", payload.userId);
 
 		if (error) {

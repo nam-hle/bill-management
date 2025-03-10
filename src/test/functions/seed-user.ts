@@ -9,9 +9,7 @@ export async function seedUser(params: { email: UserName; fullName: string; pass
 		password,
 		email: fullEmail,
 		email_confirm: true,
-		user_metadata: {
-			full_name: fullName
-		}
+		user_metadata: { full_name: fullName }
 	});
 
 	if (error) {

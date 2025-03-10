@@ -41,7 +41,7 @@ export const InviteDialog: React.FC<InviteDialog.Props> = ({ groupId }) => {
 			if (data.every((result) => result.ok)) {
 				toast.success("Send invites successfully");
 
-				utils.groups.invites.invalidate({ groupId }).then(() => {
+				utils.groups.invitations.invalidate({ groupId }).then(() => {
 					setIsOpen(false);
 					setInvitedUsers([]);
 				});

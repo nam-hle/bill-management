@@ -5,7 +5,7 @@ import { Actions } from "@/test/helpers/actions";
 import { Locators } from "@/test/helpers/locators";
 import { USERNAMES, FULL_NAMES } from "@/test/utils";
 import { Assertions } from "@/test/helpers/assertions";
-import { seedGroup } from "@/test/functions/seed-group";
+import { seedBasicPreset } from "@/test/functions/seed-basic-preset";
 
 const expectedBillsTable: Assertions.BillsTableExpectation = {
 	pagination: null,
@@ -40,7 +40,7 @@ test("basic", async ({ page }, testInfo) => {
 	test.setTimeout(testInfo.timeout * 1.5);
 
 	const getBillsTable = async () => Locators.locateTable(page, 0);
-	await seedGroup();
+	await seedBasicPreset();
 
 	await test.step("Harry creates a bill", async () => {
 		await Actions.login(page, USERNAMES.harry);
@@ -164,7 +164,7 @@ test("basic", async ({ page }, testInfo) => {
 			await Actions.login(page, expectation.username);
 
 			await Actions.goToNotificationsPage(page);
-			await page.waitForSelector(".chakra-skeleton", { state: "detached" });
+			await page.waitForSelector(".loading", { state: "detached" });
 
 			expect(await Locators.locateNotifications(page).allTextContents()).toEqual(expectation.messages);
 

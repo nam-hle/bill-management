@@ -4,7 +4,7 @@ import { test } from "@/test/setup";
 import { FULL_NAMES } from "@/test/utils";
 import { Actions } from "@/test/helpers/actions";
 import { Assertions } from "@/test/helpers/assertions";
-import { seedGroup } from "@/test/functions/seed-group";
+import { seedBasicPreset } from "@/test/functions/seed-basic-preset";
 
 test.describe("basic", () => {
 	const testCases: {
@@ -141,7 +141,7 @@ test.describe("basic", () => {
 
 	for (const testCase of testCases) {
 		test(testCase.description, async ({ page }) => {
-			await seedGroup();
+			await seedBasicPreset();
 
 			await Actions.login(page, "harry");
 
