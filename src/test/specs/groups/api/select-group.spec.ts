@@ -14,6 +14,7 @@ test("Select group", async () => {
 
 	await requester.profile.selectGroup.mutate({ groupId: group.id });
 	expect(await requester.profile.selectedGroup.query()).toEqual({
+		balance: 0,
 		name: "Harry's group",
 		id: expect.any(String),
 		displayId: expect.stringMatching(/^\d{8}$/)
