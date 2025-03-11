@@ -30,19 +30,6 @@ export type Database = {
 		CompositeTypes: {
 			[_ in never]: never;
 		};
-		Views: {
-			user_financial_summary: {
-				Relationships: [];
-				Row: {
-					owed: number | null;
-					paid: number | null;
-					sent: number | null;
-					balance: number | null;
-					user_id: string | null;
-					received: number | null;
-				};
-			};
-		};
 		Functions: {
 			get_filtered_bills: {
 				Returns: {
@@ -50,6 +37,7 @@ export type Database = {
 					total_count: number;
 				}[];
 				Args: {
+					group: string;
 					member: string;
 					debtor?: string;
 					creator?: string;
@@ -68,6 +56,35 @@ export type Database = {
 			TransactionStatus: "Waiting" | "Confirmed" | "Declined";
 			MembershipStatus: "Idle" | "Active" | "Requesting" | "Inviting";
 			NotificationType: "BillCreated" | "BillUpdated" | "BillDeleted" | "TransactionWaiting" | "TransactionConfirmed" | "TransactionDeclined";
+		};
+		Views: {
+			user_financial_summary: {
+				Row: {
+					owed: number | null;
+					paid: number | null;
+					sent: number | null;
+					balance: number | null;
+					user_id: string | null;
+					group_id: string | null;
+					received: number | null;
+				};
+				Relationships: [
+					{
+						isOneToOne: false;
+						columns: ["group_id"];
+						referencedColumns: ["id"];
+						referencedRelation: "groups";
+						foreignKeyName: "users_groups_group_id_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["user_id"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "users_groups_user_id_fkey";
+					}
+				];
+			};
 		};
 		Tables: {
 			groups: {
@@ -165,13 +182,6 @@ export type Database = {
 						referencedColumns: ["id"];
 						referencedRelation: "profiles";
 						foreignKeyName: "bill_members_user_id_fkey";
-					},
-					{
-						isOneToOne: false;
-						columns: ["user_id"];
-						referencedColumns: ["user_id"];
-						foreignKeyName: "bill_members_user_id_fkey";
-						referencedRelation: "user_financial_summary";
 					}
 				];
 			};
@@ -211,17 +221,19 @@ export type Database = {
 						referencedColumns: ["id"];
 						referencedRelation: "profiles";
 						foreignKeyName: "users_groups_user_id_fkey";
-					},
-					{
-						isOneToOne: false;
-						columns: ["user_id"];
-						referencedColumns: ["user_id"];
-						foreignKeyName: "users_groups_user_id_fkey";
-						referencedRelation: "user_financial_summary";
 					}
 				];
 			};
 			bank_accounts: {
+				Relationships: [
+					{
+						isOneToOne: false;
+						columns: ["user_id"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "bank_accounts_user_id_fkey";
+					}
+				];
 				Row: {
 					id: string;
 					user_id: string;
@@ -255,22 +267,6 @@ export type Database = {
 					type?: Database["public"]["Enums"]["BankAccountType"];
 					status?: Database["public"]["Enums"]["BankAccountStatus"];
 				};
-				Relationships: [
-					{
-						isOneToOne: false;
-						columns: ["user_id"];
-						referencedColumns: ["id"];
-						referencedRelation: "profiles";
-						foreignKeyName: "bank_accounts_user_id_fkey";
-					},
-					{
-						isOneToOne: false;
-						columns: ["user_id"];
-						referencedColumns: ["user_id"];
-						foreignKeyName: "bank_accounts_user_id_fkey";
-						referencedRelation: "user_financial_summary";
-					}
-				];
 			};
 			transactions: {
 				Row: {
@@ -330,23 +326,9 @@ export type Database = {
 					},
 					{
 						isOneToOne: false;
-						columns: ["receiver_id"];
-						referencedColumns: ["user_id"];
-						referencedRelation: "user_financial_summary";
-						foreignKeyName: "transactions_receiver_id_fkey";
-					},
-					{
-						isOneToOne: false;
 						columns: ["sender_id"];
 						referencedColumns: ["id"];
 						referencedRelation: "profiles";
-						foreignKeyName: "transactions_sender_id_fkey";
-					},
-					{
-						isOneToOne: false;
-						columns: ["sender_id"];
-						referencedColumns: ["user_id"];
-						referencedRelation: "user_financial_summary";
 						foreignKeyName: "transactions_sender_id_fkey";
 					}
 				];
@@ -409,24 +391,10 @@ export type Database = {
 					},
 					{
 						isOneToOne: false;
-						columns: ["trigger_id"];
-						referencedColumns: ["user_id"];
-						referencedRelation: "user_financial_summary";
-						foreignKeyName: "notifications_trigger_id_fkey";
-					},
-					{
-						isOneToOne: false;
 						columns: ["user_id"];
 						referencedColumns: ["id"];
 						referencedRelation: "profiles";
 						foreignKeyName: "notifications_user_id_fkey";
-					},
-					{
-						isOneToOne: false;
-						columns: ["user_id"];
-						referencedColumns: ["user_id"];
-						foreignKeyName: "notifications_user_id_fkey";
-						referencedRelation: "user_financial_summary";
 					}
 				];
 			};
@@ -480,24 +448,10 @@ export type Database = {
 					},
 					{
 						isOneToOne: false;
-						columns: ["creator_id"];
-						referencedColumns: ["user_id"];
-						foreignKeyName: "bills_creator_id_fkey";
-						referencedRelation: "user_financial_summary";
-					},
-					{
-						isOneToOne: false;
 						columns: ["creditor_id"];
 						referencedColumns: ["id"];
 						referencedRelation: "profiles";
 						foreignKeyName: "bills_creditor_id_fkey";
-					},
-					{
-						isOneToOne: false;
-						columns: ["creditor_id"];
-						referencedColumns: ["user_id"];
-						foreignKeyName: "bills_creditor_id_fkey";
-						referencedRelation: "user_financial_summary";
 					},
 					{
 						isOneToOne: false;
@@ -512,13 +466,6 @@ export type Database = {
 						referencedColumns: ["id"];
 						referencedRelation: "profiles";
 						foreignKeyName: "bills_updater_id_fkey";
-					},
-					{
-						isOneToOne: false;
-						columns: ["updater_id"];
-						referencedColumns: ["user_id"];
-						foreignKeyName: "bills_updater_id_fkey";
-						referencedRelation: "user_financial_summary";
 					}
 				];
 			};

@@ -73,7 +73,7 @@ export namespace BillsControllers {
 
 	export async function getManyByMemberId(
 		supabase: SupabaseInstance,
-		userContext: MemberContext,
+		memberContext: MemberContext,
 		payload: GetManyByMemberIdPayload
 	): Promise<API.Bills.List.Response> {
 		const { page, limit, since, debtor, member, creator, creditor, q: textSearch } = payload;
@@ -88,7 +88,7 @@ export namespace BillsControllers {
 			}
 		}
 
-		const params = {
+		const { data, error } = await supabase.rpc("get_filtered_bills", {
 			page_size: limit,
 			page_number: page,
 			text_search: textSearch ?? undefined,
@@ -97,10 +97,9 @@ export namespace BillsControllers {
 			member,
 			debtor,
 			creator,
-			creditor
-		};
-
-		const { data, error } = await supabase.rpc("get_filtered_bills", params);
+			creditor,
+			group: memberContext.group.id
+		});
 
 		if (error) {
 			throw error;

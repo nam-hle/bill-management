@@ -84,7 +84,7 @@ export namespace TransactionsControllers {
 			return { suggestion: undefined };
 		}
 
-		const senderBalance = await UsersControllers.reportUsingView(supabase, senderId);
+		const senderBalance = await UsersControllers.reportUsingView(supabase, senderId, "");
 
 		const amount = Math.min(Math.abs(senderBalance.net), Math.abs(receiverBalance));
 

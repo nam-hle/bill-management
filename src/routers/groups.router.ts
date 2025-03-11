@@ -4,12 +4,22 @@ import { ClientUserSchema } from "@/schemas";
 import { MemberAction } from "@/controllers/member-transition";
 import { GroupController } from "@/controllers/group.controller";
 import { router, privateProcedure, withSelectedGroup } from "@/services/trpc/server";
-import { GroupSchema, MembershipSchema, GroupDetailsSchema, MembershipStatusSchema, MembershipChangeResponseSchema } from "@/schemas/group.schema";
+import {
+	GroupSchema,
+	MembershipSchema,
+	GroupDetailsSchema,
+	MembershipStatusSchema,
+	GroupDetailsWithBalanceSchema,
+	MembershipChangeResponseSchema
+} from "@/schemas/group.schema";
 
 export const groupsRouter = router({
 	groups: privateProcedure
 		.output(z.array(GroupDetailsSchema))
 		.query(({ ctx: { user, supabase } }) => GroupController.getGroups(supabase, { userId: user.id })),
+	groupsWithBalance: privateProcedure
+		.output(z.array(GroupDetailsWithBalanceSchema))
+		.query(({ ctx: { user, supabase } }) => GroupController.getGroupsWithBalance(supabase, { userId: user.id })),
 	group: privateProcedure
 		.input(z.object({ displayId: z.string() }))
 		.output(GroupDetailsSchema)
