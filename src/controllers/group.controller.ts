@@ -1,11 +1,11 @@
-import { type ClientUser } from "@/schemas";
+import { UserControllers } from "@/controllers";
 import { pickUniqueId } from "@/controllers/utils";
 import { assert, generateNumberDisplayId } from "@/utils";
 import { type SupabaseInstance } from "@/services/supabase/server";
-import { UsersControllers } from "@/controllers/users.controllers";
 import { type MemberAction, changeMemberStatus } from "@/controllers/member-transition";
 import {
 	type Group,
+	type UserMeta,
 	type Membership,
 	type GroupDetails,
 	type MembershipKey,
@@ -13,7 +13,7 @@ import {
 	MembershipStatusSchema,
 	type GroupDetailsWithBalance,
 	type MembershipResponseChange
-} from "@/schemas/group.schema";
+} from "@/schemas";
 
 export namespace GroupController {
 	export const GROUP_SELECT = `
@@ -24,7 +24,7 @@ export namespace GroupController {
 
 	export const MEMBERSHIP_SELECT = `	
 		status,
-		user:profiles!user_id (id, fullName:full_name, avatar:avatar_url),
+		user:profiles!user_id (${UserControllers.AVATAR_USER_SELECT}),
 		group:groups!group_id (${GROUP_SELECT})
 	`;
 
@@ -64,19 +64,19 @@ export namespace GroupController {
 		await supabase.from("groups").update({ name: payload.name }).eq("id", payload.groupId);
 	}
 
-	export async function getCandidateMembers(supabase: SupabaseInstance, payload: { groupId: string; textSearch: string }): Promise<ClientUser[]> {
+	export async function getCandidateMembers(supabase: SupabaseInstance, payload: { groupId: string; textSearch: string }): Promise<UserMeta[]> {
 		const activeOrPendingMemberIds = (
 			await getMembershipsByStatus(supabase, {
 				...payload,
 				statuses: [MembershipStatusSchema.enum.Active, MembershipStatusSchema.enum.Requesting, MembershipStatusSchema.enum.Inviting]
 			})
 		).map((e) => e.user.userId);
-		const users = await UsersControllers.findByName(supabase, payload);
+		const users = await UserControllers.findByName(supabase, payload);
 
 		return users.data.filter(({ userId }) => !activeOrPendingMemberIds.includes(userId));
 	}
 
-	export async function getActiveMembers(supabase: SupabaseInstance, payload: { groupId: string; exclusions?: string[] }): Promise<ClientUser[]> {
+	export async function getActiveMembers(supabase: SupabaseInstance, payload: { groupId: string; exclusions?: string[] }): Promise<UserMeta[]> {
 		const members = await getMembershipsByStatus(supabase, { ...payload, statuses: [MembershipStatusSchema.enum.Active] });
 
 		return members.flatMap(({ user }) => {
@@ -95,17 +95,17 @@ export namespace GroupController {
 			.eq("user_id", payload.userId)
 			.eq("status", MembershipStatusSchema.enum.Active);
 
-		return await Promise.all(groups?.map((group) => getGroupDetailsByDisplayId(supabase, { displayId: group.group.displayId })) ?? []);
+		return Promise.all(groups?.map((group) => getGroupDetailsByDisplayId(supabase, { displayId: group.group.displayId })) ?? []);
 	}
 
 	export async function getGroupsWithBalance(supabase: SupabaseInstance, payload: { userId: string }): Promise<GroupDetailsWithBalance[]> {
 		const groupDetails = await getGroups(supabase, payload);
 
 		return Promise.all(
-			groupDetails.map(async (e) => {
-				const report = await UsersControllers.reportUsingView(supabase, payload.userId, e.id);
+			groupDetails.map(async (group) => {
+				const report = await UserControllers.reportUsingView(supabase, { ...payload, groupId: group.id });
 
-				return { ...e, balance: report.net };
+				return { ...group, balance: report.net };
 			})
 		);
 	}
@@ -134,7 +134,7 @@ export namespace GroupController {
 	): Promise<Membership[]> {
 		const { data, error } = await supabase
 			.from("memberships")
-			.select(`id, status, user:profiles!user_id (${UsersControllers.USERS_SELECT})`)
+			.select(`id, status, user:profiles!user_id (${UserControllers.AVATAR_USER_SELECT})`)
 			.eq("group_id", payload.groupId)
 			.in("status", payload.statuses)
 			.order("created_at", { ascending: true });

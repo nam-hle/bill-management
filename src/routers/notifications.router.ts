@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import { API } from "@/api";
 import { NotificationsControllers } from "@/controllers";
 import { router, privateProcedure } from "@/services/trpc/server";
@@ -11,8 +13,8 @@ export const notificationsRouter = router({
 		.input(API.Notifications.List.PayloadSchema)
 		.mutation(({ input, ctx: { user, supabase } }) => NotificationsControllers.getByUserId(supabase, user.id, input)),
 	read: privateProcedure
-		.input(API.Notifications.ReadSingle.PayloadSchema)
-		.output(API.Notifications.ReadSingle.ResponseSchema)
+		.input(z.object({ notificationId: z.string() }))
+		.output(z.object({ unreadCount: z.number().int().nonnegative() }))
 		.mutation(async ({ input, ctx: { user, supabase } }) => {
 			const unreadCount = await NotificationsControllers.read(supabase, user.id, input.notificationId);
 

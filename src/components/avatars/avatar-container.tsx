@@ -1,5 +1,7 @@
+"use client";
+
+import React, { Suspense } from "react";
 import { useRouter } from "next/navigation";
-import React, { use, Suspense } from "react";
 import { User, Users, LogOut } from "lucide-react";
 
 import { Skeleton } from "@/components/shadcn/skeleton";
@@ -14,42 +16,40 @@ import {
 	DropdownMenuSeparator
 } from "@/components/shadcn/dropdown-menu";
 
-import { type UserInfo } from "@/types";
+import { trpc } from "@/services";
 import { getAvatarFallback } from "@/utils/avatar-fallback";
 
-export namespace AvatarContainer {
-	export interface Props {
-		readonly pendingUserInfo: Promise<UserInfo>;
-	}
-}
-
-function UserNav(props: AvatarContainer.Props) {
-	const userInfo = use(props.pendingUserInfo);
+const UserNav = () => {
+	const { data: profile } = trpc.user.profile.useQuery();
+	const { data: avatar } = trpc.storage.get.useQuery(
+		{ bucketName: "avatars", fileName: profile?.avatarFile || "" },
+		{ enabled: !!profile?.avatarFile }
+	);
 
 	return (
 		<DropdownMenuTrigger asChild>
 			<Avatar className="h-8 w-8 cursor-pointer">
-				<AvatarImage src={userInfo?.avatarUrl} />
-				<AvatarFallback className="text-xs">{getAvatarFallback(userInfo.fullName)}</AvatarFallback>
+				<AvatarImage src={avatar ?? undefined} />
+				<AvatarFallback className="text-xs">{getAvatarFallback(profile?.fullName)}</AvatarFallback>
 			</Avatar>
 		</DropdownMenuTrigger>
 	);
-}
+};
 
-function UserNavInfo(props: AvatarContainer.Props) {
-	const userInfo = use(props.pendingUserInfo);
+const UserNavInfo = () => {
+	const { data: profile } = trpc.user.profile.useQuery();
 
 	return (
 		<DropdownMenuLabel className="font-normal">
 			<div className="flex flex-col space-y-1">
-				<p className="text-sm font-medium leading-none">{userInfo.fullName}</p>
-				<p className="text-xs leading-none text-muted-foreground">{userInfo.email}</p>
+				<p className="text-sm font-medium leading-none">{profile?.fullName}</p>
+				<p className="text-xs leading-none text-muted-foreground">{profile?.email}</p>
 			</div>
 		</DropdownMenuLabel>
 	);
-}
+};
 
-export const AvatarContainer: React.FC<AvatarContainer.Props> = ({ pendingUserInfo }) => {
+export const AvatarContainer = () => {
 	const router = useRouter();
 	const signOut = React.useCallback(() => {
 		fetch("/auth/signout", { method: "POST" }).then(() => {
@@ -60,10 +60,10 @@ export const AvatarContainer: React.FC<AvatarContainer.Props> = ({ pendingUserIn
 	return (
 		<DropdownMenu>
 			<Suspense fallback={<Skeleton className="h-8 w-8 rounded-full" />}>
-				<UserNav pendingUserInfo={pendingUserInfo} />
+				<UserNav />
 			</Suspense>
 			<DropdownMenuContent forceMount align="end" className="w-56">
-				<UserNavInfo pendingUserInfo={pendingUserInfo} />
+				<UserNavInfo />
 				<DropdownMenuSeparator />
 				<DropdownMenuGroup>
 					<DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/profile")}>

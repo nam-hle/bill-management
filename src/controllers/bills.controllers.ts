@@ -1,28 +1,28 @@
 import { TRPCError } from "@trpc/server";
 
 import { type API } from "@/api";
+import { type ClientBill } from "@/schemas";
 import { ensureAuthorized } from "@/controllers/utils";
-import { GroupController } from "@/controllers/group.controller";
-import { type ClientBill, type ClientBillMember } from "@/schemas";
-import { NotificationsControllers } from "@/controllers/notifications.controllers";
 import { type MemberContext, type SupabaseInstance } from "@/services/supabase/server";
+import { GroupController, UserControllers, NotificationsControllers } from "@/controllers";
 
 export namespace BillsControllers {
 	const BILLS_SELECT = `
     id,
-    creator:profiles!creator_id   (userId:id, fullName:full_name),
-    createdAt:created_at,
     group:groups!group_id (${GroupController.GROUP_SELECT}),
     
-    updater:profiles!updater_id   (userId:id, fullName:full_name),
+    creator:profiles!creator_id   (${UserControllers.AVATAR_USER_SELECT}),
+    createdAt:created_at,
+    
+    updater:profiles!updater_id   (${UserControllers.USER_META_SELECT}),
     updatedAt:updated_at,
     
     description,
     issuedAt:issued_at,
     receiptFile:receipt_file,
     totalAmount:total_amount,
-    creditor:profiles!creditor_id (userId:id, fullName:full_name, avatarUrl:avatar_url),
-    billDebtors:bill_debtors (user:user_id (userId:id, fullName:full_name, avatarUrl:avatar_url), amount, role)
+    creditor:profiles!creditor_id (${UserControllers.AVATAR_USER_SELECT}),
+    billDebtors:bill_debtors (user:user_id (${UserControllers.AVATAR_USER_SELECT}), amount, role)
   `;
 
 	export async function create(
@@ -125,17 +125,11 @@ export namespace BillsControllers {
 
 		return {
 			...rest,
-			debtors: debtors.map(toMember),
+			debtors,
 			creator: { ...creator, timestamp: createdAt },
-			updater: updater && updatedAt ? { ...updater, timestamp: updatedAt } : undefined,
-			creditor: { amount: totalAmount, userId: creditor.userId, role: "Creditor" as const, avatar: creditor.avatarUrl, fullName: creditor.fullName }
+			creditor: { user: creditor, amount: totalAmount, role: "Creditor" as const },
+			updater: updater && updatedAt ? { ...updater, timestamp: updatedAt } : undefined
 		};
-
-		function toMember(billMember: BillMemberSelectResult): ClientBillMember {
-			const { role, user, amount } = billMember;
-
-			return { role, amount, ...{ ...user, avatar: user.avatarUrl } };
-		}
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -150,7 +144,6 @@ export namespace BillsControllers {
 	}
 
 	type BillSelectResult = Awaited<ReturnType<typeof __get>>;
-	type BillMemberSelectResult = BillSelectResult["billDebtors"][number];
 
 	export async function getById(supabase: SupabaseInstance, payload: { userId: string; billId: string }): Promise<ClientBill> {
 		const { data: bill } = await supabase.from("bills").select(BILLS_SELECT).eq("id", payload.billId).single();

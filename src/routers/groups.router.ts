@@ -1,17 +1,17 @@
 import { z } from "zod";
 
-import { ClientUserSchema } from "@/schemas";
+import { GroupController } from "@/controllers";
 import { MemberAction } from "@/controllers/member-transition";
-import { GroupController } from "@/controllers/group.controller";
 import { router, privateProcedure, withSelectedGroup } from "@/services/trpc/server";
 import {
 	GroupSchema,
+	UserMetaSchema,
 	MembershipSchema,
 	GroupDetailsSchema,
 	MembershipStatusSchema,
 	GroupDetailsWithBalanceSchema,
 	MembershipChangeResponseSchema
-} from "@/schemas/group.schema";
+} from "@/schemas";
 
 export const groupsRouter = router({
 	groups: privateProcedure
@@ -27,16 +27,16 @@ export const groupsRouter = router({
 
 	membersByGroupId: privateProcedure
 		.input(z.object({ groupId: z.string() }))
-		.output(z.array(ClientUserSchema))
+		.output(z.array(UserMetaSchema))
 		.query(({ input, ctx: { supabase } }) => GroupController.getActiveMembers(supabase, input)),
 	candidateMembers: privateProcedure
 		.input(z.object({ groupId: z.string(), textSearch: z.string() }))
-		.output(z.array(ClientUserSchema))
+		.output(z.array(UserMetaSchema))
 		.query(({ input, ctx: { supabase } }) => GroupController.getCandidateMembers(supabase, input)),
 	members: privateProcedure
 		.use(withSelectedGroup)
 		.input(z.object({ excludeMe: z.boolean() }).optional())
-		.output(z.array(ClientUserSchema))
+		.output(z.array(UserMetaSchema))
 		.query(({ input, ctx: { user, supabase } }) =>
 			GroupController.getActiveMembers(supabase, { groupId: user.group.id, exclusions: input?.excludeMe ? [user.id] : [] })
 		),

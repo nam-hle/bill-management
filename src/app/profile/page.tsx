@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { ProfileForm } from "@/components/forms";
 import { BankAccountsTable } from "@/components/tables";
 
-import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
+import { getCurrentUser } from "@/services/supabase/server";
 
 export const metadata: Metadata = {
 	title: "Profile"
@@ -12,21 +12,10 @@ export const metadata: Metadata = {
 
 export default async function ProfilePage() {
 	const currentUser = await getCurrentUser();
-	const supabase = await createSupabaseServer();
-
-	const { data } = await supabase.from("profiles").select(`fullName:full_name, avatarUrl:avatar_url`).eq("id", currentUser.id).single();
-
-	if (!data) {
-		throw new Error("Profile not found");
-	}
-
-	if (!currentUser.email) {
-		throw new Error("Email not found");
-	}
 
 	return (
 		<>
-			<ProfileForm userId={currentUser.id} fullName={data.fullName} email={currentUser.email} avatarUrl={data.avatarUrl} />
+			<ProfileForm />
 			<BankAccountsTable currentUserId={currentUser.id} />
 		</>
 	);

@@ -1,4 +1,4 @@
-import { type MembershipStatus, MembershipStatusSchema } from "@/schemas/group.schema";
+import { type MembershipStatus, MembershipStatusSchema } from "@/schemas";
 
 export enum MemberAction {
 	REQUEST = "REQUEST",

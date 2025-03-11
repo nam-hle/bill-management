@@ -1,14 +1,7 @@
 import { z } from "zod";
 
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
-import {
-	ClientBillSchema,
-	ClientUserSchema,
-	BankAccountSchema,
-	ClientTransactionSchema,
-	ClientNotificationSchema,
-	TransactionStatusEnumSchema
-} from "@/schemas";
+import { ClientBillSchema, ClientTransactionSchema, ClientNotificationSchema, TransactionStatusEnumSchema } from "@/schemas";
 
 export namespace API {
 	export const DataListResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
@@ -35,29 +28,9 @@ export namespace API {
 			});
 			export type Response = z.infer<typeof ResponseSchema>;
 		}
-
-		export namespace ReadSingle {
-			export const PayloadSchema = z.object({
-				notificationId: z.string()
-			});
-			export const ResponseSchema = z.object({
-				unreadCount: z.number().int().nonnegative()
-			});
-		}
-	}
-
-	export namespace Users {
-		export namespace List {
-			export const ResponseSchema = DataListResponseSchema(ClientUserSchema);
-			export type Response = z.infer<typeof ResponseSchema>;
-		}
 	}
 
 	export namespace Bills {
-		export namespace Get {
-			export const PayloadSchema = z.object({ id: z.string() });
-		}
-
 		export const UpsertBillMemberSchema = z.object({ userId: z.string(), amount: z.number() });
 
 		export const UpsertBillSchema = z.object({
@@ -134,16 +107,6 @@ export namespace API {
 		}
 	}
 
-	export namespace BankAccounts {
-		export namespace List {
-			export const SearchParamsSchema = z.object({
-				userId: z.string()
-			});
-
-			export const ResponseSchema = z.array(BankAccountSchema);
-		}
-	}
-
 	export namespace QR {
 		export namespace Create {
 			export const BodySchema = z.object({
@@ -152,17 +115,4 @@ export namespace API {
 			});
 		}
 	}
-
-	export namespace Banks {
-		export namespace List {
-			export const BankSchema = z.object({
-				providerName: z.string(),
-				providerNumber: z.string()
-			});
-
-			export const ResponseSchema = z.array(BankSchema);
-		}
-	}
-
-	export namespace Storage {}
 }

@@ -14,12 +14,12 @@ import { Form, FormItem, FormField, FormLabel, FormControl, FormMessage } from "
 
 import { cn } from "@/utils/cn";
 import { login } from "@/app/login/actions";
-import { type LoginFormPayload, LoginFormPayloadSchema } from "@/schemas";
+import { type LoginFormState, LoginFormStateSchema } from "@/schemas";
 
 export function LoginForm() {
-	const form = useForm<LoginFormPayload>({
+	const form = useForm<LoginFormState>({
 		defaultValues: { email: "", password: "" },
-		resolver: zodResolver(LoginFormPayloadSchema)
+		resolver: zodResolver(LoginFormStateSchema)
 	});
 
 	const {

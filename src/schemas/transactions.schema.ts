@@ -1,8 +1,8 @@
 import { z } from "zod";
 
+import { GroupSchema } from "@/schemas";
 import type { Database } from "@/database.types";
-import { GroupSchema } from "@/schemas/group.schema";
-import { ClientUserSchema } from "@/schemas/user.schema";
+import { UserMetaSchema } from "@/schemas/user.schema";
 
 export const TransactionStatusEnumSchema = z.enum([
 	"Waiting",
@@ -17,8 +17,8 @@ export const ClientTransactionSchema = z.object({
 	group: GroupSchema,
 	issuedAt: z.string(),
 	createdAt: z.string(),
-	sender: ClientUserSchema,
-	receiver: ClientUserSchema,
+	sender: UserMetaSchema,
+	receiver: UserMetaSchema,
 	status: TransactionStatusEnumSchema,
 	bankAccountId: z.string().nullable()
 });

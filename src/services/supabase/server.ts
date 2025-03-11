@@ -2,16 +2,26 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { type SupabaseClient } from "@supabase/supabase-js";
 
+import { type Group } from "@/schemas";
 import { Environments } from "@/environments";
+import { UserControllers } from "@/controllers";
 import { type Database } from "@/database.types";
-import { UsersControllers } from "@/controllers";
-import { type Group } from "@/schemas/group.schema";
 import { supabaseClientOptions } from "@/services/supabase/config";
 
 export type SupabaseInstance = SupabaseClient<Database, "public", Database["public"]>;
 
 export type UserContext = Awaited<ReturnType<typeof getCurrentUser>>;
 export type MemberContext = Omit<UserContext, "group"> & { group: Group };
+
+export async function isAuthenticated(): Promise<boolean> {
+	const supabase = await createSupabaseServer();
+
+	const {
+		data: { user }
+	} = await supabase.auth.getUser();
+
+	return !!user;
+}
 
 export async function getCurrentUser(): Promise<{ id: string; email?: string; group: Group | undefined }> {
 	const supabase = await createSupabaseServer();
@@ -25,7 +35,7 @@ export async function getCurrentUser(): Promise<{ id: string; email?: string; gr
 		throw new Error("User not found");
 	}
 
-	const group = await UsersControllers.getSelectedGroup(supabase, currentUser.id);
+	const group = await UserControllers.getSelectedGroup(supabase, currentUser.id);
 
 	return { ...currentUser, group: group ?? undefined };
 }

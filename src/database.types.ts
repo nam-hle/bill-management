@@ -114,8 +114,8 @@ export type Database = {
 					username: string;
 					full_name: string;
 					website: string | null;
-					avatar_url: string | null;
 					updated_at: string | null;
+					avatar_file: string | null;
 					selected_group_id: string | null;
 				};
 				Insert: {
@@ -123,8 +123,8 @@ export type Database = {
 					username?: string;
 					full_name?: string;
 					website?: string | null;
-					avatar_url?: string | null;
 					updated_at?: string | null;
+					avatar_file?: string | null;
 					selected_group_id?: string | null;
 				};
 				Update: {
@@ -132,8 +132,8 @@ export type Database = {
 					username?: string;
 					full_name?: string;
 					website?: string | null;
-					avatar_url?: string | null;
 					updated_at?: string | null;
+					avatar_file?: string | null;
 					selected_group_id?: string | null;
 				};
 				Relationships: [

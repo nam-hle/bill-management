@@ -32,5 +32,5 @@ test("Login", async ({ page }) => {
 	await Actions.submit(page);
 
 	await expect(page).toHaveURL("/");
-	await expect(page.locator("h2").first()).toHaveText("Summary");
+	await expect(page.locator("h3").first()).toHaveText("Group Selection Required");
 });

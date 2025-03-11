@@ -1,8 +1,8 @@
 import { expect } from "@playwright/test";
 
 import { test } from "@/test/setup";
+import { type Group } from "@/schemas";
 import { FULL_NAMES } from "@/test/utils";
-import { type Group } from "@/schemas/group.schema";
 import { seedUsers, type UsersInfo } from "@/test/functions/seed-users";
 
 let usersInfo: UsersInfo;

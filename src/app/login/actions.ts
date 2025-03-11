@@ -3,36 +3,27 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
-import { createSupabaseServer } from "@/services/supabase/server";
-import { SignUpPayloadSchema, type LoginFormPayload } from "@/schemas";
+import { createCaller } from "@/services/trpc/caller";
+import { type LoginFormState, type SignUpFormState } from "@/schemas";
 
-export async function login(formData: LoginFormPayload) {
-	const supabase = await createSupabaseServer();
-	const { error } = await supabase.auth.signInWithPassword(formData);
+export async function login(payload: LoginFormState) {
+	const caller = await createCaller();
+	const response = await caller.user.login(payload);
 
-	if (error) {
-		return error.message;
+	if (!response.ok) {
+		return response.error;
 	}
 
 	revalidatePath("/", "layout");
 	redirect("/");
 }
 
-export async function signup(payload: unknown) {
-	const supabase = await createSupabaseServer();
+export async function signup(payload: SignUpFormState) {
+	const caller = await createCaller();
+	const response = await caller.user.signUp(payload);
 
-	const formData = SignUpPayloadSchema.safeParse(payload);
-
-	if (!formData.success) {
-		return formData.error.errors[0].message;
-	}
-
-	const { email, password, fullName } = formData.data;
-
-	const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName } } });
-
-	if (error) {
-		return error.message;
+	if (!response.ok) {
+		return response.error;
 	}
 
 	revalidatePath("/", "layout");

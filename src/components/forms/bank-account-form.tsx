@@ -39,7 +39,7 @@ export const BankAccountForm = () => {
 
 	const { data: banks = [] } = trpc.banks.get.useQuery();
 
-	const { mutate } = trpc.profile.createBankAccount.useMutation({
+	const { mutate } = trpc.user.createBankAccount.useMutation({
 		onSuccess: () => {
 			toast.success("Bank account added");
 		},

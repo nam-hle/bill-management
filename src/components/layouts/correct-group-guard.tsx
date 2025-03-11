@@ -2,8 +2,8 @@ import React from "react";
 
 import { SwitchGroupMessage } from "@/components/layouts/switch-group-message";
 
+import { type Group } from "@/schemas";
 import { type Container } from "@/types";
-import { type Group } from "@/schemas/group.schema";
 import { getCurrentUser } from "@/services/supabase/server";
 
 namespace CorrectGroupGuard {

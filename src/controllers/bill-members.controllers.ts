@@ -1,5 +1,3 @@
-import { pick } from "lodash";
-
 import { ClientBillMember } from "@/schemas";
 import { type SupabaseInstance } from "@/services/supabase/server";
 import { BillsControllers, NotificationsControllers } from "@/controllers";
@@ -22,8 +20,8 @@ export namespace BillMembersControllers {
 	}
 
 	export interface UpdateMemberPayload {
-		readonly userId: string;
 		readonly amount: number;
+		readonly userId: string;
 	}
 
 	export interface UpdatePayload {
@@ -34,7 +32,7 @@ export namespace BillMembersControllers {
 		const { billId, nextDebtors } = payload;
 
 		const bill = await BillsControllers.getById(supabase, { billId, userId: triggerId });
-		const currentDebtors = bill.debtors.map((member) => pick(member, ["userId", "amount", "role"]));
+		const currentDebtors = bill.debtors.map((debtor) => ({ amount: debtor.amount, userId: debtor.user.userId }));
 
 		const comparisonResult = diffMembers(currentDebtors, nextDebtors);
 
@@ -83,8 +81,8 @@ export namespace BillMembersControllers {
 
 	export interface UpdateAmountPayload {
 		readonly billId: string;
-		readonly userId: string;
 		readonly amount: number;
+		readonly userId: string;
 		readonly previousAmount: number;
 	}
 	export async function updateManyAmount(supabase: SupabaseInstance, triggerId: string, payloads: UpdateAmountPayload[]) {

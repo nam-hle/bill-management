@@ -1,5 +1,7 @@
 import { type API } from "@/api";
+import { assert } from "@/utils";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
+import { UserControllers } from "@/controllers/user.controllers";
 import { type SupabaseInstance } from "@/services/supabase/server";
 import {
 	type BillMemberRole,
@@ -20,7 +22,7 @@ export namespace NotificationsControllers {
 	createdAt:created_at,
 	readStatus:read_status,
 	metadata,
-	trigger:profiles!trigger_id (fullName:full_name),
+	trigger:profiles!trigger_id (${UserControllers.USER_META_SELECT}),
 	
 	transaction:transaction_id (
 		id,
@@ -28,14 +30,14 @@ export namespace NotificationsControllers {
 		status,
 		createdAt:created_at,
 		issuedAt:issued_at,
-		sender:profiles!sender_id (id, username, fullName:full_name),
-    receiver:profiles!receiver_id (id, username, fullName:full_name)
+		sender:profiles!sender_id (${UserControllers.USER_META_SELECT}),
+    receiver:profiles!receiver_id (${UserControllers.USER_META_SELECT})
 	),
 
 	bill:bill_id (
 		id, 
 		description, 
-		creator:profiles!creator_id ( fullName:full_name )
+		creator:profiles!creator_id (${UserControllers.USER_META_SELECT})
 	)
 	`;
 
@@ -59,11 +61,9 @@ export namespace NotificationsControllers {
 			query = query.limit(DEFAULT_PAGE_SIZE + 1);
 		}
 
-		const { data: notifications, error: notificationsError } = await query;
+		const { data: notifications } = await query.throwOnError();
 
-		if (notificationsError || notifications === null) {
-			throw notificationsError;
-		}
+		assert(notifications !== null, "Notifications should not be null");
 
 		const unreadCount = await count(supabase, userId, { readStatus: false });
 		const fullSizeCount = await count(supabase, userId, { readStatus: undefined });

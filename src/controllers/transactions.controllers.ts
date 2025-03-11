@@ -5,9 +5,8 @@ import { Pagination } from "@/types";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
 import { type ClientTransaction } from "@/schemas";
 import { ensureAuthorized } from "@/controllers/utils";
-import { GroupController } from "@/controllers/group.controller";
 import { type MemberContext, type SupabaseInstance } from "@/services/supabase/server";
-import { UsersControllers, BankAccountsController, NotificationsControllers } from "@/controllers";
+import { GroupController, UserControllers, BankAccountsController, NotificationsControllers } from "@/controllers";
 
 export namespace TransactionsControllers {
 	const TRANSACTIONS_SELECT = `
@@ -18,9 +17,9 @@ export namespace TransactionsControllers {
     
     amount,
     status,
-    sender:profiles!sender_id (userId:id, username, fullName:full_name, avatar:avatar_url),
+    sender:profiles!sender_id (${UserControllers.AVATAR_USER_SELECT}),
     bankAccountId:bank_account_id,
-    receiver:profiles!receiver_id (userId:id, username, fullName:full_name, avatar:avatar_url)
+    receiver:profiles!receiver_id (${UserControllers.AVATAR_USER_SELECT})
   `;
 
 	export async function create(
@@ -84,7 +83,7 @@ export namespace TransactionsControllers {
 			return { suggestion: undefined };
 		}
 
-		const senderBalance = await UsersControllers.reportUsingView(supabase, senderId, "");
+		const senderBalance = await UserControllers.reportUsingView(supabase, { groupId: "", userId: senderId });
 
 		const amount = Math.min(Math.abs(senderBalance.net), Math.abs(receiverBalance));
 
@@ -123,30 +122,7 @@ export namespace TransactionsControllers {
 			throw error;
 		}
 
-		return { fullSize: count ?? 0, data: transactions?.map(toClientTransaction) ?? [] };
-	}
-
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	async function __get(supabase: SupabaseInstance) {
-		const { data } = await supabase.from("transactions").select(TRANSACTIONS_SELECT).single();
-
-		if (!data) {
-			throw new Error("Bill not found");
-		}
-
-		return data;
-	}
-
-	type TransactionSelectResult = Awaited<ReturnType<typeof __get>>;
-
-	function toClientTransaction(transaction: TransactionSelectResult): ClientTransaction {
-		const { sender, receiver, ...rest } = transaction;
-
-		return {
-			...rest,
-			sender: { userId: sender.userId, avatar: sender.avatar, fullName: sender.fullName },
-			receiver: { userId: receiver.userId, avatar: receiver.avatar, fullName: receiver.fullName }
-		};
+		return { fullSize: count ?? 0, data: transactions ?? [] };
 	}
 
 	export async function update(supabase: SupabaseInstance, payload: API.Transactions.Update.Payload) {
@@ -186,6 +162,6 @@ export namespace TransactionsControllers {
 		// TODO: Remove this after implementing RLS
 		await ensureAuthorized(supabase, { userId: payload.userId, groupId: data.group.id });
 
-		return toClientTransaction(data);
+		return data;
 	}
 }
