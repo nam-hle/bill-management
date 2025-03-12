@@ -17,7 +17,7 @@ export const GroupSwitcher = () => {
 	const [open, setOpen] = React.useState(false);
 
 	const { data: groups } = trpc.groups.groupsWithBalance.useQuery();
-	const { data: selectedGroup } = trpc.profile.selectedGroup.useQuery();
+	const { data: selectedGroup } = trpc.user.selectedGroup.useQuery();
 
 	const switchGroup = useSwitchGroup();
 

@@ -51,7 +51,7 @@ export namespace CreditorTransformer {
 	}
 
 	export function fromServer(member: ClientBillMember): z.infer<typeof CreditorSchema> {
-		return { ...member, amount: RequiredAmountFieldTransformer.fromServer(member.amount) };
+		return { ...member, userId: member.user.userId, amount: RequiredAmountFieldTransformer.fromServer(member.amount) };
 	}
 }
 
@@ -62,7 +62,7 @@ export namespace DebtorTransformer {
 	}
 
 	export function fromServer(member: ClientBillMember): z.infer<typeof DebtorSchema> {
-		return { ...member, amount: OptionalAmountFieldTransformer.fromServer(member.amount) };
+		return { ...member, userId: member.user.userId, amount: OptionalAmountFieldTransformer.fromServer(member.amount) };
 	}
 }
 

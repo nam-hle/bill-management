@@ -14,7 +14,7 @@ async function main() {
 			}
 
 			const requester = await createRequester(user.email.split("@")[0] as UserName);
-			await requester.profile.selectGroup.mutate({ groupId: null });
+			await requester.user.selectGroup.mutate({ groupId: null });
 		}
 	} catch (error) {
 		console.error("Error creating user:", error);

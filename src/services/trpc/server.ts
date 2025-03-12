@@ -4,22 +4,24 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import { getCurrentUser, createSupabaseServer } from "@/services/supabase/server";
 
 export const createContext = async () => {
-	return { user: await getCurrentUser(), supabase: await createSupabaseServer() };
+	return { supabase: await createSupabaseServer() };
 };
 
 const t = initTRPC.context<typeof createContext>().create({ transformer: superjson });
 
 export const router = t.router;
 
-const withAuth = t.middleware(async ({ ctx, next }) => {
-	if (!ctx.user) {
+const withAuthenticate = t.middleware(async ({ ctx, next }) => {
+	try {
+		const user = await getCurrentUser();
+
+		return next({ ctx: { ...ctx, user } });
+	} catch (error) {
 		throw new TRPCError({ code: "UNAUTHORIZED" });
 	}
-
-	return next({ ctx });
 });
 
-export const withSelectedGroup = withAuth.unstable_pipe(async ({ ctx, next }) => {
+export const withSelectedGroup = withAuthenticate.unstable_pipe(async ({ ctx, next }) => {
 	const { group, ...rest } = ctx.user;
 
 	if (!group) {
@@ -47,4 +49,5 @@ const withErrorHandler = t.middleware(async ({ ctx, next }) => {
 	}
 });
 
-export const privateProcedure = t.procedure.use(withErrorHandler).use(withAuth);
+export const publicProcedure = t.procedure.use(withErrorHandler);
+export const privateProcedure = publicProcedure.use(withAuthenticate);

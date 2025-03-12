@@ -16,11 +16,11 @@ import { RequiredLabel } from "@/components/forms/required-label";
 
 import { cn } from "@/utils/cn";
 import { signup } from "@/app/login/actions";
-import { type SignUpForm, SignUpFormSchema } from "@/schemas";
+import { type SignUpFormState, SignUpFormStateSchema } from "@/schemas";
 
 export function SignUpForm() {
-	const form = useForm<SignUpForm>({
-		resolver: zodResolver(SignUpFormSchema),
+	const form = useForm<SignUpFormState>({
+		resolver: zodResolver(SignUpFormStateSchema),
 		defaultValues: { email: "", password: "", fullName: "", confirmPassword: "" }
 	});
 
@@ -31,13 +31,17 @@ export function SignUpForm() {
 		formState: { errors, isSubmitting }
 	} = form;
 
-	const onSubmitSignup = async (data: { email: string; password: string }) => {
-		const error = await signup(data);
+	const onSubmit = React.useMemo(
+		() =>
+			handleSubmit(async (data) => {
+				const error = await signup(data);
 
-		if (error) {
-			setError("root", { message: error });
-		}
-	};
+				if (error) {
+					setError("root", { message: error });
+				}
+			}),
+		[handleSubmit, setError]
+	);
 
 	return (
 		<Form {...form}>
@@ -47,7 +51,7 @@ export function SignUpForm() {
 						<CardTitle className="text-2xl">Sign Up</CardTitle>
 						<CardDescription>Create a new account to get started</CardDescription>
 					</CardHeader>
-					<form onSubmit={handleSubmit((data) => onSubmitSignup(data))}>
+					<form onSubmit={onSubmit}>
 						<CardContent>
 							<div className="flex flex-col gap-6">
 								{errors.root && (

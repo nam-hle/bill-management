@@ -14,7 +14,7 @@ import { trpc } from "@/services";
 import { formatCurrency } from "@/utils/format";
 
 export function FinancialSummary() {
-	const { data } = trpc.profile.getBalance.useQuery();
+	const { data } = trpc.user.getBalance.useQuery();
 
 	return (
 		<div className="col-span-2 flex flex-col gap-4">

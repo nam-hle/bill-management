@@ -1,17 +1,15 @@
 import { z } from "zod";
 
 import type { Database } from "@/database.types";
-import { GroupSchema } from "@/schemas/group.schema";
+import { GroupSchema, UserMetaSchema } from "@/schemas";
 
 export const BillMemberRoleSchema = z.enum(["Creditor", "Debtor"] as const satisfies Database["public"]["Enums"]["BillMemberRole"][]);
 export type BillMemberRole = z.infer<typeof BillMemberRoleSchema>;
 
 const ClientBillMemberSchema = z.object({
-	userId: z.string(),
 	amount: z.number(),
-	fullName: z.string(),
-	role: BillMemberRoleSchema,
-	avatar: z.string().nullable()
+	user: UserMetaSchema,
+	role: BillMemberRoleSchema
 });
 export type ClientBillMember = z.infer<typeof ClientBillMemberSchema>;
 export namespace ClientBillMember {

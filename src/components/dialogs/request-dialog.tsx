@@ -39,7 +39,7 @@ export const RequestDialog = () => {
 			if (data.ok) {
 				toast.success("Request sent", { description: "Your request to join the group has been sent successfully. Please wait for approval." });
 
-				utils.users.requests.invalidate().then(() => setIsOpen(false));
+				utils.user.requests.invalidate().then(() => setIsOpen(false));
 
 				return;
 			}

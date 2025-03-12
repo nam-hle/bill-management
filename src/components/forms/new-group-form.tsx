@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Input } from "@/components/shadcn/input";
 import { Button } from "@/components/shadcn/button";
@@ -15,13 +16,14 @@ import { LoadingButton } from "@/components/buttons/loading-button";
 
 import { cn } from "@/utils/cn";
 import { trpc } from "@/services";
-import { type NewGroupFormState } from "@/schemas/group.schema";
+import { type NewGroupForm, NewGroupFormSchema } from "@/schemas";
 
 export const NewGroupDialog = () => {
 	const [open, setOpen] = useState(false);
 
-	const form = useForm<NewGroupFormState>({
-		defaultValues: { name: "" }
+	const form = useForm<NewGroupForm>({
+		defaultValues: { name: "" },
+		resolver: zodResolver(NewGroupFormSchema)
 	});
 
 	const {

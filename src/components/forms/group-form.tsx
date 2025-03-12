@@ -20,7 +20,7 @@ import { InviteDialog } from "@/components/dialogs/invite-dialog";
 import { RequiredLabel } from "@/components/forms/required-label";
 
 import { trpc } from "@/services";
-import { type GroupDetails, GroupDetailsSchema } from "@/schemas/group.schema";
+import { type GroupDetails, GroupDetailsSchema } from "@/schemas";
 
 const TabLabels = {
 	members: "Members",

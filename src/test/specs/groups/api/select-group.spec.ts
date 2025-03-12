@@ -10,10 +10,10 @@ test("Select group", async () => {
 
 	const group = await requester.groups.create.mutate({ name: "Harry's group" });
 
-	expect(await requester.profile.selectedGroup.query()).toBeNull();
+	expect(await requester.user.selectedGroup.query()).toBeNull();
 
-	await requester.profile.selectGroup.mutate({ groupId: group.id });
-	expect(await requester.profile.selectedGroup.query()).toEqual({
+	await requester.user.selectGroup.mutate({ groupId: group.id });
+	expect(await requester.user.selectedGroup.query()).toEqual({
 		balance: 0,
 		name: "Harry's group",
 		id: expect.any(String),

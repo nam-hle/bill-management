@@ -1,34 +1,33 @@
 import { z } from "zod";
 
-export const ClientUserSchema = z.object({
-	userId: z.string(),
-	fullName: z.string(),
-	avatar: z.string().nullable()
-});
+export const UserMetaSchema = z
+	.object({
+		userId: z.string(),
+		fullName: z.string(),
+		avatarFile: z.string().nullable()
+	})
+	.strict();
+export type UserMeta = z.infer<typeof UserMetaSchema>;
 
-export type ClientUser = z.infer<typeof ClientUserSchema>;
+export const ProfileSchema = UserMetaSchema.extend({ email: z.string() }).strict();
+export type Profile = z.infer<typeof ProfileSchema>;
 
-export const ProfileFormPayloadSchema = z.object({
-	fullName: z.string(),
-	avatarUrl: z.string().nullable()
-});
+export const ProfileFormStateSchema = UserMetaSchema.omit({ userId: true }).strict();
+export type ProfileFormState = z.infer<typeof ProfileFormStateSchema>;
 
-export type ProfileFormPayload = z.infer<typeof ProfileFormPayloadSchema>;
+export const LoginFormStateSchema = z
+	.object({
+		email: z.string().min(1, "Email is required").email("Invalid email address"),
+		password: z.string().min(1, "Password is required").min(6, "Password must be at least 6 characters")
+	})
+	.strict();
+export type LoginFormState = z.infer<typeof LoginFormStateSchema>;
 
-export const LoginFormPayloadSchema = z.object({
-	email: z.string().min(1, "Email is required").email("Invalid email address"),
-	password: z.string().min(1, "Password is required").min(6, "Password must be at least 6 characters")
-});
-export type LoginFormPayload = z.infer<typeof LoginFormPayloadSchema>;
-
-export const SignUpFormSchema = LoginFormPayloadSchema.extend({
+export const SignUpFormStateSchema = LoginFormStateSchema.extend({
 	fullName: z.string().min(1, "Display name is required"),
 	confirmPassword: z.string().min(1, "Confirm password is required")
 }).refine((data) => data.password === data.confirmPassword, {
 	path: ["confirmPassword"],
 	message: "Passwords do not match"
 });
-
-export type SignUpForm = z.infer<typeof SignUpFormSchema>;
-
-export const SignUpPayloadSchema = SignUpFormSchema.innerType().omit({ confirmPassword: true });
+export type SignUpFormState = z.infer<typeof SignUpFormStateSchema>;

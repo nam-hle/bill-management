@@ -1,11 +1,10 @@
 import { z } from "zod";
 import axios from "axios";
 
-import { API } from "@/api";
 import { router, privateProcedure } from "@/services/trpc/server";
 
 export const banksRouter = router({
-	get: privateProcedure.output(API.Banks.List.ResponseSchema).query(async () => {
+	get: privateProcedure.output(z.array(z.object({ providerName: z.string(), providerNumber: z.string() }))).query(async () => {
 		const banksResponse = await axios.get("https://api.vietqr.io/v2/banks");
 
 		const result = ResponseSchema.safeParse(banksResponse.data);
@@ -14,9 +13,7 @@ export const banksRouter = router({
 			throw new Error("Failed to parse response");
 		}
 
-		return result.data.data.map(
-			(bank) => ({ providerNumber: bank.bin, providerName: `${bank.name} (${bank.shortName})` }) satisfies z.infer<typeof API.Banks.List.BankSchema>
-		);
+		return result.data.data.map((bank) => ({ providerNumber: bank.bin, providerName: `${bank.name} (${bank.shortName})` }));
 	})
 });
 

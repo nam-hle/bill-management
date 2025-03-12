@@ -19,7 +19,7 @@ namespace InvitesTable {
 export const InvitesTable: React.FC<InvitesTable.Props> = (props) => {
 	const { action } = props;
 
-	const { data } = trpc.users.invites.useQuery();
+	const { data } = trpc.user.invites.useQuery();
 
 	const utils = trpc.useUtils();
 	const accept = trpc.groups.acceptInvitation.useMutation({
@@ -28,7 +28,7 @@ export const InvitesTable: React.FC<InvitesTable.Props> = (props) => {
 		},
 		onSuccess: () => {
 			toast.success("You have successfully joined the group!");
-			utils.groups.groups.invalidate().then(() => utils.users.invites.invalidate());
+			utils.groups.groups.invalidate().then(() => utils.user.invites.invalidate());
 		}
 	});
 	const reject = trpc.groups.rejectInvitation.useMutation({
@@ -36,7 +36,7 @@ export const InvitesTable: React.FC<InvitesTable.Props> = (props) => {
 			toast.error("An error occurred while rejecting the group");
 		},
 		onSuccess: () => {
-			utils.users.invites.invalidate().then(() => toast.success("You have successfully rejected the invitation!"));
+			utils.user.invites.invalidate().then(() => toast.success("You have successfully rejected the invitation!"));
 		}
 	});
 

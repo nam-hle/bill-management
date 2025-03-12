@@ -1,6 +1,6 @@
 import { type GroupName } from "@/test/utils";
 import { seedUsers } from "@/test/functions/seed-users";
-import { type Group, type Membership } from "@/schemas/group.schema";
+import { type Group, type Membership } from "@/schemas";
 
 const findInvitations = (memberships: Membership[], userId: string) => memberships.find((invitation) => invitation.user.userId === userId)!;
 
@@ -12,7 +12,7 @@ export async function seedBasicPreset() {
 
 		// Setup Gryffindor group
 		const gryffindorGroup = await usersInfo.requesters.harry.groups.create.mutate({ name: "Gryffindor" });
-		await usersInfo.requesters.harry.profile.selectGroup.mutate({ groupId: gryffindorGroup.id });
+		await usersInfo.requesters.harry.user.selectGroup.mutate({ groupId: gryffindorGroup.id });
 
 		await usersInfo.requesters.harry.groups.invite.mutate({
 			groupId: gryffindorGroup.id,
@@ -50,7 +50,7 @@ export async function seedBasicPreset() {
 		});
 
 		for (const requester of Object.values(usersInfo.requesters)) {
-			await requester.profile.selectGroup.mutate({ groupId: hogwartsGroup.id });
+			await requester.user.selectGroup.mutate({ groupId: hogwartsGroup.id });
 		}
 
 		const groups: Record<GroupName, Group> = { Hogwarts: hogwartsGroup, Gryffindor: gryffindorGroup };

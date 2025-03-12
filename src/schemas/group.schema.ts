@@ -1,12 +1,12 @@
 import { z } from "zod";
 
 import type { Database } from "@/database.types";
-import { ClientUserSchema } from "@/schemas/user.schema";
+import { UserMetaSchema } from "@/schemas/user.schema";
 
-const NewGroupFormStateSchema = z.object({
+export const NewGroupFormSchema = z.object({
 	name: z.string().min(1, "Group name is required")
 });
-export type NewGroupFormState = z.infer<typeof NewGroupFormStateSchema>;
+export type NewGroupForm = z.infer<typeof NewGroupFormSchema>;
 
 export const GroupSchema = z.object({
 	id: z.string(),
@@ -15,10 +15,10 @@ export const GroupSchema = z.object({
 });
 export type Group = z.infer<typeof GroupSchema>;
 
-export const GroupDetailsSchema = NewGroupFormStateSchema.extend({
+export const GroupDetailsSchema = NewGroupFormSchema.extend({
 	id: z.string(),
 	displayId: z.string(),
-	members: z.array(ClientUserSchema)
+	members: z.array(UserMetaSchema)
 });
 export type GroupDetails = z.infer<typeof GroupDetailsSchema>;
 
@@ -45,7 +45,7 @@ export interface MembershipKey {
 
 export const MembershipSchema = z.object({
 	id: z.string(),
-	user: ClientUserSchema
+	user: UserMetaSchema
 });
 export type Membership = z.infer<typeof MembershipSchema>;
 

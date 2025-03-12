@@ -1,8 +1,8 @@
 import { TRPCError } from "@trpc/server";
 
 import { assert } from "@/utils";
+import { GroupController } from "@/controllers";
 import { type Database } from "@/database.types";
-import { GroupController } from "@/controllers/group.controller";
 import { type SupabaseInstance } from "@/services/supabase/server";
 
 export type TableName = keyof Database["public"]["Tables"];

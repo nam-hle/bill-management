@@ -13,21 +13,12 @@ import { FileUpload } from "@/components/forms/inputs/file-upload";
 import { LoadingButton } from "@/components/buttons/loading-button";
 
 import { trpc } from "@/services";
-import { type ProfileFormPayload } from "@/schemas";
+import { type ProfileFormState } from "@/schemas";
 import { getAvatarFallback } from "@/utils/avatar-fallback";
 
-namespace ProfileForm {
-	export interface Props {
-		readonly email: string;
-		readonly userId: string;
-		readonly fullName: string;
-		readonly avatarUrl: string | null;
-	}
-}
-
-export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
-	const form = useForm<ProfileFormPayload & { email: string }>({
-		defaultValues: { email: props.email, fullName: props.fullName, avatarUrl: props.avatarUrl }
+export const ProfileForm = () => {
+	const form = useForm<ProfileFormState>({
+		defaultValues: { fullName: "", avatarFile: "" }
 	});
 	const {
 		reset,
@@ -37,12 +28,20 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 		formState: { isDirty, isSubmitting }
 	} = form;
 
-	const { mutate, isPending } = trpc.profile.update.useMutation({
+	const { data: profile } = trpc.user.profile.useQuery();
+
+	React.useEffect(() => {
+		if (profile) {
+			reset({ fullName: profile.fullName, avatarFile: profile.avatarFile });
+		}
+	}, [reset, profile]);
+
+	const { mutate, isPending } = trpc.user.updateProfile.useMutation({
 		onError: () => {
 			toast.error("Failed to update profile");
 		},
 		onSuccess: (data) => {
-			reset(data);
+			reset({ fullName: data.fullName, avatarFile: data.avatarFile });
 			toast.success("Profile updated", { description: "Your profile has been updated successfully." });
 		}
 	});
@@ -55,30 +54,22 @@ export const ProfileForm: React.FC<ProfileForm.Props> = (props) => {
 				<Heading>Profile</Heading>
 				<div className="grid grid-cols-12 grid-rows-2 gap-2">
 					<div className="col-span-9">
-						<FormField
-							name="email"
-							control={control}
-							render={({ field }) => (
-								<FormItem>
-									<RequiredLabel>Email</RequiredLabel>
-									<FormControl>
-										<Input {...field} disabled />
-									</FormControl>
-								</FormItem>
-							)}
-						/>
+						<FormItem>
+							<RequiredLabel>Email</RequiredLabel>
+							<Input disabled value={profile?.email ?? ""} />
+						</FormItem>
 					</div>
 
 					<div className="col-span-3 row-span-2 flex items-center justify-center self-center">
 						<FormField
-							name="avatarUrl"
+							name="avatarFile"
 							control={control}
 							render={({ field }) => (
 								<FileUpload
 									editing
 									buttonSize="sm"
 									bucketName="avatars"
-									ownerId={props.userId}
+									ownerId={profile?.userId}
 									onChange={field.onChange}
 									fileId={field.value ?? undefined}
 									imageRenderer={(src) => (

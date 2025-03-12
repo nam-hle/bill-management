@@ -16,7 +16,7 @@ test.beforeAll("Setup", async () => {
 
 	const requester = await createRequester(USERNAMES.harry);
 
-	await requester.profile.selectGroup.mutate({ groupId: preset.groups.Gryffindor.id });
+	await requester.user.selectGroup.mutate({ groupId: preset.groups.Gryffindor.id });
 	await requester.transactions.create.mutate({ amount: 40, issuedAt: getCurrentDate(), receiverId: preset.userIds.ron });
 
 	const transactions = await requester.transactions.getMany.query({ senderId: preset.userIds.harry, receiverId: preset.userIds.ron });
@@ -103,7 +103,7 @@ test.describe("Transaction Details Page", () => {
 	// TODO: Check if we can allow sender and receiver to access the page only
 	test("Group members can access the page but require select that group", async ({ page }) => {
 		for (const username of [USERNAMES.harry, USERNAMES.ron, USERNAMES.hermione]) {
-			await preset.requesters[username].profile.selectGroup.mutate({ groupId: null });
+			await preset.requesters[username].user.selectGroup.mutate({ groupId: null });
 			await Actions.login(page, username);
 			await page.goto(`/transactions/${transactionId}`);
 
@@ -116,7 +116,7 @@ test.describe("Transaction Details Page", () => {
 
 	test("Group members can access the page", async ({ page }) => {
 		for (const username of [USERNAMES.harry, USERNAMES.ron, USERNAMES.hermione]) {
-			await preset.requesters[username].profile.selectGroup.mutate({ groupId: preset.groups.Gryffindor.id });
+			await preset.requesters[username].user.selectGroup.mutate({ groupId: preset.groups.Gryffindor.id });
 			await Actions.login(page, username);
 			await page.goto(`/transactions/${transactionId}`);
 

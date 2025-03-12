@@ -7,9 +7,6 @@ import { Inter } from "next/font/google";
 
 import { Application } from "@/components/application";
 
-import { UsersControllers } from "@/controllers";
-import { createSupabaseServer } from "@/services/supabase/server";
-
 const interSans = Inter({
 	subsets: ["latin"],
 	variable: "--font-geist-sans"
@@ -28,18 +25,10 @@ export default async function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
-	const supabase = await createSupabaseServer();
-
-	const {
-		data: { user }
-	} = await supabase.auth.getUser();
-
-	const userInfo = user ? UsersControllers.getUserInfo(supabase, user.id) : undefined;
-
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<body suppressHydrationWarning className={interSans.variable}>
-				<Application pendingUserInfo={userInfo}>{children}</Application>
+				<Application>{children}</Application>
 			</body>
 		</html>
 	);

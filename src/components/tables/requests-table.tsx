@@ -8,7 +8,7 @@ import { RequestDialog } from "@/components/dialogs/request-dialog";
 import { trpc } from "@/services";
 
 export const RequestsTable = () => {
-	const { data } = trpc.users.requests.useQuery();
+	const { data } = trpc.user.requests.useQuery();
 
 	return (
 		<DataTable

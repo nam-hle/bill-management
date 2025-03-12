@@ -50,9 +50,3 @@ export const BalanceSchema = z.object({
 });
 
 export type Balance = z.infer<typeof BalanceSchema>;
-
-export interface UserInfo {
-	readonly email: string;
-	readonly fullName: string;
-	readonly avatarUrl?: string;
-}

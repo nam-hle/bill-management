@@ -7,7 +7,7 @@ export function useSwitchGroup() {
 	const utils = trpc.useUtils();
 	const router = useRouter();
 
-	return trpc.profile.selectGroup.useMutation({
+	return trpc.user.selectGroup.useMutation({
 		onSuccess: () => {
 			utils.invalidate().then(() => {
 				toast.success("You have successfully changed the group");

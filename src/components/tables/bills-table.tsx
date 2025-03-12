@@ -50,7 +50,7 @@ function toSearchParams(filters: Filters) {
 function UserAvatarAmount(props: { row: ClientBillMember }) {
 	return (
 		<div data-testid="avatar-amount" className="flex flex-row items-center space-x-2">
-			<FallbackAvatar {...props.row} />
+			<FallbackAvatar {...props.row.user} />
 			<span data-testid="amount">{formatCurrency(props.row.amount)}</span>
 		</div>
 	);
@@ -145,9 +145,11 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 					label: "Debtors",
 					dataGetter: ({ row }) => (
 						<div className="flex flex-row space-x-2">
-							{_.sortBy(row.debtors, [(debtor) => debtor.userId !== currentUserId, (billMember) => billMember.fullName]).map((billMember) => (
-								<UserAvatarAmount row={billMember} key={billMember.userId} />
-							))}
+							{_.sortBy(row.debtors, [(debtor) => debtor.user.userId !== currentUserId, (billMember) => billMember.user.fullName]).map(
+								(billMember) => (
+									<UserAvatarAmount row={billMember} key={billMember.user.userId} />
+								)
+							)}
 						</div>
 					)
 				}

@@ -14,7 +14,7 @@ import { Dialog, DialogTitle, DialogFooter, DialogHeader, DialogContent, DialogT
 import { UserDisplay } from "@/components/avatars/user-display";
 
 import { trpc } from "@/services";
-import { type ClientUser } from "@/schemas";
+import { type UserMeta } from "@/schemas";
 
 namespace InviteDialog {
 	export interface Props {
@@ -25,7 +25,7 @@ namespace InviteDialog {
 export const InviteDialog: React.FC<InviteDialog.Props> = ({ groupId }) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [invitedUsers, setInvitedUsers] = useState<ClientUser[]>([]);
+	const [invitedUsers, setInvitedUsers] = useState<UserMeta[]>([]);
 	const [open, setOpen] = useState(false);
 
 	const debouncedSearchQuery = useDebounce(searchQuery, 500);
@@ -54,7 +54,7 @@ export const InviteDialog: React.FC<InviteDialog.Props> = ({ groupId }) => {
 	const searchResults = data ?? [];
 
 	const handleInvite = React.useCallback(
-		(user: ClientUser) => {
+		(user: UserMeta) => {
 			if (!invitedUsers.some((invited) => invited.userId === user.userId)) {
 				setInvitedUsers([...invitedUsers, user]);
 				setSearchQuery("");

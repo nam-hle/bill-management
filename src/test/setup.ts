@@ -18,9 +18,23 @@ export const supabaseTest = createClient<Database>(
 
 export const test = base.extend<{ forEachTest: void }>({
 	forEachTest: [
-		async ({}, use) => {
-			await truncate();
+		async ({ page, baseURL }, use) => {
+			if (!baseURL) {
+				throw new Error("⚠️ baseURL must be defined in Playwright config.");
+			}
 
+			await page.route("**", (route) => {
+				const url = route.request().url();
+
+				if (!url.startsWith(baseURL)) {
+					console.error(`🚨 Disallowed request detected: ${url}`);
+					throw new Error(`❌ Only requests to ${baseURL} are allowed, but found: ${url}`);
+				}
+
+				route.continue();
+			});
+
+			await truncate();
 			await use();
 		},
 		{ auto: true }

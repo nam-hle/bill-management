@@ -2,10 +2,10 @@ import React from "react";
 
 import { FallbackAvatar } from "@/components/avatars/fallbackable-avatar";
 
-import { type ClientUser } from "@/schemas";
+import { type UserMeta } from "@/schemas";
 
 export namespace UserDisplay {
-	export interface Props extends ClientUser {}
+	export interface Props extends UserMeta {}
 }
 
 export const UserDisplay: React.FC<UserDisplay.Props> = (props) => {

@@ -12,12 +12,12 @@ test("Create group", async () => {
 	const firstGroup = await requester.groups.create.mutate({ name: "First group" });
 	await requester.groups.create.mutate({ name: "Second group" });
 
-	expect(await requester.profile.groups.query()).toEqual([
+	expect(await requester.user.groups.query()).toEqual([
 		{ name: "First group", id: expect.any(String), displayId: expect.stringMatching(/^\d{8}$/) },
 		{ name: "Second group", id: expect.any(String), displayId: expect.stringMatching(/^\d{8}$/) }
 	]);
 
 	expect(await requester.groups.membersByGroupId.query({ groupId: firstGroup.id })).toEqual([
-		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
+		{ avatarFile: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });

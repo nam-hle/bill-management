@@ -21,7 +21,7 @@ namespace BankAccountsTable {
 export const BankAccountsTable: React.FC<BankAccountsTable.Props> = (props) => {
 	const { currentUserId } = props;
 
-	const { data } = trpc.profile.getBankAccounts.useQuery({ userId: currentUserId });
+	const { data } = trpc.user.getBankAccounts.useQuery({ userId: currentUserId });
 
 	return (
 		<div className="mx-auto mt-6 flex w-[60%] flex-col gap-4">
