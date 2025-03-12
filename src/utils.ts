@@ -84,9 +84,9 @@ export function generateUid(): string {
 	return Math.round(Math.random() * Math.pow(2, 32)).toString(16);
 }
 
-export function wait(duration: number) {
-	return new Promise((resolve) => setTimeout(resolve, duration));
-}
+// export function wait(duration: number) {
+// 	return new Promise((resolve) => setTimeout(resolve, duration));
+// }
 
 export function assert(condition: unknown, onFailedMessage = "Condition return a falsely value."): asserts condition {
 	if (!condition) {

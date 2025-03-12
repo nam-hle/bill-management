@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 
 import { Card, CardContent } from "@/components/shadcn/card";
@@ -11,8 +12,15 @@ import { formatTime } from "@/utils";
 import { type ClientBill } from "@/schemas";
 import { formatCurrency } from "@/utils/format";
 
-export const BillCard = ({ bill, currentUserId }: { bill: ClientBill; currentUserId: string }) => {
-	const currentUserDebtor = bill.debtors.find((d) => d.user.userId === currentUserId);
+namespace BillCard {
+	export interface Props {
+		readonly bill: ClientBill;
+		readonly currentUserId: string;
+	}
+}
+
+export const BillCard: React.FC<BillCard.Props> = ({ bill, currentUserId }) => {
+	const currentUserDebtor = bill.debtors.find((debtor) => debtor.user.userId === currentUserId);
 
 	return (
 		<Link passHref prefetch legacyBehavior href={`/bills/${bill.id}`}>

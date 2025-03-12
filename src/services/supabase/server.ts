@@ -10,7 +10,7 @@ import { supabaseClientOptions } from "@/services/supabase/config";
 
 export type SupabaseInstance = SupabaseClient<Database, "public", Database["public"]>;
 
-export type UserContext = Awaited<ReturnType<typeof getCurrentUser>>;
+type UserContext = Awaited<ReturnType<typeof getCurrentUser>>;
 export type MemberContext = Omit<UserContext, "group"> & { group: Group };
 
 export async function isAuthenticated(): Promise<boolean> {
