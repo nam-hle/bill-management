@@ -19,7 +19,7 @@ test.beforeEach(async () => {
 	expect(invites).toEqual([
 		{
 			id: expect.any(String),
-			user: { avatar: null, fullName: FULL_NAMES.ron, userId: expect.any(String) }
+			user: { avatarFile: null, fullName: FULL_NAMES.ron, userId: expect.any(String) }
 		}
 	]);
 
@@ -33,11 +33,11 @@ test("Request", async () => {
 	});
 
 	expect(await usersInfo.requesters.harry.groups.invitations.query({ groupId: group.id })).toEqual([
-		{ id: inviteId, user: { avatar: null, fullName: FULL_NAMES.ron, userId: expect.any(String) } }
+		{ id: inviteId, user: { avatarFile: null, fullName: FULL_NAMES.ron, userId: expect.any(String) } }
 	]);
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.membersByGroupId.query({ groupId: group.id })).toEqual([
-		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
+		{ avatarFile: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });
 
@@ -48,11 +48,11 @@ test("Accept the request", async () => {
 	});
 
 	expect(await usersInfo.requesters.harry.groups.invitations.query({ groupId: group.id })).toEqual([
-		{ id: inviteId, user: { avatar: null, fullName: FULL_NAMES.ron, userId: expect.any(String) } }
+		{ id: inviteId, user: { avatarFile: null, fullName: FULL_NAMES.ron, userId: expect.any(String) } }
 	]);
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.membersByGroupId.query({ groupId: group.id })).toEqual([
-		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
+		{ avatarFile: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });
 
@@ -63,11 +63,11 @@ test("Reject the request", async () => {
 	});
 
 	expect(await usersInfo.requesters.harry.groups.invitations.query({ groupId: group.id })).toEqual([
-		{ id: inviteId, user: { avatar: null, fullName: FULL_NAMES.ron, userId: expect.any(String) } }
+		{ id: inviteId, user: { avatarFile: null, fullName: FULL_NAMES.ron, userId: expect.any(String) } }
 	]);
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.membersByGroupId.query({ groupId: group.id })).toEqual([
-		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
+		{ avatarFile: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });
 
@@ -77,11 +77,11 @@ test("Invite again", async () => {
 	]);
 
 	expect(await usersInfo.requesters.harry.groups.invitations.query({ groupId: group.id })).toEqual([
-		{ id: inviteId, user: { avatar: null, fullName: FULL_NAMES.ron, userId: expect.any(String) } }
+		{ id: inviteId, user: { avatarFile: null, fullName: FULL_NAMES.ron, userId: expect.any(String) } }
 	]);
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.membersByGroupId.query({ groupId: group.id })).toEqual([
-		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
+		{ avatarFile: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });
 
@@ -91,8 +91,8 @@ test("Accept the invitation", async () => {
 	expect(await usersInfo.requesters.harry.groups.invitations.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.membersByGroupId.query({ groupId: group.id })).toEqual([
-		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry },
-		{ avatar: null, fullName: FULL_NAMES.ron, userId: expect.any(String) }
+		{ avatarFile: null, userId: expect.any(String), fullName: FULL_NAMES.harry },
+		{ avatarFile: null, fullName: FULL_NAMES.ron, userId: expect.any(String) }
 	]);
 });
 
@@ -102,6 +102,6 @@ test("Reject the invitation", async () => {
 	expect(await usersInfo.requesters.harry.groups.invitations.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.requests.query({ groupId: group.id })).toEqual([]);
 	expect(await usersInfo.requesters.harry.groups.membersByGroupId.query({ groupId: group.id })).toEqual([
-		{ avatar: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
+		{ avatarFile: null, userId: expect.any(String), fullName: FULL_NAMES.harry }
 	]);
 });
