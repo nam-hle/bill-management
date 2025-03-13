@@ -11,9 +11,9 @@ export namespace Actions {
 		});
 	}
 
-	export async function goToHomePage(page: Page) {
-		await test.step(`Go to Home page`, async () => {
-			await page.goto("/");
+	export async function goToDashboardPage(page: Page) {
+		await test.step(`Go to Dashboard page`, async () => {
+			await page.goto("/dashboard");
 		});
 	}
 
@@ -49,15 +49,14 @@ export namespace Actions {
 			await fillInput(page, "password", DEFAULT_PASSWORD);
 
 			await submit(page);
-			await expect(page).toHaveURL("/");
+			await expect(page).toHaveURL("/dashboard");
 		});
 	}
 
-	// TODO: Use sign out feature
 	export async function logout(page: Page) {
 		await test.step(`Logout`, async () => {
-			await page.context().clearCookies();
-			await page.reload();
+			await page.locator(`[data-testid="navigation-item-profile"]`).click();
+			await page.getByRole("menuitem", { name: "Log out" }).click();
 
 			await expect(page).toHaveURL("/login");
 		});

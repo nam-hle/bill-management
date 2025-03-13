@@ -24,7 +24,7 @@ test("basic", async ({ page, browser }) => {
 		rows: [{ amount: "42", status: "Waiting", action: "Decline", issuedAt: "Today", receiver: FULL_NAMES.ron, sender: FULL_NAMES.harry }]
 	});
 
-	await Actions.goToHomePage(page);
+	await Actions.goToDashboardPage(page);
 	await Assertions.assertStats(page, { Sent: "42.000", "Net Balance": "-42.000" });
 
 	// TODO: Enable

@@ -1,6 +1,6 @@
 import React from "react";
 
-import { SwitchGroupMessage } from "@/components/layouts/switch-group-message";
+import { SwitchGroupMessage } from "@/components/layouts/messages/switch-group-message";
 
 import { type Group } from "@/schemas";
 import { type Container } from "@/types";

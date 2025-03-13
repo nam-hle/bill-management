@@ -21,9 +21,9 @@ export async function updateSession(request: NextRequest) {
 		}
 	});
 
-	// if (["/signup", "/login", "/api/trpc/user.signUp"].includes(request.nextUrl.pathname)) {
-	// 	return supabaseResponse;
-	// }
+	if (request.nextUrl.pathname === "/") {
+		return supabaseResponse;
+	}
 
 	const users = await supabase.auth.getUser();
 

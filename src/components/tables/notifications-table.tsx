@@ -6,7 +6,7 @@ import { Button } from "@/components/shadcn/button";
 import { Skeleton } from "@/components/shadcn/skeleton";
 
 import { Heading } from "@/components/mics/heading";
-import { NotificationMessage } from "@/components/mics/notification-message";
+import { NotificationMessage } from "@/components/layouts/notifications/notification-message";
 
 import { noop } from "@/utils";
 import { cn } from "@/utils/cn";

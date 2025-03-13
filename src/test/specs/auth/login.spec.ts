@@ -6,9 +6,11 @@ import { seedUser } from "@/test/functions/seed-user";
 import { FULL_NAMES, DEFAULT_PASSWORD } from "@/test/utils";
 
 test("Login", async ({ page }) => {
-	await Actions.goToHomePage(page);
+	await Actions.goToDashboardPage(page);
 
-	await expect(page).toHaveURL("/login");
+	await expect(page).toHaveURL("/");
+
+	await page.getByText("Login").click();
 
 	await Actions.LoginForm.submit(page);
 	await expect(page.getByText("Email is require")).toBeVisible();
@@ -31,6 +33,6 @@ test("Login", async ({ page }) => {
 
 	await Actions.submit(page);
 
-	await expect(page).toHaveURL("/");
+	await expect(page).toHaveURL("/dashboard");
 	await expect(page.locator("h3").first()).toHaveText("Group Selection Required");
 });

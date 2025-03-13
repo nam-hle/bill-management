@@ -28,7 +28,7 @@ const UserNav = () => {
 
 	return (
 		<DropdownMenuTrigger asChild>
-			<Avatar className="h-8 w-8 cursor-pointer">
+			<Avatar className="h-8 w-8 cursor-pointer" data-testid="navigation-item-profile">
 				<AvatarImage src={avatar ?? undefined} />
 				<AvatarFallback className="text-xs">{getAvatarFallback(profile?.fullName)}</AvatarFallback>
 			</Avatar>
@@ -51,11 +51,12 @@ const UserNavInfo = () => {
 
 export const AvatarContainer = () => {
 	const router = useRouter();
-	const signOut = React.useCallback(() => {
-		fetch("/auth/signout", { method: "POST" }).then(() => {
+	const signOut = trpc.user.logout.useMutation({
+		onSuccess: () => {
+			router.push("/login");
 			router.refresh();
-		});
-	}, [router]);
+		}
+	});
 
 	return (
 		<DropdownMenu>
@@ -74,7 +75,7 @@ export const AvatarContainer = () => {
 						<Users className="mr-2 h-4 w-4" />
 						<span>Your groups</span>
 					</DropdownMenuItem>
-					<DropdownMenuItem onClick={signOut} className="cursor-pointer">
+					<DropdownMenuItem className="cursor-pointer" onClick={() => signOut.mutate()}>
 						<LogOut className="mr-2 h-4 w-4" />
 						<span>Log out</span>
 					</DropdownMenuItem>

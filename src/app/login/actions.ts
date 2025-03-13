@@ -15,7 +15,7 @@ export async function login(payload: LoginFormState) {
 	}
 
 	revalidatePath("/", "layout");
-	redirect("/");
+	redirect("/dashboard");
 }
 
 export async function signup(payload: SignUpFormState) {

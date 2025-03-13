@@ -16,6 +16,7 @@ import {
 } from "@/schemas";
 
 export const userRouter = router({
+	logout: publicProcedure.mutation(({ ctx: { supabase } }) => UserControllers.logout(supabase)),
 	login: publicProcedure
 		.input(LoginFormStateSchema)
 		.output(TrpcResponseSchema)

@@ -39,7 +39,7 @@ export function LoginForm() {
 
 	return (
 		<Form {...form}>
-			<div className={cn("mx-auto flex w-[400px] flex-col gap-6")}>
+			<div className={cn("mx-auto flex w-[400px] flex-1 items-center justify-center")}>
 				<Card>
 					<CardHeader>
 						<CardTitle className="text-2xl">Login</CardTitle>

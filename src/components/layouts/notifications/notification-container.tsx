@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/pop
 
 import { Message } from "@/components/mics/message";
 import { CounterBadge } from "@/components/mics/counter-badge";
-import { NotificationMessage } from "@/components/mics/notification-message";
+import { NotificationMessage } from "@/components/layouts/notifications/notification-message";
 
 import { type API } from "@/api";
 import { trpc } from "@/services";
@@ -88,7 +88,7 @@ export const NotificationContainer = () => {
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
-				<Button size="icon" variant="outline" className="relative h-8 w-8 rounded-full">
+				<Button size="icon" variant="outline" className="relative h-8 w-8 rounded-full" data-testid="navigation-item-notifications">
 					<Bell />
 					<CounterBadge count={unreadCount} />
 				</Button>
