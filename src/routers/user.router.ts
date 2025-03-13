@@ -12,6 +12,7 @@ import {
 	LoginFormStateSchema,
 	SignUpFormStateSchema,
 	ProfileFormStateSchema,
+	BankAccountStatusEnumSchema,
 	BankAccountCreatePayloadSchema
 } from "@/schemas";
 
@@ -33,17 +34,24 @@ export const userRouter = router({
 		// FIXME: The current top avatar did not update accordingly
 		.mutation(async ({ input, ctx: { user, supabase } }) => UserControllers.updateProfile(supabase, user.id, input)),
 
-	createBankAccount: privateProcedure
-		.input(BankAccountCreatePayloadSchema)
-		.mutation(({ input, ctx: { user, supabase } }) => BankAccountsController.create(supabase, user.id, input)),
 	getBalance: privateProcedure
 		.use(withSelectedGroup)
 		.output(BalanceSchema)
 		.query(({ ctx: { user, supabase } }) => UserControllers.reportUsingView(supabase, { userId: user.id, groupId: user.group.id })),
-	getBankAccounts: privateProcedure
+	setDefaultAccount: privateProcedure
+		.input(z.object({ accountId: z.string() }))
+		.mutation(({ input, ctx: { user, supabase } }) => BankAccountsController.setDefaultAccount(supabase, user.id, input.accountId)),
+	bankAccounts: privateProcedure
 		.input(z.object({ userId: z.string() }))
 		.output(z.array(BankAccountSchema))
 		.query(({ input, ctx: { supabase } }) => BankAccountsController.getByUserId(supabase, input.userId)),
+	addBankAccount: privateProcedure
+		.input(BankAccountCreatePayloadSchema)
+		.output(z.object({ id: z.string().uuid() }))
+		.mutation(({ input, ctx: { user, supabase } }) => BankAccountsController.create(supabase, user.id, input)),
+	updateAccountState: privateProcedure
+		.input(z.object({ accountId: z.string(), status: BankAccountStatusEnumSchema }))
+		.mutation(({ input, ctx: { user, supabase } }) => BankAccountsController.updateAccountStatus(supabase, user.id, input)),
 
 	groups: privateProcedure
 		.output(z.array(GroupSchema))

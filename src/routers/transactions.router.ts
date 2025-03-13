@@ -1,31 +1,37 @@
 import { z } from "zod";
 
 import { API } from "@/api";
-import { ClientTransactionSchema } from "@/schemas";
 import { TransactionsControllers } from "@/controllers";
 import { router, privateProcedure, withSelectedGroup } from "@/services/trpc/server";
+import { TransactionSchema, TransactionCreatePayloadSchema, TransactionUpdatePayloadSchema, TransactionQRCreatePayloadSchema } from "@/schemas";
 
 export const transactionsRouter = router({
 	get: privateProcedure
-		.input(z.object({ transactionId: z.string() }))
-		.output(ClientTransactionSchema)
-		.query(({ input, ctx: { user, supabase } }) => TransactionsControllers.getById(supabase, { ...input, userId: user.id })),
+		.input(z.object({ displayId: z.string() }))
+		.output(TransactionSchema)
+		.query(({ input, ctx: { user, supabase } }) => TransactionsControllers.getByDisplayId(supabase, { ...input, userId: user.id })),
 	getMany: privateProcedure
 		.use(withSelectedGroup)
 		.input(API.Transactions.List.PayloadSchema)
 		.output(API.Transactions.List.ResponseSchema)
 		.query(({ input, ctx: { user, supabase } }) => TransactionsControllers.getMany(supabase, user, input)),
 
-	suggest: privateProcedure
-		.output(API.Transactions.Suggestion.ResponseSchema)
-		.query(({ ctx: { user, supabase } }) => TransactionsControllers.suggest(supabase, user.id)),
 	update: privateProcedure
 		.use(withSelectedGroup)
-		.input(API.Transactions.Update.PayloadSchema)
+		.input(TransactionUpdatePayloadSchema)
 		.mutation(({ input, ctx: { supabase } }) => TransactionsControllers.update(supabase, input)),
+	suggest: privateProcedure
+		.use(withSelectedGroup)
+		.output(API.Transactions.Suggestion.ResponseSchema)
+		.mutation(({ ctx: { user, supabase } }) => TransactionsControllers.suggest(supabase, user.id, user.group.id)),
+	generateQR: privateProcedure
+		.use(withSelectedGroup)
+		.input(TransactionQRCreatePayloadSchema)
+		.output(z.object({ url: z.string() }))
+		.mutation(({ input, ctx: { supabase } }) => TransactionsControllers.generateQR(supabase, input)),
 	create: privateProcedure
 		.use(withSelectedGroup)
-		.input(API.Transactions.Create.PayloadSchema)
+		.input(TransactionCreatePayloadSchema)
 		.mutation(async ({ input, ctx: { supabase, user: sender } }) => {
 			const { amount, issuedAt, receiverId, bankAccountId } = input;
 

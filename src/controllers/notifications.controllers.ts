@@ -209,6 +209,7 @@ export namespace NotificationsControllers {
 	}
 
 	export interface TransactionPayload extends BasePayload {
+		// display ID
 		readonly transactionId: string;
 		readonly status: TransactionStatus;
 	}

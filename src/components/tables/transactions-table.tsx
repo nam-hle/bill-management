@@ -7,11 +7,12 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/shadcn/button";
 
 import { DataTable } from "@/components/tables/data-table";
+import { UserDisplay } from "@/components/avatars/user-display";
 import { FilterButton } from "@/components/buttons/filter-button";
-import { TransactionAction } from "@/components/mics/transaction-action";
 import { TransactionStatusBadge } from "@/components/mics/transaction-status-badge";
 
 import { trpc } from "@/services";
+import { formatCurrency } from "@/utils/format";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
 import { displayDate, displayDateAsTitle } from "@/utils";
 
@@ -29,7 +30,14 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 	const [filters, setFilters] = React.useState<"toMe" | "byMe" | undefined>(undefined);
 
 	const { data } = trpc.transactions.getMany.useQuery(
-		filters === "toMe" ? { page, receiverId: currentUserId } : filters === "byMe" ? { page, senderId: currentUserId } : { page }
+		filters === "toMe"
+			? { page, receiverId: currentUserId }
+			: filters === "byMe"
+				? {
+						page,
+						senderId: currentUserId
+					}
+				: { page }
 	);
 
 	const createOwnerFilter = React.useCallback(
@@ -44,9 +52,10 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 
 	return (
 		<DataTable
+			rowHeight={12}
 			title="Transactions"
-			data={data?.data.map((row) => ({ ...row, href: `/transactions/${row.id}` }))}
 			pagination={{ pageNumber: page, onPageChange: setPage, fullSize: data?.fullSize }}
+			data={data?.data.map((row) => ({ ...row, href: `/transactions/${row.displayId}` }))}
 			action={
 				<Button asChild size="sm">
 					<Link href="/transactions/new">
@@ -61,27 +70,18 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 				</>
 			}
 			columns={[
-				{ key: "id", label: "ID", dataGetter: ({ row }) => row.id.slice(0, 6) },
+				{ key: "id", label: "ID", dataGetter: ({ row }) => row.displayId },
 				{
 					key: "issuedAt",
 					label: "Issued At",
 					dataGetter: ({ row }) => displayDate(row.issuedAt),
 					titleGetter: ({ row }) => displayDateAsTitle(row.issuedAt)
 				},
-				{ key: "sender", label: "Sender", dataGetter: ({ row }) => formatUser(row.sender, currentUserId) },
-				{ key: "receiver", label: "Receiver", dataGetter: ({ row }) => formatUser(row.receiver, currentUserId) },
-				{ key: "amount", label: "Amount", dataGetter: ({ row }) => row.amount },
-				{ key: "status", label: "Status", dataGetter: ({ row }) => <TransactionStatusBadge status={row.status} /> },
-				{ key: "action", label: "Action", dataGetter: ({ row }) => <TransactionAction transaction={row} currentUserId={currentUserId} /> }
+				{ key: "sender", label: "Sender", dataGetter: ({ row }) => <UserDisplay {...row.sender} /> },
+				{ key: "receiver", label: "Receiver", dataGetter: ({ row }) => <UserDisplay {...row.receiver} /> },
+				{ key: "amount", label: "Amount", dataGetter: ({ row }) => formatCurrency(row.amount) },
+				{ key: "status", label: "Status", dataGetter: ({ row }) => <TransactionStatusBadge status={row.status} /> }
 			]}
 		/>
 	);
 };
-
-function formatUser(user: { userId: string; fullName: string | null }, currentUserId: string): React.ReactNode {
-	if (user.userId === currentUserId) {
-		return <strong>{user.fullName}</strong>;
-	}
-
-	return <>{user.fullName}</>;
-}

@@ -9,6 +9,9 @@ export const UserMetaSchema = z
 	.strict();
 export type UserMeta = z.infer<typeof UserMetaSchema>;
 
+export const UserFinanceSchema = UserMetaSchema.omit({ avatarFile: true }).extend({ balance: z.number() }).strict();
+export type UserFinance = z.infer<typeof UserFinanceSchema>;
+
 export const ProfileSchema = UserMetaSchema.extend({ email: z.string() }).strict();
 export type Profile = z.infer<typeof ProfileSchema>;
 

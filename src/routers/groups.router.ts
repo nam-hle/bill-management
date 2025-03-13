@@ -7,6 +7,7 @@ import {
 	GroupSchema,
 	UserMetaSchema,
 	MembershipSchema,
+	UserFinanceSchema,
 	GroupDetailsSchema,
 	MembershipStatusSchema,
 	GroupDetailsWithBalanceSchema,
@@ -39,6 +40,13 @@ export const groupsRouter = router({
 		.output(z.array(UserMetaSchema))
 		.query(({ input, ctx: { user, supabase } }) =>
 			GroupController.getActiveMembers(supabase, { groupId: user.group.id, exclusions: input?.excludeMe ? [user.id] : [] })
+		),
+	memberBalances: privateProcedure
+		.use(withSelectedGroup)
+		.input(z.object({ excludeMe: z.boolean() }).optional())
+		.output(z.array(UserFinanceSchema))
+		.query(({ input, ctx: { user, supabase } }) =>
+			GroupController.getUserFinances(supabase, { groupId: user.group.id, exclusions: input?.excludeMe ? [user.id] : [] })
 		),
 
 	update: privateProcedure

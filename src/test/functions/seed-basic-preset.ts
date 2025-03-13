@@ -1,12 +1,12 @@
-import { type GroupName } from "@/test/utils";
 import { seedUsers } from "@/test/functions/seed-users";
-import { type Group, type Membership } from "@/schemas";
+import { BANKS, USERNAMES, FULL_NAMES, type UserName, type GroupName } from "@/test/utils";
+import { type Group, type Membership, BankAccountTypeEnumSchema, BankAccountStatusEnumSchema } from "@/schemas";
 
 const findInvitations = (memberships: Membership[], userId: string) => memberships.find((invitation) => invitation.user.userId === userId)!;
 
 export type BasicPreset = Awaited<ReturnType<typeof seedBasicPreset>>;
 
-export async function seedBasicPreset() {
+export async function seedBasicPreset(options?: { withBankAccounts?: boolean }) {
 	try {
 		const usersInfo = await seedUsers();
 
@@ -53,9 +53,34 @@ export async function seedBasicPreset() {
 			await requester.user.selectGroup.mutate({ groupId: hogwartsGroup.id });
 		}
 
+		// @ts-expect-error Force type conversion
+		const bankAccounts: Record<UserName, string[]> = {};
+
+		if (options?.withBankAccounts) {
+			let index = 0;
+
+			for (const username of Object.values(USERNAMES)) {
+				const requester = usersInfo.requesters[username];
+
+				const bankAccountIds = await Promise.all(
+					Object.values(BANKS).map((bank) =>
+						requester.user.addBankAccount.mutate({
+							providerNumber: bank.id,
+							accountNumber: "10000" + index++,
+							type: BankAccountTypeEnumSchema.enum.Bank,
+							status: BankAccountStatusEnumSchema.enum.Active,
+							accountHolder: `${FULL_NAMES[username]} ${bank.name}`.toUpperCase()
+						})
+					)
+				);
+
+				bankAccounts[username] = bankAccountIds.map((e) => e.id);
+			}
+		}
+
 		const groups: Record<GroupName, Group> = { Hogwarts: hogwartsGroup, Gryffindor: gryffindorGroup };
 
-		return { ...usersInfo, groups };
+		return { ...usersInfo, groups, bankAccounts };
 	} catch (error) {
 		console.error("Error while setup basic preset:", error);
 		throw error;

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
-import { ClientBillSchema, ClientTransactionSchema, ClientNotificationSchema, TransactionStatusEnumSchema } from "@/schemas";
+import { ClientBillSchema, TransactionSchema, ClientNotificationSchema } from "@/schemas";
 
 export namespace API {
 	export const DataListResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
@@ -85,34 +85,8 @@ export namespace API {
 				page: z.coerce.number().int().positive().optional().default(DEFAULT_PAGE_NUMBER)
 			});
 
-			export const ResponseSchema = DataListResponseSchema(ClientTransactionSchema);
+			export const ResponseSchema = DataListResponseSchema(TransactionSchema);
 			export type Response = z.infer<typeof ResponseSchema>;
-		}
-
-		export namespace Create {
-			export const PayloadSchema = z.object({
-				amount: z.number(),
-				issuedAt: z.string(),
-				bankAccountId: z.string().optional(),
-				receiverId: z.string().min(1, "Receiver is required")
-			});
-		}
-
-		export namespace Update {
-			export const PayloadSchema = z.object({
-				transactionId: z.string(),
-				status: TransactionStatusEnumSchema.exclude(["Waiting"])
-			});
-			export type Payload = z.infer<typeof PayloadSchema>;
-		}
-	}
-
-	export namespace QR {
-		export namespace Create {
-			export const BodySchema = z.object({
-				amount: z.number(),
-				bankAccountId: z.string()
-			});
 		}
 	}
 }

@@ -38,7 +38,7 @@ export namespace Assertions {
 		params: {
 			heading?: string;
 			pagination?: null | { totalPages: number; currentPage: number };
-			rows: { sender: string; amount: string; status: string; action?: string; receiver: string; issuedAt?: string }[];
+			rows: { sender: string; amount: string; status: string; receiver: string; issuedAt?: string }[];
 		}
 	) {
 		await table.waitForLoading();
@@ -71,10 +71,6 @@ export namespace Assertions {
 
 					if (row.issuedAt !== undefined) {
 						await table.getRow(rowIndex).getCell("Issued At").assertEqual(row.issuedAt);
-					}
-
-					if (row.action !== undefined) {
-						await expect(table.getRow(rowIndex).getCell("Action").locator.getByRole("button", { name: row.action })).toBeVisible();
 					}
 				});
 			}

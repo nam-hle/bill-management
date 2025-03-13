@@ -2,32 +2,55 @@ import { test } from "@/test/setup";
 import { Actions } from "@/test/helpers/actions";
 import { Locators } from "@/test/helpers/locators";
 import { Assertions } from "@/test/helpers/assertions";
-import { createRequester } from "@/test/helpers/requester";
 import { USERNAMES, FULL_NAMES, getCurrentDate } from "@/test/utils";
 import { seedBasicPreset } from "@/test/functions/seed-basic-preset";
 
 test("basic", async ({ page }) => {
-	const { userIds } = await seedBasicPreset();
+	const { userIds, requesters, bankAccounts } = await seedBasicPreset({ withBankAccounts: true });
 
 	await test.step("Create transactions from Ron to Harry", async () => {
-		const requester = await createRequester(USERNAMES.ron);
-
-		await requester.transactions.create.mutate({ amount: 40, receiverId: userIds.harry, issuedAt: getCurrentDate() });
-		await requester.transactions.create.mutate({ amount: 41, receiverId: userIds.harry, issuedAt: getCurrentDate() });
+		await requesters.ron.transactions.create.mutate({
+			amount: 40,
+			receiverId: userIds.harry,
+			issuedAt: getCurrentDate(),
+			bankAccountId: bankAccounts.harry[0]
+		});
+		await requesters.ron.transactions.create.mutate({
+			amount: 41,
+			receiverId: userIds.harry,
+			issuedAt: getCurrentDate(),
+			bankAccountId: bankAccounts.harry[1]
+		});
 	});
 
 	await test.step("Create transactions from Hermione to Harry", async () => {
-		const requester = await createRequester(USERNAMES.hermione);
-
-		await requester.transactions.create.mutate({ amount: 42, receiverId: userIds.harry, issuedAt: getCurrentDate() });
-		await requester.transactions.create.mutate({ amount: 43, receiverId: userIds.harry, issuedAt: getCurrentDate() });
+		await requesters.hermione.transactions.create.mutate({
+			amount: 42,
+			receiverId: userIds.harry,
+			issuedAt: getCurrentDate(),
+			bankAccountId: bankAccounts.harry[0]
+		});
+		await requesters.hermione.transactions.create.mutate({
+			amount: 43,
+			receiverId: userIds.harry,
+			issuedAt: getCurrentDate(),
+			bankAccountId: bankAccounts.harry[0]
+		});
 	});
 
 	await test.step("Create transactions from Harry to others", async () => {
-		const requester = await createRequester(USERNAMES.harry);
-
-		await requester.transactions.create.mutate({ amount: 44, receiverId: userIds.ron, issuedAt: getCurrentDate() });
-		await requester.transactions.create.mutate({ amount: 45, issuedAt: getCurrentDate(), receiverId: userIds.hermione });
+		await requesters.harry.transactions.create.mutate({
+			amount: 44,
+			receiverId: userIds.ron,
+			issuedAt: getCurrentDate(),
+			bankAccountId: bankAccounts.ron[0]
+		});
+		await requesters.harry.transactions.create.mutate({
+			amount: 45,
+			issuedAt: getCurrentDate(),
+			receiverId: userIds.hermione,
+			bankAccountId: bankAccounts.hermione[0]
+		});
 	});
 
 	await Actions.login(page, USERNAMES.harry);
@@ -59,7 +82,7 @@ test("basic", async ({ page }) => {
 			totalPages: 2,
 			currentPage: 2
 		},
-		rows: [{ amount: "45", status: "Waiting", action: "Decline", issuedAt: "Today", sender: FULL_NAMES.harry, receiver: FULL_NAMES.hermione }]
+		rows: [{ amount: "45", status: "Waiting", issuedAt: "Today", sender: FULL_NAMES.harry, receiver: FULL_NAMES.hermione }]
 	});
 
 	await Actions.goToDashboardPage(page);

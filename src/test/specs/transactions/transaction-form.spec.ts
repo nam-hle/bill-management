@@ -1,19 +1,20 @@
 import { test } from "@/test/setup";
 import { Actions } from "@/test/helpers/actions";
 import { Locators } from "@/test/helpers/locators";
-import { USERNAMES, FULL_NAMES } from "@/test/utils";
 import { Assertions } from "@/test/helpers/assertions";
+import { VND, USERNAMES, FULL_NAMES } from "@/test/utils";
 import { seedBasicPreset } from "@/test/functions/seed-basic-preset";
 
 test("basic", async ({ page, browser }) => {
-	await seedBasicPreset();
+	await seedBasicPreset({ withBankAccounts: true });
 
 	await Actions.login(page, USERNAMES.harry);
 
 	await Actions.goToTransactionsPage(page);
 	await Actions.TransactionForm.fill(page, {
 		amount: "42",
-		receiver: FULL_NAMES.ron,
+		receiver: FULL_NAMES.ron + ` (0 ${VND})`,
+		account: `${FULL_NAMES.ron} VIETINBANK (Vietinbank 100001)`,
 		candidateReceivers: [FULL_NAMES.dumbledore, FULL_NAMES.hermione, FULL_NAMES.ron, FULL_NAMES.snape]
 	});
 
@@ -21,7 +22,7 @@ test("basic", async ({ page, browser }) => {
 
 	await Assertions.assertTransactionsTable(transactionsTable, {
 		pagination: null,
-		rows: [{ amount: "42", status: "Waiting", action: "Decline", issuedAt: "Today", receiver: FULL_NAMES.ron, sender: FULL_NAMES.harry }]
+		rows: [{ amount: "42", status: "Waiting", issuedAt: "Today", receiver: FULL_NAMES.ron, sender: FULL_NAMES.harry }]
 	});
 
 	await Actions.goToDashboardPage(page);

@@ -115,12 +115,14 @@ test("Group Integration", async ({ page }) => {
 		await page.getByPlaceholder("Enter group ID").fill("1234567");
 		await page.getByRole("button", { name: "Send Request" }).click();
 
-		await expect(page.getByTestId("form-error")).toHaveText("Group 1234567 does not exist");
+		await expect(Locators.locateError(page, "groupDisplayId")).toHaveText("Group 1234567 does not exist");
 
 		await page.getByPlaceholder("Enter group ID").fill(gryffindorGroupId);
 		await page.getByRole("button", { name: "Send Request" }).click();
 
-		await expect(page.getByTestId("form-error")).toHaveText("You are already a member of this group and do not need to send a request.");
+		await expect(Locators.locateError(page, "groupDisplayId")).toHaveText(
+			"You are already a member of this group and do not need to send a request."
+		);
 
 		await page.getByRole("button", { exact: true, name: "Close" }).click();
 		await Actions.logout(page);
@@ -138,7 +140,7 @@ test("Group Integration", async ({ page }) => {
 			await page.getByPlaceholder("Enter group ID").fill(gryffindorGroupId);
 			await page.getByRole("button", { name: "Send Request" }).click();
 
-			await expect(page.getByTestId("form-error")).toHaveText(
+			await expect(Locators.locateError(page, "groupDisplayId")).toHaveText(
 				"You have already received an invitation to join this group. Please check your pending invitations."
 			);
 
@@ -202,7 +204,9 @@ test("Group Integration", async ({ page }) => {
 		await page.getByRole("button", { name: "Request" }).click();
 		await page.getByPlaceholder("Enter group ID").fill(gryffindorGroupId);
 		await page.getByRole("button", { name: "Send Request" }).click();
-		await expect(page.getByTestId("form-error")).toHaveText("Your request to join this group has already been submitted. Please wait for approval.");
+		await expect(Locators.locateError(page, "groupDisplayId")).toHaveText(
+			"Your request to join this group has already been submitted. Please wait for approval."
+		);
 		await page.getByRole("button", { exact: true, name: "Close" }).click();
 
 		await Actions.logout(page);

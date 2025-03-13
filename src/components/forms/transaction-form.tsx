@@ -3,80 +3,65 @@
 import React from "react";
 import { type z } from "zod";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import Image from "next/image";
 import { parse, format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import { DevTool } from "@hookform/devtools";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus, Wand2, ArrowLeft, ArrowRight } from "lucide-react";
 
 import { Input } from "@/components/shadcn/input";
 import { Button } from "@/components/shadcn/button";
-import { Form, FormItem, FormField, FormMessage, FormControl } from "@/components/shadcn/form";
+import { Skeleton } from "@/components/shadcn/skeleton";
+import { AspectRatio } from "@/components/shadcn/aspect-ratio";
+import { Form, FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
+import { Card, CardTitle, CardFooter, CardHeader, CardContent, CardDescription } from "@/components/shadcn/card";
 
-import { Heading } from "@/components/mics/heading";
+import { Show } from "@/components/mics/show";
 import { Select } from "@/components/forms/inputs/select";
+import { CopyButton } from "@/components/buttons/copy-button";
 import { RequiredLabel } from "@/components/forms/required-label";
+import { LoadingButton } from "@/components/buttons/loading-button";
+import { SkeletonWrapper } from "@/components/mics/skeleton-wrapper";
 import { TransactionAction } from "@/components/mics/transaction-action";
 import { TransactionStatusBadge } from "@/components/mics/transaction-status-badge";
 
-import { API } from "@/api";
+import { cn } from "@/utils/cn";
 import { trpc } from "@/services";
-import { type ClientTransaction } from "@/schemas";
+import { useBanks } from "@/hooks";
+import { formatCurrency } from "@/utils/format";
 import { CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
+import { type Transaction, TransactionCreatePayloadSchema } from "@/schemas";
 import { IssuedAtField, IssuedAtFieldTransformer, RequiredAmountFieldSchema } from "@/schemas/form.schema";
 
 namespace TransactionForm {
 	export interface Props {
 		readonly currentUserId: string;
-		readonly kind:
-			| {
-					readonly type: "create";
-			  }
-			| {
-					readonly type: "update";
-					readonly transaction: ClientTransaction;
-			  };
+		readonly kind: { readonly type: "create" } | { readonly type: "update"; readonly transaction: Transaction };
 	}
 }
 
-const FormStateSchema = API.Transactions.Create.PayloadSchema.omit({ amount: true, issuedAt: true }).extend({
+const FormStateSchema = TransactionCreatePayloadSchema.omit({ amount: true, issuedAt: true }).extend({
 	issuedAt: IssuedAtField,
 	amount: RequiredAmountFieldSchema("Amount is required")
 });
 
 type FormState = z.infer<typeof FormStateSchema>;
 
+type Screen = "form" | "qr";
+
 export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 	const { kind, currentUserId } = props;
 	const editing = React.useMemo(() => kind.type === "create", [kind.type]);
 
-	const { data: users } = trpc.groups.members.useQuery({ excludeMe: true });
-
-	// const [_qrImage, setQrImage] = React.useState<string | undefined>(undefined);
+	const [qrImage, setQrImage] = React.useState<string | undefined>(undefined);
+	const [screen, setScreen] = React.useState<Screen>("form");
 
 	const router = useRouter();
-	// const { mutate: generateQR } = useMutation({
-	// 	mutationFn: API.QR.Create.mutate,
-	// 	onError: () => {
-	// 		toast({
-	// 			variant: "destructive",
-	// 			title: "Failed to generate QR code",
-	// 			description: "An error occurred while generating the QR code. Please try again."
-	// 		});
-	// 	},
-	// 	onSuccess: (response) => {
-	// 		toast({
-	// 			title: "QR code generated successfully",
-	// 			description: "A new QR code has been generated successfully."
-	// 		});
-	//
-	// 		setQrImage(response.url);
-	// 		// setOpenDialog(true);
-	// 	}
-	// });
-
 	const utils = trpc.useUtils();
-	const { mutate } = trpc.transactions.create.useMutation({
+
+	const create = trpc.transactions.create.useMutation({
 		onError: () => {
 			toast.error("Failed to create transaction");
 		},
@@ -88,188 +73,222 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 			utils.transactions.getMany.invalidate().then(() => router.push("/transactions"));
 		}
 	});
-
 	const form = useForm<FormState>({
 		resolver: zodResolver(FormStateSchema),
 		defaultValues: {
+			bankAccountId: "",
 			amount: kind.type === "update" ? String(kind.transaction.amount) : "",
 			receiverId: kind.type === "update" ? kind.transaction.receiver.userId : "",
 			issuedAt: IssuedAtFieldTransformer.fromServer(kind.type === "update" ? kind.transaction.issuedAt : undefined)
 		}
 	});
-	const {
-		// watch,
-		// reset,
-		control,
-		setValue,
-		handleSubmit
-	} = form;
+	const { watch, reset, control, setValue, formState, handleSubmit } = form;
+	const { isSubmitting } = formState;
 
-	// const { mutate: fetchSuggestion } = useMutation({
-	// 	mutationKey: ["transactions", "suggestion"],
-	// 	mutationFn: () => API.Transactions.Suggestion.query(),
-	// 	onSuccess: (data) => {
-	// 		const suggestion = data.suggestion;
-	//
-	// 		if (!suggestion) {
-	// 			return;
-	// 		}
-	//
-	// 		reset({
-	// 			amount: String(suggestion.amount),
-	// 			receiverId: suggestion.receiverId,
-	// 			bankAccountId: suggestion.bankAccountId
-	// 		});
-	// 	}
-	// });
+	const suggest = trpc.transactions.suggest.useMutation({
+		onSuccess: (data) => {
+			const suggestion = data.suggestion;
 
-	// const receiverId: string | undefined = watch("receiverId");
+			// TODO: Show in form
+			if (!suggestion) {
+				toast.error("No suggestion found");
 
-	// const { data: receiverBankAccounts, isPending: isFetchingReceiverBankAccounts } = useQuery({
-	// 	enabled: !!receiverId,
-	// 	queryKey: ["bank-accounts", "transaction-form", receiverId],
-	// 	queryFn: () => API.BankAccounts.List.query({ userId: receiverId })
-	// });
+				return;
+			}
 
-	// const onGenerateQR = React.useMemo(
-	// 	() =>
-	// 		handleSubmit((data) => {
-	// 			generateQR({
-	// 				...data,
-	// 				bankAccountId: data.bankAccountId ?? "",
-	// 				amount: data.amount === "" ? 0 : Number(data.amount)
-	// 			});
-	// 		}),
-	// 	[generateQR, handleSubmit]
-	// );
+			reset({ amount: String(suggestion.amount), receiverId: suggestion.receiverId, bankAccountId: suggestion.bankAccountId });
+		}
+	});
 
-	const onSubmit = React.useMemo(
-		() =>
-			handleSubmit((data) => {
-				mutate({
+	const receiverId = watch("receiverId");
+
+	const { data: receiverBankAccounts, isPending: isFetchingReceiverBankAccounts } = trpc.user.bankAccounts.useQuery(
+		{ userId: receiverId },
+		{ enabled: !!receiverId }
+	);
+
+	const findBank = useBanks();
+
+	const generate = trpc.transactions.generateQR.useMutation({
+		onSuccess: (data) => {
+			setQrImage(() => data.url);
+		}
+	});
+
+	const onSubmit = React.useMemo(() => {
+		return handleSubmit((data, event) => {
+			const name = event?.target.name;
+
+			if (name === "create") {
+				create.mutate({
 					...data,
 					amount: data.amount === "" ? 0 : Number(data.amount),
 					issuedAt: format(parse(data.issuedAt, CLIENT_DATE_FORMAT, new Date()), SERVER_DATE_FORMAT)
 				});
-			}),
-		[handleSubmit, mutate]
-	);
-	// const [openDialog, setOpenDialog] = useState(false);
+
+				return;
+			}
+
+			if (name === "generate") {
+				setScreen(() => "qr");
+				generate.mutate({ receiverId: data.receiverId, amount: Number(data.amount), bankAccountId: data.bankAccountId ?? "" });
+
+				return;
+			}
+
+			throw new Error("Invalid event name");
+		});
+	}, [create, generate, handleSubmit]);
+
+	const { data: users } = trpc.groups.memberBalances.useQuery({ excludeMe: kind.type === "create" });
+
+	const renderFormScreen = () => {
+		return (
+			<>
+				<FormField
+					control={control}
+					name="receiverId"
+					render={({ field }) => (
+						<FormItem>
+							<RequiredLabel>Receiver</RequiredLabel>
+							<Select
+								{...field}
+								disabled={!editing}
+								onValueChange={(value) => {
+									field.onChange(value);
+									setValue("bankAccountId", "");
+								}}
+								items={
+									users?.map((user) => {
+										return { value: user.userId, label: user.fullName + (kind.type === "create" ? ` (${formatCurrency(user.balance)})` : "") };
+									}) ?? []
+								}
+							/>
+						</FormItem>
+					)}
+				/>
+
+				<FormField
+					control={control}
+					name="bankAccountId"
+					render={({ field }) => (
+						<FormItem>
+							<RequiredLabel>Bank Account</RequiredLabel>
+							<SkeletonWrapper skeleton={<Skeleton className="h-10 w-full" />} loading={isFetchingReceiverBankAccounts && !!receiverId}>
+								<Select
+									value={field.value}
+									onValueChange={field.onChange}
+									items={
+										receiverBankAccounts?.flatMap((account) => {
+											return {
+												value: account.id,
+												label: `${account.accountHolder} (${findBank(account.providerNumber)?.providerShortName ?? "Unknown"} ${account.accountNumber})`
+											};
+										}) ?? []
+									}
+								/>
+							</SkeletonWrapper>
+						</FormItem>
+					)}
+				/>
+
+				<FormField
+					name="amount"
+					control={control}
+					render={({ field }) => (
+						<FormItem>
+							<RequiredLabel>Amount</RequiredLabel>
+							<FormControl>
+								<Input {...field} readOnly={!editing} className={editing ? "" : "pointer-events-none"} />
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				<FormField
+					name="issuedAt"
+					control={control}
+					render={({ field }) => (
+						<FormItem>
+							<RequiredLabel>Issued At</RequiredLabel>
+							<FormControl>
+								<Input placeholder={CLIENT_DATE_FORMAT} {...field} className={editing ? "" : "pointer-events-none"} />
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+			</>
+		);
+	};
+
+	const renderQRScreen = () => {
+		return (
+			<Show when={qrImage} fallback={<Skeleton className="h-[370px] w-[370px]" />}>
+				{(image) => (
+					<AspectRatio ratio={1}>
+						<Image fill src={image} alt="Transaction QR" data-testid="transaction-qr" className="rounded-lg object-contain" />
+					</AspectRatio>
+				)}
+			</Show>
+		);
+	};
 
 	return (
-		<>
-			{/*{openDialog && qrImage && (*/}
-			{/*	<DialogRoot lazyMount open={openDialog} onOpenChange={(e) => setOpenDialog(e.open)}>*/}
-			{/*		<DialogContent margin={0} width="100vw" height="100vh" boxShadow="none" justifyContent="center" backgroundColor="transparent">*/}
-			{/*			<Center>*/}
-			{/*				<Image alt="receipt" src={qrImage} />*/}
-			{/*			</Center>*/}
-			{/*			<HStack marginTop="{spacing.4}" justifyContent="center">*/}
-			{/*				<Button onClick={onSubmit}>Done</Button>*/}
-			{/*			</HStack>*/}
-			{/*		</DialogContent>*/}
-			{/*	</DialogRoot>*/}
-			{/*)}*/}
-			<Form {...form}>
-				<div className="mx-auto flex w-1/3 flex-col gap-4">
-					<div className="flex flex-row justify-between align-middle">
-						<Heading className="flex align-middle">
-							{kind.type === "update" ? "Transaction Details" : "New Transaction"}
-							{kind.type === "update" && <TransactionStatusBadge className="ml-2" status={kind.transaction.status} />}
-						</Heading>
+		<Form {...form}>
+			<form onSubmit={onSubmit}>
+				<div className={cn("mx-auto mt-32 w-[420px] flex-1 items-center")}>
+					<Card className="w-full">
+						<CardHeader>
+							<CardTitle className="space-x-2 text-2xl">
+								<span>{kind.type === "update" ? "Transaction Details" : "New Transaction"}</span>
+								{kind.type === "update" && <TransactionStatusBadge status={kind.transaction.status} />}
+							</CardTitle>
+							<CardDescription className="flex gap-2 align-middle">
+								{kind.type === "update" ? (
+									<>
+										Transaction ID: {kind.transaction.displayId} <CopyButton displayValue="transaction ID" value={kind.transaction.displayId} />
+									</>
+								) : (
+									"Create a new transaction"
+								)}
+							</CardDescription>
+						</CardHeader>
+						<CardContent className="flex flex-col gap-4">{screen === "form" ? renderFormScreen() : renderQRScreen()}</CardContent>
+						<CardFooter className="flex flex-col space-y-4">
+							{kind.type === "create" ? (
+								<div className="flex w-full justify-between">
+									{screen === "form" ? (
+										<>
+											<Button type="button" variant="outline" onClick={() => suggest.mutate()} className="flex items-center gap-2">
+												<Wand2 className="h-4 w-4" />
+												Auto Fill
+											</Button>
 
-						{kind.type === "update" && <TransactionAction currentUserId={currentUserId} transaction={kind.transaction} />}
-					</div>
-
-					<FormField
-						control={control}
-						name="receiverId"
-						render={({ field }) => (
-							<FormItem>
-								<RequiredLabel>Receiver</RequiredLabel>
-								<Select
-									{...field}
-									disabled={!editing}
-									items={users?.map((user) => ({ value: user.userId, label: user.fullName })) ?? []}
-									onValueChange={(value) => {
-										field.onChange(value);
-										setValue("bankAccountId", undefined);
-									}}
-								/>
-							</FormItem>
-						)}
-					/>
-
-					{/*<FormField*/}
-					{/*	control={control}*/}
-					{/*	name="bankAccountId"*/}
-					{/*	render={({ field }) => (*/}
-					{/*		<FormItem>*/}
-					{/*			<RequiredLabel htmlFor="bankAccountId">Bank Account</RequiredLabel>*/}
-					{/*			<SkeletonWrapper loading={isFetchingReceiverBankAccounts} skeleton={<Skeleton className="h-10 w-full" />}>*/}
-					{/*				<Select*/}
-					{/*					{...register("bankAccountId")}*/}
-					{/*					readonly={editing}*/}
-					{/*					value={field.value}*/}
-					{/*					onValueChange={field.onChange}*/}
-					{/*					items={*/}
-					{/*						receiverBankAccounts?.flatMap((account) => {*/}
-					{/*							return { value: account.id, label: `${account.accountHolder} (${account.providerName} ${account.accountNumber})` };*/}
-					{/*						}) ?? []*/}
-					{/*					}*/}
-					{/*				/>*/}
-					{/*			</SkeletonWrapper>*/}
-					{/*			<FormMessage>{errors.bankAccountId?.message}</FormMessage>*/}
-					{/*		</FormItem>*/}
-					{/*	)}*/}
-					{/*/>*/}
-
-					<FormField
-						name="amount"
-						control={control}
-						render={({ field }) => (
-							<FormItem>
-								<RequiredLabel>Amount</RequiredLabel>
-								<FormControl>
-									<Input {...field} readOnly={!editing} className={editing ? "" : "pointer-events-none"} />
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-
-					<FormField
-						name="issuedAt"
-						control={control}
-						render={({ field }) => (
-							<FormItem>
-								<RequiredLabel>Issued At</RequiredLabel>
-								<FormControl>
-									<Input placeholder={CLIENT_DATE_FORMAT} {...field} className={editing ? "" : "pointer-events-none"} />
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-
-					{kind.type === "create" && (
-						<div className="flex justify-between gap-2">
-							<Button onClick={onSubmit}>
-								<Plus /> Create
-							</Button>
-							{/*<div className="flex gap-2">*/}
-							{/*	<Button variant="secondary" onClick={onGenerateQR}>*/}
-							{/*		Generate QR*/}
-							{/*	</Button>*/}
-
-							{/*	<Button variant="secondary" onClick={() => fetchSuggestion()}>*/}
-							{/*		Suggest*/}
-							{/*	</Button>*/}
-							{/*</div>*/}
-						</div>
-					)}
+											<Button type="submit" name="generate" onClick={onSubmit} className="flex items-center gap-2">
+												Next <ArrowRight className="h-4 w-4" />
+											</Button>
+										</>
+									) : (
+										<>
+											<Button variant="outline" className="flex items-center gap-2" onClick={() => setScreen(() => "form")}>
+												<ArrowLeft className="h-4 w-4" /> Back
+											</Button>
+											<LoadingButton type="submit" name="create" onClick={onSubmit} loading={isSubmitting} loadingText="Creating...">
+												<Plus className="h-4 w-4" /> Create
+											</LoadingButton>
+										</>
+									)}
+								</div>
+							) : (
+								<TransactionAction currentUserId={currentUserId} transaction={kind.transaction} />
+							)}
+						</CardFooter>
+					</Card>
 				</div>
-			</Form>
-		</>
+				<DevTool control={control} />
+			</form>
+		</Form>
 	);
 };

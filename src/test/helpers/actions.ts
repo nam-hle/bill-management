@@ -11,6 +11,12 @@ export namespace Actions {
 		});
 	}
 
+	export async function goToHomePage(page: Page) {
+		await test.step(`Go to Home page`, async () => {
+			await page.goto("/");
+		});
+	}
+
 	export async function goToDashboardPage(page: Page) {
 		await test.step(`Go to Dashboard page`, async () => {
 			await page.goto("/dashboard");
@@ -53,11 +59,10 @@ export namespace Actions {
 		});
 	}
 
-	// TODO: Use sign out feature
 	export async function logout(page: Page) {
 		await test.step(`Logout`, async () => {
-			await page.context().clearCookies();
-			await page.reload();
+			await page.locator(`[data-testid="navigation-item-profile"]`).click();
+			await page.getByRole("menuitem", { name: "Log out" }).click();
 
 			await expect(page).toHaveURL("/login");
 		});
@@ -150,24 +155,38 @@ export namespace Actions {
 			});
 		}
 
+		export async function next(page: Page) {
+			await test.step("Go to QR screen", async () => {
+				await page.getByRole("main").getByRole("button", { name: "Next" }).click();
+			});
+		}
+
 		export async function selectReceiver(page: Page, receiver: string, candidateReceivers?: string[]) {
 			await selectOption(page, "Receiver", receiver, candidateReceivers);
+		}
+
+		export async function selectAccount(page: Page, account: string, candidateAccounts?: string[]) {
+			await selectOption(page, "Bank Account", account, candidateAccounts);
 		}
 
 		export async function fillAmount(page: Page, amount: string) {
 			await fillInput(page, "amount", amount);
 		}
 
-		export async function fill(page: Page, params: { amount: string; receiver: string; candidateReceivers?: string[] }) {
+		export async function fill(page: Page, params: { amount: string; account: string; receiver: string; candidateReceivers?: string[] }) {
 			await test.step(`Fill transaction form: receiver=${params.receiver}, amount= ${params.amount}`, async () => {
 				await expect(page).toHaveURL("/transactions");
 
 				await page.getByRole("link", { name: "New" }).click();
-				await expect(page.getByRole("main").getByText("New Transaction")).toBeVisible();
+				await expect(page.getByRole("main").getByText("New Transaction", { exact: true })).toBeVisible();
 
 				await selectReceiver(page, params.receiver, params.candidateReceivers);
+				await selectAccount(page, params.account);
 				await fillAmount(page, params.amount);
-				await Actions.TransactionForm.submit(page);
+				await next(page);
+
+				await expect(page.getByTestId("transaction-qr")).toBeVisible();
+				await submit(page);
 
 				await Assertions.assertToast(page, "Transaction created successfully");
 				await expect(page).toHaveURL("/transactions");

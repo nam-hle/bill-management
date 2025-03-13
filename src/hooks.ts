@@ -1,6 +1,8 @@
 import React from "react";
 import { usePathname } from "next/navigation";
 
+import { trpc } from "@/services";
+
 export function useBoolean(initialValue: boolean | (() => boolean)) {
 	const [value, setValue] = React.useState(initialValue);
 
@@ -23,4 +25,10 @@ export function useAuthenticatingPage() {
 	const pathName = usePathname();
 
 	return pathName === "/signup" || pathName === "/login";
+}
+
+export function useBanks() {
+	const { data: banks } = trpc.banks.get.useQuery();
+
+	return React.useCallback((providerNumber: string) => banks?.find((bank) => bank.providerNumber === providerNumber), [banks]);
 }

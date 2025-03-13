@@ -4,7 +4,11 @@ import { TableLocator } from "@/test/locators/table-locator";
 
 export namespace Locators {
 	export function locateErrors(page: Page) {
-		return page.getByTestId("form-error");
+		return page.locator('[data-testid^="form-error"]');
+	}
+
+	export function locateError(page: Page, fieldName: string) {
+		return page.getByTestId(`form-error-${fieldName}`);
 	}
 
 	export function locateNotifications(page: Page) {

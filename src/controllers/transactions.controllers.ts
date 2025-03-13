@@ -1,16 +1,21 @@
+import axios from "axios";
+import { type z } from "zod";
 import { TRPCError } from "@trpc/server";
 
 import { type API } from "@/api";
 import { Pagination } from "@/types";
+import { Environments } from "@/environments";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
-import { type ClientTransaction } from "@/schemas";
-import { ensureAuthorized } from "@/controllers/utils";
+import { assert, generateNumberDisplayId } from "@/utils";
+import { pickUniqueId, ensureAuthorized } from "@/controllers/utils";
 import { type MemberContext, type SupabaseInstance } from "@/services/supabase/server";
+import { type Transaction, type TransactionQRCreatePayload, type TransactionUpdatePayloadSchema } from "@/schemas";
 import { GroupController, UserControllers, BankAccountsController, NotificationsControllers } from "@/controllers";
 
 export namespace TransactionsControllers {
 	const TRANSACTIONS_SELECT = `
     id,
+    displayId:display_id,
     group:groups!group_id (${GroupController.GROUP_SELECT}),
     createdAt:created_at,
     issuedAt:issued_at,
@@ -27,15 +32,14 @@ export namespace TransactionsControllers {
 		payload: { amount: number; groupId: string; issuedAt: string; senderId: string; receiverId: string; bankAccountId: string | undefined }
 	) {
 		const { groupId: group_id, issuedAt: issued_at, senderId: sender_id, receiverId: receiver_id, bankAccountId: bank_account_id, ...rest } = payload;
-		const { data, error } = await supabase
-			.from("transactions")
-			.insert({ ...rest, group_id, issued_at, sender_id, receiver_id, bank_account_id })
-			.select("id")
-			.single();
+		const displayId = await pickUniqueId(supabase, "transactions", "display_id", generateNumberDisplayId);
 
-		if (error) {
-			throw error;
-		}
+		const { data } = await supabase
+			.from("transactions")
+			.insert({ ...rest, group_id, issued_at, sender_id, receiver_id, bank_account_id, display_id: displayId })
+			.select("id")
+			.single()
+			.throwOnError();
 
 		if (!data) {
 			throw new Error("Error creating transaction");
@@ -51,43 +55,68 @@ export namespace TransactionsControllers {
 		return data;
 	}
 
-	export async function suggest(supabase: SupabaseInstance, senderId: string): Promise<API.Transactions.Suggestion.Response> {
-		const { error, data: receivers } = await supabase
+	export async function generateQR(supabase: SupabaseInstance, payload: TransactionQRCreatePayload) {
+		const account = await BankAccountsController.getById(supabase, payload.receiverId, payload.bankAccountId);
+
+		if (!account) {
+			throw new TRPCError({ code: "NOT_FOUND", message: "Account not found" });
+		}
+
+		const vietQRPayload = {
+			addInfo: "ck",
+			format: "svg",
+			template: "print",
+			amount: payload.amount,
+			acqId: account.providerNumber,
+			accountNo: account.accountNumber,
+			accountName: account.accountHolder
+		};
+
+		const { data } = await axios.post(Environments.PRIVATE.VIETQR.URL, vietQRPayload, {
+			headers: {
+				"x-api-key": Environments.PRIVATE.VIETQR.API_KEY,
+				"x-client-id": Environments.PRIVATE.VIETQR.CLIENT_ID
+			}
+		});
+
+		if (data.code === "00") {
+			return { url: data.data.qrDataURL };
+		}
+
+		throw new Error(data.message);
+	}
+
+	export async function suggest(supabase: SupabaseInstance, senderId: string, groupId: string): Promise<API.Transactions.Suggestion.Response> {
+		const { data: receivers } = await supabase
 			.from("user_financial_summary")
 			.select("*")
+			.eq("group_id", groupId)
+			.neq("user_id", senderId)
 			.lt("balance", 0)
-			.order("balance", { ascending: true });
+			.order("balance", { ascending: true })
+			.throwOnError();
 
-		if (error) {
-			throw error;
+		for (const receiver of receivers ?? []) {
+			assert(receiver.balance && receiver.user_id);
+
+			const bankAccount = await BankAccountsController.getSuggestedAccountByUserId(supabase, receiver.user_id);
+
+			if (!bankAccount) {
+				continue;
+			}
+
+			const senderBalance = await UserControllers.reportUsingView(supabase, { groupId, userId: senderId });
+
+			return {
+				suggestion: {
+					receiverId: receiver.user_id,
+					bankAccountId: bankAccount.id,
+					amount: Math.min(Math.abs(senderBalance.net), Math.abs(receiver.balance))
+				}
+			};
 		}
 
-		if (!receivers?.length) {
-			return { suggestion: undefined };
-		}
-
-		const receiver = receivers[0];
-		const receiverBalance = receiver.balance;
-
-		if (receiverBalance === null) {
-			throw new Error("Amount is null");
-		}
-
-		if (receiver.user_id === null) {
-			throw new Error("User id is null");
-		}
-
-		const bankAccount = await BankAccountsController.getDefaultAccountByUserId(supabase, receiver.user_id);
-
-		if (!bankAccount) {
-			return { suggestion: undefined };
-		}
-
-		const senderBalance = await UserControllers.reportUsingView(supabase, { groupId: "", userId: senderId });
-
-		const amount = Math.min(Math.abs(senderBalance.net), Math.abs(receiverBalance));
-
-		return { suggestion: { amount, receiverId: receiver.user_id, bankAccountId: bankAccount.id } };
+		return { suggestion: undefined };
 	}
 
 	export async function getMany(
@@ -125,7 +154,7 @@ export namespace TransactionsControllers {
 		return { fullSize: count ?? 0, data: transactions ?? [] };
 	}
 
-	export async function update(supabase: SupabaseInstance, payload: API.Transactions.Update.Payload) {
+	export async function update(supabase: SupabaseInstance, payload: z.infer<typeof TransactionUpdatePayloadSchema>) {
 		const { status, transactionId } = payload;
 		const { data, error } = await supabase.from("transactions").update({ status }).eq("id", transactionId).select(TRANSACTIONS_SELECT).single();
 
@@ -152,8 +181,8 @@ export namespace TransactionsControllers {
 		}
 	}
 
-	export async function getById(supabase: SupabaseInstance, payload: { userId: string; transactionId: string }): Promise<ClientTransaction> {
-		const { data } = await supabase.from("transactions").select(TRANSACTIONS_SELECT).eq("id", payload.transactionId).single();
+	export async function getByDisplayId(supabase: SupabaseInstance, payload: { userId: string; displayId: string }): Promise<Transaction> {
+		const { data } = await supabase.from("transactions").select(TRANSACTIONS_SELECT).eq("display_id", payload.displayId).single().throwOnError();
 
 		if (!data) {
 			throw new TRPCError({ code: "NOT_FOUND", message: "Transaction not found" });

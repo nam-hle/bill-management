@@ -105,7 +105,7 @@ export const GroupForm: React.FC<{
 									</FormControl>
 									<FormMessage />
 								</FormItem>
-								<CopyButton text={field.value} />
+								<CopyButton value={field.value} />
 							</div>
 						)}
 					/>

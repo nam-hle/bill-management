@@ -51,8 +51,9 @@ test("Navigation", async ({ page }) => {
 	await page.getByTestId("logo").click();
 
 	await expect(page).toHaveURL("/");
-	await expect(navigationItems).toHaveCount(1);
+	await expect(navigationItems).toHaveCount(2);
 	await expect(navigationItems.first()).toHaveText("Dashboard");
+	await expect(page.locator(`[data-testid="navigation-item-profile"]`)).toBeVisible();
 
 	await navigationItems.first().click();
 	await expect(page).toHaveURL("/dashboard");

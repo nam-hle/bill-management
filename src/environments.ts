@@ -2,6 +2,8 @@ export const Environments = {
 	PRIVATE: {
 		VIETQR: {
 			API_KEY: process.env.VIETQR_API_KEY!,
+			URL: "http://localhost:3001/v2/generate",
+			// URL: "https://api.vietqr.io/v2/generate",
 			CLIENT_ID: process.env.VIETQR_CLIENT_ID!
 		}
 	},

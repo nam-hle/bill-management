@@ -20,7 +20,7 @@ const profiles = {
 		port: LOCAL_PORT,
 		reporter: "html",
 		forbidOnly: false,
-		expectTimeout: 10_000,
+		expectTimeout: 5_000,
 		reuseExistingServer: true,
 		timeout: PROD ? 30_000 : 90_000,
 		command: PROD ? "pnpm start" : "pnpm dev"
@@ -54,12 +54,19 @@ export default defineConfig({
 		baseURL: `http://127.0.0.1:${profile.port}`
 	},
 
-	webServer: {
-		stdout: "pipe",
-		stderr: "pipe",
-		timeout: 60_000,
-		command: profile.command,
-		url: `http://127.0.0.1:${profile.port}`,
-		reuseExistingServer: profile.reuseExistingServer
-	}
+	webServer: [
+		{
+			stdout: "pipe",
+			stderr: "pipe",
+			timeout: 60_000,
+			command: profile.command,
+			url: `http://127.0.0.1:${profile.port}`,
+			reuseExistingServer: profile.reuseExistingServer
+		},
+		{
+			reuseExistingServer: true,
+			url: `http://127.0.0.1:3001`,
+			command: "pnpm start:qr-server"
+		}
+	]
 });
