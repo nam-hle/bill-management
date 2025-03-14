@@ -44,10 +44,9 @@ test("Group Integration", async ({ page }) => {
 	await test.step("Harry invites Ron and Hermione", async () => {
 		await expect(page).toHaveURL(/\/groups\/\d{8}$/);
 
-		gryffindorGroupId = (await page.getByRole("textbox").nth(0).getAttribute("value")) ?? "";
+		gryffindorGroupId = page.url().split("/groups/")[1];
 
-		// Flaky
-		// expect(gryffindorGroupId).toMatch(/\d{8}/);
+		await expect(page.getByRole("textbox").first()).toHaveAttribute("value", gryffindorGroupId);
 
 		await expect(page.getByRole("textbox", { name: "Name" })).toHaveValue("Gryffindor");
 
