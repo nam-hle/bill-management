@@ -11,9 +11,9 @@ export namespace Actions {
 		});
 	}
 
-	export async function goToHomePage(page: Page) {
-		await test.step(`Go to Home page`, async () => {
-			await page.goto("/");
+	export async function goToDashboardPage(page: Page) {
+		await test.step(`Go to Dashboard page`, async () => {
+			await page.goto("/dashboard");
 		});
 	}
 
@@ -49,7 +49,7 @@ export namespace Actions {
 			await fillInput(page, "password", DEFAULT_PASSWORD);
 
 			await submit(page);
-			await expect(page).toHaveURL("/");
+			await expect(page).toHaveURL("/dashboard");
 		});
 	}
 

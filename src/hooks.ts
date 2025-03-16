@@ -1,4 +1,5 @@
 import React from "react";
+import { usePathname } from "next/navigation";
 
 export function useBoolean(initialValue: boolean | (() => boolean)) {
 	const [value, setValue] = React.useState(initialValue);
@@ -10,4 +11,16 @@ export function useBoolean(initialValue: boolean | (() => boolean)) {
 	return React.useMemo(() => {
 		return [value, { setTrue, setFalse, setValue, toggleValue }] as const;
 	}, [setFalse, setTrue, toggleValue, value]);
+}
+
+export function useHomePage() {
+	const pathName = usePathname();
+
+	return pathName === "/";
+}
+
+export function useAuthenticatingPage() {
+	const pathName = usePathname();
+
+	return pathName === "/signup" || pathName === "/login";
 }

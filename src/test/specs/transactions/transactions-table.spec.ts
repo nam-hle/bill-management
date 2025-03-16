@@ -62,7 +62,7 @@ test("basic", async ({ page }) => {
 		rows: [{ amount: "45", status: "Waiting", action: "Decline", issuedAt: "Today", sender: FULL_NAMES.harry, receiver: FULL_NAMES.hermione }]
 	});
 
-	await Actions.goToHomePage(page);
+	await Actions.goToDashboardPage(page);
 	await Assertions.assertStats(page, { Sent: "89.000", Received: "166.000", "Net Balance": "77.000" });
 	// TODO: Enable
 	// const recentTable = await Locators.locateTable(page, 1);

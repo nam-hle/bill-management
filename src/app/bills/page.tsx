@@ -6,7 +6,7 @@ import { type Metadata } from "next";
 import { Button } from "@/components/shadcn/button";
 
 import { BillsTable } from "@/components/tables";
-import { GroupSelectionGuard } from "@/components/layouts/group-selection-guard";
+import { GroupSelectionGuard } from "@/components/layouts/guards/group-selection-guard";
 
 import { getCurrentUser } from "@/services/supabase/server";
 

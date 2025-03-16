@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { TRPCError } from "@trpc/server";
 
 import { BillForm } from "@/components/forms/bill-form";
-import { NotFoundMessage } from "@/components/layouts/not-found-message";
-import { ForbiddenMessage } from "@/components/layouts/forbidden-message";
-import { CorrectGroupGuard } from "@/components/layouts/correct-group-guard";
+import { NotFoundMessage } from "@/components/layouts/messages/not-found-message";
+import { ForbiddenMessage } from "@/components/layouts/messages/forbidden-message";
+import { CorrectGroupGuard } from "@/components/layouts/guards/correct-group-guard";
 
 import { createCaller } from "@/services/trpc/caller";
 

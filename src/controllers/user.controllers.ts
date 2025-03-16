@@ -1,3 +1,5 @@
+import { revalidatePath } from "next/cache";
+
 import { assert } from "@/utils";
 import { type Balance } from "@/types";
 import { GroupController } from "@/controllers";
@@ -143,6 +145,18 @@ export namespace UserControllers {
 		}
 
 		return { ok: true };
+	}
+
+	export async function logout(supabase: SupabaseInstance) {
+		const {
+			data: { user }
+		} = await supabase.auth.getUser();
+
+		if (user) {
+			await supabase.auth.signOut();
+		}
+
+		revalidatePath("/", "layout");
 	}
 
 	export async function login(supabase: SupabaseInstance, payload: LoginFormState): Promise<TrpcResponse> {

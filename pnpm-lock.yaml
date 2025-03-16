@@ -187,8 +187,8 @@ importers:
         specifier: ^0.6.11
         version: 0.6.11(prettier@3.5.1)
       supabase:
-        specifier: ^2.2.1
-        version: 2.2.1
+        specifier: ^2.19.7
+        version: 2.19.7
       tailwindcss:
         specifier: ^3.4.17
         version: 3.4.17
@@ -3313,8 +3313,8 @@ packages:
   summary@2.1.0:
     resolution: {integrity: sha512-nMIjMrd5Z2nuB2RZCKJfFMjgS3fygbeyGk9PxPPaJR1RIcyN9yn4A63Isovzm3ZtQuEkLBVgMdPup8UeLH7aQw==}
 
-  supabase@2.2.1:
-    resolution: {integrity: sha512-uTu8f4kT9wE3EEQTAJAWFlHyu8ymauFxWEz2FDGIQ2MzlD1Xb1NCHtsj/xvmJWqrGI1jnBYcPuatZVTHj1jR1g==}
+  supabase@2.19.7:
+    resolution: {integrity: sha512-+Qu5xHvk/CnAHb5iDpCWCX0SdwFR5smpTG6VUSTw/T8WxCDDQsIb2mui2pu18wqKOZ0NLs/ZTDDb2+yPejTRBQ==}
     engines: {npm: '>=8'}
     hasBin: true
 
@@ -6832,7 +6832,7 @@ snapshots:
 
   summary@2.1.0: {}
 
-  supabase@2.2.1:
+  supabase@2.19.7:
     dependencies:
       bin-links: 5.0.0
       https-proxy-agent: 7.0.6

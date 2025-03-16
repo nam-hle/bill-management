@@ -29,6 +29,7 @@ export const GroupSwitcher = () => {
 					variant="outline"
 					aria-expanded={open}
 					aria-label="No selected group"
+					data-testid="navigation-item-group-switcher"
 					className={cn("h-12 w-[250px] justify-between")}>
 					{selectedGroup ? (
 						<div className="flex flex-col items-start">

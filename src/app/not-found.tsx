@@ -1,5 +1,5 @@
-import { NotFoundMessage } from "@/components/layouts/not-found-message";
+import { NotFoundMessage } from "@/components/layouts/messages/not-found-message";
 
-export default function NotFound() {
+export default function NotFoundPage() {
 	return <NotFoundMessage />;
 }

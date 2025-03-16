@@ -343,7 +343,7 @@ testBillsPage("Navigate with query", async ({ page, billsTableLocator }) => {
 });
 
 testBillsPage("Balance", async ({ page }) => {
-	await Actions.goToHomePage(page);
+	await Actions.goToDashboardPage(page);
 
 	await Assertions.assertStats(page, { Paid: "340.000", Owed: "120.000", "Net Balance": "220.000" });
 });

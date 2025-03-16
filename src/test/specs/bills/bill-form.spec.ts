@@ -151,7 +151,7 @@ test.describe("basic", () => {
 
 			await expect(page).toHaveURL("/bills");
 
-			await Actions.goToHomePage(page);
+			await Actions.goToDashboardPage(page);
 
 			await Assertions.assertBillsCardList(page, testCase.expectedRecentTable);
 			await Assertions.assertStats(page, testCase.statsExpectation);
