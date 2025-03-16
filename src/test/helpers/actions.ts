@@ -53,10 +53,11 @@ export namespace Actions {
 		});
 	}
 
+	// TODO: Use sign out feature
 	export async function logout(page: Page) {
 		await test.step(`Logout`, async () => {
-			await page.locator(`[data-testid="navigation-item-profile"]`).click();
-			await page.getByRole("menuitem", { name: "Log out" }).click();
+			await page.context().clearCookies();
+			await page.reload();
 
 			await expect(page).toHaveURL("/login");
 		});

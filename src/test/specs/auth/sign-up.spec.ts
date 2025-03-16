@@ -6,7 +6,8 @@ import { FULL_NAMES, DEFAULT_PASSWORD } from "@/test/utils";
 
 test("Sign up", async ({ page }) => {
 	await Actions.goToDashboardPage(page);
-	await page.getByText("Login").click();
+	await expect(page).toHaveURL("/login");
+
 	await page.getByText("Sign up").click();
 	await expect(page).toHaveURL("/signup");
 

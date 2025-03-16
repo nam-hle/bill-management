@@ -103,7 +103,6 @@ test.describe("Bill Details Page", () => {
 		await expect(page.getByText("Access Denied")).toBeVisible();
 	});
 
-	// TODO: Check if we can allow sender and receiver to access the page only
 	test("Group members can access the page but require select that group", async ({ page }) => {
 		for (const username of [USERNAMES.harry, USERNAMES.ron, USERNAMES.hermione]) {
 			await preset.requesters[username].user.selectGroup.mutate({ groupId: null });

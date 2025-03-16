@@ -3,9 +3,7 @@ import { type BasicPreset } from "@/test/functions/seed-basic-preset";
 
 export async function selectGroup(preset: BasicPreset, options?: Partial<Record<UserName, GroupName | null>>) {
 	if (options === undefined) {
-		for (const requester of Object.values(preset.requesters)) {
-			await requester.user.selectGroup.mutate({ groupId: preset.groups.Hogwarts.id });
-		}
+		await Promise.all(Object.values(preset.requesters).map((requester) => requester.user.selectGroup.mutate({ groupId: preset.groups.Hogwarts.id })));
 
 		return;
 	}
