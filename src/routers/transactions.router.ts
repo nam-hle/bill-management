@@ -3,7 +3,13 @@ import { z } from "zod";
 import { API } from "@/api";
 import { TransactionsControllers } from "@/controllers";
 import { router, privateProcedure, withSelectedGroup } from "@/services/trpc/server";
-import { TransactionSchema, TransactionCreatePayloadSchema, TransactionUpdatePayloadSchema, TransactionQRCreatePayloadSchema } from "@/schemas";
+import {
+	TransactionSchema,
+	TransactionSuggestionSchema,
+	TransactionCreatePayloadSchema,
+	TransactionUpdatePayloadSchema,
+	TransactionQRCreatePayloadSchema
+} from "@/schemas";
 
 export const transactionsRouter = router({
 	get: privateProcedure
@@ -22,7 +28,7 @@ export const transactionsRouter = router({
 		.mutation(({ input, ctx: { supabase } }) => TransactionsControllers.update(supabase, input)),
 	suggest: privateProcedure
 		.use(withSelectedGroup)
-		.output(API.Transactions.Suggestion.ResponseSchema)
+		.output(TransactionSuggestionSchema)
 		.mutation(({ ctx: { user, supabase } }) => TransactionsControllers.suggest(supabase, user.id, user.group.id)),
 	generateQR: privateProcedure
 		.use(withSelectedGroup)

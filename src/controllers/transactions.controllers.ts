@@ -9,8 +9,8 @@ import { DEFAULT_PAGE_NUMBER } from "@/constants";
 import { assert, generateNumberDisplayId } from "@/utils";
 import { pickUniqueId, ensureAuthorized } from "@/controllers/utils";
 import { type MemberContext, type SupabaseInstance } from "@/services/supabase/server";
-import { type Transaction, type TransactionQRCreatePayload, type TransactionUpdatePayloadSchema } from "@/schemas";
 import { GroupController, UserControllers, BankAccountsController, NotificationsControllers } from "@/controllers";
+import { type Transaction, type TransactionSuggestion, type TransactionQRCreatePayload, type TransactionUpdatePayloadSchema } from "@/schemas";
 
 export namespace TransactionsControllers {
 	const TRANSACTIONS_SELECT = `
@@ -86,7 +86,7 @@ export namespace TransactionsControllers {
 		throw new Error(data.message);
 	}
 
-	export async function suggest(supabase: SupabaseInstance, senderId: string, groupId: string): Promise<API.Transactions.Suggestion.Response> {
+	export async function suggest(supabase: SupabaseInstance, senderId: string, groupId: string): Promise<TransactionSuggestion> {
 		const { data: receivers } = await supabase
 			.from("user_financial_summary")
 			.select("*")

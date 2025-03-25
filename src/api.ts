@@ -65,19 +65,6 @@ export namespace API {
 	}
 
 	export namespace Transactions {
-		export namespace Suggestion {
-			export const ResponseSchema = z.object({
-				suggestion: z
-					.object({
-						amount: z.number(),
-						receiverId: z.string(),
-						bankAccountId: z.string()
-					})
-					.optional()
-			});
-
-			export type Response = z.infer<typeof ResponseSchema>;
-		}
 		export namespace List {
 			export const PayloadSchema = z.object({
 				senderId: z.string().optional(),

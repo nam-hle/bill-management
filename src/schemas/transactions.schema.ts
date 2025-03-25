@@ -39,6 +39,11 @@ export const TransactionUpdatePayloadSchema = z.object({
 	status: TransactionStatusEnumSchema.exclude(["Waiting"])
 });
 
+export const TransactionSuggestionSchema = z.object({
+	suggestion: z.object({ amount: z.number(), receiverId: z.string(), bankAccountId: z.string() }).optional()
+});
+export type TransactionSuggestion = z.infer<typeof TransactionSuggestionSchema>;
+
 export const TransactionQRCreatePayloadSchema = z
 	.object({
 		amount: z.number(),
