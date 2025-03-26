@@ -1,33 +1,49 @@
 "use client";
 
-import { useState } from "react";
-import { Check } from "lucide-react";
+import React, { useState } from "react";
+import { Copy, Check } from "lucide-react";
 
-import { Button } from "@/components/shadcn/button";
+import { Button, type ButtonProps } from "@/components/shadcn/button";
 
-export const CopyButton = ({ text }: { text: string }) => {
+namespace CopyButton {
+	export interface Props extends ButtonProps {
+		value: string;
+		displayValue?: string;
+		onCopied?: () => void;
+	}
+}
+
+export const CopyButton = ({ value, onCopied, displayValue, size = "icon", className = "", variant = "ghost" }: CopyButton.Props) => {
 	const [copied, setCopied] = useState(false);
 
-	const handleCopy = async () => {
-		try {
-			await navigator.clipboard.writeText(text);
-			setCopied(true);
-			setTimeout(() => setCopied(false), 2000);
-		} catch (err) {
-			// eslint-disable-next-line no-console
-			console.error("Failed to copy:", err);
-		}
+	const handleCopy = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		navigator.clipboard.writeText(value);
+		setCopied(true);
+		onCopied?.();
+
+		setTimeout(() => {
+			setCopied(false);
+		}, 2000);
 	};
 
 	return (
-		<Button size="sm" variant="outline" onClick={handleCopy}>
+		<Button
+			size={size}
+			variant={variant}
+			onClick={handleCopy}
+			title={`Copy ${displayValue || value}`}
+			className={`${size === "icon" ? "h-6 w-6" : ""} ${className}`}>
 			{copied ? (
 				<>
-					<Check />
-					Copied
+					<Check className="h-3 w-3" />
+					{size !== "icon" && <span className="ml-2">Copied!</span>}
 				</>
 			) : (
-				"Copy"
+				<>
+					<Copy className="h-3 w-3" />
+					{size !== "icon" && <span className="ml-2">Copy</span>}
+				</>
 			)}
 		</Button>
 	);

@@ -34,3 +34,9 @@ export const USERNAMES = {
 export function getCurrentDate() {
 	return format(new Date(), SERVER_DATE_FORMAT);
 }
+
+export const BANKS = {
+	BIDV: { id: "970418", name: "BIDV" },
+	Vietinbank: { id: "970415", name: "Vietinbank" },
+	Vietcombank: { id: "970436", name: "Vietcombank" }
+};

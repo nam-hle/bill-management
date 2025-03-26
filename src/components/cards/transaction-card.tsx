@@ -6,10 +6,10 @@ import { FallbackAvatar } from "@/components/avatars/fallbackable-avatar";
 import { TransactionStatusBadge } from "@/components/mics/transaction-status-badge";
 
 import { formatTime } from "@/utils";
+import { type Transaction } from "@/schemas";
 import { formatCurrency } from "@/utils/format";
-import { type ClientTransaction } from "@/schemas";
 
-export const TransactionCard = ({ transaction, currentUserId }: { currentUserId: string; transaction: ClientTransaction }) => {
+export const TransactionCard = ({ transaction, currentUserId }: { currentUserId: string; transaction: Transaction }) => {
 	const isReceived = transaction.receiver.userId === currentUserId;
 	const other = isReceived ? transaction.sender : transaction.receiver;
 

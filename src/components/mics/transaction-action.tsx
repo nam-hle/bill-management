@@ -1,17 +1,18 @@
 import React from "react";
 import { toast } from "sonner";
+import { X, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/shadcn/button";
 
 import { trpc } from "@/services";
 import { capitalize, convertVerb } from "@/utils";
-import { type ClientTransaction, TransactionStatusEnumSchema } from "@/schemas";
+import { type Transaction, TransactionStatusEnumSchema } from "@/schemas";
 
 namespace TransactionAction {
 	export interface Props {
 		readonly currentUserId: string;
-		readonly transaction: ClientTransaction;
+		readonly transaction: Transaction;
 	}
 }
 
@@ -19,7 +20,7 @@ export const TransactionAction: React.FC<TransactionAction.Props> = ({ transacti
 	const router = useRouter();
 	const utils = trpc.useUtils();
 
-	const mutation = trpc.transactions.update.useMutation({
+	const update = trpc.transactions.update.useMutation({
 		onError: (_, { status }) => {
 			toast.error(`Transaction ${capitalize(convertVerb(status).pastTense)}`);
 		},
@@ -28,7 +29,7 @@ export const TransactionAction: React.FC<TransactionAction.Props> = ({ transacti
 				description: `The transaction has been ${convertVerb(status).pastTense} successfully`
 			});
 
-			utils.transactions.getMany.invalidate().then(() => router.refresh());
+			utils.transactions.invalidate().then(() => router.refresh());
 		}
 	});
 
@@ -36,11 +37,12 @@ export const TransactionAction: React.FC<TransactionAction.Props> = ({ transacti
 		return (
 			<Button
 				size="sm"
+				className="w-full"
 				onClick={(event) => {
 					event.stopPropagation();
-					mutation.mutate({ status: "Confirmed", transactionId: transaction.id });
+					update.mutate({ status: "Confirmed", transactionId: transaction.id });
 				}}>
-				Confirm
+				<Check /> Confirm
 			</Button>
 		);
 	}
@@ -49,12 +51,13 @@ export const TransactionAction: React.FC<TransactionAction.Props> = ({ transacti
 		return (
 			<Button
 				size="sm"
+				className="w-full"
 				variant="destructive"
 				onClick={(event) => {
 					event.stopPropagation();
-					mutation.mutate({ status: "Declined", transactionId: transaction.id });
+					update.mutate({ status: "Declined", transactionId: transaction.id });
 				}}>
-				Decline
+				<X /> Decline
 			</Button>
 		);
 	}

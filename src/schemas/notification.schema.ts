@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import type { Database } from "@/database.types";
 import { JsonSchema } from "@/schemas/base.schema";
-import { ClientTransactionSchema } from "@/schemas/transactions.schema";
+import { TransactionSchema } from "@/schemas/transactions.schema";
 import { ClientBillSchema, BillMemberRoleSchema } from "@/schemas/bills.schema";
 
 const NotificationTypeSchema = z.enum([
@@ -73,19 +73,19 @@ const BillUpdatedNotificationSchema = BaseClientNotificationSchema.extend({
 export type BillUpdatedNotification = z.infer<typeof BillUpdatedNotificationSchema>;
 
 const TransactionWaitingNotificationSchema = BaseClientNotificationSchema.extend({
-	transaction: ClientTransactionSchema,
+	transaction: TransactionSchema,
 	type: z.literal("TransactionWaiting")
 });
 export type TransactionWaitingNotification = z.infer<typeof TransactionWaitingNotificationSchema>;
 
 const TransactionConfirmedNotificationSchema = BaseClientNotificationSchema.extend({
-	transaction: ClientTransactionSchema,
+	transaction: TransactionSchema,
 	type: z.literal("TransactionConfirmed")
 });
 export type TransactionConfirmedNotification = z.infer<typeof TransactionConfirmedNotificationSchema>;
 
 const TransactionDeclinedNotificationSchema = BaseClientNotificationSchema.extend({
-	transaction: ClientTransactionSchema,
+	transaction: TransactionSchema,
 	type: z.literal("TransactionDeclined")
 });
 export type TransactionDeclinedNotification = z.infer<typeof TransactionDeclinedNotificationSchema>;

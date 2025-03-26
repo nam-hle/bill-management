@@ -28,8 +28,8 @@ export namespace DataTable {
 		readonly key: string;
 		readonly label: string;
 		readonly alignment?: "left" | "center" | "right";
-		readonly titleGetter?: (params: { row: RowType }) => string;
 		readonly dataGetter: (params: { row: RowType }) => React.ReactNode;
+		readonly titleGetter?: (params: { row: RowType }) => string | undefined;
 	}
 }
 
@@ -55,7 +55,7 @@ export function DataTable<
 			<div className="rounded-md border">
 				<Table data-testid={`table__${data === undefined ? "loading" : "settled"}`}>
 					<TableHeader>
-						<TableRow className="h-12">
+						<TableRow className={`h-${props.rowHeight ?? 16}`}>
 							{columns.map((column) => {
 								return (
 									<TableHead key={column.key} className={`text-${column.alignment ?? "left"}`}>

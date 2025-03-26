@@ -7,21 +7,24 @@ import { FormControl, FormMessage } from "@/components/shadcn/form";
 
 namespace Select {
 	export interface Props {
-		name?: string;
-		disabled?: boolean;
-		value: string | undefined;
-		onValueChange: (value: string) => void;
-		items: { value: string; label: string }[];
+		readonly name?: string;
+		readonly disabled?: boolean;
+		readonly value: string | undefined;
+		readonly emptyPlaceholder?: string;
+		readonly onValueChange: (value: string) => void;
+		readonly items: { value: string; label: string }[];
 	}
 }
 
 export const Select: React.FC<Select.Props> = (props) => {
+	const { items, emptyPlaceholder, ...rest } = props;
+
 	return (
 		<>
-			<ShadCN.Select name={props.name} value={props.value} onValueChange={props.onValueChange} disabled={props.disabled || props.items.length === 0}>
+			<ShadCN.Select {...rest}>
 				<FormControl>
 					<ShadCN.SelectTrigger className="w-full">
-						<ShadCN.SelectValue placeholder="Select one" />
+						<ShadCN.SelectValue placeholder={(items.length === 0 && emptyPlaceholder) || "Select one"} />
 					</ShadCN.SelectTrigger>
 				</FormControl>
 				<ShadCN.SelectContent>

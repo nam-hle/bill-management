@@ -7,6 +7,7 @@ import {
 	type Group,
 	type UserMeta,
 	type Membership,
+	type UserFinance,
 	type GroupDetails,
 	type MembershipKey,
 	type MembershipStatus,
@@ -85,6 +86,21 @@ export namespace GroupController {
 			}
 
 			return user;
+		});
+	}
+
+	export async function getUserFinances(supabase: SupabaseInstance, payload: { groupId: string; exclusions?: string[] }): Promise<UserFinance[]> {
+		const activeMembers = await getActiveMembers(supabase, payload);
+
+		const { data: balances } = await supabase
+			.from("user_financial_summary")
+			.select("balance, user_id")
+			.eq("group_id", payload.groupId)
+			.order("balance", { ascending: true })
+			.throwOnError();
+
+		return activeMembers.map(({ userId, fullName }) => {
+			return { userId, fullName, balance: balances?.find((balance) => balance.user_id === userId)?.balance ?? 0 };
 		});
 	}
 

@@ -2,13 +2,13 @@ import { test, expect } from "@playwright/test";
 
 import { Actions } from "@/test/helpers/actions";
 import { Locators } from "@/test/helpers/locators";
-import { USERNAMES, FULL_NAMES } from "@/test/utils";
 import { truncate } from "@/test/functions/truncate";
+import { USERNAMES, FULL_NAMES } from "@/test/utils";
 import { seedBasicPreset } from "@/test/functions/seed-basic-preset";
 
 test.beforeAll("Setup", async () => {
 	await truncate();
-	await seedBasicPreset();
+	await seedBasicPreset({ withBankAccounts: true });
 });
 
 test.beforeEach(async ({ page }) => {
@@ -17,44 +17,42 @@ test.beforeEach(async ({ page }) => {
 	await page.getByRole("link", { name: "New" }).click();
 });
 
-const ERRORS = {
-	MISSING_AMOUNT: "Amount is required",
-	MISSING_RECEIVER: "Receiver is required",
-	INVALID_AMOUNT: "The amount must be a number greater than zero"
-};
-
-const INITIAL_ERRORS = [ERRORS.MISSING_RECEIVER, ERRORS.MISSING_AMOUNT];
-
 test.describe("validation", () => {
 	test("Empty form", async ({ page }) => {
-		await Actions.TransactionForm.submit(page);
+		await Actions.TransactionForm.next(page);
 
-		const errors = Locators.locateErrors(page);
-
-		expect(await errors.allTextContents()).toEqual(INITIAL_ERRORS);
+		await expect(Locators.locateErrors(page)).toHaveCount(3);
+		await expect(Locators.locateError(page, "receiverId")).toHaveText("Receiver is required");
+		await expect(Locators.locateError(page, "bankAccountId")).toHaveText("Bank account is required");
+		await expect(Locators.locateError(page, "amount")).toHaveText("Amount is required");
 	});
 
 	test("Receiver", async ({ page }) => {
-		await Actions.TransactionForm.submit(page);
-		await Actions.TransactionForm.selectReceiver(page, FULL_NAMES.hermione);
+		await Actions.TransactionForm.next(page);
+		await Actions.TransactionForm.selectReceiver(page, FULL_NAMES.ron);
 
-		const errors = Locators.locateErrors(page);
+		await expect(Locators.locateErrors(page)).toHaveCount(2);
+		await expect(Locators.locateError(page, "bankAccountId")).toHaveText("Bank account is required");
+		await expect(Locators.locateError(page, "amount")).toHaveText("Amount is required");
+	});
 
-		expect(await errors.allTextContents()).toEqual([ERRORS.MISSING_AMOUNT]);
+	test("Bank account", async ({ page }) => {
+		await Actions.TransactionForm.next(page);
+		await Actions.TransactionForm.selectReceiver(page, FULL_NAMES.ron);
+		await Actions.TransactionForm.selectAccount(page, `${FULL_NAMES.ron} BIDV (BIDV 100000)`);
+
+		await expect(Locators.locateErrors(page)).toHaveCount(1);
+		await expect(Locators.locateError(page, "amount")).toHaveText("Amount is required");
 	});
 
 	test("Amount", async ({ page }) => {
-		await Actions.TransactionForm.submit(page);
-		await Actions.TransactionForm.fillAmount(page, "90");
-
-		const errors = Locators.locateErrors(page);
-
-		expect(await errors.allTextContents()).toEqual([ERRORS.MISSING_RECEIVER]);
-
-		await Actions.TransactionForm.fillAmount(page, "");
-		expect(await errors.allTextContents()).toEqual(INITIAL_ERRORS);
+		await Actions.TransactionForm.next(page);
+		await expect(Locators.locateError(page, "amount")).toHaveText("Amount is required");
 
 		await Actions.TransactionForm.fillAmount(page, "abc");
-		expect(await errors.allTextContents()).toEqual([ERRORS.MISSING_RECEIVER, ERRORS.INVALID_AMOUNT]);
+		await expect(Locators.locateError(page, "amount")).toHaveText("The amount must be a number greater than zero");
+
+		await Actions.TransactionForm.fillAmount(page, "-123");
+		await expect(Locators.locateError(page, "amount")).toHaveText("The amount must be a number greater than zero");
 	});
 });

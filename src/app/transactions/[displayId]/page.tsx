@@ -16,17 +16,21 @@ export const metadata: Metadata = {
 
 namespace TransactionDetailsPage {
 	export interface Props {
-		params: Promise<{ id: string }>;
+		params: Promise<{ displayId: string }>;
 	}
 }
 
 export default async function TransactionDetailsPage(props: TransactionDetailsPage.Props) {
-	const transactionId = (await props.params).id;
+	const displayId = (await props.params).displayId;
 	const { id } = await getCurrentUser();
+
+	if (displayId === "installHook.js.map") {
+		return null;
+	}
 
 	try {
 		const caller = await createCaller();
-		const transaction = await caller.transactions.get({ transactionId });
+		const transaction = await caller.transactions.get({ displayId });
 
 		return (
 			<CorrectGroupGuard expectedGroup={transaction.group}>

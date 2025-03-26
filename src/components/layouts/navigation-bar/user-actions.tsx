@@ -16,9 +16,12 @@ export const UserActions = () => {
 
 	if (homePage) {
 		return (
-			<Button asChild size="sm" data-testid="navigation-item-dashboard">
-				<Link href="/dashboard">Dashboard</Link>
-			</Button>
+			<>
+				<Button asChild size="sm" data-testid="navigation-item-dashboard">
+					<Link href="/dashboard">Dashboard</Link>
+				</Button>
+				<AvatarContainer />
+			</>
 		);
 	}
 
