@@ -14,7 +14,7 @@ export const TransactionCard = ({ transaction, currentUserId }: { currentUserId:
 	const other = isReceived ? transaction.sender : transaction.receiver;
 
 	return (
-		<Link passHref prefetch legacyBehavior href={`/transactions/${transaction.id}`}>
+		<Link passHref prefetch legacyBehavior href={`/transactions/${transaction.displayId}`}>
 			<Card className="w-full cursor-pointer hover:border-gray-500">
 				<CardContent className="p-4">
 					<div className="flex items-center space-x-4">

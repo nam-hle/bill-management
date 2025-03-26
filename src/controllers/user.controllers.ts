@@ -16,13 +16,13 @@ import {
 } from "@/schemas";
 
 export namespace UserControllers {
-	export const USER_META_SELECT = `
+	export const USER_META_BASE_SELECT = `
     userId:id,
     fullName:full_name
   `;
 
-	export const AVATAR_USER_SELECT = `
-	  ${USER_META_SELECT},
+	export const USER_META_SELECT = `
+	  ${USER_META_BASE_SELECT},
     avatarFile:avatar_file
   `;
 
@@ -31,7 +31,7 @@ export namespace UserControllers {
 			.from("profiles")
 			.update({ full_name: payload.fullName, avatar_file: payload.avatarFile })
 			.eq("id", userId)
-			.select(AVATAR_USER_SELECT)
+			.select(USER_META_SELECT)
 			.single()
 			.throwOnError();
 
@@ -53,7 +53,7 @@ export namespace UserControllers {
 	}
 
 	export async function getProfile(supabase: SupabaseInstance, userId: string): Promise<Profile> {
-		const { data: profile } = await supabase.from("profiles").select(AVATAR_USER_SELECT).eq("id", userId).single().throwOnError();
+		const { data: profile } = await supabase.from("profiles").select(USER_META_SELECT).eq("id", userId).single().throwOnError();
 
 		if (!profile) {
 			throw new Error("Profile not found");
@@ -128,7 +128,7 @@ export namespace UserControllers {
 	export async function findByName(supabase: SupabaseInstance, payload: { textSearch: string }) {
 		const { data, count } = await supabase
 			.from("profiles")
-			.select(AVATAR_USER_SELECT)
+			.select(USER_META_SELECT)
 			.filter("full_name", "ilike", `%${payload.textSearch}%`)
 			.throwOnError();
 

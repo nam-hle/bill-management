@@ -2,8 +2,8 @@ import React from "react";
 
 import { cn } from "@/utils/cn";
 
-export const CounterBadge: React.FC<{ count: number }> = ({ count }) => {
-	if (count === 0) {
+export const CounterBadge: React.FC<{ count: number | undefined }> = ({ count }) => {
+	if (count === 0 || count === undefined) {
 		return null;
 	}
 

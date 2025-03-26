@@ -27,7 +27,7 @@ export const NotificationMessage: React.FC<NotificationMessage.Props> = (props) 
 
 	const router = useRouter();
 	const link = React.useMemo(() => renderLink(notification), [notification]);
-	const message = React.useMemo(() => transformMessage(renderMessage(notification)), [notification]);
+	const message = React.useMemo(() => renderMessage(notification), [notification]);
 
 	return (
 		<div
@@ -59,13 +59,13 @@ function renderLink(notification: ClientNotification) {
 		case "TransactionWaiting":
 		case "TransactionConfirmed":
 		case "TransactionDeclined":
-			return `/transactions/${notification.transaction.id}`;
+			return `/transactions/${notification.transaction.displayId}`;
 		default:
 			return undefined;
 	}
 }
 
-function renderMessage(notification: ClientNotification) {
+function computeMessage(notification: ClientNotification) {
 	switch (notification.type) {
 		case "BillCreated":
 			return renderBillCreatedMessage(notification);
@@ -136,4 +136,8 @@ function transformMessage(text: string) {
 
 		return part;
 	});
+}
+
+export function renderMessage(notification: ClientNotification) {
+	return transformMessage(computeMessage(notification));
 }

@@ -4,7 +4,7 @@ import { seedBasicPreset } from "@/test/functions/seed-basic-preset";
 
 async function main() {
 	try {
-		await seedBasicPreset();
+		await seedBasicPreset({ withBankAccounts: true });
 	} catch (error) {
 		console.error("Error creating user:", error);
 	}

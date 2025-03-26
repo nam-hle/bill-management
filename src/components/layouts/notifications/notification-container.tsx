@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { Bell } from "lucide-react";
 
 import { Button } from "@/components/shadcn/button";
@@ -9,79 +10,22 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/pop
 
 import { Message } from "@/components/mics/message";
 import { CounterBadge } from "@/components/mics/counter-badge";
-import { NotificationMessage } from "@/components/layouts/notifications/notification-message";
+import { renderMessage, NotificationMessage } from "@/components/layouts/notifications/notification-message";
 
-import { type API } from "@/api";
 import { trpc } from "@/services";
-import { type ClientNotification } from "@/schemas";
 
 export const NotificationContainer = () => {
-	const [unreadCount, setUnreadCount] = React.useState(0);
-	const [notifications, setNotifications] = React.useState<ClientNotification[]>([]);
-	const [hasOlder, setHasOlder] = React.useState(true);
-	const [_initialized, setInitialize] = React.useState(false);
+	useSubscription();
+	const { read, readAll } = useMutation();
 
-	const { mutate: readAll } = trpc.notifications.readAll.useMutation({
-		onSuccess() {
-			setUnreadCount(0);
-			setNotifications((prev) => prev.map((notification) => ({ ...notification, readStatus: true })));
-		}
-	});
-	const { mutate: read } = trpc.notifications.read.useMutation({
-		onSuccess({ unreadCount }, { notificationId }) {
-			setUnreadCount(() => unreadCount);
-			setNotifications((prev) =>
-				prev.map((notification) => (notification.id === notificationId ? { ...notification, readStatus: true } : notification))
-			);
-		}
-	});
+	const {
+		hasNextPage,
+		fetchNextPage,
+		data: initialData,
+		isFetchingPreviousPage
+	} = trpc.notifications.getInfinite.useInfiniteQuery({}, { getNextPageParam: (lastPage) => lastPage.nextCursor });
 
-	const updateNotifications = React.useCallback((type: "append" | "prepend", response: API.Notifications.List.Response) => {
-		setHasOlder((prev) => response.hasOlder ?? prev);
-		setUnreadCount(response.unreadCount);
-		setNotifications((prev) => {
-			return type === "append" ? [...prev, ...response.notifications] : [...response.notifications, ...prev];
-		});
-	}, []);
-
-	const { oldestTimestamp } = React.useMemo(() => {
-		if (notifications.length === 0) {
-			return { oldestTimestamp: undefined, latestTimestamp: undefined };
-		}
-
-		return { latestTimestamp: notifications[0].createdAt, oldestTimestamp: notifications[notifications.length - 1].createdAt };
-	}, [notifications]);
-
-	const { data: initialData } = trpc.notifications.getQuery.useQuery({});
-
-	// const { data: fetchData } = trpc.notifications.get.useMutation(
-	// 	{ after: latestTimestamp },
-	// 	{
-	// 		enabled: initialized,
-	// 		refetchOnMount: false,
-	// 		refetchInterval: 10000,
-	// 		queryKey: ["notifications", "refetch", latestTimestamp]
-	// 	}
-	// );
-
-	const { mutate: loadMore, isPending: isLoadingOlderNotifications } = trpc.notifications.getMutation.useMutation({
-		onSuccess: (olderData) => {
-			updateNotifications("append", olderData);
-		}
-	});
-
-	React.useEffect(() => {
-		if (initialData) {
-			setInitialize(true);
-			updateNotifications("prepend", initialData);
-		}
-	}, [initialData, updateNotifications]);
-
-	// React.useEffect(() => {
-	// 	if (fetchData) {
-	// 		updateNotifications("prepend", fetchData);
-	// 	}
-	// }, [fetchData, initialData, updateNotifications]);
+	const { data: unreadCount } = trpc.notifications.getUnread.useQuery();
 
 	const [open, setOpen] = React.useState(false);
 
@@ -94,7 +38,7 @@ export const NotificationContainer = () => {
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent align="end" className="w-90 w-[400px] p-2">
-				{notifications.length === 0 ? (
+				{initialData?.pages[0].notifications.length === 0 ? (
 					<Message title="You have no notifications" />
 				) : (
 					<div className="flex max-h-[500px] flex-col gap-2 overflow-y-auto">
@@ -108,30 +52,28 @@ export const NotificationContainer = () => {
 						</div>
 
 						<div className="flex flex-col gap-0">
-							{notifications.map((notification) => (
-								<NotificationMessage
-									key={notification.id}
-									notification={notification}
-									onClick={() => {
-										setOpen(false);
-										read({ notificationId: notification.id });
-									}}
-								/>
-							))}
+							{initialData?.pages.flatMap((page) => {
+								return page.notifications.map((notification) => (
+									<NotificationMessage
+										key={notification.id}
+										notification={notification}
+										onClick={() => {
+											setOpen(false);
+											read({ notificationId: notification.id });
+										}}
+									/>
+								));
+							})}
 						</div>
 
 						<div className="w-full">
 							<Button
 								variant="ghost"
 								className="w-full"
+								onClick={() => fetchNextPage()}
 								aria-label="Load older notifications"
-								disabled={!hasOlder || !isLoadingOlderNotifications}
-								onClick={() => {
-									if (oldestTimestamp) {
-										loadMore({ before: oldestTimestamp });
-									}
-								}}>
-								{hasOlder ? "Load older notifications" : "No more notifications"}
+								disabled={isFetchingPreviousPage || !hasNextPage}>
+								{hasNextPage ? "Load older notifications" : "No more notifications"}
 							</Button>
 						</div>
 					</div>
@@ -140,3 +82,62 @@ export const NotificationContainer = () => {
 		</Popover>
 	);
 };
+
+function useSubscription() {
+	const utils = trpc.useUtils();
+
+	trpc.notifications.onConnect.useSubscription(undefined, {
+		onData(newNotification) {
+			toast.info(renderMessage(newNotification));
+
+			utils.notifications.getUnread.setData(undefined, (oldCount) => (oldCount || 0) + 1);
+			utils.notifications.getInfinite.setInfiniteData({}, (oldData) => {
+				if (!oldData) {
+					return oldData;
+				}
+
+				const firstPage = oldData.pages[0];
+
+				if (firstPage.notifications.some(({ id }) => id === newNotification.id)) {
+					return oldData;
+				}
+
+				return { ...oldData, pages: [{ ...firstPage, notifications: [newNotification, ...firstPage.notifications] }, ...oldData.pages.slice(1)] };
+			});
+		}
+	});
+}
+
+function useMutation() {
+	const utils = trpc.useUtils();
+	const { mutate: readAll } = trpc.notifications.readAll.useMutation({
+		onSuccess() {
+			utils.notifications.getUnread.invalidate();
+		}
+	});
+	const { mutate: read } = trpc.notifications.read.useMutation({
+		onSuccess(_data, variables) {
+			utils.notifications.getUnread.setData(undefined, (oldCount) => (oldCount || 0) + 1);
+			utils.notifications.getInfinite.setInfiniteData({}, (oldPages) => {
+				if (!oldPages) {
+					return oldPages;
+				}
+
+				return {
+					...oldPages,
+					pages: oldPages.pages.map((page) => {
+						return {
+							...page,
+							notifications: page.notifications.map((notification) => ({
+								...notification,
+								readStatus: notification.id === variables.notificationId ? true : notification.readStatus
+							}))
+						};
+					})
+				};
+			});
+		}
+	});
+
+	return { read, readAll };
+}

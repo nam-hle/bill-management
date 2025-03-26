@@ -1,15 +1,11 @@
 import { z } from "zod";
 
-export const UserMetaSchema = z
-	.object({
-		userId: z.string(),
-		fullName: z.string(),
-		avatarFile: z.string().nullable()
-	})
-	.strict();
+export const UserMetaBaseSchema = z.object({ userId: z.string(), fullName: z.string() }).strict();
+
+export const UserMetaSchema = UserMetaBaseSchema.extend({ avatarFile: z.string().nullable() }).strict();
 export type UserMeta = z.infer<typeof UserMetaSchema>;
 
-export const UserFinanceSchema = UserMetaSchema.omit({ avatarFile: true }).extend({ balance: z.number() }).strict();
+export const UserFinanceSchema = UserMetaBaseSchema.extend({ balance: z.number() }).strict();
 export type UserFinance = z.infer<typeof UserFinanceSchema>;
 
 export const ProfileSchema = UserMetaSchema.extend({ email: z.string() }).strict();

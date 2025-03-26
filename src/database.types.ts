@@ -268,71 +268,6 @@ export type Database = {
 					status?: Database["public"]["Enums"]["BankAccountStatus"];
 				};
 			};
-			notifications: {
-				Row: {
-					id: string;
-					user_id: string;
-					created_at: string;
-					trigger_id: string;
-					read_status: boolean;
-					metadata: Json | null;
-					bill_id: string | null;
-					transaction_id: string | null;
-					type: Database["public"]["Enums"]["NotificationType"];
-				};
-				Insert: {
-					id?: string;
-					user_id?: string;
-					trigger_id: string;
-					created_at?: string;
-					read_status?: boolean;
-					metadata?: Json | null;
-					bill_id?: string | null;
-					transaction_id?: string | null;
-					type: Database["public"]["Enums"]["NotificationType"];
-				};
-				Update: {
-					id?: string;
-					user_id?: string;
-					created_at?: string;
-					trigger_id?: string;
-					read_status?: boolean;
-					metadata?: Json | null;
-					bill_id?: string | null;
-					transaction_id?: string | null;
-					type?: Database["public"]["Enums"]["NotificationType"];
-				};
-				Relationships: [
-					{
-						isOneToOne: false;
-						columns: ["bill_id"];
-						referencedColumns: ["id"];
-						referencedRelation: "bills";
-						foreignKeyName: "notifications_bill_id_fkey";
-					},
-					{
-						isOneToOne: false;
-						referencedColumns: ["id"];
-						columns: ["transaction_id"];
-						referencedRelation: "transactions";
-						foreignKeyName: "notifications_transaction_id_fkey";
-					},
-					{
-						isOneToOne: false;
-						columns: ["trigger_id"];
-						referencedColumns: ["id"];
-						referencedRelation: "profiles";
-						foreignKeyName: "notifications_trigger_id_fkey";
-					},
-					{
-						isOneToOne: false;
-						columns: ["user_id"];
-						referencedColumns: ["id"];
-						referencedRelation: "profiles";
-						foreignKeyName: "notifications_user_id_fkey";
-					}
-				];
-			};
 			bills: {
 				Row: {
 					id: string;
@@ -401,6 +336,71 @@ export type Database = {
 						referencedColumns: ["id"];
 						referencedRelation: "profiles";
 						foreignKeyName: "bills_updater_id_fkey";
+					}
+				];
+			};
+			notifications: {
+				Row: {
+					id: string;
+					user_id: string;
+					created_at: string;
+					trigger_id: string;
+					read_status: boolean;
+					metadata: Json | null;
+					bill_id: string | null;
+					transaction_display_id: string | null;
+					type: Database["public"]["Enums"]["NotificationType"];
+				};
+				Insert: {
+					id?: string;
+					user_id?: string;
+					trigger_id: string;
+					created_at?: string;
+					read_status?: boolean;
+					metadata?: Json | null;
+					bill_id?: string | null;
+					transaction_display_id?: string | null;
+					type: Database["public"]["Enums"]["NotificationType"];
+				};
+				Update: {
+					id?: string;
+					user_id?: string;
+					created_at?: string;
+					trigger_id?: string;
+					read_status?: boolean;
+					metadata?: Json | null;
+					bill_id?: string | null;
+					transaction_display_id?: string | null;
+					type?: Database["public"]["Enums"]["NotificationType"];
+				};
+				Relationships: [
+					{
+						isOneToOne: false;
+						columns: ["bill_id"];
+						referencedColumns: ["id"];
+						referencedRelation: "bills";
+						foreignKeyName: "notifications_bill_id_fkey";
+					},
+					{
+						isOneToOne: false;
+						referencedColumns: ["display_id"];
+						referencedRelation: "transactions";
+						columns: ["transaction_display_id"];
+						foreignKeyName: "notifications_transaction_display_id_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["trigger_id"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "notifications_trigger_id_fkey";
+					},
+					{
+						isOneToOne: false;
+						columns: ["user_id"];
+						referencedColumns: ["id"];
+						referencedRelation: "profiles";
+						foreignKeyName: "notifications_user_id_fkey";
 					}
 				];
 			};

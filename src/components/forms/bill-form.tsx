@@ -5,7 +5,6 @@ import React from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
-import { DevTool } from "@hookform/devtools";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Ban, Plus, Check, Pencil } from "lucide-react";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -273,7 +272,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 					)}
 				</div>
 			</div>
-			<DevTool control={control} />
+			{/*<DevTool control={control} />*/}
 		</Form>
 	);
 };

@@ -11,18 +11,18 @@ export namespace BillsControllers {
     id,
     group:groups!group_id (${GroupController.GROUP_SELECT}),
     
-    creator:profiles!creator_id   (${UserControllers.AVATAR_USER_SELECT}),
+    creator:profiles!creator_id   (${UserControllers.USER_META_SELECT}),
     createdAt:created_at,
     
-    updater:profiles!updater_id   (${UserControllers.USER_META_SELECT}),
+    updater:profiles!updater_id   (${UserControllers.USER_META_BASE_SELECT}),
     updatedAt:updated_at,
     
     description,
     issuedAt:issued_at,
     receiptFile:receipt_file,
     totalAmount:total_amount,
-    creditor:profiles!creditor_id (${UserControllers.AVATAR_USER_SELECT}),
-    billDebtors:bill_debtors (user:user_id (${UserControllers.AVATAR_USER_SELECT}), amount, role)
+    creditor:profiles!creditor_id (${UserControllers.USER_META_SELECT}),
+    billDebtors:bill_debtors (user:user_id (${UserControllers.USER_META_SELECT}), amount, role)
   `;
 
 	export async function create(

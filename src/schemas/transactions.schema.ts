@@ -1,8 +1,9 @@
 import { z } from "zod";
 
-import { GroupSchema } from "@/schemas";
 import type { Database } from "@/database.types";
+import { DEFAULT_PAGE_NUMBER } from "@/constants";
 import { UserMetaSchema } from "@/schemas/user.schema";
+import { GroupSchema, DataListResponseSchema } from "@/schemas";
 
 export const TransactionStatusEnumSchema = z.enum([
 	"Waiting",
@@ -13,12 +14,10 @@ export type TransactionStatus = z.infer<typeof TransactionStatusEnumSchema>;
 
 export const TransactionSchema = z
 	.object({
-		id: z.string(),
-		displayId: z.string(),
-
 		amount: z.number(),
 		group: GroupSchema,
 		issuedAt: z.string(),
+		displayId: z.string(),
 		createdAt: z.string(),
 		sender: UserMetaSchema,
 		receiver: UserMetaSchema,
@@ -28,6 +27,8 @@ export const TransactionSchema = z
 	.strict();
 export type Transaction = z.infer<typeof TransactionSchema>;
 
+export const TransactionNotificationSchema = TransactionSchema.omit({ group: true, bankAccountId: true });
+
 export const TransactionCreatePayloadSchema = z.object({
 	amount: z.number(),
 	issuedAt: z.string(),
@@ -35,7 +36,7 @@ export const TransactionCreatePayloadSchema = z.object({
 	bankAccountId: z.string().min(1, "Bank account is required")
 });
 export const TransactionUpdatePayloadSchema = z.object({
-	transactionId: z.string(),
+	displayId: z.string(),
 	status: TransactionStatusEnumSchema.exclude(["Waiting"])
 });
 
@@ -52,3 +53,10 @@ export const TransactionQRCreatePayloadSchema = z
 	})
 	.strict();
 export type TransactionQRCreatePayload = z.infer<typeof TransactionQRCreatePayloadSchema>;
+
+export const TransactionGetManyPayloadSchema = z.object({
+	senderId: z.string().optional(),
+	receiverId: z.string().optional(),
+	page: z.coerce.number().int().positive().optional().default(DEFAULT_PAGE_NUMBER)
+});
+export const TransactionGetManyResponseSchema = DataListResponseSchema(TransactionSchema);

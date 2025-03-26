@@ -2,7 +2,6 @@ import axios from "axios";
 import { type z } from "zod";
 import { TRPCError } from "@trpc/server";
 
-import { type API } from "@/api";
 import { Pagination } from "@/types";
 import { Environments } from "@/environments";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
@@ -10,11 +9,16 @@ import { assert, generateNumberDisplayId } from "@/utils";
 import { pickUniqueId, ensureAuthorized } from "@/controllers/utils";
 import { type MemberContext, type SupabaseInstance } from "@/services/supabase/server";
 import { GroupController, UserControllers, BankAccountsController, NotificationsControllers } from "@/controllers";
-import { type Transaction, type TransactionSuggestion, type TransactionQRCreatePayload, type TransactionUpdatePayloadSchema } from "@/schemas";
+import {
+	type Transaction,
+	type TransactionSuggestion,
+	type TransactionQRCreatePayload,
+	type TransactionUpdatePayloadSchema,
+	type TransactionGetManyResponseSchema
+} from "@/schemas";
 
 export namespace TransactionsControllers {
 	const TRANSACTIONS_SELECT = `
-    id,
     displayId:display_id,
     group:groups!group_id (${GroupController.GROUP_SELECT}),
     createdAt:created_at,
@@ -22,9 +26,9 @@ export namespace TransactionsControllers {
     
     amount,
     status,
-    sender:profiles!sender_id (${UserControllers.AVATAR_USER_SELECT}),
+    sender:profiles!sender_id (${UserControllers.USER_META_SELECT}),
     bankAccountId:bank_account_id,
-    receiver:profiles!receiver_id (${UserControllers.AVATAR_USER_SELECT})
+    receiver:profiles!receiver_id (${UserControllers.USER_META_SELECT})
   `;
 
 	export async function create(
@@ -49,7 +53,7 @@ export namespace TransactionsControllers {
 			status: "Waiting",
 			userId: receiver_id,
 			triggerId: sender_id,
-			transactionId: data.id
+			transactionDisplayId: displayId
 		});
 
 		return data;
@@ -127,7 +131,7 @@ export namespace TransactionsControllers {
 			senderId?: string;
 			receiverId?: string;
 		}
-	): Promise<API.Transactions.List.Response> {
+	): Promise<z.infer<typeof TransactionGetManyResponseSchema>> {
 		const finalQuery = supabase.from("transactions").select(TRANSACTIONS_SELECT, { count: "exact" }).eq("group_id", userContext.group.id);
 		const { page, senderId, receiverId } = filters ?? {};
 
@@ -155,8 +159,8 @@ export namespace TransactionsControllers {
 	}
 
 	export async function update(supabase: SupabaseInstance, payload: z.infer<typeof TransactionUpdatePayloadSchema>) {
-		const { status, transactionId } = payload;
-		const { data, error } = await supabase.from("transactions").update({ status }).eq("id", transactionId).select(TRANSACTIONS_SELECT).single();
+		const { status, displayId } = payload;
+		const { data, error } = await supabase.from("transactions").update({ status }).eq("displayId", displayId).select(TRANSACTIONS_SELECT).single();
 
 		if (error) {
 			throw error;
@@ -165,16 +169,16 @@ export namespace TransactionsControllers {
 		if (status === "Confirmed") {
 			await NotificationsControllers.createTransaction(supabase, {
 				status,
-				transactionId,
 				userId: data.sender.userId,
-				triggerId: data.receiver.userId
+				triggerId: data.receiver.userId,
+				transactionDisplayId: data.displayId
 			});
 		} else if (status === "Declined") {
 			await NotificationsControllers.createTransaction(supabase, {
 				status,
-				transactionId,
 				userId: data.receiver.userId,
-				triggerId: data.sender.userId
+				triggerId: data.sender.userId,
+				transactionDisplayId: data.displayId
 			});
 		} else {
 			throw new Error("Invalid status");

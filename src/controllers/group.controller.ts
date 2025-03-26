@@ -25,7 +25,7 @@ export namespace GroupController {
 
 	export const MEMBERSHIP_SELECT = `	
 		status,
-		user:profiles!user_id (${UserControllers.AVATAR_USER_SELECT}),
+		user:profiles!user_id (${UserControllers.USER_META_SELECT}),
 		group:groups!group_id (${GROUP_SELECT})
 	`;
 
@@ -150,7 +150,7 @@ export namespace GroupController {
 	): Promise<Membership[]> {
 		const { data, error } = await supabase
 			.from("memberships")
-			.select(`id, status, user:profiles!user_id (${UserControllers.AVATAR_USER_SELECT})`)
+			.select(`id, status, user:profiles!user_id (${UserControllers.USER_META_SELECT})`)
 			.eq("group_id", payload.groupId)
 			.in("status", payload.statuses)
 			.order("created_at", { ascending: true });

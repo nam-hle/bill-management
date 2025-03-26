@@ -1,35 +1,9 @@
 import { z } from "zod";
 
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
-import { ClientBillSchema, TransactionSchema, ClientNotificationSchema } from "@/schemas";
+import { ClientBillSchema, DataListResponseSchema } from "@/schemas";
 
 export namespace API {
-	export const DataListResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
-		z.object({
-			data: z.array(itemSchema),
-			fullSize: z.number().int().nonnegative()
-		});
-
-	export namespace Notifications {
-		export namespace List {
-			export const PayloadSchema = z.object({
-				after: z.string().optional(),
-				before: z.string().optional(),
-				page: z.coerce.number().int().positive().optional()
-			});
-
-			export type Payload = z.infer<typeof PayloadSchema>;
-
-			export const ResponseSchema = z.object({
-				hasOlder: z.boolean().optional(),
-				fullSize: z.number().int().nonnegative(),
-				unreadCount: z.number().int().nonnegative(),
-				notifications: z.array(ClientNotificationSchema)
-			});
-			export type Response = z.infer<typeof ResponseSchema>;
-		}
-	}
-
 	export namespace Bills {
 		export const UpsertBillMemberSchema = z.object({ userId: z.string(), amount: z.number() });
 
@@ -60,19 +34,6 @@ export namespace API {
 			export type Payload = z.infer<typeof PayloadSchema>;
 
 			export const ResponseSchema = DataListResponseSchema(ClientBillSchema);
-			export type Response = z.infer<typeof ResponseSchema>;
-		}
-	}
-
-	export namespace Transactions {
-		export namespace List {
-			export const PayloadSchema = z.object({
-				senderId: z.string().optional(),
-				receiverId: z.string().optional(),
-				page: z.coerce.number().int().positive().optional().default(DEFAULT_PAGE_NUMBER)
-			});
-
-			export const ResponseSchema = DataListResponseSchema(TransactionSchema);
 			export type Response = z.infer<typeof ResponseSchema>;
 		}
 	}

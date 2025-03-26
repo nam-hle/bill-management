@@ -5,7 +5,6 @@ import type * as z from "zod";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { DevTool } from "@hookform/devtools";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Input } from "@/components/shadcn/input";
@@ -149,7 +148,7 @@ export const BankAccountForm = () => {
 								Add
 							</Button>
 						</form>
-						<DevTool control={control} />
+						{/*<DevTool control={control} />*/}
 					</Form>
 				</CardContent>
 			</Card>

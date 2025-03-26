@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import type { Database } from "@/database.types";
 import { JsonSchema } from "@/schemas/base.schema";
-import { TransactionSchema } from "@/schemas/transactions.schema";
+import { TransactionNotificationSchema } from "@/schemas/transactions.schema";
 import { ClientBillSchema, BillMemberRoleSchema } from "@/schemas/bills.schema";
 
 const NotificationTypeSchema = z.enum([
@@ -19,14 +19,13 @@ const ServerNotificationSchema = z.object({
 	id: z.string(),
 	createdAt: z.string(),
 	readStatus: z.boolean(),
+	userId: z.string().uuid(),
 	metadata: JsonSchema.nullable()
 });
 
 const BaseClientNotificationSchema = ServerNotificationSchema.extend({
 	type: NotificationTypeSchema,
-	trigger: z.object({
-		fullName: z.string()
-	})
+	trigger: z.object({ fullName: z.string() })
 });
 
 const NotificationBillSchema = ClientBillSchema.pick({ id: true, description: true }).extend({
@@ -73,20 +72,20 @@ const BillUpdatedNotificationSchema = BaseClientNotificationSchema.extend({
 export type BillUpdatedNotification = z.infer<typeof BillUpdatedNotificationSchema>;
 
 const TransactionWaitingNotificationSchema = BaseClientNotificationSchema.extend({
-	transaction: TransactionSchema,
-	type: z.literal("TransactionWaiting")
+	type: z.literal("TransactionWaiting"),
+	transaction: TransactionNotificationSchema
 });
 export type TransactionWaitingNotification = z.infer<typeof TransactionWaitingNotificationSchema>;
 
 const TransactionConfirmedNotificationSchema = BaseClientNotificationSchema.extend({
-	transaction: TransactionSchema,
-	type: z.literal("TransactionConfirmed")
+	type: z.literal("TransactionConfirmed"),
+	transaction: TransactionNotificationSchema
 });
 export type TransactionConfirmedNotification = z.infer<typeof TransactionConfirmedNotificationSchema>;
 
 const TransactionDeclinedNotificationSchema = BaseClientNotificationSchema.extend({
-	transaction: TransactionSchema,
-	type: z.literal("TransactionDeclined")
+	type: z.literal("TransactionDeclined"),
+	transaction: TransactionNotificationSchema
 });
 export type TransactionDeclinedNotification = z.infer<typeof TransactionDeclinedNotificationSchema>;
 
@@ -100,3 +99,12 @@ export const ClientNotificationSchema = z.union([
 ]);
 
 export type ClientNotification = z.infer<typeof ClientNotificationSchema>;
+
+export const InfiniteNotificationResponseSchema = z.object({
+	nextCursor: z.string().nullable(),
+	notifications: z.array(ClientNotificationSchema)
+});
+export const PaginatedNotificationResponseSchema = z.object({
+	hasNextPage: z.boolean(),
+	notifications: z.array(ClientNotificationSchema)
+});

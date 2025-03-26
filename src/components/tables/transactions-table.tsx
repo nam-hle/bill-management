@@ -30,14 +30,15 @@ export const TransactionsTable: React.FC<TransactionsTable.Props> = (props) => {
 	const [filters, setFilters] = React.useState<"toMe" | "byMe" | undefined>(undefined);
 
 	const { data } = trpc.transactions.getMany.useQuery(
-		filters === "toMe"
-			? { page, receiverId: currentUserId }
-			: filters === "byMe"
-				? {
-						page,
-						senderId: currentUserId
-					}
-				: { page }
+		filters === "toMe" ? { page, receiverId: currentUserId } : filters === "byMe" ? { page, senderId: currentUserId } : { page },
+		{
+			select: (response) => {
+				return {
+					...response,
+					data: response.data.map((transaction) => ({ ...transaction, id: transaction.displayId }))
+				};
+			}
+		}
 	);
 
 	const createOwnerFilter = React.useCallback(

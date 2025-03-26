@@ -40,7 +40,7 @@ export const TransactionAction: React.FC<TransactionAction.Props> = ({ transacti
 				className="w-full"
 				onClick={(event) => {
 					event.stopPropagation();
-					update.mutate({ status: "Confirmed", transactionId: transaction.id });
+					update.mutate({ status: "Confirmed", displayId: transaction.displayId });
 				}}>
 				<Check /> Confirm
 			</Button>
@@ -55,7 +55,7 @@ export const TransactionAction: React.FC<TransactionAction.Props> = ({ transacti
 				variant="destructive"
 				onClick={(event) => {
 					event.stopPropagation();
-					update.mutate({ status: "Declined", transactionId: transaction.id });
+					update.mutate({ status: "Declined", displayId: transaction.displayId });
 				}}>
 				<X /> Decline
 			</Button>

@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-import { API } from "@/api";
 import { TransactionsControllers } from "@/controllers";
 import { router, privateProcedure, withSelectedGroup } from "@/services/trpc/server";
 import {
@@ -8,6 +7,8 @@ import {
 	TransactionSuggestionSchema,
 	TransactionCreatePayloadSchema,
 	TransactionUpdatePayloadSchema,
+	TransactionGetManyPayloadSchema,
+	TransactionGetManyResponseSchema,
 	TransactionQRCreatePayloadSchema
 } from "@/schemas";
 
@@ -18,8 +19,8 @@ export const transactionsRouter = router({
 		.query(({ input, ctx: { user, supabase } }) => TransactionsControllers.getByDisplayId(supabase, { ...input, userId: user.id })),
 	getMany: privateProcedure
 		.use(withSelectedGroup)
-		.input(API.Transactions.List.PayloadSchema)
-		.output(API.Transactions.List.ResponseSchema)
+		.input(TransactionGetManyPayloadSchema)
+		.output(TransactionGetManyResponseSchema)
 		.query(({ input, ctx: { user, supabase } }) => TransactionsControllers.getMany(supabase, user, input)),
 
 	update: privateProcedure

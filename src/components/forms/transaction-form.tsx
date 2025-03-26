@@ -7,7 +7,6 @@ import Image from "next/image";
 import { parse, format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { DevTool } from "@hookform/devtools";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Wand2, ArrowLeft, ArrowRight } from "lucide-react";
 
@@ -76,9 +75,9 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 	const form = useForm<FormState>({
 		resolver: zodResolver(FormStateSchema),
 		defaultValues: {
-			bankAccountId: "",
 			amount: kind.type === "update" ? String(kind.transaction.amount) : "",
 			receiverId: kind.type === "update" ? kind.transaction.receiver.userId : "",
+			bankAccountId: kind.type === "update" ? String(kind.transaction.bankAccountId) : "",
 			issuedAt: IssuedAtFieldTransformer.fromServer(kind.type === "update" ? kind.transaction.issuedAt : undefined)
 		}
 	});
@@ -178,6 +177,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 								<Select
 									value={field.value}
 									onValueChange={field.onChange}
+									disabled={kind.type === "update"}
 									items={
 										receiverBankAccounts?.flatMap((account) => {
 											return {
@@ -287,7 +287,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 						</CardFooter>
 					</Card>
 				</div>
-				<DevTool control={control} />
+				{/*<DevTool control={control} />*/}
 			</form>
 		</Form>
 	);

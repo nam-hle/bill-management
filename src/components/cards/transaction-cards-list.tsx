@@ -20,7 +20,7 @@ export const TransactionCardList: React.FC<TransactionCardList.Props> = ({ curre
 		<div className="col-span-2 flex-1 space-y-4">
 			<Heading>Recent Transactions</Heading>
 			<div className="space-y-4">
-				{data?.data.map((transaction) => <TransactionCard key={transaction.id} transaction={transaction} currentUserId={currentUserId} />)}
+				{data?.data.map((transaction) => <TransactionCard transaction={transaction} key={transaction.displayId} currentUserId={currentUserId} />)}
 			</div>
 		</div>
 	);
