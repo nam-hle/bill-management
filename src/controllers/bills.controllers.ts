@@ -163,9 +163,9 @@ export namespace BillsControllers {
 		return toClientBill(bill);
 	}
 
-	export async function updateById(
+	export async function updateByDisplayId(
 		supabase: SupabaseInstance,
-		id: string,
+		displayId: string,
 		payload: {
 			issuedAt: string;
 			updaterId: string;
@@ -184,7 +184,7 @@ export namespace BillsControllers {
 			receiptFile: receipt_file
 		} = payload;
 
-		const { data: currentBill } = await supabase.from("bills").select(BILLS_SELECT).eq("id", id).single();
+		const { data: currentBill } = await supabase.from("bills").select(BILLS_SELECT).eq("display_id", displayId).single();
 
 		if (!currentBill) {
 			throw new Error("Bill not found");
@@ -200,7 +200,7 @@ export namespace BillsControllers {
 		const { data, error } = await supabase
 			.from("bills")
 			.update({ issued_at, updater_id, creditor_id, description, total_amount, receipt_file })
-			.eq("id", id)
+			.eq("display_id", displayId)
 			.select();
 
 		// TODO: Update creditor notifications

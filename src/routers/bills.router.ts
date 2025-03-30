@@ -11,12 +11,12 @@ export const billsRouter = router({
 		.input(z.object({ displayId: z.string() }))
 		.query(({ input, ctx: { user, supabase } }) => BillsControllers.getByDisplayId(supabase, { ...input, userId: user.id })),
 	update: privateProcedure.input(API.Bills.Update.PayloadSchema).mutation(async ({ input, ctx: { supabase, user: updater } }) => {
-		const { debtors, issuedAt, creditor, description, receiptFile, displayId: billId } = input;
+		const { debtors, issuedAt, creditor, displayId, description, receiptFile } = input;
 
 		// Members need to be updated first
-		await BillMembersControllers.updateMany(supabase, updater.id, { nextDebtors: debtors, billDisplayId: billId });
+		await BillMembersControllers.updateMany(supabase, updater.id, { nextDebtors: debtors, billDisplayId: displayId });
 
-		await BillsControllers.updateById(supabase, billId, {
+		await BillsControllers.updateByDisplayId(supabase, displayId, {
 			issuedAt,
 			receiptFile,
 			description,
