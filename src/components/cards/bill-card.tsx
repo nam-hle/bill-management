@@ -23,7 +23,7 @@ export const BillCard: React.FC<BillCard.Props> = ({ bill, currentUserId }) => {
 	const currentUserDebtor = bill.debtors.find((debtor) => debtor.user.userId === currentUserId);
 
 	return (
-		<Link passHref prefetch legacyBehavior href={`/bills/${bill.id}`}>
+		<Link passHref prefetch legacyBehavior href={`/bills/${bill.displayId}`}>
 			<Card data-testid="card" className="w-full cursor-pointer hover:border-gray-500">
 				<CardContent className="p-4" data-testid="card-content">
 					<div data-testid="card-body" className="flex items-start space-x-4">

@@ -105,7 +105,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 		<DataTable
 			title="Bills"
 			action={action}
-			data={data?.data?.map((row) => ({ ...row, href: `/bills/${row.id}` }))}
+			data={data?.data?.map((row) => ({ ...row, href: `/bills/${row.displayId}` }))}
 			pagination={{
 				pageNumber: query.page,
 				fullSize: data?.fullSize,
@@ -128,6 +128,7 @@ export const BillsTable: React.FC<BillsTable.Props> = (props) => {
 				</>
 			}
 			columns={[
+				{ key: "id", label: "ID", dataGetter: ({ row }) => row.displayId },
 				{ key: "description", label: "Description", dataGetter: ({ row }) => row.description },
 				{
 					key: "createdAt",

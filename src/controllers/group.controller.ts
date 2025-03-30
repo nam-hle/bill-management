@@ -1,6 +1,6 @@
 import { UserControllers } from "@/controllers";
+import { assert, GroupIdGenerator } from "@/utils";
 import { pickUniqueId } from "@/controllers/utils";
-import { assert, generateNumberDisplayId } from "@/utils";
 import { type SupabaseInstance } from "@/services/supabase/server";
 import { type MemberAction, changeMemberStatus } from "@/controllers/member-transition";
 import {
@@ -35,7 +35,7 @@ export namespace GroupController {
 	}
 
 	export async function create(supabase: SupabaseInstance, payload: CreationPayload): Promise<Group> {
-		const displayId = await pickUniqueId(supabase, "groups", "display_id", generateNumberDisplayId);
+		const displayId = await pickUniqueId(supabase, "groups", "display_id", GroupIdGenerator);
 		const { data, error } = await supabase.from("groups").insert({ name: payload.name, display_id: displayId }).select(GROUP_SELECT).single();
 
 		if (error) {

@@ -94,6 +94,11 @@ export function assert(condition: unknown, onFailedMessage = "Condition return a
 	}
 }
 
-export function generateNumberDisplayId(length = 8) {
-	return customAlphabet("1234567890", length)();
-}
+const ALPHABETS = {
+	numeric: "1234567890",
+	alphanumeric: "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+};
+
+export const TransactionIdGenerator = customAlphabet(ALPHABETS.alphanumeric, 6);
+export const BillIdGenerator = customAlphabet(ALPHABETS.alphanumeric, 6);
+export const GroupIdGenerator = customAlphabet(ALPHABETS.numeric, 8);

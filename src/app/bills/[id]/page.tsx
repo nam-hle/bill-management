@@ -20,15 +20,15 @@ namespace BillDetailsPage {
 }
 
 export default async function BillDetailsPage(props: BillDetailsPage.Props) {
-	const billId = (await props.params).id;
+	const displayId = (await props.params).id;
 
 	try {
 		const caller = await createCaller();
-		const bill = await caller.bills.get({ billId });
+		const bill = await caller.bills.get({ displayId });
 
 		return (
 			<CorrectGroupGuard expectedGroup={bill.group}>
-				<BillForm kind={{ billId, type: "update" }} />
+				<BillForm kind={{ bill, type: "update" }} />
 			</CorrectGroupGuard>
 		);
 	} catch (error) {

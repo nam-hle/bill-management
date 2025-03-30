@@ -39,8 +39,8 @@ export namespace NotificationsControllers {
     receiver:profiles!receiver_id (${UserControllers.USER_META_SELECT})
 	),
 
-	bill:bill_id (
-		id, 
+	bill:bill_display_id (
+		displayId:display_id, 
 		description, 
 		creator:profiles!creator_id (${UserControllers.USER_META_BASE_SELECT})
 	)
@@ -144,7 +144,7 @@ export namespace NotificationsControllers {
 	}
 
 	export interface BaseBillPayload extends BasePayload {
-		readonly billId: string;
+		readonly billDisplayId: string;
 	}
 
 	export interface CreateBillPayload extends BaseBillPayload {
@@ -155,11 +155,11 @@ export namespace NotificationsControllers {
 	export async function createManyBillCreated(supabase: SupabaseInstance, payload: CreateBillPayload[]) {
 		await create(
 			supabase,
-			payload.filter(removeSelfNotification).map(({ role, amount, billId: bill_id, userId: user_id, triggerId: trigger_id }) => {
+			payload.filter(removeSelfNotification).map(({ role, amount, userId: user_id, triggerId: trigger_id, billDisplayId: bill_display_id }) => {
 				return {
 					user_id,
-					bill_id,
 					trigger_id,
+					bill_display_id,
 					type: "BillCreated" as const satisfies NotificationType,
 					metadata: { previous: {}, current: { role, amount } } satisfies BillCreatedNotificationMetadata
 				};
@@ -174,11 +174,11 @@ export namespace NotificationsControllers {
 	export async function createManyBillDeleted(supabase: SupabaseInstance, payloads: DeletedBillPayload[]) {
 		await create(
 			supabase,
-			payloads.filter(removeSelfNotification).map(({ role, billId: bill_id, userId: user_id, triggerId: trigger_id }) => {
+			payloads.filter(removeSelfNotification).map(({ role, userId: user_id, triggerId: trigger_id, billDisplayId: bill_display_id }) => {
 				return {
 					user_id,
-					bill_id,
 					trigger_id,
+					bill_display_id,
 					type: "BillDeleted" as const satisfies NotificationType,
 					metadata: { current: {}, previous: { role } } satisfies BillDeletedNotificationMetadata
 				};
@@ -194,15 +194,17 @@ export namespace NotificationsControllers {
 	export async function createManyBillUpdated(supabase: SupabaseInstance, payloads: UpdatedBillPayload[]) {
 		await create(
 			supabase,
-			payloads.filter(removeSelfNotification).map(({ currentAmount, previousAmount, billId: bill_id, userId: user_id, triggerId: trigger_id }) => {
-				return {
-					user_id,
-					bill_id,
-					trigger_id,
-					type: "BillUpdated" as const satisfies NotificationType,
-					metadata: { current: { amount: currentAmount }, previous: { amount: previousAmount } } satisfies BillUpdatedNotificationMetadata
-				};
-			})
+			payloads
+				.filter(removeSelfNotification)
+				.map(({ currentAmount, previousAmount, userId: user_id, triggerId: trigger_id, billDisplayId: bill_display_id }) => {
+					return {
+						user_id,
+						trigger_id,
+						bill_display_id,
+						type: "BillUpdated" as const satisfies NotificationType,
+						metadata: { current: { amount: currentAmount }, previous: { amount: previousAmount } } satisfies BillUpdatedNotificationMetadata
+					};
+				})
 		);
 	}
 

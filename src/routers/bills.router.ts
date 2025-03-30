@@ -8,13 +8,13 @@ import { router, privateProcedure, withSelectedGroup } from "@/services/trpc/ser
 
 export const billsRouter = router({
 	get: privateProcedure
-		.input(z.object({ billId: z.string() }))
-		.query(({ input, ctx: { user, supabase } }) => BillsControllers.getById(supabase, { ...input, userId: user.id })),
+		.input(z.object({ displayId: z.string() }))
+		.query(({ input, ctx: { user, supabase } }) => BillsControllers.getByDisplayId(supabase, { ...input, userId: user.id })),
 	update: privateProcedure.input(API.Bills.Update.PayloadSchema).mutation(async ({ input, ctx: { supabase, user: updater } }) => {
-		const { debtors, issuedAt, creditor, id: billId, description, receiptFile } = input;
+		const { debtors, issuedAt, creditor, description, receiptFile, displayId: billId } = input;
 
 		// Members need to be updated first
-		await BillMembersControllers.updateMany(supabase, updater.id, { billId, nextDebtors: debtors });
+		await BillMembersControllers.updateMany(supabase, updater.id, { nextDebtors: debtors, billDisplayId: billId });
 
 		await BillsControllers.updateById(supabase, billId, {
 			issuedAt,
@@ -43,7 +43,7 @@ export const billsRouter = router({
 			});
 
 			const billMembers = debtors.map(({ userId, amount }) => {
-				return { userId, amount, billId: bill.id, role: "Debtor" as BillMemberRole };
+				return { userId, amount, billId: bill.id, billDisplayId: bill.id, role: "Debtor" as BillMemberRole };
 			});
 
 			await BillMembersControllers.createMany(supabase, creator.id, billMembers);

@@ -19,7 +19,7 @@ export namespace API {
 		export type UpsertBill = z.infer<typeof UpsertBillSchema>;
 
 		export namespace Update {
-			export const PayloadSchema = UpsertBillSchema.extend({ id: z.string() });
+			export const PayloadSchema = UpsertBillSchema.extend({ displayId: z.string() });
 		}
 
 		export namespace List {

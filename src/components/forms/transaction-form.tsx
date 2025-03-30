@@ -134,8 +134,6 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 
 				return;
 			}
-
-			throw new Error("Invalid event name");
 		});
 	}, [create, generate, handleSubmit]);
 
