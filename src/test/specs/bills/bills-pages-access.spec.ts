@@ -7,30 +7,10 @@ import { createRequester } from "@/test/helpers/requester";
 import { selectGroup } from "@/test/functions/select-group";
 import { seedBasicPreset, type BasicPreset } from "@/test/functions/seed-basic-preset";
 
-let billDisplayId: string;
 let preset: BasicPreset;
 
-test.beforeAll("Create a bill in Gryffindor group", async () => {
+test.beforeAll(async () => {
 	preset = await seedBasicPreset();
-
-	const requester = await createRequester(USERNAMES.harry);
-
-	await requester.user.selectGroup.mutate({ groupId: preset.groups.Gryffindor.id });
-	await requester.bills.create.mutate({
-		receiptFile: null,
-		issuedAt: getCurrentDate(),
-		description: "Team building",
-		creditor: { amount: 100, userId: preset.userIds.ron },
-		debtors: [
-			{ amount: 40, userId: preset.userIds.harry },
-			{ amount: 60, userId: preset.userIds.ron }
-		]
-	});
-
-	const bills = await requester.bills.getMany.query({});
-
-	expect(bills.data).toHaveLength(1);
-	billDisplayId = bills.data[0].displayId;
 });
 
 test.beforeEach(async () => {
@@ -92,8 +72,26 @@ test.describe("Create Bill Page", () => {
 	});
 });
 
-test.describe("Bill Details Page", () => {
-	const url = `/bills/${billDisplayId}`;
+test.describe("Bill Details Page", async () => {
+	let url: string;
+
+	test.beforeAll(async () => {
+		const requester = await createRequester(USERNAMES.harry);
+		await requester.user.selectGroup.mutate({ groupId: preset.groups.Gryffindor.id });
+
+		const { displayId } = await requester.bills.create.mutate({
+			receiptFile: null,
+			issuedAt: getCurrentDate(),
+			description: "Team building",
+			creditor: { amount: 100, userId: preset.userIds.ron },
+			debtors: [
+				{ amount: 40, userId: preset.userIds.harry },
+				{ amount: 60, userId: preset.userIds.ron }
+			]
+		});
+
+		url = `/bills/${displayId}`;
+	});
 
 	test("Redirect to login page if not login", async ({ page }) => {
 		await page.goto(url);

@@ -41,7 +41,7 @@ export namespace TransactionsControllers {
 		const { data } = await supabase
 			.from("transactions")
 			.insert({ ...rest, group_id, issued_at, sender_id, receiver_id, bank_account_id, display_id: displayId })
-			.select("id")
+			.select("id, displayId:display_id")
 			.single()
 			.throwOnError();
 
@@ -56,7 +56,7 @@ export namespace TransactionsControllers {
 			transactionDisplayId: displayId
 		});
 
-		return data;
+		return displayId;
 	}
 
 	export async function generateQR(supabase: SupabaseInstance, payload: TransactionQRCreatePayload) {

@@ -53,7 +53,7 @@ export namespace BillsControllers {
 		const { data } = await supabase
 			.from("bills")
 			.insert({ group_id, issued_at, creator_id, description, creditor_id, receipt_file, total_amount, display_id: displayId })
-			.select("id, display_id")
+			.select("id, displayId:display_id")
 			.single()
 			.throwOnError();
 

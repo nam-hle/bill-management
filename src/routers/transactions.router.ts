@@ -39,10 +39,11 @@ export const transactionsRouter = router({
 	create: privateProcedure
 		.use(withSelectedGroup)
 		.input(TransactionCreatePayloadSchema)
+		.output(z.object({ displayId: z.string() }))
 		.mutation(async ({ input, ctx: { supabase, user: sender } }) => {
 			const { amount, issuedAt, receiverId, bankAccountId } = input;
 
-			await TransactionsControllers.create(supabase, {
+			const displayId = await TransactionsControllers.create(supabase, {
 				amount,
 				issuedAt,
 				receiverId,
@@ -50,5 +51,7 @@ export const transactionsRouter = router({
 				senderId: sender.id,
 				groupId: sender.group.id
 			});
+
+			return { displayId };
 		})
 });

@@ -24,29 +24,6 @@ export const billsRouter = router({
 			totalAmount: creditor.amount
 		});
 	}),
-	create: privateProcedure
-		.use(withSelectedGroup)
-		.input(API.Bills.UpsertBillSchema)
-		.mutation(async ({ input, ctx: { supabase, user: creator } }) => {
-			const { debtors, issuedAt, creditor, description, receiptFile } = input;
-
-			// Step 1: Insert bill
-			const bill = await BillsControllers.create(supabase, {
-				issuedAt,
-				description,
-				receiptFile,
-				creatorId: creator.id,
-				groupId: creator.group.id,
-				creditorId: creditor.userId,
-				totalAmount: creditor.amount
-			});
-
-			const billMembers = debtors.map(({ userId, amount }) => {
-				return { userId, amount, billId: bill.id, role: "Debtor" as const, billDisplayId: bill.display_id };
-			});
-
-			await BillMembersControllers.createMany(supabase, creator.id, billMembers);
-		}),
 	getMany: privateProcedure
 		.use(withSelectedGroup)
 		.input(API.Bills.List.PayloadSchema)
@@ -67,5 +44,31 @@ export const billsRouter = router({
 			};
 
 			return BillsControllers.getManyByMemberId(supabase, user, resolvedSearchParams);
+		}),
+	create: privateProcedure
+		.use(withSelectedGroup)
+		.input(API.Bills.UpsertBillSchema)
+		.output(z.object({ displayId: z.string() }))
+		.mutation(async ({ input, ctx: { supabase, user: creator } }) => {
+			const { debtors, issuedAt, creditor, description, receiptFile } = input;
+
+			// Step 1: Insert bill
+			const bill = await BillsControllers.create(supabase, {
+				issuedAt,
+				description,
+				receiptFile,
+				creatorId: creator.id,
+				groupId: creator.group.id,
+				creditorId: creditor.userId,
+				totalAmount: creditor.amount
+			});
+
+			const billMembers = debtors.map(({ userId, amount }) => {
+				return { userId, amount, billId: bill.id, role: "Debtor" as const, billDisplayId: bill.displayId };
+			});
+
+			await BillMembersControllers.createMany(supabase, creator.id, billMembers);
+
+			return { displayId: bill.displayId };
 		})
 });

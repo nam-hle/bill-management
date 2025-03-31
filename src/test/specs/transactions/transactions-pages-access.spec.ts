@@ -7,26 +7,10 @@ import { createRequester } from "@/test/helpers/requester";
 import { selectGroup } from "@/test/functions/select-group";
 import { seedBasicPreset, type BasicPreset } from "@/test/functions/seed-basic-preset";
 
-let transactionDisplayId: string;
 let preset: BasicPreset;
 
-test.beforeAll("Setup", async () => {
+test.beforeAll(async () => {
 	preset = await seedBasicPreset({ withBankAccounts: true });
-
-	const requester = await createRequester(USERNAMES.harry);
-
-	await requester.user.selectGroup.mutate({ groupId: preset.groups.Gryffindor.id });
-	await requester.transactions.create.mutate({
-		amount: 40,
-		issuedAt: getCurrentDate(),
-		receiverId: preset.userIds.ron,
-		bankAccountId: preset.bankAccounts.ron[0]
-	});
-
-	const transactions = await requester.transactions.getMany.query({ senderId: preset.userIds.harry, receiverId: preset.userIds.ron });
-
-	expect(transactions.data).toHaveLength(1);
-	transactionDisplayId = transactions.data[0].displayId;
 });
 
 test.beforeEach(async () => {
@@ -89,7 +73,21 @@ test.describe("Create Transaction Page", () => {
 });
 
 test.describe("Transaction Details Page", () => {
-	const url = `/transactions/${transactionDisplayId}`;
+	let url: string;
+
+	test.beforeAll(async () => {
+		const requester = await createRequester(USERNAMES.harry);
+
+		await requester.user.selectGroup.mutate({ groupId: preset.groups.Gryffindor.id });
+		const { displayId } = await requester.transactions.create.mutate({
+			amount: 40,
+			issuedAt: getCurrentDate(),
+			receiverId: preset.userIds.ron,
+			bankAccountId: preset.bankAccounts.ron[0]
+		});
+
+		url = `/transactions/${displayId}`;
+	});
 
 	test("Redirect to login page if not login", async ({ page }) => {
 		await page.goto(url);
@@ -99,7 +97,7 @@ test.describe("Transaction Details Page", () => {
 
 	test("Users outside the group can not access the page", async ({ page }) => {
 		await Actions.login(page, USERNAMES.snape);
-		await page.goto(`/transactions/${transactionDisplayId}`);
+		await page.goto(url);
 
 		await expect(page.getByText("Access Denied")).toBeVisible();
 	});
@@ -108,7 +106,7 @@ test.describe("Transaction Details Page", () => {
 		test(`${capitalize(username)} as a group members can access the page but require select that group`, async ({ page }) => {
 			await preset.requesters[username].user.selectGroup.mutate({ groupId: null });
 			await Actions.login(page, username);
-			await page.goto(`/transactions/${transactionDisplayId}`);
+			await page.goto(url);
 
 			await expect(page.getByText("Switch Group Required")).toBeVisible();
 			await expect(page.getByText("Transaction Details")).not.toBeVisible();
