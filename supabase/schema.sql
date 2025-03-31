@@ -12,7 +12,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 
-CREATE EXTENSION IF NOT EXISTS "pgsodium" WITH .SCHEMA "pg-0sodium";
+-- CREATE EXTENSION IF NOT EXISTS "pgsodium" WITH .SCHEMA "pg-0sodium";
 
 
 
