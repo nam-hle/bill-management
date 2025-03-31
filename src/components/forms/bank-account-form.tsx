@@ -68,7 +68,7 @@ export const BankAccountForm = () => {
 	);
 
 	return (
-		<div className={cn("mx-auto mt-32 w-[400px] flex-1 items-center")}>
+		<div className={cn("mx-auto mt-24 w-[400px] flex-1 items-center")}>
 			<Card className="mx-auto w-full max-w-md">
 				<CardHeader>
 					<CardTitle>Add Bank Account</CardTitle>

@@ -236,7 +236,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 	return (
 		<Form {...form}>
 			<form onSubmit={onSubmit}>
-				<div className={cn("mx-auto mt-32 w-[420px] flex-1 items-center")}>
+				<div className={cn("mx-auto mt-24 w-[420px] flex-1 items-center")}>
 					<Card className="w-full">
 						<CardHeader>
 							<CardTitle className="space-x-2 text-2xl">
