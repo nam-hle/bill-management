@@ -72,8 +72,6 @@ export const InviteDialog: React.FC<InviteDialog.Props> = ({ groupId }) => {
 	);
 
 	const handleSendInvites = React.useCallback(() => {
-		// Here you would typically send the invites to your backend
-		// console.log("Sending invites to:", invitedUsers);
 		mutation.mutate({ groupId, userIds: invitedUsers.map((e) => e.userId) });
 	}, [groupId, invitedUsers, mutation]);
 

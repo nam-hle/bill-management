@@ -1,22 +1,21 @@
 import { z } from "zod";
 
 import { API } from "@/api";
-import type { BillMemberRole } from "@/schemas";
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
 import { BillsControllers, BillMembersControllers } from "@/controllers";
 import { router, privateProcedure, withSelectedGroup } from "@/services/trpc/server";
 
 export const billsRouter = router({
 	get: privateProcedure
-		.input(z.object({ billId: z.string() }))
-		.query(({ input, ctx: { user, supabase } }) => BillsControllers.getById(supabase, { ...input, userId: user.id })),
+		.input(z.object({ displayId: z.string() }))
+		.query(({ input, ctx: { user, supabase } }) => BillsControllers.getByDisplayId(supabase, { ...input, userId: user.id })),
 	update: privateProcedure.input(API.Bills.Update.PayloadSchema).mutation(async ({ input, ctx: { supabase, user: updater } }) => {
-		const { debtors, issuedAt, creditor, id: billId, description, receiptFile } = input;
+		const { debtors, issuedAt, creditor, displayId, description, receiptFile } = input;
 
 		// Members need to be updated first
-		await BillMembersControllers.updateMany(supabase, updater.id, { billId, nextDebtors: debtors });
+		await BillMembersControllers.updateMany(supabase, updater.id, { nextDebtors: debtors, billDisplayId: displayId });
 
-		await BillsControllers.updateById(supabase, billId, {
+		await BillsControllers.updateByDisplayId(supabase, displayId, {
 			issuedAt,
 			receiptFile,
 			description,
@@ -25,29 +24,6 @@ export const billsRouter = router({
 			totalAmount: creditor.amount
 		});
 	}),
-	create: privateProcedure
-		.use(withSelectedGroup)
-		.input(API.Bills.UpsertBillSchema)
-		.mutation(async ({ input, ctx: { supabase, user: creator } }) => {
-			const { debtors, issuedAt, creditor, description, receiptFile } = input;
-
-			// Step 1: Insert bill
-			const bill = await BillsControllers.create(supabase, {
-				issuedAt,
-				description,
-				receiptFile,
-				creatorId: creator.id,
-				groupId: creator.group.id,
-				creditorId: creditor.userId,
-				totalAmount: creditor.amount
-			});
-
-			const billMembers = debtors.map(({ userId, amount }) => {
-				return { userId, amount, billId: bill.id, role: "Debtor" as BillMemberRole };
-			});
-
-			await BillMembersControllers.createMany(supabase, creator.id, billMembers);
-		}),
 	getMany: privateProcedure
 		.use(withSelectedGroup)
 		.input(API.Bills.List.PayloadSchema)
@@ -68,5 +44,31 @@ export const billsRouter = router({
 			};
 
 			return BillsControllers.getManyByMemberId(supabase, user, resolvedSearchParams);
+		}),
+	create: privateProcedure
+		.use(withSelectedGroup)
+		.input(API.Bills.UpsertBillSchema)
+		.output(z.object({ displayId: z.string() }))
+		.mutation(async ({ input, ctx: { supabase, user: creator } }) => {
+			const { debtors, issuedAt, creditor, description, receiptFile } = input;
+
+			// Step 1: Insert bill
+			const bill = await BillsControllers.create(supabase, {
+				issuedAt,
+				description,
+				receiptFile,
+				creatorId: creator.id,
+				groupId: creator.group.id,
+				creditorId: creditor.userId,
+				totalAmount: creditor.amount
+			});
+
+			const billMembers = debtors.map(({ userId, amount }) => {
+				return { userId, amount, billId: bill.id, role: "Debtor" as const, billDisplayId: bill.displayId };
+			});
+
+			await BillMembersControllers.createMany(supabase, creator.id, billMembers);
+
+			return { displayId: bill.displayId };
 		})
 });

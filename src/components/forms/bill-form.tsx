@@ -11,13 +11,11 @@ import { useForm, useFieldArray } from "react-hook-form";
 
 import { Input } from "@/components/shadcn/input";
 import { Button } from "@/components/shadcn/button";
-import { Skeleton } from "@/components/shadcn/skeleton";
 import { Form, FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
 
 import { ImageDialog } from "@/components/dialogs/image-dialog";
 import { RequiredLabel } from "@/components/forms/required-label";
 import { FileUpload } from "@/components/forms/inputs/file-upload";
-import { SkeletonWrapper } from "@/components/mics/skeleton-wrapper";
 import { BillFormHeading } from "@/components/forms/bill-form-heading";
 import { BillMemberInputs } from "@/components/forms/inputs/bill-member-inputs";
 
@@ -36,7 +34,7 @@ import {
 } from "@/schemas/form.schema";
 
 export namespace BillForm {
-	export type Kind = { readonly type: "create" } | { readonly type: "update"; readonly billId: string };
+	export type Kind = { readonly type: "create" } | { readonly type: "update"; readonly bill: ClientBill };
 
 	export interface Props {
 		readonly kind: Kind;
@@ -92,16 +90,19 @@ namespace BillFormStateTransformer {
 	}
 }
 
-function useBillForm() {
+function useBillForm(kind: BillForm.Kind) {
 	return useForm<BillFormState>({
 		resolver: zodResolver(BillFormStateSchema),
-		defaultValues: {
-			description: "",
-			receiptFile: null,
-			creditor: { userId: "", amount: "" },
-			debtors: [{ amount: "", userId: "" }],
-			issuedAt: formatDate(format(new Date(), SERVER_DATE_FORMAT)).client
-		}
+		defaultValues:
+			kind.type === "update"
+				? BillFormStateTransformer.fromServer(kind.bill)
+				: {
+						description: "",
+						receiptFile: null,
+						creditor: { userId: "", amount: "" },
+						debtors: [{ amount: "", userId: "" }],
+						issuedAt: formatDate(format(new Date(), SERVER_DATE_FORMAT)).client
+					}
 	});
 }
 
@@ -118,21 +119,8 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 	const createBill = useCreateBill();
 	const updateBill = useUpdateBill(endEditing);
 
-	const { data: bill, isPending: loadingBill } = trpc.bills.get.useQuery(
-		{ billId: kind.type === "update" ? kind.billId : "" },
-		{ enabled: kind.type === "update" }
-	);
-
-	const loading = React.useMemo(() => kind.type === "update" && loadingBill, [kind.type, loadingBill]);
-
-	const form = useBillForm();
-	const { watch, reset, control, getValues, handleSubmit } = form;
-
-	React.useEffect(() => {
-		if (bill) {
-			reset(BillFormStateTransformer.fromServer(bill));
-		}
-	}, [bill, reset, getValues]);
+	const form = useBillForm(kind);
+	const { watch, reset, control, handleSubmit } = form;
 
 	watch("debtors");
 	const { fields: debtors, append: appendDebtor, remove: removeDebtors } = useFieldArray({ control, name: "debtors" });
@@ -144,7 +132,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 			if (kind.type === "create") {
 				createBill(bill);
 			} else if (kind.type === "update") {
-				updateBill({ ...bill, id: kind.billId });
+				updateBill({ ...bill, displayId: kind.bill.displayId });
 			} else {
 				throw new Error("Invalid form type");
 			}
@@ -156,7 +144,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 	return (
 		<Form {...form}>
 			<div className="flex flex-col gap-4">
-				<BillFormHeading kind={kind} bill={bill} />
+				<BillFormHeading kind={kind} />
 				<div className="grid grid-cols-10 gap-4">
 					<div className="col-span-10">
 						<div className="grid grid-cols-10 grid-rows-2 gap-4">
@@ -168,14 +156,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 										<FormItem>
 											<RequiredLabel>Description</RequiredLabel>
 											<FormControl>
-												<SkeletonWrapper loading={loading} skeleton={<Skeleton className="h-10 w-full" />}>
-													<Input
-														readOnly={!editing}
-														placeholder="Enter bill description"
-														className={editing ? "" : "pointer-events-none"}
-														{...field}
-													/>
-												</SkeletonWrapper>
+												<Input readOnly={!editing} placeholder="Enter bill description" className={editing ? "" : "pointer-events-none"} {...field} />
 											</FormControl>
 											<FormMessage />
 										</FormItem>
@@ -190,12 +171,11 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 										<FileUpload
 											buttonSize="md"
 											editing={editing}
-											loading={loading}
 											bucketName="receipts"
 											onChange={field.onChange}
 											fileId={field.value ?? undefined}
 											imageRenderer={(src) => <ImageDialog src={src} />}
-											ownerId={kind.type === "update" ? kind.billId : undefined}
+											ownerId={kind.type === "update" ? kind.bill.id : undefined}
 										/>
 									)}
 								/>
@@ -208,9 +188,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 										<FormItem>
 											<RequiredLabel>Issued At</RequiredLabel>
 											<FormControl>
-												<SkeletonWrapper loading={loading} skeleton={<Skeleton className="h-10 w-full" />}>
-													<Input readOnly={!editing} placeholder={CLIENT_DATE_FORMAT} className={editing ? "" : "pointer-events-none"} {...field} />
-												</SkeletonWrapper>
+												<Input readOnly={!editing} placeholder={CLIENT_DATE_FORMAT} className={editing ? "" : "pointer-events-none"} {...field} />
 											</FormControl>
 											<FormMessage />
 										</FormItem>
@@ -220,13 +198,12 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 						</div>
 					</div>
 
-					<BillMemberInputs editing={editing} loading={loading} member={{ type: "creditor" }} />
+					<BillMemberInputs editing={editing} member={{ type: "creditor" }} />
 					{debtors.map((debtor, debtorIndex) => {
 						return (
 							<BillMemberInputs
 								key={debtor.id}
 								editing={editing}
-								loading={loading}
 								member={{ debtorIndex, type: "debtor" }}
 								onRemove={() => removeDebtors(debtorIndex)}
 							/>

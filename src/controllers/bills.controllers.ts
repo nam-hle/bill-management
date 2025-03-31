@@ -1,14 +1,16 @@
 import { TRPCError } from "@trpc/server";
 
 import { type API } from "@/api";
+import { BillIdGenerator } from "@/utils";
 import { type ClientBill } from "@/schemas";
-import { ensureAuthorized } from "@/controllers/utils";
+import { pickUniqueId, ensureAuthorized } from "@/controllers/utils";
 import { type MemberContext, type SupabaseInstance } from "@/services/supabase/server";
 import { GroupController, UserControllers, NotificationsControllers } from "@/controllers";
 
 export namespace BillsControllers {
 	const BILLS_SELECT = `
     id,
+    displayId:display_id,
     group:groups!group_id (${GroupController.GROUP_SELECT}),
     
     creator:profiles!creator_id   (${UserControllers.USER_META_SELECT}),
@@ -46,18 +48,21 @@ export namespace BillsControllers {
 			receiptFile: receipt_file,
 			totalAmount: total_amount
 		} = payload;
+		const displayId = await pickUniqueId(supabase, "bills", "display_id", BillIdGenerator);
+
 		const { data } = await supabase
 			.from("bills")
-			.insert({ group_id, issued_at, creator_id, description, creditor_id, receipt_file, total_amount })
-			.select("id")
-			.single();
+			.insert({ group_id, issued_at, creator_id, description, creditor_id, receipt_file, total_amount, display_id: displayId })
+			.select("id, displayId:display_id")
+			.single()
+			.throwOnError();
 
 		if (!data) {
 			throw new Error("Error creating bill");
 		}
 
 		await NotificationsControllers.createManyBillCreated(supabase, [
-			{ billId: data.id, role: "Creditor", userId: creditor_id, amount: total_amount, triggerId: creator_id }
+			{ role: "Creditor", userId: creditor_id, amount: total_amount, triggerId: creator_id, billDisplayId: displayId }
 		]);
 
 		return data;
@@ -88,22 +93,20 @@ export namespace BillsControllers {
 			}
 		}
 
-		const { data, error } = await supabase.rpc("get_filtered_bills", {
-			page_size: limit,
-			page_number: page,
-			text_search: textSearch ?? undefined,
-			since_timestamp: sinceDate ?? undefined,
+		const { data } = await supabase
+			.rpc("get_filtered_bills", {
+				page_size: limit,
+				page_number: page,
+				text_search: textSearch ?? undefined,
+				since_timestamp: sinceDate ?? undefined,
 
-			member,
-			debtor,
-			creator,
-			creditor,
-			group: memberContext.group.id
-		});
-
-		if (error) {
-			throw error;
-		}
+				member,
+				debtor,
+				creator,
+				creditor,
+				group: memberContext.group.id
+			})
+			.throwOnError();
 
 		if (!data?.length) {
 			return { data: [], fullSize: 0 };
@@ -113,7 +116,8 @@ export namespace BillsControllers {
 			.from("bills")
 			.select(BILLS_SELECT)
 			.in("id", data?.map((e) => e.id) ?? [])
-			.order("created_at", { ascending: false });
+			.order("created_at", { ascending: false })
+			.throwOnError();
 
 		return { fullSize: data[0].total_count, data: bills?.map(toClientBill) ?? [] };
 	}
@@ -145,8 +149,8 @@ export namespace BillsControllers {
 
 	type BillSelectResult = Awaited<ReturnType<typeof __get>>;
 
-	export async function getById(supabase: SupabaseInstance, payload: { userId: string; billId: string }): Promise<ClientBill> {
-		const { data: bill } = await supabase.from("bills").select(BILLS_SELECT).eq("id", payload.billId).single();
+	export async function getByDisplayId(supabase: SupabaseInstance, payload: { userId: string; displayId: string }): Promise<ClientBill> {
+		const { data: bill } = await supabase.from("bills").select(BILLS_SELECT).eq("display_id", payload.displayId).single().throwOnError();
 
 		if (!bill) {
 			throw new TRPCError({ code: "NOT_FOUND", message: "Bill not found" });
@@ -158,9 +162,9 @@ export namespace BillsControllers {
 		return toClientBill(bill);
 	}
 
-	export async function updateById(
+	export async function updateByDisplayId(
 		supabase: SupabaseInstance,
-		id: string,
+		displayId: string,
 		payload: {
 			issuedAt: string;
 			updaterId: string;
@@ -179,47 +183,36 @@ export namespace BillsControllers {
 			receiptFile: receipt_file
 		} = payload;
 
-		const { data: currentBill } = await supabase.from("bills").select(BILLS_SELECT).eq("id", id).single();
+		const { data: currentBill } = await supabase.from("bills").select(BILLS_SELECT).eq("display_id", displayId).single().throwOnError();
 
 		if (!currentBill) {
 			throw new Error("Bill not found");
 		}
 
-		await computeCreditorNotifications(supabase, {
-			billId: id,
+		await createCreditorNotifications(supabase, {
 			triggerId: updater_id,
+			displayId: currentBill.displayId,
 			nextCreditor: { userId: creditor_id, amount: total_amount },
 			currentCreditor: { amount: currentBill.totalAmount, userId: currentBill.creditor.userId }
 		});
 
-		const { data, error } = await supabase
+		await supabase
 			.from("bills")
 			.update({ issued_at, updater_id, creditor_id, description, total_amount, receipt_file })
-			.eq("id", id)
-			.select();
-
-		// TODO: Update creditor notifications
-
-		if (error) {
-			throw error;
-		}
-
-		if (!data) {
-			throw new Error("Error updating bill");
-		}
-
-		return data;
+			.eq("display_id", displayId)
+			.select()
+			.throwOnError();
 	}
 
 	interface Creditor {
 		readonly userId: string;
 		readonly amount: number;
 	}
-	async function computeCreditorNotifications(
+	async function createCreditorNotifications(
 		supabase: SupabaseInstance,
-		payload: { billId: string; triggerId: string; nextCreditor: Creditor; currentCreditor: Creditor }
+		payload: { triggerId: string; displayId: string; nextCreditor: Creditor; currentCreditor: Creditor }
 	) {
-		const { billId, triggerId, nextCreditor, currentCreditor } = payload;
+		const { triggerId, displayId, nextCreditor, currentCreditor } = payload;
 
 		if (currentCreditor.userId === nextCreditor.userId) {
 			if (currentCreditor.amount === nextCreditor.amount) {
@@ -227,15 +220,23 @@ export namespace BillsControllers {
 			}
 
 			await NotificationsControllers.createManyBillUpdated(supabase, [
-				{ billId, triggerId, userId: currentCreditor.userId, currentAmount: nextCreditor.amount, previousAmount: currentCreditor.amount }
+				{
+					triggerId,
+					billDisplayId: displayId,
+					userId: currentCreditor.userId,
+					currentAmount: nextCreditor.amount,
+					previousAmount: currentCreditor.amount
+				}
 			]);
 
 			return;
 		}
 
-		await NotificationsControllers.createManyBillDeleted(supabase, [{ billId, triggerId, role: "Creditor", userId: currentCreditor.userId }]);
+		await NotificationsControllers.createManyBillDeleted(supabase, [
+			{ triggerId, role: "Creditor", billDisplayId: displayId, userId: currentCreditor.userId }
+		]);
 		await NotificationsControllers.createManyBillCreated(supabase, [
-			{ billId, triggerId, role: "Creditor", amount: nextCreditor.amount, userId: nextCreditor.userId }
+			{ triggerId, role: "Creditor", billDisplayId: displayId, amount: nextCreditor.amount, userId: nextCreditor.userId }
 		]);
 	}
 }

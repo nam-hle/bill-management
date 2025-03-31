@@ -55,7 +55,7 @@ function renderLink(notification: ClientNotification) {
 		case "BillCreated":
 		case "BillDeleted":
 		case "BillUpdated":
-			return `/bills/${notification.bill.id}`;
+			return `/bills/${notification.bill.displayId}`;
 		case "TransactionWaiting":
 		case "TransactionConfirmed":
 		case "TransactionDeclined":

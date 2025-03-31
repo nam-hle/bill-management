@@ -3,11 +3,9 @@ import { test, expect } from "@playwright/test";
 import { Actions } from "@/test/helpers/actions";
 import { Locators } from "@/test/helpers/locators";
 import { USERNAMES, FULL_NAMES } from "@/test/utils";
-import { truncate } from "@/test/functions/truncate";
 import { seedBasicPreset } from "@/test/functions/seed-basic-preset";
 
 test.beforeAll("Setup", async () => {
-	await truncate();
 	await seedBasicPreset();
 });
 

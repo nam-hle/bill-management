@@ -5,7 +5,7 @@ import { TRPCError } from "@trpc/server";
 import { Pagination } from "@/types";
 import { Environments } from "@/environments";
 import { DEFAULT_PAGE_NUMBER } from "@/constants";
-import { assert, generateNumberDisplayId } from "@/utils";
+import { assert, TransactionIdGenerator } from "@/utils";
 import { pickUniqueId, ensureAuthorized } from "@/controllers/utils";
 import { type MemberContext, type SupabaseInstance } from "@/services/supabase/server";
 import { GroupController, UserControllers, BankAccountsController, NotificationsControllers } from "@/controllers";
@@ -36,12 +36,12 @@ export namespace TransactionsControllers {
 		payload: { amount: number; groupId: string; issuedAt: string; senderId: string; receiverId: string; bankAccountId: string | undefined }
 	) {
 		const { groupId: group_id, issuedAt: issued_at, senderId: sender_id, receiverId: receiver_id, bankAccountId: bank_account_id, ...rest } = payload;
-		const displayId = await pickUniqueId(supabase, "transactions", "display_id", generateNumberDisplayId);
+		const displayId = await pickUniqueId(supabase, "transactions", "display_id", TransactionIdGenerator);
 
 		const { data } = await supabase
 			.from("transactions")
 			.insert({ ...rest, group_id, issued_at, sender_id, receiver_id, bank_account_id, display_id: displayId })
-			.select("id")
+			.select("id, displayId:display_id")
 			.single()
 			.throwOnError();
 
@@ -56,7 +56,7 @@ export namespace TransactionsControllers {
 			transactionDisplayId: displayId
 		});
 
-		return data;
+		return displayId;
 	}
 
 	export async function generateQR(supabase: SupabaseInstance, payload: TransactionQRCreatePayload) {

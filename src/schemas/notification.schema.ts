@@ -28,7 +28,7 @@ const BaseClientNotificationSchema = ServerNotificationSchema.extend({
 	trigger: z.object({ fullName: z.string() })
 });
 
-const NotificationBillSchema = ClientBillSchema.pick({ id: true, description: true }).extend({
+const NotificationBillSchema = ClientBillSchema.pick({ displayId: true, description: true }).extend({
 	creator: z.object({ fullName: z.string() })
 });
 

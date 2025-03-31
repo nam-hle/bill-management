@@ -69,7 +69,7 @@ test("basic", async ({ page }, testInfo) => {
 		const billsTable = await getBillsTable();
 		await billsTable.getRow(0).click();
 
-		await expect(page).toHaveURL(/\/bills\/[a-f0-9-]+$/);
+		await expect(page).toHaveURL(/.*\/bills\/[A-Z0-9-]{6}$/);
 
 		await Actions.BillForm.edit(page);
 

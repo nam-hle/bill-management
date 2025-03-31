@@ -16,7 +16,6 @@ import { trpc } from "@/services";
 
 namespace BillMemberInputs {
 	export interface Props {
-		readonly loading: boolean;
 		readonly editing: boolean;
 		readonly onRemove?: () => void;
 		readonly member: { type: "creditor" } | { type: "debtor"; debtorIndex: number };
@@ -27,7 +26,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 	const { member, editing, onRemove } = props;
 	const { watch, control, register, getValues } = useFormContext<BillFormState>();
 
-	const { isSuccess, data: usersResponse, isPending: isPendingUsers } = trpc.groups.members.useQuery();
+	const { isSuccess, data: usersResponse, isPending: isLoadingUsers } = trpc.groups.members.useQuery();
 
 	const fieldKey = React.useMemo(() => {
 		if (member.type === "creditor") {
@@ -67,12 +66,6 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 		return { selectLabel: `Debtor ${member.debtorIndex + 1}`, amountLabel: `Split Amount ${member.debtorIndex + 1}` };
 	}, [member]);
 
-	const loadingUsers = React.useMemo(() => {
-		return props.loading || isPendingUsers;
-	}, [isPendingUsers, props.loading]);
-
-	const loadingAmount = props.loading;
-
 	const AmountLabel = member.type === "creditor" ? FormLabel : RequiredLabel;
 
 	return (
@@ -84,7 +77,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 					render={({ field }) => (
 						<FormItem>
 							<RequiredLabel>{selectLabel}</RequiredLabel>
-							<SkeletonWrapper loading={loadingUsers} skeleton={<Skeleton className="h-10 w-full" />}>
+							<SkeletonWrapper loading={isLoadingUsers} skeleton={<Skeleton className="h-10 w-full" />}>
 								<Select
 									{...register(`${fieldKey}.userId`)}
 									disabled={!editing}
@@ -106,9 +99,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 						<FormItem>
 							<AmountLabel>{amountLabel}</AmountLabel>
 							<FormControl>
-								<SkeletonWrapper loading={loadingAmount} skeleton={<Skeleton className="h-10 w-full" />}>
-									<Input readOnly={!editing} className={editing ? "" : "pointer-events-none"} {...field} />
-								</SkeletonWrapper>
+								<Input readOnly={!editing} className={editing ? "" : "pointer-events-none"} {...field} />
 							</FormControl>
 							<FormMessage />
 						</FormItem>

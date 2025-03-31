@@ -22,6 +22,7 @@ export const ClientBillSchema = z.object({
 	id: z.string(),
 	group: GroupSchema,
 	issuedAt: z.string(),
+	displayId: z.string(),
 	creditor: ClientBillMemberSchema,
 	receiptFile: z.string().nullable(),
 	debtors: z.array(ClientBillMemberSchema),

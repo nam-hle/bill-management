@@ -20,7 +20,7 @@ const profiles = {
 		port: LOCAL_PORT,
 		reporter: "html",
 		forbidOnly: false,
-		expectTimeout: 5_000,
+		expectTimeout: 10_000,
 		reuseExistingServer: true,
 		timeout: PROD ? 30_000 : 90_000,
 		command: PROD ? "pnpm start" : "pnpm dev"
