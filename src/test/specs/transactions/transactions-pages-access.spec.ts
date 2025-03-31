@@ -8,9 +8,22 @@ import { selectGroup } from "@/test/functions/select-group";
 import { seedBasicPreset, type BasicPreset } from "@/test/functions/seed-basic-preset";
 
 let preset: BasicPreset;
+let url: string;
 
 test.beforeAll(async () => {
 	preset = await seedBasicPreset({ withBankAccounts: true });
+
+	const requester = await createRequester(USERNAMES.harry);
+
+	await requester.user.selectGroup.mutate({ groupId: preset.groups.Gryffindor.id });
+	const { displayId } = await requester.transactions.create.mutate({
+		amount: 40,
+		issuedAt: getCurrentDate(),
+		receiverId: preset.userIds.ron,
+		bankAccountId: preset.bankAccounts.ron[0]
+	});
+
+	url = `/transactions/${displayId}`;
 });
 
 test.beforeEach(async () => {
@@ -73,22 +86,6 @@ test.describe("Create Transaction Page", () => {
 });
 
 test.describe("Transaction Details Page", () => {
-	let url: string;
-
-	test.beforeAll(async () => {
-		const requester = await createRequester(USERNAMES.harry);
-
-		await requester.user.selectGroup.mutate({ groupId: preset.groups.Gryffindor.id });
-		const { displayId } = await requester.transactions.create.mutate({
-			amount: 40,
-			issuedAt: getCurrentDate(),
-			receiverId: preset.userIds.ron,
-			bankAccountId: preset.bankAccounts.ron[0]
-		});
-
-		url = `/transactions/${displayId}`;
-	});
-
 	test("Redirect to login page if not login", async ({ page }) => {
 		await page.goto(url);
 
