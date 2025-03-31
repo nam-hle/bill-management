@@ -221,11 +221,7 @@ export namespace NotificationsControllers {
 	const removeSelfNotification = (payload: BaseBillPayload) => payload.userId !== payload.triggerId;
 
 	async function create(supabaseInstance: SupabaseInstance, payload: Database["public"]["Tables"]["notifications"]["Insert"][]) {
-		const { data, error } = await supabaseInstance.from("notifications").insert(payload).select(NOTIFICATIONS_SELECT);
-
-		if (error) {
-			throw error;
-		}
+		const { data } = await supabaseInstance.from("notifications").insert(payload).select(NOTIFICATIONS_SELECT).throwOnError();
 
 		if (!data) {
 			throw new Error("Error creating notification");
@@ -235,11 +231,11 @@ export namespace NotificationsControllers {
 	}
 
 	export async function readAll(supabase: SupabaseInstance, userId: string) {
-		await supabase.from("notifications").update({ read_status: true }).eq("user_id", userId);
+		await supabase.from("notifications").update({ read_status: true }).eq("user_id", userId).throwOnError();
 	}
 
 	export async function read(supabase: SupabaseInstance, userId: string, notificationId: string) {
-		await supabase.from("notifications").update({ read_status: true }).eq("id", notificationId).eq("user_id", userId);
+		await supabase.from("notifications").update({ read_status: true }).eq("id", notificationId).eq("user_id", userId).throwOnError();
 	}
 
 	export async function getUnread(supabase: SupabaseInstance, userId: string) {

@@ -1,3 +1,4 @@
+import { truncate } from "@/test/functions/truncate";
 import { seedUsers } from "@/test/functions/seed-users";
 import { BANKS, USERNAMES, FULL_NAMES, type UserName, type GroupName } from "@/test/utils";
 import { type Group, type Membership, BankAccountTypeEnumSchema, BankAccountStatusEnumSchema } from "@/schemas";
@@ -8,6 +9,7 @@ export type BasicPreset = Awaited<ReturnType<typeof seedBasicPreset>>;
 
 export async function seedBasicPreset(options?: { withBankAccounts?: boolean }) {
 	try {
+		await truncate();
 		const usersInfo = await seedUsers();
 
 		// Setup Gryffindor group

@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 import { API } from "@/api";
-import type { BillMemberRole } from "@/schemas";
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_NUMBER } from "@/constants";
 import { BillsControllers, BillMembersControllers } from "@/controllers";
 import { router, privateProcedure, withSelectedGroup } from "@/services/trpc/server";
@@ -43,7 +42,7 @@ export const billsRouter = router({
 			});
 
 			const billMembers = debtors.map(({ userId, amount }) => {
-				return { userId, amount, billId: bill.id, billDisplayId: bill.id, role: "Debtor" as BillMemberRole };
+				return { userId, amount, billId: bill.id, role: "Debtor" as const, billDisplayId: bill.display_id };
 			});
 
 			await BillMembersControllers.createMany(supabase, creator.id, billMembers);

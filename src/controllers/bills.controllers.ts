@@ -93,22 +93,20 @@ export namespace BillsControllers {
 			}
 		}
 
-		const { data, error } = await supabase.rpc("get_filtered_bills", {
-			page_size: limit,
-			page_number: page,
-			text_search: textSearch ?? undefined,
-			since_timestamp: sinceDate ?? undefined,
+		const { data } = await supabase
+			.rpc("get_filtered_bills", {
+				page_size: limit,
+				page_number: page,
+				text_search: textSearch ?? undefined,
+				since_timestamp: sinceDate ?? undefined,
 
-			member,
-			debtor,
-			creator,
-			creditor,
-			group: memberContext.group.id
-		});
-
-		if (error) {
-			throw error;
-		}
+				member,
+				debtor,
+				creator,
+				creditor,
+				group: memberContext.group.id
+			})
+			.throwOnError();
 
 		if (!data?.length) {
 			return { data: [], fullSize: 0 };
@@ -118,7 +116,8 @@ export namespace BillsControllers {
 			.from("bills")
 			.select(BILLS_SELECT)
 			.in("id", data?.map((e) => e.id) ?? [])
-			.order("created_at", { ascending: false });
+			.order("created_at", { ascending: false })
+			.throwOnError();
 
 		return { fullSize: data[0].total_count, data: bills?.map(toClientBill) ?? [] };
 	}
@@ -151,7 +150,7 @@ export namespace BillsControllers {
 	type BillSelectResult = Awaited<ReturnType<typeof __get>>;
 
 	export async function getByDisplayId(supabase: SupabaseInstance, payload: { userId: string; displayId: string }): Promise<ClientBill> {
-		const { data: bill } = await supabase.from("bills").select(BILLS_SELECT).eq("display_id", payload.displayId).single();
+		const { data: bill } = await supabase.from("bills").select(BILLS_SELECT).eq("display_id", payload.displayId).single().throwOnError();
 
 		if (!bill) {
 			throw new TRPCError({ code: "NOT_FOUND", message: "Bill not found" });
@@ -184,43 +183,32 @@ export namespace BillsControllers {
 			receiptFile: receipt_file
 		} = payload;
 
-		const { data: currentBill } = await supabase.from("bills").select(BILLS_SELECT).eq("display_id", displayId).single();
+		const { data: currentBill } = await supabase.from("bills").select(BILLS_SELECT).eq("display_id", displayId).single().throwOnError();
 
 		if (!currentBill) {
 			throw new Error("Bill not found");
 		}
 
-		await computeCreditorNotifications(supabase, {
+		await createCreditorNotifications(supabase, {
 			triggerId: updater_id,
 			displayId: currentBill.displayId,
 			nextCreditor: { userId: creditor_id, amount: total_amount },
 			currentCreditor: { amount: currentBill.totalAmount, userId: currentBill.creditor.userId }
 		});
 
-		const { data, error } = await supabase
+		await supabase
 			.from("bills")
 			.update({ issued_at, updater_id, creditor_id, description, total_amount, receipt_file })
 			.eq("display_id", displayId)
-			.select();
-
-		// TODO: Update creditor notifications
-
-		if (error) {
-			throw error;
-		}
-
-		if (!data) {
-			throw new Error("Error updating bill");
-		}
-
-		return data;
+			.select()
+			.throwOnError();
 	}
 
 	interface Creditor {
 		readonly userId: string;
 		readonly amount: number;
 	}
-	async function computeCreditorNotifications(
+	async function createCreditorNotifications(
 		supabase: SupabaseInstance,
 		payload: { triggerId: string; displayId: string; nextCreditor: Creditor; currentCreditor: Creditor }
 	) {

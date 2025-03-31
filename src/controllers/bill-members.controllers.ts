@@ -12,7 +12,8 @@ export namespace BillMembersControllers {
 	export async function createMany(supabase: SupabaseInstance, triggerId: string, payloads: CreatePayload[]) {
 		await supabase
 			.from("bill_debtors")
-			.insert(payloads.map(({ billId: bill_id, userId: user_id, ...payload }) => ({ ...payload, bill_id, user_id })));
+			.insert(payloads.map(({ billDisplayId, billId: bill_id, userId: user_id, ...payload }) => ({ ...payload, bill_id, user_id })))
+			.throwOnError();
 
 		await NotificationsControllers.createManyBillCreated(
 			supabase,
@@ -89,7 +90,7 @@ export namespace BillMembersControllers {
 	}
 	export async function updateManyAmount(supabase: SupabaseInstance, triggerId: string, payloads: UpdateAmountPayload[]) {
 		const updatePromises = payloads.map(({ amount, userId, billId }) =>
-			supabase.from("bill_debtors").update({ amount }).match({ user_id: userId, bill_id: billId }).select()
+			supabase.from("bill_debtors").update({ amount }).match({ user_id: userId, bill_id: billId }).select().throwOnError()
 		);
 
 		const results = await Promise.all(updatePromises);
@@ -115,7 +116,9 @@ export namespace BillMembersControllers {
 	}
 
 	export async function deleteMany(supabase: SupabaseInstance, triggerId: string, payloads: DeletedPayload[]) {
-		const deletePromises = payloads.map(({ userId: user_id, billId: bill_id }) => supabase.from("bill_debtors").delete().match({ bill_id, user_id }));
+		const deletePromises = payloads.map(({ userId: user_id, billId: bill_id }) =>
+			supabase.from("bill_debtors").delete().match({ bill_id, user_id }).throwOnError()
+		);
 
 		const results = await Promise.all(deletePromises);
 
