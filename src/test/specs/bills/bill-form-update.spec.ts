@@ -107,7 +107,7 @@ test("basic", async ({ page }, testInfo) => {
 		await Assertions.assertBillsTable(billsTable, expectedBillsTable);
 
 		await billsTable.getRow(0).click();
-		await expect(page.getByRole("heading", { name: "Bill Details" })).toBeVisible();
+		await expect(page.getByRole("main").getByText("Bill Details")).toBeVisible();
 
 		await Actions.BillForm.edit(page);
 		await Actions.BillForm.fillDescription(page, "Team building");

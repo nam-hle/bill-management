@@ -39,7 +39,7 @@ export function LoginForm() {
 
 	return (
 		<Form {...form}>
-			<div className={cn("mx-auto mt-32 w-[400px] flex-1 items-center")}>
+			<div className={cn("mx-auto mt-24 w-[400px] flex-1 items-center")}>
 				<Card>
 					<CardHeader>
 						<CardTitle className="text-2xl">Login</CardTitle>

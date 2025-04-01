@@ -4,26 +4,26 @@ import { z } from "zod";
 import React from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { PlusCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Ban, Plus, Check, Pencil } from "lucide-react";
 import { useForm, useFieldArray } from "react-hook-form";
 
 import { Input } from "@/components/shadcn/input";
 import { Button } from "@/components/shadcn/button";
 import { Form, FormItem, FormField, FormControl, FormMessage } from "@/components/shadcn/form";
+import { Card, CardTitle, CardHeader, CardFooter, CardContent } from "@/components/shadcn/card";
 
 import { ImageDialog } from "@/components/dialogs/image-dialog";
 import { RequiredLabel } from "@/components/forms/required-label";
 import { FileUpload } from "@/components/forms/inputs/file-upload";
-import { BillFormHeading } from "@/components/forms/bill-form-heading";
 import { BillMemberInputs } from "@/components/forms/inputs/bill-member-inputs";
 
 import { API } from "@/api";
 import { trpc } from "@/services";
 import { useBoolean } from "@/hooks";
-import { CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
 import { type ClientBill, type ClientBillMember } from "@/schemas";
+import { formatTime, CLIENT_DATE_FORMAT, formatDistanceTime, SERVER_DATE_FORMAT } from "@/utils";
 import {
 	IssuedAtField,
 	IssuedAtFieldTransformer,
@@ -140,30 +140,77 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 	}, [createBill, handleSubmit, kind, updateBill]);
 
 	const { isPending: isPendingUsers } = trpc.groups.members.useQuery();
+	const bill = React.useMemo(() => (kind.type === "update" ? kind.bill : undefined), [kind]);
 
 	return (
 		<Form {...form}>
-			<div className="flex flex-col gap-4">
-				<BillFormHeading kind={kind} />
-				<div className="grid grid-cols-10 gap-4">
-					<div className="col-span-10">
-						<div className="grid grid-cols-10 grid-rows-2 gap-4">
-							<div className="col-span-5">
-								<FormField
-									control={control}
-									name="description"
-									render={({ field }) => (
-										<FormItem>
-											<RequiredLabel>Description</RequiredLabel>
-											<FormControl>
-												<Input readOnly={!editing} placeholder="Enter bill description" className={editing ? "" : "pointer-events-none"} {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
+			<div className="mb-6 mt-6 flex flex-col gap-4">
+				<Card className="mx-auto w-full max-w-3xl">
+					<CardHeader className="space-y-1 pb-2">
+						<CardTitle className="text-2xl">
+							{bill ? "Bill Details" : "Create New Bill"}
+							{!editing && (
+								<Button variant="outline" onClick={startEditing} className="float-right ml-auto">
+									Edit
+								</Button>
+							)}
+						</CardTitle>
+						{bill && (
+							<div className="text-sm text-muted-foreground">
+								Created <span title={formatTime(bill.creator.timestamp)}>{formatDistanceTime(bill.creator.timestamp)}</span> by{" "}
+								{bill.creator.fullName}
+								{bill.updater?.timestamp && (
+									<>
+										{" "}
+										• Last updated <span title={formatTime(bill.updater?.timestamp)}>{formatDistanceTime(bill.updater?.timestamp)}</span> by{" "}
+										{bill.updater?.fullName ?? "someone"}
+									</>
+								)}
 							</div>
-							<div className="col-span-3 row-span-2 flex items-center justify-center">
+						)}
+					</CardHeader>
+					<CardContent className="space-y-4">
+						<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+							<div className="space-y-3">
+								<div className="space-y-1">
+									<FormField
+										control={control}
+										name="description"
+										render={({ field }) => (
+											<FormItem>
+												<RequiredLabel>Description</RequiredLabel>
+												<FormControl>
+													<Input
+														readOnly={!editing}
+														placeholder="Enter bill description"
+														className={editing ? "" : "pointer-events-none"}
+														{...field}
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+
+								<div className="space-y-1">
+									<FormField
+										name="issuedAt"
+										control={control}
+										render={({ field }) => (
+											<FormItem>
+												<RequiredLabel>Issued At</RequiredLabel>
+												<FormControl>
+													<Input readOnly={!editing} placeholder={CLIENT_DATE_FORMAT} className={editing ? "" : "pointer-events-none"} {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+							</div>
+
+							<div className="space-y-1">
 								<FormField
 									control={control}
 									name="receiptFile"
@@ -180,46 +227,37 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 									)}
 								/>
 							</div>
-							<div className="col-span-5">
-								<FormField
-									name="issuedAt"
-									control={control}
-									render={({ field }) => (
-										<FormItem>
-											<RequiredLabel>Issued At</RequiredLabel>
-											<FormControl>
-												<Input readOnly={!editing} placeholder={CLIENT_DATE_FORMAT} className={editing ? "" : "pointer-events-none"} {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
 						</div>
-					</div>
 
-					<BillMemberInputs editing={editing} member={{ type: "creditor" }} />
-					{debtors.map((debtor, debtorIndex) => {
-						return (
-							<BillMemberInputs
-								key={debtor.id}
-								editing={editing}
-								member={{ debtorIndex, type: "debtor" }}
-								onRemove={() => removeDebtors(debtorIndex)}
-							/>
-						);
-					})}
-				</div>
+						<div className="space-y-3">
+							<h3 className="text-lg font-medium">Creditor</h3>
+							<BillMemberInputs editing={editing} member={{ type: "creditor" }} />
+						</div>
 
-				<div className={`flex ${editing ? "justify-between" : "justify-end"}`}>
+						<div className="space-y-3">
+							<div className="flex items-center justify-between">
+								<h3 className="text-lg font-medium">Debtors</h3>
+								{editing && (
+									<Button size="sm" variant="outline" onClick={() => appendDebtor({ amount: "", userId: "" })}>
+										<PlusCircle className="mr-2 h-4 w-4" />
+										Add Debtor
+									</Button>
+								)}
+							</div>
+
+							{debtors.map((debtor, debtorIndex) => (
+								<BillMemberInputs
+									key={debtor.id}
+									editing={editing}
+									onRemove={() => removeDebtors(debtorIndex)}
+									member={{ debtorIndex, type: "debtor", lastDebtor: debtorIndex === debtors.length - 1 }}
+								/>
+							))}
+						</div>
+					</CardContent>
+
 					{editing && (
-						<Button size="sm" variant="outline" onClick={() => appendDebtor({ amount: "", userId: "" })}>
-							<Plus />
-							Add debtor
-						</Button>
-					)}
-					{editing && (
-						<div className="flex gap-4">
+						<CardFooter className="flex justify-end gap-2">
 							{kind.type === "update" ? (
 								<>
 									<Button
@@ -229,25 +267,20 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 											endEditing();
 											reset();
 										}}>
-										<Ban /> Cancel
+										Cancel
 									</Button>
 									<Button size="sm" onClick={onSubmit}>
-										<Check /> Save
+										Done
 									</Button>
 								</>
 							) : (
 								<Button size="sm" type="submit" onClick={onSubmit} disabled={isPendingUsers}>
-									<Plus /> Create
+									Create
 								</Button>
 							)}
-						</div>
+						</CardFooter>
 					)}
-					{!editing && (
-						<Button size="sm" variant="outline" onClick={startEditing}>
-							<Pencil /> Edit
-						</Button>
-					)}
-				</div>
+				</Card>
 			</div>
 			{/*<DevTool control={control} />*/}
 		</Form>

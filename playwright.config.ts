@@ -22,7 +22,7 @@ const profiles = {
 		forbidOnly: false,
 		expectTimeout: 10_000,
 		reuseExistingServer: true,
-		timeout: PROD ? 30_000 : 90_000,
+		timeout: PROD ? 30_000 : 50_000,
 		command: PROD ? "pnpm start" : "pnpm dev"
 	}
 } as const;

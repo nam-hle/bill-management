@@ -12,13 +12,14 @@ import { RequiredLabel } from "@/components/forms/required-label";
 import { type BillFormState } from "@/components/forms/bill-form";
 import { SkeletonWrapper } from "@/components/mics/skeleton-wrapper";
 
+import { cn } from "@/utils/cn";
 import { trpc } from "@/services";
 
 namespace BillMemberInputs {
 	export interface Props {
 		readonly editing: boolean;
 		readonly onRemove?: () => void;
-		readonly member: { type: "creditor" } | { type: "debtor"; debtorIndex: number };
+		readonly member: { type: "creditor" } | { type: "debtor"; debtorIndex: number; lastDebtor: boolean };
 	}
 }
 
@@ -58,25 +59,27 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 		});
 	}, [getValues, member, isSuccess, usersResponse]);
 
-	const { selectLabel, amountLabel } = React.useMemo(() => {
+	const amountLabel = React.useMemo(() => {
 		if (member.type === "creditor") {
-			return { selectLabel: "Creditor", amountLabel: "Total Amount" };
+			return "Total Amount";
 		}
 
-		return { selectLabel: `Debtor ${member.debtorIndex + 1}`, amountLabel: `Split Amount ${member.debtorIndex + 1}` };
+		return `Amount`;
 	}, [member]);
 
 	const AmountLabel = member.type === "creditor" ? FormLabel : RequiredLabel;
 
 	return (
-		<>
-			<div className="col-span-5">
+		<div
+			data-testid={fieldKey}
+			className={cn("grid grid-cols-1 items-end gap-3 md:grid-cols-2", { "border-b pb-3": member.type !== "debtor" || !member.lastDebtor })}>
+			<div className="space-y-1">
 				<FormField
 					control={control}
 					name={`${fieldKey}.userId`}
 					render={({ field }) => (
 						<FormItem>
-							<RequiredLabel>{selectLabel}</RequiredLabel>
+							<RequiredLabel>Name</RequiredLabel>
 							<SkeletonWrapper loading={isLoadingUsers} skeleton={<Skeleton className="h-10 w-full" />}>
 								<Select
 									{...register(`${fieldKey}.userId`)}
@@ -91,29 +94,28 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 				/>
 			</div>
 
-			<div className="col-span-3">
-				<FormField
-					control={control}
-					name={`${fieldKey}.amount`}
-					render={({ field }) => (
-						<FormItem>
-							<AmountLabel>{amountLabel}</AmountLabel>
-							<FormControl>
-								<Input readOnly={!editing} className={editing ? "" : "pointer-events-none"} {...field} />
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-			</div>
-
-			<div className="col-span-2 self-end justify-self-end">
+			<div className="flex flex-col items-end gap-2 space-y-2 md:flex-row md:space-y-0">
+				<div className="flex-1 space-y-1">
+					<FormField
+						control={control}
+						name={`${fieldKey}.amount`}
+						render={({ field }) => (
+							<FormItem>
+								<AmountLabel>{amountLabel}</AmountLabel>
+								<FormControl>
+									<Input readOnly={!editing} className={editing ? "" : "pointer-events-none"} {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
 				{editing && onRemove && (
-					<Button size="sm" variant="outline" onClick={onRemove} title="Delete debtor">
-						<Trash2 />
+					<Button size="icon" variant="ghost" onClick={onRemove} title="Remove debtor" className="flex-shrink-0" data-testid={`remove-${fieldKey}`}>
+						<Trash2 className="h-4 w-4" />
 					</Button>
 				)}
 			</div>
-		</>
+		</div>
 	);
 };

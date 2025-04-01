@@ -45,7 +45,7 @@ export function SignUpForm() {
 
 	return (
 		<Form {...form}>
-			<div className={cn("mx-auto mt-32 w-[400px] flex-1 items-center")}>
+			<div className={cn("mx-auto mt-24 w-[400px] flex-1 items-center")}>
 				<Card className="w-full">
 					<CardHeader>
 						<CardTitle className="text-2xl">Sign Up</CardTitle>
