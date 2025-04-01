@@ -19,7 +19,7 @@ export const FallbackAvatar: React.FC<FallbackAvatar.Props> = (props) => {
 	return (
 		<Avatar className={cn("h-10 w-10", className)} data-testid={props["data-testid"] ?? "avatar"}>
 			<AvatarImage src={data} alt={fullName} title={fullName} />
-			<AvatarFallback title={fullName} data-testid="avatar-fallback">
+			<AvatarFallback title={fullName} className="text-xs" data-testid="avatar-fallback">
 				{getAvatarFallback(fullName)}
 			</AvatarFallback>
 		</Avatar>

@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { Button } from "@/components/shadcn/button";
 
+import { OnlineAvatarGroup } from "@/components/avatars/online-users";
 import { AvatarContainer } from "@/components/avatars/avatar-container";
 import { GroupSwitcher } from "@/components/layouts/navigation-bar/group-switcher";
 import { NotificationContainer } from "@/components/layouts/notifications/notification-container";
@@ -27,6 +28,7 @@ export const UserActions = () => {
 
 	return (
 		<>
+			<OnlineAvatarGroup />
 			<GroupSwitcher />
 			<NotificationContainer />
 			<AvatarContainer />
