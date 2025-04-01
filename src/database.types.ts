@@ -405,6 +405,7 @@ export type Database = {
 				Row: {
 					id: string;
 					group_id: string;
+					commit_id: string;
 					issued_at: string;
 					created_at: string;
 					creator_id: string;
@@ -419,6 +420,7 @@ export type Database = {
 				Insert: {
 					id?: string;
 					group_id: string;
+					commit_id: string;
 					issued_at: string;
 					creator_id: string;
 					display_id: string;
@@ -433,6 +435,7 @@ export type Database = {
 				Update: {
 					id?: string;
 					group_id?: string;
+					commit_id?: string;
 					issued_at?: string;
 					created_at?: string;
 					creator_id?: string;

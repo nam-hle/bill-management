@@ -13,6 +13,10 @@ export namespace Assertions {
 		await expect(page.getByText(message, { exact: true })).toBeVisible();
 	}
 
+	export async function assertNoToast(page: Page, message: string) {
+		await expect(page.getByText(message, { exact: true })).not.toBeVisible();
+	}
+
 	export async function assertStats(page: Page, expected: Partial<Record<(typeof StateLabels)[number], string>>) {
 		await test.step("Assert Stats", async () => {
 			for (const label of StateLabels) {

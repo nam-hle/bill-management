@@ -9,21 +9,25 @@ export const billsRouter = router({
 	get: privateProcedure
 		.input(z.object({ displayId: z.string() }))
 		.query(({ input, ctx: { user, supabase } }) => BillsControllers.getByDisplayId(supabase, { ...input, userId: user.id })),
-	update: privateProcedure.input(API.Bills.Update.PayloadSchema).mutation(async ({ input, ctx: { supabase, user: updater } }) => {
-		const { debtors, issuedAt, creditor, displayId, description, receiptFile } = input;
+	update: privateProcedure
+		.input(API.Bills.Update.PayloadSchema)
+		.output(z.object({ commitId: z.string() }).strict())
+		.mutation(async ({ input, ctx: { supabase, user: updater } }) => {
+			const { debtors, commitId, issuedAt, creditor, displayId, description, receiptFile } = input;
 
-		// Members need to be updated first
-		await BillMembersControllers.updateMany(supabase, updater.id, { nextDebtors: debtors, billDisplayId: displayId });
+			// Members need to be updated first
+			await BillMembersControllers.updateMany(supabase, updater.id, { nextDebtors: debtors, billDisplayId: displayId });
 
-		await BillsControllers.updateByDisplayId(supabase, displayId, {
-			issuedAt,
-			receiptFile,
-			description,
-			updaterId: updater.id,
-			creditorId: creditor.userId,
-			totalAmount: creditor.amount
-		});
-	}),
+			return BillsControllers.updateByDisplayId(supabase, displayId, {
+				issuedAt,
+				commitId,
+				receiptFile,
+				description,
+				updaterId: updater.id,
+				creditorId: creditor.userId,
+				totalAmount: creditor.amount
+			});
+		}),
 	getMany: privateProcedure
 		.use(withSelectedGroup)
 		.input(API.Bills.List.PayloadSchema)

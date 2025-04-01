@@ -186,7 +186,7 @@ export namespace TransactionsControllers {
 	}
 
 	export async function getByDisplayId(supabase: SupabaseInstance, payload: { userId: string; displayId: string }): Promise<Transaction> {
-		const { data } = await supabase.from("transactions").select(TRANSACTIONS_SELECT).eq("display_id", payload.displayId).single().throwOnError();
+		const { data } = await supabase.from("transactions").select(TRANSACTIONS_SELECT).eq("display_id", payload.displayId).single();
 
 		if (!data) {
 			throw new TRPCError({ code: "NOT_FOUND", message: "Transaction not found" });

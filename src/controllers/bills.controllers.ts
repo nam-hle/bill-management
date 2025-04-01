@@ -1,8 +1,8 @@
 import { TRPCError } from "@trpc/server";
 
 import { type API } from "@/api";
-import { BillIdGenerator } from "@/utils";
 import { type ClientBill } from "@/schemas";
+import { BillIdGenerator, CommitIdGenerator } from "@/utils";
 import { pickUniqueId, ensureAuthorized } from "@/controllers/utils";
 import { type MemberContext, type SupabaseInstance } from "@/services/supabase/server";
 import { GroupController, UserControllers, NotificationsControllers } from "@/controllers";
@@ -10,6 +10,7 @@ import { GroupController, UserControllers, NotificationsControllers } from "@/co
 export namespace BillsControllers {
 	const BILLS_SELECT = `
     id,
+    commitId:commit_id,
     displayId:display_id,
     group:groups!group_id (${GroupController.GROUP_SELECT}),
     
@@ -52,7 +53,17 @@ export namespace BillsControllers {
 
 		const { data } = await supabase
 			.from("bills")
-			.insert({ group_id, issued_at, creator_id, description, creditor_id, receipt_file, total_amount, display_id: displayId })
+			.insert({
+				group_id,
+				issued_at,
+				creator_id,
+				description,
+				creditor_id,
+				receipt_file,
+				total_amount,
+				display_id: displayId,
+				commit_id: CommitIdGenerator()
+			})
 			.select("id, displayId:display_id")
 			.single()
 			.throwOnError();
@@ -150,7 +161,7 @@ export namespace BillsControllers {
 	type BillSelectResult = Awaited<ReturnType<typeof __get>>;
 
 	export async function getByDisplayId(supabase: SupabaseInstance, payload: { userId: string; displayId: string }): Promise<ClientBill> {
-		const { data: bill } = await supabase.from("bills").select(BILLS_SELECT).eq("display_id", payload.displayId).single().throwOnError();
+		const { data: bill } = await supabase.from("bills").select(BILLS_SELECT).eq("display_id", payload.displayId).single();
 
 		if (!bill) {
 			throw new TRPCError({ code: "NOT_FOUND", message: "Bill not found" });
@@ -166,6 +177,7 @@ export namespace BillsControllers {
 		supabase: SupabaseInstance,
 		displayId: string,
 		payload: {
+			commitId: string;
 			issuedAt: string;
 			updaterId: string;
 			creditorId: string;
@@ -173,8 +185,9 @@ export namespace BillsControllers {
 			description: string;
 			receiptFile: string | null;
 		}
-	) {
+	): Promise<{ commitId: string }> {
 		const {
+			commitId,
 			description,
 			issuedAt: issued_at,
 			updaterId: updater_id,
@@ -189,6 +202,10 @@ export namespace BillsControllers {
 			throw new Error("Bill not found");
 		}
 
+		if (currentBill.commitId !== commitId) {
+			throw new TRPCError({ code: "CONFLICT", message: "Bill has been updated by another user" });
+		}
+
 		await createCreditorNotifications(supabase, {
 			triggerId: updater_id,
 			displayId: currentBill.displayId,
@@ -196,12 +213,16 @@ export namespace BillsControllers {
 			currentCreditor: { amount: currentBill.totalAmount, userId: currentBill.creditor.userId }
 		});
 
+		const newCommitId = CommitIdGenerator();
+
 		await supabase
 			.from("bills")
-			.update({ issued_at, updater_id, creditor_id, description, total_amount, receipt_file })
+			.update({ issued_at, updater_id, creditor_id, description, total_amount, receipt_file, commit_id: newCommitId })
 			.eq("display_id", displayId)
 			.select()
 			.throwOnError();
+
+		return { commitId: newCommitId };
 	}
 
 	interface Creditor {
