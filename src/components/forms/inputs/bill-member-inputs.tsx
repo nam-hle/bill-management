@@ -70,7 +70,9 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 	const AmountLabel = member.type === "creditor" ? FormLabel : RequiredLabel;
 
 	return (
-		<div className={cn("grid grid-cols-1 items-end gap-3 md:grid-cols-2", { "border-b pb-3": member.type !== "debtor" || !member.lastDebtor })}>
+		<div
+			data-testid={fieldKey}
+			className={cn("grid grid-cols-1 items-end gap-3 md:grid-cols-2", { "border-b pb-3": member.type !== "debtor" || !member.lastDebtor })}>
 			<div className="space-y-1">
 				<FormField
 					control={control}
@@ -109,7 +111,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 					/>
 				</div>
 				{editing && onRemove && (
-					<Button size="icon" variant="ghost" onClick={onRemove} className="flex-shrink-0">
+					<Button size="icon" variant="ghost" onClick={onRemove} title="Remove debtor" className="flex-shrink-0" data-testid={`remove-${fieldKey}`}>
 						<Trash2 className="h-4 w-4" />
 					</Button>
 				)}

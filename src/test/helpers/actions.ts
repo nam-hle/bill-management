@@ -89,6 +89,14 @@ export namespace Actions {
 		});
 	}
 
+	export async function selectBillMember(page: Page, testId: "creditor" | `debtors.${number}`, value: string) {
+		await test.step(`Select ${value} in ${testId}`, async () => {
+			await page.getByTestId(testId).getByRole("combobox").click();
+
+			await page.getByRole("option", { name: value }).click();
+		});
+	}
+
 	export async function fillInput(page: Page, name: string, value: string) {
 		await test.step(`Fill ${name} with ${value}`, async () => {
 			await page.fill(`input[name="${name}"]`, value);
@@ -208,7 +216,7 @@ export namespace Actions {
 
 		export async function save(page: Page) {
 			await test.step("Save bill", async () => {
-				await page.getByRole("button", { name: "Save" }).click();
+				await page.getByRole("button", { name: "Done" }).click();
 			});
 		}
 
@@ -226,7 +234,7 @@ export namespace Actions {
 
 		export async function removeDebtor(page: Page, debtorIndex: number) {
 			await test.step(`Remove debtor`, async () => {
-				await page.getByRole("button", { name: "Delete debtor" }).nth(debtorIndex).click();
+				await page.getByTestId(`remove-debtors.${debtorIndex}`).click();
 			});
 		}
 
@@ -235,7 +243,7 @@ export namespace Actions {
 		}
 
 		export async function selectCreditor(page: Page, name: string) {
-			await selectOption(page, "Creditor", name);
+			await selectBillMember(page, "creditor", name);
 		}
 
 		export async function fillCreditorAmount(page: Page, amount: string) {
@@ -243,7 +251,7 @@ export namespace Actions {
 		}
 
 		export async function selectDebtor(page: Page, debtorIndex: number, name: string) {
-			await selectOption(page, `Debtor ${debtorIndex + 1}`, name);
+			await selectBillMember(page, `debtors.${debtorIndex}`, name);
 		}
 
 		export async function fillDebtorAmount(page: Page, debtorIndex: number, amount: string) {

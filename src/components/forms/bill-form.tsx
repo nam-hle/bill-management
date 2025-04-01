@@ -144,7 +144,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 
 	return (
 		<Form {...form}>
-			<div className="mt-24 flex flex-col gap-4">
+			<div className="mb-6 mt-6 flex flex-col gap-4">
 				<Card className="mx-auto w-full max-w-3xl">
 					<CardHeader className="space-y-1 pb-2">
 						<CardTitle className="text-2xl">
