@@ -1,4 +1,4 @@
-import { customAlphabet } from "nanoid";
+import { nanoid, customAlphabet } from "nanoid";
 import { format, isToday, isThisWeek, isYesterday, formatDistanceToNow, differenceInCalendarDays } from "date-fns";
 
 export function noop() {}
@@ -102,3 +102,5 @@ const ALPHABETS = {
 export const TransactionIdGenerator = customAlphabet(ALPHABETS.alphanumeric, 6);
 export const BillIdGenerator = customAlphabet(ALPHABETS.alphanumeric, 6);
 export const GroupIdGenerator = customAlphabet(ALPHABETS.numeric, 8);
+
+export const CommitIdGenerator = () => nanoid();

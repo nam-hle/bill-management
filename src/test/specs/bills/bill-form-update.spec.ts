@@ -3,8 +3,9 @@ import { expect } from "@playwright/test";
 import { test } from "@/test/setup";
 import { Actions } from "@/test/helpers/actions";
 import { Locators } from "@/test/helpers/locators";
-import { USERNAMES, FULL_NAMES } from "@/test/utils";
 import { Assertions } from "@/test/helpers/assertions";
+import { createRequester } from "@/test/helpers/requester";
+import { USERNAMES, FULL_NAMES, getCurrentDate } from "@/test/utils";
 import { seedBasicPreset } from "@/test/functions/seed-basic-preset";
 
 const expectedBillsTable: Assertions.BillsTableExpectation = {
@@ -170,5 +171,66 @@ test("basic", async ({ page }, testInfo) => {
 
 			await Actions.logout(page);
 		}
+	});
+});
+
+test("Parallel update", async ({ page, browser }) => {
+	const preset = await seedBasicPreset();
+
+	const harryRequester = await createRequester(USERNAMES.harry);
+	await harryRequester.bills.create.mutate({
+		receiptFile: null,
+		description: "Party",
+		issuedAt: getCurrentDate(),
+		debtors: [{ amount: 20, userId: preset.userIds.ron }],
+		creditor: { amount: 40, userId: preset.userIds.harry }
+	});
+
+	await test.step("Harry opens the bill", async () => {
+		await Actions.login(page, USERNAMES.harry);
+		await Actions.goToBillsPage(page);
+
+		const billsTable = await Locators.locateTable(page, 0);
+		await billsTable.getRow(0).click();
+
+		await expect(page.getByRole("main").getByText("Bill Details")).toBeVisible();
+	});
+
+	const ronPage = await (await browser.newContext()).newPage();
+
+	await test.step("Ron opens the bill", async () => {
+		await Actions.login(ronPage, USERNAMES.ron);
+		await Actions.goToBillsPage(ronPage);
+
+		const billsTable = await Locators.locateTable(ronPage, 0);
+		await billsTable.getRow(0).click();
+
+		await expect(ronPage.getByRole("main").getByText("Bill Details")).toBeVisible();
+	});
+
+	await test.step("Harry edits description", async () => {
+		await Actions.BillForm.edit(page);
+		await Actions.BillForm.fillDescription(page, "First Harry Edit");
+		await Actions.BillForm.save(page);
+
+		await Assertions.assertToast(page, "The bill details have been updated successfully.");
+	});
+
+	await test.step("Ron edits description too", async () => {
+		await Actions.BillForm.edit(ronPage);
+		await Actions.BillForm.fillDescription(ronPage, "Ron Edit");
+		await Actions.BillForm.save(ronPage);
+
+		await Assertions.assertToast(ronPage, "The bil has been updated recently. Please reload and try again.");
+	});
+
+	await test.step("Harry continues edit description", async () => {
+		await Assertions.assertNoToast(page, "The bill details have been updated successfully.");
+
+		await Actions.BillForm.edit(page);
+		await Actions.BillForm.fillDescription(page, "Second Harry Edit");
+		await Actions.BillForm.save(page);
+
+		await Assertions.assertToast(page, "The bill details have been updated successfully.");
 	});
 });

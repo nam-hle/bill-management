@@ -16,10 +16,8 @@ export namespace API {
 			description: z.string().max(50, "Description is too long").min(1, "Description is required")
 		});
 
-		export type UpsertBill = z.infer<typeof UpsertBillSchema>;
-
 		export namespace Update {
-			export const PayloadSchema = UpsertBillSchema.extend({ displayId: z.string() });
+			export const PayloadSchema = UpsertBillSchema.extend({ commitId: z.string(), displayId: z.string() });
 		}
 
 		export namespace List {

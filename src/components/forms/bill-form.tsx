@@ -80,7 +80,7 @@ namespace BillFormStateTransformer {
 		};
 	}
 
-	export function toServer(formState: BillFormState): API.Bills.UpsertBill {
+	export function toServer(formState: BillFormState): z.infer<typeof API.Bills.UpsertBillSchema> {
 		return {
 			...formState,
 			creditor: CreditorTransformer.toServer(formState.creditor),
@@ -116,8 +116,13 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 	const { kind } = props;
 	const [editing, { setFalse: endEditing, setTrue: startEditing }] = useBoolean(() => kind.type === "create");
 
+	const [commitId, setCommitId] = React.useState(() => (kind.type === "update" ? kind.bill.commitId : ""));
+
 	const createBill = useCreateBill();
-	const updateBill = useUpdateBill(endEditing);
+	const updateBill = useUpdateBill((commitId) => {
+		endEditing();
+		setCommitId(() => commitId);
+	});
 
 	const form = useBillForm(kind);
 	const { watch, reset, control, handleSubmit } = form;
@@ -132,12 +137,12 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 			if (kind.type === "create") {
 				createBill(bill);
 			} else if (kind.type === "update") {
-				updateBill({ ...bill, displayId: kind.bill.displayId });
+				updateBill({ ...bill, commitId, displayId: kind.bill.displayId });
 			} else {
 				throw new Error("Invalid form type");
 			}
 		});
-	}, [createBill, handleSubmit, kind, updateBill]);
+	}, [createBill, commitId, handleSubmit, kind, updateBill]);
 
 	const { isPending: isPendingUsers } = trpc.groups.members.useQuery();
 	const bill = React.useMemo(() => (kind.type === "update" ? kind.bill : undefined), [kind]);
@@ -305,17 +310,17 @@ function useCreateBill() {
 	return mutate;
 }
 
-function useUpdateBill(onSuccess: () => void) {
+function useUpdateBill(onSuccess: (newCommitId: string) => void) {
 	const utils = trpc.useUtils();
 
 	const { mutate } = trpc.bills.update.useMutation({
-		onError: () => {
-			toast.error("Failed to update bill");
+		onError: (error) => {
+			toast.error(error.data?.code === "CONFLICT" ? "The bil has been updated recently. Please reload and try again." : "Failed to update bill");
 		},
-		onSuccess: () => {
+		onSuccess: (data) => {
 			toast.success("The bill details have been updated successfully.");
 
-			utils.bills.getMany.invalidate().then(onSuccess);
+			utils.bills.getMany.invalidate().then(() => onSuccess(data.commitId));
 		}
 	});
 
