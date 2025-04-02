@@ -23,6 +23,7 @@ import { CopyButton } from "@/components/buttons/copy-button";
 import { RequiredLabel } from "@/components/forms/required-label";
 import { LoadingButton } from "@/components/buttons/loading-button";
 import { SkeletonWrapper } from "@/components/mics/skeleton-wrapper";
+import { AmountInput } from "@/components/forms/inputs/amount-input";
 import { TransactionAction } from "@/components/mics/transaction-action";
 import { TransactionStatusBadge } from "@/components/mics/transaction-status-badge";
 
@@ -197,7 +198,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 						<FormItem>
 							<RequiredLabel>Amount</RequiredLabel>
 							<FormControl>
-								<Input {...field} readOnly={!editing} className={editing ? "" : "pointer-events-none"} />
+								<AmountInput {...field} disabled={!editing} />
 							</FormControl>
 							<FormMessage />
 						</FormItem>

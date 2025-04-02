@@ -23,7 +23,7 @@ export const Select: React.FC<Select.Props> = (props) => {
 		<>
 			<ShadCN.Select {...rest}>
 				<FormControl>
-					<ShadCN.SelectTrigger className="w-full">
+					<ShadCN.SelectTrigger className="h-9 w-full">
 						<ShadCN.SelectValue placeholder={(items.length === 0 && emptyPlaceholder) || "Select one"} />
 					</ShadCN.SelectTrigger>
 				</FormControl>

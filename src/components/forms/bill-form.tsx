@@ -152,10 +152,10 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 			<div className="mb-6 mt-6 flex flex-col gap-4">
 				<Card className="mx-auto w-full max-w-3xl">
 					<CardHeader className="space-y-1 pb-2">
-						<CardTitle className="text-2xl">
+						<CardTitle className="min-h-9 text-2xl">
 							{bill ? "Bill Details" : "Create New Bill"}
 							{!editing && (
-								<Button variant="outline" onClick={startEditing} className="float-right ml-auto">
+								<Button size="sm" variant="outline" onClick={startEditing} className="float-right ml-auto">
 									Edit
 								</Button>
 							)}
@@ -240,7 +240,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 						</div>
 
 						<div className="space-y-3">
-							<div className="flex items-center justify-between">
+							<div className="flex min-h-9 items-center justify-between">
 								<h3 className="text-lg font-medium">Debtors</h3>
 								{editing && (
 									<Button size="sm" variant="outline" onClick={() => appendDebtor({ amount: "", userId: "" })}>
