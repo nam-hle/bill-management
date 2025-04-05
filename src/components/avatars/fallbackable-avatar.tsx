@@ -17,9 +17,9 @@ export const FallbackAvatar: React.FC<FallbackAvatar.Props> = (props) => {
 	const { data } = trpc.storage.get.useQuery({ bucketName: "avatars", fileName: avatarFile || "" }, { enabled: !!avatarFile });
 
 	return (
-		<Avatar className={cn("h-10 w-10", className)} data-testid={props["data-testid"] ?? "avatar"}>
+		<Avatar className={cn("h-8 w-8", className)} data-testid={props["data-testid"] ?? "avatar"}>
 			<AvatarImage src={data} alt={fullName} title={fullName} />
-			<AvatarFallback title={fullName} data-testid="avatar-fallback">
+			<AvatarFallback title={fullName} className="text-xs" data-testid="avatar-fallback">
 				{getAvatarFallback(fullName)}
 			</AvatarFallback>
 		</Avatar>

@@ -117,7 +117,7 @@ function useMutation() {
 	});
 	const { mutate: read } = trpc.notifications.read.useMutation({
 		onSuccess(_data, variables) {
-			utils.notifications.getUnread.setData(undefined, (oldCount) => (oldCount || 0) + 1);
+			utils.notifications.getUnread.invalidate();
 			utils.notifications.getInfinite.setInfiniteData({}, (oldPages) => {
 				if (!oldPages) {
 					return oldPages;
