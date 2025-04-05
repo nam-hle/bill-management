@@ -67,7 +67,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 		return `Amount`;
 	}, [member]);
 
-	const AmountLabel = member.type === "creditor" ? FormLabel : RequiredLabel;
+	const AmountLabel = member.type === "creditor" ? RequiredLabel : FormLabel;
 
 	return (
 		<div

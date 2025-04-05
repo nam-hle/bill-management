@@ -3,8 +3,15 @@ import React, { type ChangeEventHandler } from "react";
 
 import { Input } from "@/components/shadcn/input";
 
-export const AmountInput: React.FC<{ value: string; disabled?: boolean; onChange: ChangeEventHandler<HTMLInputElement> }> = (props) => {
-	const { value, disabled, onChange } = props;
+namespace AmountInput {
+	export interface Props {
+		name: string;
+		value: string;
+		disabled?: boolean;
+		onChange: ChangeEventHandler<HTMLInputElement>;
+	}
+}
 
-	return <NumericFormat suffix=" ₫" value={value} thousandSeparator disabled={disabled} customInput={Input} onChange={onChange} />;
+export const AmountInput: React.FC<AmountInput.Props> = (props) => {
+	return <NumericFormat suffix=" ₫" thousandSeparator customInput={Input} {...props} />;
 };

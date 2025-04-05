@@ -13,24 +13,24 @@ import { USERNAMES, FULL_NAMES, getCurrentDate, type BillMember } from "@/test/u
 
 const presetBills: Omit<Actions.BillForm.FillParams, "description">[] = [
 	{
-		creditor: { amount: "90", name: FULL_NAMES.harry },
+		creditor: { amount: "90000", name: FULL_NAMES.harry },
 		debtors: [
-			{ amount: "20", name: FULL_NAMES.ron },
-			{ amount: "70", name: FULL_NAMES.hermione }
+			{ amount: "20000", name: FULL_NAMES.ron },
+			{ amount: "70000", name: FULL_NAMES.hermione }
 		]
 	},
 	{
-		creditor: { amount: "90", name: FULL_NAMES.ron },
+		creditor: { amount: "90000", name: FULL_NAMES.ron },
 		debtors: [
-			{ amount: "20", name: FULL_NAMES.harry },
-			{ amount: "70", name: FULL_NAMES.hermione }
+			{ amount: "20000", name: FULL_NAMES.harry },
+			{ amount: "70000", name: FULL_NAMES.hermione }
 		]
 	},
 	{
-		creditor: { amount: "90", name: FULL_NAMES.hermione },
+		creditor: { amount: "90000", name: FULL_NAMES.hermione },
 		debtors: [
-			{ amount: "20", name: FULL_NAMES.harry },
-			{ amount: "70", name: FULL_NAMES.ron }
+			{ amount: "20000", name: FULL_NAMES.harry },
+			{ amount: "70000", name: FULL_NAMES.ron }
 		]
 	}
 ];
@@ -152,10 +152,10 @@ test.beforeAll("Seed bills", async () => {
 		await requester.bills.create.mutate(
 			toCreationPayload({
 				description: `Coffee`,
-				creditor: { amount: "90", name: FULL_NAMES.ron },
+				creditor: { amount: "90000", name: FULL_NAMES.ron },
 				debtors: [
-					{ amount: "20", name: FULL_NAMES.ron },
-					{ amount: "70", name: FULL_NAMES.hermione }
+					{ amount: "20000", name: FULL_NAMES.ron },
+					{ amount: "70000", name: FULL_NAMES.hermione }
 				]
 			})
 		);
@@ -167,11 +167,11 @@ test.beforeAll("Seed bills", async () => {
 		await requester.bills.create.mutate(
 			toCreationPayload({
 				description: `Party`,
-				creditor: { amount: "90", name: FULL_NAMES.harry },
+				creditor: { amount: "90000", name: FULL_NAMES.harry },
 				debtors: [
-					{ amount: "20", name: FULL_NAMES.harry },
-					{ amount: "30", name: FULL_NAMES.ron },
-					{ amount: "40", name: FULL_NAMES.hermione }
+					{ amount: "20000", name: FULL_NAMES.harry },
+					{ amount: "30000", name: FULL_NAMES.ron },
+					{ amount: "40000", name: FULL_NAMES.hermione }
 				]
 			})
 		);

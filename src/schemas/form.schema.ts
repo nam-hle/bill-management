@@ -3,7 +3,7 @@ import { parse, format, isValid } from "date-fns";
 
 import { CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
 
-const cleanNonNumeric = (val: string) => val.replaceAll(/\D/g, "");
+const cleanNonNumeric = (val: string) => val.replaceAll(/[^-\d]/g, "");
 
 export const OptionalAmountFieldSchema = z
 	.string()

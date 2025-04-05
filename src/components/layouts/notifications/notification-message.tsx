@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { StatusDot } from "@/components/mics/status-dot";
 
 import { formatDistanceTime } from "@/utils";
+import { formatCurrency } from "@/utils/format";
 import {
 	type ClientNotification,
 	type BillDeletedNotification,
@@ -84,46 +85,50 @@ function computeMessage(notification: ClientNotification) {
 	}
 }
 
+function format(amount: number) {
+	return formatCurrency(amount, { noSuffix: true });
+}
+
 function renderTransactionConfirmedMessage(notification: TransactionConfirmedNotification) {
 	const { transaction } = notification;
 	const { amount, receiver } = transaction;
 
-	return `Your transaction of **${amount}** to **${receiver.fullName}** has been confirmed.`;
+	return `Your transaction of **${format(amount)}** to **${receiver.fullName}** has been confirmed.`;
 }
 
 function renderTransactionDeclinedMessage(notification: TransactionDeclinedNotification) {
 	const { transaction } = notification;
 	const { sender, amount } = transaction;
 
-	return `Your transaction of **${amount}** from **${sender.fullName}** has been declined.`;
+	return `Your transaction of **${format(amount)}** from **${sender.fullName}** has been declined.`;
 }
 
 function renderTransactionWaitingMessage(notification: TransactionWaitingNotification) {
 	const { transaction } = notification;
 	const { sender, amount } = transaction;
 
-	return `You have received a new transaction of **${amount}** from **${sender.fullName}**. Please review and confirm it.`;
+	return `You have received a new transaction of **${format(amount)}** from **${sender.fullName}**. Please review and confirm it.`;
 }
 
 function renderBillCreatedMessage(notification: BillCreatedNotification) {
 	const { bill, trigger, metadata } = notification;
 	const { role, amount } = metadata.current;
 
-	return `You’ve been added to the bill **${bill.description}** by **${trigger.fullName}** as a **${role}** with an amount of **${amount}**.`;
+	return `You've been added to the bill **${bill.description}** by **${trigger.fullName}** as a **${role}** with an amount of **${format(amount)}**.`;
 }
 
 function renderBillDeletedMessage(notification: BillDeletedNotification) {
 	const { bill, trigger, metadata } = notification;
 	const { role } = metadata.previous;
 
-	return `You’ve been removed as a **${role}** from the bill **${bill.description}** by **${trigger.fullName}**.`;
+	return `You've been removed as a **${role}** from the bill **${bill.description}** by **${trigger.fullName}**.`;
 }
 
 function renderBillUpdatedMessage(notification: BillUpdatedNotification) {
 	const { bill, trigger, metadata } = notification;
 	const { current, previous } = metadata;
 
-	return `Your amount in the bill **${bill.description}** has been updated from **${previous.amount}** to **${current.amount}** by **${trigger.fullName}**. Please review the change.`;
+	return `Your amount in the bill **${bill.description}** has been updated from **${format(previous.amount)}** to **${format(current.amount)}** by **${trigger.fullName}**. Please review the change.`;
 }
 
 function transformMessage(text: string) {

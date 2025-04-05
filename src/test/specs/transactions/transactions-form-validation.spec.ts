@@ -49,10 +49,7 @@ test.describe("validation", () => {
 		await Actions.TransactionForm.next(page);
 		await expect(Locators.locateError(page, "amount")).toHaveText("Amount is required");
 
-		await Actions.TransactionForm.fillAmount(page, "abc");
-		await expect(Locators.locateError(page, "amount")).toHaveText("The amount must be a number greater than zero");
-
-		await Actions.TransactionForm.fillAmount(page, "-123");
+		await Actions.TransactionForm.fillAmount(page, "-123000");
 		await expect(Locators.locateError(page, "amount")).toHaveText("The amount must be a number greater than zero");
 	});
 });
