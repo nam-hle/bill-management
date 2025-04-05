@@ -15,8 +15,8 @@ export const AvatarGroup = ({ users, max = 3 }: { max?: number; users: UserMeta[
 				<FallbackAvatar {...user} key={user.userId} className="inline-block border-2 border-background" />
 			))}
 			{remaining > 0 && (
-				<Avatar className="inline-block border-2 border-background bg-muted">
-					<AvatarFallback>+{remaining}</AvatarFallback>
+				<Avatar className="inline-block h-8 w-8 border-2 border-background bg-muted">
+					<AvatarFallback className="text-xs">+{remaining}</AvatarFallback>
 				</Avatar>
 			)}
 		</div>
