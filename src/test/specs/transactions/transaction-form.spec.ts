@@ -12,7 +12,7 @@ test("basic", async ({ page, browser }) => {
 
 	await Actions.goToTransactionsPage(page);
 	await Actions.TransactionForm.fill(page, {
-		amount: "42",
+		amount: "42000",
 		receiver: FULL_NAMES.ron + ` (0 ${VND})`,
 		account: `${FULL_NAMES.ron} VIETINBANK (Vietinbank 100001)`,
 		candidateReceivers: [FULL_NAMES.dumbledore, FULL_NAMES.hermione, FULL_NAMES.ron, FULL_NAMES.snape]
@@ -22,7 +22,7 @@ test("basic", async ({ page, browser }) => {
 
 	await Assertions.assertTransactionsTable(transactionsTable, {
 		pagination: null,
-		rows: [{ amount: "42", status: "Waiting", issuedAt: "Today", receiver: FULL_NAMES.ron, sender: FULL_NAMES.harry }]
+		rows: [{ amount: "42.000", status: "Waiting", issuedAt: "Today", receiver: FULL_NAMES.ron, sender: FULL_NAMES.harry }]
 	});
 
 	await Actions.goToDashboardPage(page);

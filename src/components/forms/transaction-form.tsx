@@ -23,6 +23,7 @@ import { CopyButton } from "@/components/buttons/copy-button";
 import { RequiredLabel } from "@/components/forms/required-label";
 import { LoadingButton } from "@/components/buttons/loading-button";
 import { SkeletonWrapper } from "@/components/mics/skeleton-wrapper";
+import { AmountInput } from "@/components/forms/inputs/amount-input";
 import { TransactionAction } from "@/components/mics/transaction-action";
 import { TransactionStatusBadge } from "@/components/mics/transaction-status-badge";
 
@@ -32,7 +33,7 @@ import { useBanks } from "@/hooks";
 import { formatCurrency } from "@/utils/format";
 import { CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
 import { type Transaction, TransactionCreatePayloadSchema } from "@/schemas";
-import { IssuedAtField, IssuedAtFieldTransformer, RequiredAmountFieldSchema } from "@/schemas/form.schema";
+import { IssuedAtField, IssuedAtFieldTransformer, RequiredAmountFieldSchema, RequiredAmountFieldTransformer } from "@/schemas/form.schema";
 
 namespace TransactionForm {
 	export interface Props {
@@ -118,10 +119,14 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 		return handleSubmit((data, event) => {
 			const name = event?.target.name;
 
+			const parsedData = {
+				...data,
+				amount: RequiredAmountFieldTransformer.toServer(data.amount)
+			};
+
 			if (name === "create") {
 				create.mutate({
-					...data,
-					amount: data.amount === "" ? 0 : Number(data.amount),
+					...parsedData,
 					issuedAt: format(parse(data.issuedAt, CLIENT_DATE_FORMAT, new Date()), SERVER_DATE_FORMAT)
 				});
 
@@ -130,7 +135,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 
 			if (name === "generate") {
 				setScreen(() => "qr");
-				generate.mutate({ receiverId: data.receiverId, amount: Number(data.amount), bankAccountId: data.bankAccountId ?? "" });
+				generate.mutate({ amount: parsedData.amount, receiverId: parsedData.receiverId, bankAccountId: parsedData.bankAccountId ?? "" });
 
 				return;
 			}
@@ -197,7 +202,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 						<FormItem>
 							<RequiredLabel>Amount</RequiredLabel>
 							<FormControl>
-								<Input {...field} readOnly={!editing} className={editing ? "" : "pointer-events-none"} />
+								<AmountInput {...field} disabled={!editing} />
 							</FormControl>
 							<FormMessage />
 						</FormItem>

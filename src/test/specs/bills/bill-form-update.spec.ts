@@ -5,8 +5,8 @@ import { Actions } from "@/test/helpers/actions";
 import { Locators } from "@/test/helpers/locators";
 import { Assertions } from "@/test/helpers/assertions";
 import { createRequester } from "@/test/helpers/requester";
-import { USERNAMES, FULL_NAMES, getCurrentDate } from "@/test/utils";
 import { seedBasicPreset } from "@/test/functions/seed-basic-preset";
+import { USERNAMES, FULL_NAMES, getCurrentDate } from "@/test/utils";
 
 const expectedBillsTable: Assertions.BillsTableExpectation = {
 	pagination: null,
@@ -48,11 +48,11 @@ test("basic", async ({ page }, testInfo) => {
 		await Actions.goToBillsPage(page);
 		await Actions.BillForm.fill(page, {
 			description: "Dinner",
-			creditor: { amount: "125", name: FULL_NAMES.ron },
+			creditor: { amount: "125000", name: FULL_NAMES.ron },
 			debtors: [
-				{ amount: "20", name: FULL_NAMES.harry },
-				{ amount: "70", name: FULL_NAMES.hermione },
-				{ amount: "35", name: FULL_NAMES.snape }
+				{ amount: "20000", name: FULL_NAMES.harry },
+				{ amount: "70000", name: FULL_NAMES.hermione },
+				{ amount: "35000", name: FULL_NAMES.snape }
 			]
 		});
 		await Actions.submit(page);
@@ -76,22 +76,22 @@ test("basic", async ({ page }, testInfo) => {
 
 		await Actions.BillForm.fillDescription(page, "Party");
 		await Actions.BillForm.selectCreditor(page, FULL_NAMES.snape);
-		await Actions.BillForm.fillCreditorAmount(page, "150");
+		await Actions.BillForm.fillCreditorAmount(page, "150000");
 
 		await Actions.BillForm.removeDebtor(page, 0);
 
 		await Actions.BillForm.selectDebtor(page, 0, FULL_NAMES.dumbledore);
-		await Actions.BillForm.fillDebtorAmount(page, 0, "40");
+		await Actions.BillForm.fillDebtorAmount(page, 0, "40000");
 
-		await Actions.BillForm.fillDebtorAmount(page, 1, "45");
+		await Actions.BillForm.fillDebtorAmount(page, 1, "45000");
 
 		await Actions.BillForm.addDebtor(page);
 		await Actions.BillForm.selectDebtor(page, 2, FULL_NAMES.hermione);
-		await Actions.BillForm.fillDebtorAmount(page, 2, "50");
+		await Actions.BillForm.fillDebtorAmount(page, 2, "50000");
 
 		await Actions.BillForm.addDebtor(page);
 		await Actions.BillForm.selectDebtor(page, 3, FULL_NAMES.ron);
-		await Actions.BillForm.fillDebtorAmount(page, 3, "60");
+		await Actions.BillForm.fillDebtorAmount(page, 3, "60000");
 
 		await Actions.BillForm.save(page);
 
@@ -134,29 +134,29 @@ test("basic", async ({ page }, testInfo) => {
 
 	await test.step("Assert notifications", async () => {
 		const expectations = [
-			{ username: USERNAMES.harry, messages: ["You’ve been removed as a Debtor from the bill Party by Hermione Granger."] },
+			{ username: USERNAMES.harry, messages: ["You've been removed as a Debtor from the bill Party by Hermione Granger."] },
 			{
 				username: USERNAMES.ron,
 				messages: [
-					"You’ve been removed as a Creditor from the bill Party by Hermione Granger.",
-					"You’ve been added to the bill Party by Hermione Granger as a Debtor with an amount of 60.",
-					"You’ve been added to the bill Party by Harry Potter as a Creditor with an amount of 125."
+					"You've been removed as a Creditor from the bill Party by Hermione Granger.",
+					`You've been added to the bill Party by Hermione Granger as a Debtor with an amount of 60.000.`,
+					`You've been added to the bill Party by Harry Potter as a Creditor with an amount of 125.000.`
 				]
 			},
 			{
 				username: USERNAMES.hermione,
-				messages: ["You’ve been added to the bill Party by Harry Potter as a Debtor with an amount of 70."]
+				messages: [`You've been added to the bill Party by Harry Potter as a Debtor with an amount of 70.000.`]
 			},
 			{
 				username: USERNAMES.dumbledore,
-				messages: ["You’ve been added to the bill Party by Hermione Granger as a Debtor with an amount of 40."]
+				messages: [`You've been added to the bill Party by Hermione Granger as a Debtor with an amount of 40.000.`]
 			},
 			{
 				username: USERNAMES.snape,
 				messages: [
-					"You’ve been added to the bill Party by Hermione Granger as a Creditor with an amount of 150.",
-					"Your amount in the bill Party has been updated from 35 to 45 by Hermione Granger. Please review the change.",
-					"You’ve been added to the bill Party by Harry Potter as a Debtor with an amount of 35."
+					`You've been added to the bill Party by Hermione Granger as a Creditor with an amount of 150.000.`,
+					`Your amount in the bill Party has been updated from 35.000 to 45.000 by Hermione Granger. Please review the change.`,
+					`You've been added to the bill Party by Harry Potter as a Debtor with an amount of 35.000.`
 				]
 			}
 		];
@@ -182,8 +182,8 @@ test("Parallel update", async ({ page, browser }) => {
 		receiptFile: null,
 		description: "Party",
 		issuedAt: getCurrentDate(),
-		debtors: [{ amount: 20, userId: preset.userIds.ron }],
-		creditor: { amount: 40, userId: preset.userIds.harry }
+		debtors: [{ amount: 20000, userId: preset.userIds.ron }],
+		creditor: { amount: 40000, userId: preset.userIds.harry }
 	});
 
 	await test.step("Harry opens the bill", async () => {

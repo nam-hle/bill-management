@@ -55,7 +55,7 @@ test.describe("validation", () => {
 
 	test("Total amount", async ({ page }) => {
 		await Actions.submit(page);
-		await Actions.BillForm.fillCreditorAmount(page, "90");
+		await Actions.BillForm.fillCreditorAmount(page, "90000");
 
 		await expect(Locators.locateErrors(page)).toHaveCount(3);
 		await expect(Locators.locateError(page, "description")).toHaveText("Description is required");
@@ -75,7 +75,7 @@ test.describe("validation", () => {
 		await expect(Locators.locateErrors(page)).toHaveCount(4);
 		await expect(Locators.locateError(page, "description")).toHaveText("Description is required");
 		await expect(Locators.locateError(page, "creditor.userId")).toHaveText("Creditor is required");
-		await expect(Locators.locateError(page, "creditor.amount")).toHaveText("The amount must be a number greater than zero");
+		await expect(Locators.locateError(page, "creditor.amount")).toHaveText("Total amount is required");
 		await expect(Locators.locateError(page, "debtors.0.userId")).toHaveText("Debtor is required");
 	});
 
@@ -93,14 +93,13 @@ test.describe("validation", () => {
 		await Actions.submit(page);
 		await Actions.BillForm.fillDebtorAmount(page, 0, "abc");
 
-		await expect(Locators.locateErrors(page)).toHaveCount(5);
+		await expect(Locators.locateErrors(page)).toHaveCount(4);
 		await expect(Locators.locateError(page, "description")).toHaveText("Description is required");
 		await expect(Locators.locateError(page, "creditor.userId")).toHaveText("Creditor is required");
 		await expect(Locators.locateError(page, "creditor.amount")).toHaveText("Total amount is required");
 		await expect(Locators.locateError(page, "debtors.0.userId")).toHaveText("Debtor is required");
-		await expect(Locators.locateError(page, "debtors.0.amount")).toHaveText("Amount must be a number greater than zero");
 
-		await Actions.BillForm.fillDebtorAmount(page, 0, "45");
+		await Actions.BillForm.fillDebtorAmount(page, 0, "45000");
 
 		await expect(Locators.locateErrors(page)).toHaveCount(4);
 		await expect(Locators.locateError(page, "description")).toHaveText("Description is required");

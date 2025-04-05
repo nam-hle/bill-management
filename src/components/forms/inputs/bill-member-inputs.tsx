@@ -2,7 +2,6 @@ import React from "react";
 import { Trash2 } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 
-import { Input } from "@/components/shadcn/input";
 import { Button } from "@/components/shadcn/button";
 import { Skeleton } from "@/components/shadcn/skeleton";
 import { FormItem, FormField, FormLabel, FormControl, FormMessage } from "@/components/shadcn/form";
@@ -11,6 +10,7 @@ import { Select } from "@/components/forms/inputs/select";
 import { RequiredLabel } from "@/components/forms/required-label";
 import { type BillFormState } from "@/components/forms/bill-form";
 import { SkeletonWrapper } from "@/components/mics/skeleton-wrapper";
+import { AmountInput } from "@/components/forms/inputs/amount-input";
 
 import { cn } from "@/utils/cn";
 import { trpc } from "@/services";
@@ -67,12 +67,12 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 		return `Amount`;
 	}, [member]);
 
-	const AmountLabel = member.type === "creditor" ? FormLabel : RequiredLabel;
+	const AmountLabel = member.type === "creditor" ? RequiredLabel : FormLabel;
 
 	return (
 		<div
 			data-testid={fieldKey}
-			className={cn("grid grid-cols-1 items-end gap-3 md:grid-cols-2", { "border-b pb-3": member.type !== "debtor" || !member.lastDebtor })}>
+			className={cn("grid grid-cols-1 items-end gap-3 md:grid-cols-2", { "border-b pb-3": member.type === "debtor" && !member.lastDebtor })}>
 			<div className="space-y-1">
 				<FormField
 					control={control}
@@ -103,7 +103,7 @@ export const BillMemberInputs: React.FC<BillMemberInputs.Props> = (props) => {
 							<FormItem>
 								<AmountLabel>{amountLabel}</AmountLabel>
 								<FormControl>
-									<Input readOnly={!editing} className={editing ? "" : "pointer-events-none"} {...field} />
+									<AmountInput disabled={!editing} {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
