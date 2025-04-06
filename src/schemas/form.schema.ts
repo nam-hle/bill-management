@@ -39,7 +39,7 @@ export namespace RequiredAmountFieldTransformer {
 }
 
 export const IssuedAtField = z.date({
-	required_error: "A date of birth is required."
+	required_error: "Issued date is required."
 });
 
 export namespace IssuedAtFieldTransformer {
