@@ -3,7 +3,6 @@
 import { z } from "zod";
 import React from "react";
 import { toast } from "sonner";
-import { format } from "date-fns";
 import { PlusCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,13 +16,14 @@ import { Card, CardTitle, CardHeader, CardFooter, CardContent } from "@/componen
 import { ImageDialog } from "@/components/dialogs/image-dialog";
 import { RequiredLabel } from "@/components/forms/required-label";
 import { FileUpload } from "@/components/forms/inputs/file-upload";
+import { DatePicker } from "@/components/forms/inputs/date-picker";
 import { BillMemberInputs } from "@/components/forms/inputs/bill-member-inputs";
 
 import { API } from "@/api";
 import { trpc } from "@/services";
 import { useBoolean } from "@/hooks";
+import { formatTime, formatDistanceTime } from "@/utils";
 import { type ClientBill, type ClientBillMember } from "@/schemas";
-import { formatTime, CLIENT_DATE_FORMAT, formatDistanceTime, SERVER_DATE_FORMAT } from "@/utils";
 import {
 	IssuedAtField,
 	IssuedAtFieldTransformer,
@@ -99,17 +99,11 @@ function useBillForm(kind: BillForm.Kind) {
 				: {
 						description: "",
 						receiptFile: null,
+						issuedAt: new Date(),
 						creditor: { userId: "", amount: "" },
-						debtors: [{ amount: "", userId: "" }],
-						issuedAt: formatDate(format(new Date(), SERVER_DATE_FORMAT)).client
+						debtors: [{ amount: "", userId: "" }]
 					}
 	});
-}
-
-function formatDate(date?: string | null) {
-	const value = date ?? new Date();
-
-	return { server: format(value, SERVER_DATE_FORMAT), client: format(value, CLIENT_DATE_FORMAT) };
 }
 
 export const BillForm: React.FC<BillForm.Props> = (props) => {
@@ -202,15 +196,7 @@ export const BillForm: React.FC<BillForm.Props> = (props) => {
 									<FormField
 										name="issuedAt"
 										control={control}
-										render={({ field }) => (
-											<FormItem>
-												<RequiredLabel>Issued At</RequiredLabel>
-												<FormControl>
-													<Input readOnly={!editing} placeholder={CLIENT_DATE_FORMAT} className={editing ? "" : "pointer-events-none"} {...field} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
+										render={({ field }) => <DatePicker label="Issued At" readonly={!editing} {...field} />}
 									/>
 								</div>
 							</div>

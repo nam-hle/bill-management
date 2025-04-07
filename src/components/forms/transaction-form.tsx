@@ -4,13 +4,12 @@ import React from "react";
 import { type z } from "zod";
 import { toast } from "sonner";
 import Image from "next/image";
-import { parse, format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import { DevTool } from "@hookform/devtools";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Wand2, ArrowLeft, ArrowRight } from "lucide-react";
 
-import { Input } from "@/components/shadcn/input";
 import { Button } from "@/components/shadcn/button";
 import { Skeleton } from "@/components/shadcn/skeleton";
 import { AspectRatio } from "@/components/shadcn/aspect-ratio";
@@ -21,6 +20,7 @@ import { Show } from "@/components/mics/show";
 import { Select } from "@/components/forms/inputs/select";
 import { CopyButton } from "@/components/buttons/copy-button";
 import { RequiredLabel } from "@/components/forms/required-label";
+import { DatePicker } from "@/components/forms/inputs/date-picker";
 import { LoadingButton } from "@/components/buttons/loading-button";
 import { SkeletonWrapper } from "@/components/mics/skeleton-wrapper";
 import { AmountInput } from "@/components/forms/inputs/amount-input";
@@ -31,7 +31,6 @@ import { cn } from "@/utils/cn";
 import { trpc } from "@/services";
 import { useBanks } from "@/hooks";
 import { formatCurrency } from "@/utils/format";
-import { CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
 import { type Transaction, TransactionCreatePayloadSchema } from "@/schemas";
 import { IssuedAtField, IssuedAtFieldTransformer, RequiredAmountFieldSchema, RequiredAmountFieldTransformer } from "@/schemas/form.schema";
 
@@ -125,10 +124,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 			};
 
 			if (name === "create") {
-				create.mutate({
-					...parsedData,
-					issuedAt: format(parse(data.issuedAt, CLIENT_DATE_FORMAT, new Date()), SERVER_DATE_FORMAT)
-				});
+				create.mutate({ ...parsedData, issuedAt: IssuedAtFieldTransformer.toServer(parsedData.issuedAt) });
 
 				return;
 			}
@@ -209,19 +205,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 					)}
 				/>
 
-				<FormField
-					name="issuedAt"
-					control={control}
-					render={({ field }) => (
-						<FormItem>
-							<RequiredLabel>Issued At</RequiredLabel>
-							<FormControl>
-								<Input placeholder={CLIENT_DATE_FORMAT} {...field} className={editing ? "" : "pointer-events-none"} />
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
+				<FormField name="issuedAt" control={control} render={({ field }) => <DatePicker label="Issued At" readonly={!editing} {...field} />} />
 			</>
 		);
 	};
@@ -290,7 +274,7 @@ export const TransactionForm: React.FC<TransactionForm.Props> = (props) => {
 						</CardFooter>
 					</Card>
 				</div>
-				{/*<DevTool control={control} />*/}
+				<DevTool control={control} />
 			</form>
 		</Form>
 	);

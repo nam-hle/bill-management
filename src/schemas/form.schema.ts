@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { parse, format, isValid } from "date-fns";
+import { parse, format } from "date-fns";
 
 import { CLIENT_DATE_FORMAT, SERVER_DATE_FORMAT } from "@/utils";
 
@@ -38,26 +38,24 @@ export namespace RequiredAmountFieldTransformer {
 	}
 }
 
-export const IssuedAtField = z
-	.string()
-	.min(1, "Issued date is required")
-	.refine((val) => {
-		try {
-			return isValid(parse(val, CLIENT_DATE_FORMAT, new Date()));
-		} catch {
-			return false;
-		}
-	}, `Issued date must be a valid date and in ${CLIENT_DATE_FORMAT} format`);
+export const IssuedAtField = z.date({
+	required_error: "Issued date is required."
+});
+
 export namespace IssuedAtFieldTransformer {
-	export function toServer(date: string) {
-		return format(parse(date, CLIENT_DATE_FORMAT, new Date()), SERVER_DATE_FORMAT);
+	export function toServer(date: Date) {
+		return format(date, SERVER_DATE_FORMAT);
 	}
 
-	export function fromServer(date: string | undefined) {
+	export function toDisplayString(date: Date) {
+		return format(date, CLIENT_DATE_FORMAT);
+	}
+
+	export function fromServer(date: string | undefined): Date {
 		if (date === undefined) {
-			return format(new Date(), CLIENT_DATE_FORMAT);
+			return new Date();
 		}
 
-		return format(parse(date, SERVER_DATE_FORMAT, new Date()), CLIENT_DATE_FORMAT);
+		return parse(date, SERVER_DATE_FORMAT, new Date());
 	}
 }
